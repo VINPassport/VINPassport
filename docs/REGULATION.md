@@ -13,21 +13,39 @@ official EU law portal — free, no account, all official languages.
 
 This is the legal basis for VINPassport. It establishes the **Digital Circularity Vehicle Passport**.
 
-| | |
-|---|---|
-| Published in the Official Journal | 24 July 2026 |
-| Entered into force | 13 August 2026 |
-| Generally applies from | 1 September 2028 |
-| Manufacturer "circularity strategy" required from | 1 September 2029 |
-| **Digital Circularity Vehicle Passport mandatory from** | **1 September 2032** |
-| Repeals | [Directive 2000/53/EC](https://eur-lex.europa.eu/eli/dir/2000/53/oj) (end-of-life vehicles) and [Directive 2005/64/EC](https://eur-lex.europa.eu/eli/dir/2005/64/oj) (3R type-approval) |
-
-**Articles this project builds on:**
-
-| Article | Subject | Relevance |
+| | | Provision |
 |---|---|---|
-| **Article 46** | Digital Circularity Vehicle Passport | The passport itself — what VINPassport implements |
+| Published in the Official Journal | 24 July 2026 | — |
+| Entered into force | 13 August 2026 | Art. 59(1) — twentieth day after publication |
+| Generally applies from | 1 September 2028 | Art. 59(2) |
+| Passport empowerment (Commission implementing acts) applies from | 14 September 2026 | Art. 59(2), listing Art. 13(6) |
+| Scope extends to special purpose vehicles from | 1 September 2029 | Art. 2(1)(b) |
+| Manufacturer "circularity strategy" required from | 1 September 2029 | Art. 9(1) |
+| **Digital Circularity Vehicle Passport mandatory from** | **1 September 2032** | **Art. 13(1)** |
+| Repeals | [Directive 2000/53/EC](https://eur-lex.europa.eu/eli/dir/2000/53/oj) (end-of-life vehicles) and [Directive 2005/64/EC](https://eur-lex.europa.eu/eli/dir/2005/64/oj) (3R type-approval) | — |
+
+*Every date above was read from the Official Journal PDF on 2026-09-08, not from secondary analysis.*
+
+**Provisions this project builds on:**
+
+| Provision | Subject | Relevance |
+|---|---|---|
+| **Article 13** | Digital Circularity Vehicle Passport | **The legal basis.** The passport itself — what VINPassport implements. Cite 13(1), (2), (4), (5), (6) |
+| **Recital 46** | Why a passport should exist; the data-carrier framing | Interpretive support **only**. Recitals say *should*, not *shall*, and create no obligations — never cite it as an article |
 | **Article 29** | Recycled plastic content | Progressively rising targets, including a share sourced from end-of-life vehicles — drives field slots 5–7 |
+
+**Not the passport — a common and invisible mistake:**
+
+| Provision | Subject | Why it gets confused |
+|---|---|---|
+| **Article 46** | Electronic systems (MOVE-HUB) | Governs exchange of the VIN, registration and roadworthiness status between national vehicle registers, and interconnection to the EU Single Window for Customs. Genuinely relevant to provenance — see also Arts. 36, 37, 39, 40 — but it is **not** the passport obligation |
+
+> **Why this warning exists.** Until 2026-09-08 this repo cited *Article 46* as the legal basis for
+> the passport, in five files. The error came from Recital 46, which genuinely *is* about the
+> passport, being recorded as an article. Because Article 46 also exists and is also relevant, the
+> mistake was invisible. The tell is the verb: **recitals say *should*, operative articles say
+> *shall***. Verified against the OJ PDF — Article 13 is headed "Digital Circularity Vehicle
+> Passport"; Article 46 is headed "Electronic systems".
 
 The clause that shapes the architecture is the interoperability requirement: the passport must be
 *aligned, interoperable and, where possible, integrated with other vehicle related environmental
@@ -61,7 +79,7 @@ than an aspiration.
 
 ---
 
-## The one that does *not* apply
+## The one that is not the basis — but is a required alignment target
 
 ### Regulation (EU) 2024/1781 — Ecodesign for Sustainable Products (ESPR)
 
@@ -79,6 +97,23 @@ by sector-specific law.
 a regulator, investor or hackathon judge to catch. Regulation 2026/1738 is the correct and only
 citation for a vehicle-level passport obligation. This is recorded as a standing warning in
 [DECISIONS.md D3](DECISIONS.md#settled).
+
+**But ESPR is not irrelevant — alignment with it is mandatory.** Article 13(1) requires that the
+passport *"shall be aligned, interoperable and, where possible, integrated with other vehicle
+related environmental passports established under Union law … and with other relevant passports
+established pursuant to Regulation (EU) 2024/1781."* Recital 46 names ESPR among the instruments the
+passport should be consistent with.
+
+Both statements hold at once, and the distinction is the whole point:
+
+| | ESPR |
+|---|---|
+| **As legal basis** | ❌ Excluded — Art. 1(2) carves out vehicles |
+| **As alignment target** | ✅ Required — Art. 13(1), operative and binding |
+
+So the ESPR Digital Product Passport technical stack and its EN standards are the data model to
+build **against**, not an adjacent regime to ignore. When correcting this section, do not resolve
+the tension by deleting the exclusion warning above — both halves are load-bearing.
 
 ---
 

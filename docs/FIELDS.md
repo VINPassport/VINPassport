@@ -51,16 +51,16 @@ the exact string. Public label is `fieldKeyHex(name)` = blake2b-256 of the field
 | 4 | `writeOffCategory` | Fraud | 0 = none; category codes above |
 | 5 | `firstRegistrationDate` | Identity | Epoch days |
 | 6 | `lastInspectionDate` | Identity | Epoch days |
-| 7 | `co2FootprintKgCO2e` | Art 46 | Environmental declaration |
+| 7 | `co2FootprintKgCO2e` | Art 13 | Environmental declaration |
 | 8 | `recycledPlasticPct` | Art 29 | Recycled-content target |
 | 9 | `recycledPlasticFromELVPct` | Art 29 | Share sourced from end-of-life vehicles |
 | 10 | `recycledSteelPct` | Art 29 | Recycled-content target |
 | 11 | `recycledAluminiumPct` | Art 29 | Recycled-content target |
-| 12 | `criticalRawMaterialPct` | Art 46 | CRM declaration |
+| 12 | `criticalRawMaterialPct` | Art 13 | CRM declaration |
 | 13 | `reusabilityPct` | 3R | Inherited from Directive 2005/64/EC |
 | 14 | `recyclabilityPct` | 3R | Inherited from Directive 2005/64/EC |
 | 15 | `recoverabilityPct` | 3R | Inherited from Directive 2005/64/EC |
-| 16 | `dismantlingTimeMinutes` | Art 46 | Design-for-dismantling evidence |
+| 16 | `dismantlingTimeMinutes` | Art 13 | Design-for-dismantling evidence |
 
 ### Reserved numeric — slots 17–21
 
@@ -72,14 +72,14 @@ a re-anchor but no reordering.
 | # | Field | Serves | Note |
 |---|---|---|---|
 | 22 | `vinHash` | Fraud | Identity. **Public on-chain and VIN-reversible**: `vinHash = blake2b(VIN)`, unsalted, and a VIN is on the windscreen. It is the passport's public address, not a confidential field — tiered disclosure applies to the *values*, not to the VIN key. See [D23](DECISIONS.md#settled) |
-| 23 | `vehicleCategory` | Art 46 | M1 / N1 / etc. |
-| 24 | `euTypeApprovalNumber` | Art 46 | Binds to type approval |
+| 23 | `vehicleCategory` | Art 13 | M1 / N1 / etc. |
+| 24 | `euTypeApprovalNumber` | Art 13 | Binds to type approval |
 | 25 | `manufacturerBPN` | Supply chain | Business partner number |
-| 26 | `fuelType` | Art 46 | Powertrain classification |
+| 26 | `fuelType` | Art 13 | Powertrain classification |
 | 27 | `batteryChemistry` | Interop | Mirrors the battery passport's own field |
-| 28 | `emissionsClass` | Art 46 | Euro standard |
+| 28 | `emissionsClass` | Art 13 | Euro standard |
 | 29 | `batteryPassportId` | Interop | **The explicit link to a battery passport** |
-| 30 | `passportOrigin` | Art 46 | `new` — issued at first placing on the market; `retrofit` — added to a vehicle produced before the regulation applies. Provisional occupancy 2026-08-27; the two paths share fields today, and this is how a record says which it took |
+| 30 | `passportOrigin` | Art 13 | `new` — issued at first placing on the market; `retrofit` — added to a vehicle produced before the regulation applies. Provisional occupancy 2026-08-27; the two paths share fields today, and this is how a record says which it took |
 
 ### Reserved string — slot 31
 

@@ -148,11 +148,17 @@ The regulation page is deliberately careful, and that carefulness is the point.
 Preserve it:
 
 - Keep the "plain language, not legal advice" notice.
-- Keep the note that entry-into-force, general-application and 2032 dates come
-  from secondary legal analysis rather than the operative articles.
-- Keep the ESPR panel. Regulation 2024/1781 explicitly excludes vehicles, and
-  citing it for a vehicle passport is a factual error. That warning is there
-  because it is easy to get wrong.
+- The dates are no longer secondary. As of 2026-09-08 entry-into-force
+  (Art. 59(1)), general application (Art. 59(2)), the circularity strategy
+  (Art. 9(1)) and the 2032 passport deadline (Art. 13(1)) were all read from the
+  Official Journal text. Keep the provision citations next to the dates; do not
+  reinstate the old "secondary legal analysis" caveat.
+- Keep the ESPR panel, and keep **both halves** of it. Regulation 2024/1781
+  excludes vehicles at Art. 1(2), so citing it as the *basis* for a vehicle
+  passport is a factual error. But Art. 13(1) of 2026/1738 makes alignment with
+  ESPR-established passports mandatory, so it is not merely irrelevant. Do not
+  resolve the tension by deleting either half — the panel is there because the
+  distinction is easy to get wrong in both directions.
 - Do not soften the "what this does not prove" panel on `/`. A valid proof of a
   falsely committed value is a real limitation and the site says so on purpose.
 - Section 6 on `/` states precisely which parts are ours and which two ODATANO

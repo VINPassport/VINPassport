@@ -25,7 +25,7 @@ Cardano twin is a plausible *later* addition — the two share a frozen core so 
 is a known path — but it is not in scope and must not dilute Phase 0.
 
 ### D3 — Framed as Regulation (EU) 2026/1738 compliance infrastructure · 2026-08-21
-The Digital Circularity Vehicle Passport (Article 46 of
+The Digital Circularity Vehicle Passport (Article 13 of
 **[Regulation (EU) 2026/1738](https://eur-lex.europa.eu/eli/reg/2026/1738/oj)**) is mandatory from
 1 Sep 2032; the regulation entered into force 13 Aug 2026 and applies from 1 Sep 2028. Full
 citations and primary sources: [REGULATION.md](REGULATION.md).
