@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>VINPassport Wave 1 Deck</title>
+<link rel="icon" href="../favicon.ico" sizes="32x32">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
 <meta name="description" content="VINPassport slide deck: a Digital Circularity Vehicle Passport on Midnight. Arrow keys to navigate; print to PDF.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap">
@@ -315,7 +319,7 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
       <h3>The numbers</h3>
       <p><span class="big-num">67</span> contract tests against the <strong>compiled circuits</strong>,
       same assertions that reject a transaction on chain</p>
-      <p><span class="big-num">+16</span> app tests · <span class="big-num">+24</span> SDK assumption assertions</p>
+      <p><span class="big-num">+50</span> app tests · <span class="big-num">+24</span> SDK assumption assertions</p>
       <ul>
         <li><strong>Mutation-checked</strong>: delete an integrity rule → exactly that rule's tests fail, nothing else</li>
         <li>Committed build reproduces <strong>byte-identically</strong> from source</li>
@@ -370,17 +374,19 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
     <div class="box">
       <h3>The model</h3>
       <ul>
-        <li><strong>Who pays:</strong> the independent used-car dealer: our beachhead. A clean-history proof is a sales tool they cannot fake today</li>
-        <li><strong>What they buy:</strong> a subscription plus per-passport issuance; services and proofs metered within plans</li>
+        <li><strong>Who pays first:</strong> the manufacturer, who must issue a passport anyway: the question is whose. They are not buying the passport, which must be free, but the ability to meet the obligation without publishing what they would rather not</li>
+        <li><strong>Then it travels:</strong> franchised dealerships maintain it under the same agreement. Second-hand dealers extend and present it at resale, where a clean-history proof is a sales tool they cannot fake today</li>
         <li><strong>What is free:</strong> verification, always. Every scanned QR is a buyer learning to demand proof: the adoption engine</li>
         <li><strong>Every payment is fiat.</strong> No customer ever holds crypto, sees a wallet, or pays a gas fee: fees are sponsored from a VINPassport treasury</li>
       </ul>
     </div>
     <div class="box">
       <h3>Why the demand is not speculative</h3>
-      <p>From <strong>September 2032 the passport is mandatory</strong> for every vehicle placed
-      on the EU market: and the existing fleet gets passports retrofitted. The regulation
-      creates the obligation; VINPassport makes compliance private.</p>
+      <p>The near-term date is not 2032. From <strong>29 November 2026</strong> every new
+      M1/N1 type needs an Environmental Vehicle Passport (Euro 7); the battery passport
+      follows in February 2027, the full passport in September 2032. The cascade starts
+      where the obligation starts: second-hand dealers are stage 3, inheriting passports
+      rather than adopting a new system.</p>
       <h3 style="margin-top:6px">Honest about pricing</h3>
       <p>Price points wait on <strong>measured unit cost</strong> (DUST per anchor and per proof
       a named Wave 2 task). The structure is already built: billing gates the action, not the
@@ -412,7 +418,7 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
   <h2>Scan a car. Get a verdict. Trust the math, not the seller.</h2>
   <div class="term" style="max-width:640px">
     <div>git clone https://github.com/VINPassport/VINPassport</div>
-    <div>npm install &amp;&amp; npm test&nbsp;&nbsp;<span class="dim"># 67 + 16 + 24, all green</span></div>
+    <div>npm install &amp;&amp; npm test&nbsp;&nbsp;<span class="dim"># 67 + 50 + 24, all green</span></div>
     <div>npm run app&nbsp;&nbsp;<span class="dim"># the whole product on localhost</span></div>
   </div>
   <p style="margin-top:8px">
