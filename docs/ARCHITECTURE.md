@@ -141,13 +141,21 @@ Three honest responses, and we intend all three:
    service book, even without hardware. Fraud becomes traceable rather than deniable.
 2. **Prove consistency, not truth.** Monotonicity across versions catches the common rollback case
    without any trust assumption, because it compares the producer's own prior commitments.
-3. **Close the gap with hardware — Phase 2.** Sensor-signed readings from a tamper-resistant element
-   at source are the only thing that binds a number to physical reality. This is where VINPassport's
-   original three-chip work earns its place, and it is precisely the gap NIGHTGATE documents and
-   does not attempt to fill.
+3. **Close the gap at the writer, not the sensor.** A proof inherits the trust of whoever wrote the
+   value, so the gap closes when the value is committed by a party already accountable for it —
+   registries, testers, insurers writing under an accountable identity, with marking that lets a
+   verifier tell such a write from a self-declared one. That is a data-relationship problem before
+   it is a cryptographic one, and it is precisely the gap NIGHTGATE documents and does not attempt
+   to fill. **Attestation at the sensor would also close it, but on-device hardware is out of scope
+   with no timeline and must not be presented as a dated phase** — see the scope notice below.
 
-Nothing in Phase 0 or Phase 1 should be described as preventing fraud. It makes fraud
-attributable and rollbacks detectable. That is a real claim; the stronger one would be false.
+Nothing shipped should be described as preventing fraud. It makes fraud attributable and rollbacks
+detectable. That is a real claim; the stronger one would be false.
+
+> **Scope notice, 9 September 2026.** On-device chip proving is **out of scope with no timeline**.
+> It is not a phase, not a milestone, and must not appear as one — here, in the roadmap, in the
+> deck, or in a conversation. This supersedes the hardware half of **D6** and the hardware items in
+> `ROADMAP.md`, both of which predate it and have not yet been formally reversed.
 
 ## Hard constraints
 

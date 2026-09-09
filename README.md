@@ -326,9 +326,11 @@ It proves a reading is **the one that was committed**, and that it satisfies a b
 prove the reading matches physical reality. A producer who commits a false value produces a
 cryptographically valid proof of a false fact.
 
-Closing that gap needs hardware attestation at the source, which is deliberately scoped as **Phase
-2** rather than pretended away. This is the honest limit of the current design and it is stated in
-full in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+Closing that gap means the value is written by a party already accountable for it — the open
+problem is **provenance of the writer**, not tamper resistance. That is a data-relationship
+problem before it is a cryptographic one, and nothing in this build solves it. **No date is
+claimed for it.** The limit is stated in full in
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Where this actually stands
 
