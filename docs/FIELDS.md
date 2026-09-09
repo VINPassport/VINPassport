@@ -52,10 +52,10 @@ the exact string. Public label is `fieldKeyHex(name)` = blake2b-256 of the field
 | 5 | `firstRegistrationDate` | Identity | Epoch days |
 | 6 | `lastInspectionDate` | Identity | Epoch days |
 | 7 | `co2FootprintKgCO2e` | Art 13 | Environmental declaration |
-| 8 | `recycledPlasticPct` | Art 29 | Recycled-content target |
-| 9 | `recycledPlasticFromELVPct` | Art 29 | Share sourced from end-of-life vehicles |
-| 10 | `recycledSteelPct` | Art 29 | Recycled-content target |
-| 11 | `recycledAluminiumPct` | Art 29 | Recycled-content target |
+| 8 | `recycledPlasticPct` | Art 6(1) / 10 | 15 % from 2032, 25 % from 2036; declared under Art. 10 |
+| 9 | `recycledPlasticFromELVPct` | Art 6(2) | At least 20 % of the Art. 6(1) target, from end-of-life vehicles |
+| 10 | `recycledSteelPct` | Recital 33 | **No target yet** — delegated act empowered, slot held ready |
+| 11 | `recycledAluminiumPct` | Recital 34 | **No target yet** — delegated act empowered, slot held ready |
 | 12 | `criticalRawMaterialPct` | Art 13 | CRM declaration |
 | 13 | `reusabilityPct` | 3R | Inherited from Directive 2005/64/EC |
 | 14 | `recyclabilityPct` | 3R | Inherited from Directive 2005/64/EC |

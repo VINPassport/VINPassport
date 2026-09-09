@@ -32,7 +32,18 @@ This is the legal basis for VINPassport. It establishes the **Digital Circularit
 |---|---|---|
 | **Article 13** | Digital Circularity Vehicle Passport | **The legal basis.** The passport itself — what VINPassport implements. Cite 13(1), (2), (4), (5), (6) |
 | **Recital 46** | Why a passport should exist; the data-carrier framing | Interpretive support **only**. Recitals say *should*, not *shall*, and create no obligations — never cite it as an article |
-| **Article 29** | Recycled plastic content | Progressively rising targets, including a share sourced from end-of-life vehicles — drives field slots 5–7 |
+| **Article 6** | Minimum recycled content in vehicles | **Plastic only.** 15 % recycled plastic by weight for types approved from 1 Sept 2032, 25 % from 1 Sept 2036 (6(1)); at least 20 % of that target from plastics recycled from end-of-life vehicles (6(2)). Drives field slots 8–9 |
+| **Article 10** | Declaration on recycled content present in vehicles | The declaration itself, and one of the four items Art. 13(2) requires the passport to carry |
+| **Article 11** | Information on removal and replacement of parts, components and materials | Annex VI payload; the first item listed in Art. 13(2) |
+
+**Steel and aluminium are not yet mandated.** Recitals (33) and (34) empower the Commission to set
+minimum recycled shares for steel and for aluminium by delegated act. **No target exists today.**
+Slots 10 and 11 are held ready for those acts and must not be described as current obligations.
+
+**Article 29 is *Mandatory removal of parts and components for reuse, remanufacturing,
+refurbishment*** — nothing to do with recycled content. It was cited here for recycled plastic
+until 9 September 2026. The Article 46 warning below records an identical kind of slip: a real
+article, genuinely relevant to the project, attached to the wrong obligation.
 
 **Not the passport — a common and invisible mistake:**
 
