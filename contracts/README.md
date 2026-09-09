@@ -51,5 +51,6 @@ It proves a reading is **the one that was committed** and that it satisfies a bo
 prove the reading matches physical reality — a producer who commits a false value produces a
 cryptographically valid proof of a false fact.
 
-That gap is closed by hardware attestation at source, which is Phase 2. See
-[`../docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md).
+That gap closes at the writer rather than the sensor — a value committed by a party already
+accountable for it, marked so a verifier can tell such a write from a self-declared one. No hardware
+is scheduled. See [`../docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md).

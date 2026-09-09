@@ -230,7 +230,8 @@ taken up. This table previously listed all of these as the stack; they were the 
 **On UI:** NIGHTPASS uses SAPUI5 for operator apps and plain HTML for public ones. We use plain HTML
 throughout, including the console. The product constraint is that this be simple enough for anyone,
 and a framework that reads as enterprise software works against that — including for the small
-independent dealer who is our beachhead.
+independent dealer, who since [R6](DECISIONS.md#reversed) is stage three of the go-to-market cascade
+rather than the beachhead, and is still someone the console has to suit.
 
 **On version pinning:** ODATANO uses caret ranges on their own packages. We pin exact. Different risk
 position when you are not the author. `@midnight-ntwrk/compact-runtime` is pinned to **0.16.0**

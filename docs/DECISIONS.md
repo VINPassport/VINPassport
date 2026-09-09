@@ -58,20 +58,25 @@ No client of any kind is asked to hold NIGHT, DUST, or a wallet.
 Previously a hand-wave; NIGHTGATE's **fee sponsoring** makes it a real mechanism — a caller with no
 funds has their transaction paid for without the sponsor ever seeing a key, witness or preimage.
 
-### D6 — Chip-free through Phase 1; hardware is Phase 2 · 2026-08-21
-Phases 0 and 1 are pure document anchoring with no hardware root of trust.
+### D6 — Chip-free; no hardware root of trust · 2026-08-21, amended 2026-09-09
+Document anchoring only. No secure element, no sensor signature, no on-device proving.
+
+> **Amended 2026-09-09 by [R5](#reversed): the "hardware is Phase 2" half no longer holds.** This
+> decision originally read *"Chip-free through Phase 1; hardware is Phase 2"* and closed with
+> *"the chips return in Phase 2 to close the trust gap."* They do not return on any schedule. What
+> survives is the whole of the decision now rather than a phase of it: chip-free, full stop.
 
 **Why:** it removes the OEM dependency that previously blocked everything, making the product
-demonstrable now instead of after a manufacturer partnership. The chips return in Phase 2 to close
-the trust gap in [ARCHITECTURE.md](ARCHITECTURE.md) — which is a genuine differentiator, not
-decoration, because NIGHTGATE explicitly does not attempt to fill it.
+demonstrable now instead of after a manufacturer partnership.
 
-### D7 — Independent dealers are the beachhead, not OEMs · 2026-06-04, reaffirmed
-Go-to-market leads with independent used-car dealers.
+**And the trust gap it left open closes elsewhere.** A proof inherits the trust of whoever wrote the
+value, so the gap closes at the **writer** — an accountable source committing the value — not at a
+sensor. That is the line in [ARCHITECTURE.md](ARCHITECTURE.md), and it is still the thing NIGHTGATE
+documents and does not attempt to fill.
 
-**Why:** external review found OEMs are hard to reach, slow, and not the party feeling the pain.
-Dealers are reachable, carry liability today, and 2026/1738 pushes ELV and circularity data through
-them well before the 2032 passport deadline.
+### D7 — Independent dealers are the beachhead · 2026-06-04 — **REVERSED**, see [R6](#reversed)
+Kept as a numbered stub so D7 is not reused. The decision, its reasoning and its reversal are
+recorded in full at [R6](#reversed).
 
 ### D8 — One repository · 2026-08-21
 A single `vinpassport` repo, not the eight-repo split of the previous build.
@@ -429,7 +434,8 @@ Previously "Ed25519 is correct for SE chips." **No longer safe.**
 Compact has no Ed25519 verification in any version — confirmed at source across six release tags.
 Nor is there any in-circuit signature verification at all on mainnet (0.31.x / ledger 8).
 `jubjubSchnorrVerify` exists only on the ledger-9 RC line, undocumented and publicly deployed
-nowhere. **Spec Phase 2 hardware curve-agile**; Schnorr-over-Jubjub is the likely landing point.
+nowhere. This now stands as a constraint on Compact itself rather than a note about a future phase:
+[R5](#reversed) removed the hardware work, so there is no signature spec left to write.
 
 ### R2 — Seven-portal architecture · REVERSED 2026-08-21
 Superseded by D8.
@@ -439,6 +445,58 @@ Superseded by D7.
 
 ### R4 — Patent as IP moat · REVERSED 2026-08-21
 Superseded by D4.
+
+### R5 — Hardware as Phase 2 · REVERSED 2026-09-09
+Previously the hardware half of [D6](#settled): *"The chips return in Phase 2 to close the trust
+gap."* On-device chip proving is **out of scope with no timeline** — not a phase, not a milestone,
+and it must not appear as one in the roadmap, the deck, the README, or a conversation.
+
+**Why:** it scheduled work the project has never scoped, sized or costed, and a dated phase reads as
+a commitment. Nothing about the hardware was ever wrong; what was wrong was putting a number on it.
+
+**What replaces it:** the trust gap closes at the **writer**, not the sensor. A value committed by a
+party already accountable for it — a registry, a tester, an insurer, writing under an accountable
+identity — with marking that lets a verifier tell such a write from a self-declared one. That is a
+data-relationship problem before it is a cryptographic one. See the trust-gap section and the scope
+notice in [ARCHITECTURE.md](ARCHITECTURE.md).
+
+**Not reversed:** chip-free with no hardware root of trust, which is now the whole of
+[D6](#settled). Sensor attestation stays true as a statement about what *would* also close the gap;
+it is not a plan, and it does not get a date.
+
+**Consequence:** the Phase 2 section of [ROADMAP.md](ROADMAP.md) is rewritten rather than deferred.
+Its simulated secure element, curve-agile signature spec and ledger-9 in-circuit verification design
+are removed outright.
+
+### R6 — Independent dealers as the beachhead · REVERSED 2026-09-08
+Previously [D7](#settled), taken 2026-06-04 on external ICP review. Superseded by the four-stage
+regulatory cascade: **manufacturers first**, then manufacturer dealerships, then the second-hand
+trade, then vehicle users.
+
+**Why:** D7's own reasoning was that 2026/1738 pushes ELV and circularity data through dealers
+"well before the 2032 passport deadline". That is still true, but it is not the *first* binding
+date, and the first binding date lands on someone else. Euro 7
+([Regulation (EU) 2024/1257](https://eur-lex.europa.eu/eli/reg/2024/1257/oj)) requires an
+Environmental Vehicle Passport with every new M1/N1 type from **29 November 2026**, and that
+obligation is the manufacturer's. The party facing the earliest deadline leads.
+
+**Citation status, and it is not clean.** The regulation and the date are recorded here; the
+*article* within Euro 7 is not, because it has never been read against the Official Journal text the
+way every 2026/1738 citation now has been. This project has twice shipped a wrong article number,
+both times plausible, both times caught only by reading the primary source — see the *"Not the
+passport"* warning in [REGULATION.md](REGULATION.md). Euro 7 has **no entry in REGULATION.md at
+all**, which by this project's own rule makes the cascade's founding date an open question rather
+than a settled citation. Closing that is the next regulatory task, and it is a real gap in this
+reversal, not a formality.
+
+**Relationship to [R3](#reversed):** R3 reversed OEM-first *in favour of* D7, so this partially
+reinstates a direction R3 rejected. That is not a circle, and the difference matters. R3's objection
+was that OEMs are hard to reach, slow, and not the party feeling the pain — all true of a
+product-led pitch. Regulation supplies what was missing: a dated obligation a manufacturer cannot
+decline. This is regulation-led, and it does not reinstate the OEM *pitch* R3 threw out.
+
+**Dealers are not abandoned.** They move from stage one to stage two and three of the cascade, and
+D7's reasoning about their liability and reachability holds there unchanged.
 
 ---
 

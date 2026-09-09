@@ -94,25 +94,34 @@ grant can elevate a viewer's tier on-chain.
 - [ ] Remaining predicates: accident count, recycled content, battery health
 - [ ] Auth strategy and HTTP security middleware (NIGHTGATE provides neither)
 
-## Phase 2 — Closing the trust gap
+## Phase 2 — Provenance of the writer
 
-**Done when:** a sensor-signed reading can be distinguished from a self-declared one, and the
-difference is visible to a verifier.
+**Done when:** a reading written by an accountable source can be distinguished from a self-declared
+one, and the difference is visible to a verifier.
 
-- [ ] Simulated secure element producing signed readings
-- [ ] Provenance marking — self-declared vs sensor-attested
-- [ ] Curve-agile signature spec (**not** Ed25519 — see [R1](DECISIONS.md#reversed))
-- [ ] In-circuit verification design against ledger 9, documented and ready rather than deployed
+> **Rewritten 2026-09-09 by [R5](DECISIONS.md#reversed).** This section previously scheduled a
+> simulated secure element, a curve-agile hardware signature spec, and an in-circuit verification
+> design against ledger 9. On-device chip proving is out of scope with no timeline, so those items
+> are removed rather than deferred. What remains is the half that was never about hardware.
 
-This is the differentiator. It is deliberately last because Phases 0 and 1 must stand alone first —
-and because in-circuit signature verification is not available on any public network today.
+- [ ] Writer identity in-circuit — derived from a witness secret and compared to pinned ledger
+      state, never `ownPublicKey()`. Shares its mechanism with [D23](DECISIONS.md#settled) item 1
+- [ ] Provenance marking — an authoritative-source write distinguishable from a self-declared one,
+      and rendered as such on the verification surface rather than left in the data
+- [ ] One authoritative source actually writing — a registry, a tester or an insurer, under an
+      identity a verifier can hold accountable
+
+This is the differentiator, and it is deliberately last because Phases 0 and 1 must stand alone
+first. It is a data-relationship problem before it is a cryptographic one: the hard part is finding
+a source willing to write, not a circuit that checks a signature.
 
 ## Phase 3 — Interoperability
 
 - [ ] Battery passport join via slots 17 and 29 — the regulation's interoperability clause, working
 - [ ] NIGHTPASS composition demo
 - [ ] EU DPP Registry enrolment path
-- [ ] Dealer workflow — the [D7](DECISIONS.md#settled) beachhead
+- [ ] Dealer workflow — manufacturer dealerships and the second-hand trade, stages two and three
+      of the cascade ([R6](DECISIONS.md#reversed))
 
 ---
 
@@ -124,6 +133,7 @@ public repositories, not from running them. Phase 0's first task is confirming t
 **One predicate working beats six wired up.** A single end-to-end proof exercises canonicalisation,
 anchoring, proving, submission and verification. Breadth without that is scaffolding.
 
-**Do not claim fraud prevention before Phase 2.** Phases 0–1 make fraud *attributable* and rollbacks
-*detectable*. That is a real and defensible claim. Prevention is not, and overclaiming to a judge or
-a partner is how credibility is lost.
+**Do not claim fraud prevention.** Not in Phase 0, not in Phase 1, and not as something a later
+phase delivers — no phase on this roadmap prevents fraud. What they do is make it *attributable* and
+make rollbacks *detectable*. That is a real and defensible claim. Prevention is not, and overclaiming
+to a judge or a partner is how credibility is lost.

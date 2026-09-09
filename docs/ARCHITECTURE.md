@@ -154,14 +154,15 @@ detectable. That is a real claim; the stronger one would be false.
 
 > **Scope notice, 9 September 2026.** On-device chip proving is **out of scope with no timeline**.
 > It is not a phase, not a milestone, and must not appear as one — here, in the roadmap, in the
-> deck, or in a conversation. This supersedes the hardware half of **D6** and the hardware items in
-> `ROADMAP.md`, both of which predate it and have not yet been formally reversed.
+> deck, or in a conversation. Recorded formally as [R5](DECISIONS.md#reversed) on 9 September 2026,
+> which amends the hardware half of **D6** and rewrites the Phase 2 section of `ROADMAP.md`.
+> Chip-free with no hardware root of trust — the rest of D6 — stands.
 
 ## Hard constraints
 
 | Constraint | Consequence |
 |---|---|
-| **No in-circuit signature verification on mainnet.** Compact 0.31.x / ledger 8 has none. `jubjubSchnorrVerify` exists only on the ledger-9 RC line (0.33+), undocumented and deployed nowhere public. | Phase 2 sensor signatures cannot be verified in-circuit today. Spec the hardware **curve-agile** — Ed25519 is *not* a safe default; Schnorr-over-Jubjub is the likely landing point. |
+| **No in-circuit signature verification on mainnet.** Compact 0.31.x / ledger 8 has none. `jubjubSchnorrVerify` exists only on the ledger-9 RC line (0.33+), undocumented and deployed nowhere public. | No signature of any kind can be verified in-circuit on a public network today, so nothing in the design may depend on one. This is a constraint on Compact, not a scheduling note: [R5](DECISIONS.md#reversed) removed the hardware work, so there is no signature spec left to write. |
 | **NIGHTGATE hard-gates mainnet off** (`allowMainnetSubmission: false`). | Preprod is the target. Plan no mainnet demo. |
 | **32 provable slots** via `attestation-vault-32` (NIGHTGATE 0.19.0). Width is effectively permanent — cross-root proofs relate same-width documents only. | 26 in use, 6 reserved. See [FIELDS.md](FIELDS.md). No longer the binding constraint, but the width choice is one-way. |
 | **Sponsor throughput scales with wallet count**, not balance — one dust spend in flight per wallet. | Treasury is a pool. See [BUILD-SCOPE.md](BUILD-SCOPE.md). |
