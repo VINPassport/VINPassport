@@ -4,6 +4,7 @@
   <p>Prove what a vehicle is. Reveal only what the asker is entitled to see.</p>
   <p>
     <a href="https://passport.vin/"><b>Website (Live Demo)</b></a> ·
+    <a href="https://passport.vin/#video"><b>Explainer video</b></a> ·
     <a href="https://passport.vin/deck/"><b>Slide deck</b></a>
   </p>
 </div>
@@ -25,7 +26,8 @@
 - [The problem](#the-problem) · [What VINPassport does](#what-vinpassport-does)
 - [Quick start](#quick-start) · [Evaluating this repository](#evaluating-this-repository)
 - [The contract](#the-contract) · [How privacy is achieved](#how-privacy-is-achieved)
-- [Where this actually stands](#where-this-actually-stands) · [Repository map](#repository-map)
+- [Built during Wave 1](#built-during-wave-1) · [Where this actually stands](#where-this-actually-stands)
+- [Repository map](#repository-map)
 - [Built on](#built-on) · [Documentation](#documentation)
 
 ## The problem
@@ -332,6 +334,26 @@ problem before it is a cryptographic one, and nothing in this build solves it. *
 claimed for it.** The limit is stated in full in
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
+## Built during Wave 1
+
+Wave 1 ran 27 August - 16 September 2026. Everything below was written inside that window: this
+repository begins with no contract at all.
+
+| What was built | Where to look |
+|---|---|
+| **The contract** - five circuits, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
+| **Deployed to Midnight preprod**, 28 August, built and signed locally | [`deploy/preprod.json`](deploy/preprod.json) |
+| **141 tests** - 67 contract, 50 application, 24 SDK assumption assertions; both integrity rules mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
+| **Three surfaces** - verification, intake console, proof explorer - all running the compiled circuits, not a mock | [passport.vin](https://passport.vin/) |
+| **On-chain runs from the browser, self-funded**, after a hosted sponsor turned out to be a single point of failure in a demo a judge runs unattended | [D24](docs/DECISIONS.md#settled) |
+| **The regulatory basis read from the Official Journal** rather than secondary analysis - which caught two wrong article citations that had survived months of work | [REGULATION.md](docs/REGULATION.md) |
+| **A decision log with six reversals** of our own earlier calls, kept so they are not reinstated by accident | [DECISIONS.md](docs/DECISIONS.md) |
+
+**The hardest bug did not throw.** A single call was proven with witnesses as they stood, and an
+unarmed holder reads as value zero with a zero salt - so it proved, landed on the public chain, and
+wrote a commitment nobody can ever open. The engine now arms the first call itself and the holder
+refuses to be read until armed, so a missed arming is a loud build error instead of a quiet zero.
+
 ## Where this actually stands
 
 | Component | Status |
@@ -395,7 +417,8 @@ that implements this panel end-to-end on Midnight preprod.
 
 | Document | What it covers |
 |---|---|
-| [DEMO.md](docs/DEMO.md) | The ninety-second walkthrough: doubles as the video script |
+| [Explainer video](https://passport.vin/#video) | Watch it first: the shortest route to what this does, embedded on the home page |
+| [DEMO.md](docs/DEMO.md) | The ninety-second walkthrough: the script behind the video, and a guided run you can do yourself |
 | [deck/](deck/index.html) | The Wave 1 slide deck: [present it live](https://passport.vin/deck/), arrow keys to advance, Ctrl+P for the PDF |
 | [REGULATION.md](docs/REGULATION.md) | Primary legal sources, with direct EUR-Lex links |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, the trust model, and its honest limits |
