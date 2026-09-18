@@ -1,12 +1,98 @@
 # Roadmap
 
-Phases are ordered by dependency, not by date. Dates attach once
-[Q3](DECISIONS.md#open) — which Buildathon wave to target — is settled.
+Two orderings, both binding.
 
-For reference, the [Midnight Buildathon](https://midnight.network/hackathon/buildathon) runs three
-separately-judged waves: Wave 1 builds 27 Aug – 16 Sep, Wave 2 to 17 Oct, Wave 3 to 16 Nov. The
-format explicitly rewards iteration over one-shot polish, so an existing project is not penalised for
-entering mid-stream.
+**Phases** order the work by dependency — what has to exist before what. They are the product, and
+they do not care about deadlines.
+
+**The [wave plan](#wave-plan)** orders the same work by what the Buildathon rubric pays for. Inside
+a wave window it wins, because a phase that is half finished on the deadline scores as half
+finished. Between windows the phases win.
+
+[Q3](DECISIONS.md#resolved) settled 2026-09-18: enter every wave, starting at Wave 1. The
+[Midnight Buildathon](https://midnight.network/hackathon/buildathon) runs three separately judged
+waves — **Wave 1** built 27 Aug – 16 Sep (submitted 9 Sep), **Wave 2** 27 Sep – 17 Oct, **Wave 3**
+27 Oct – 16 Nov. Each is scored fresh on progress made inside its own window, so a weak wave is not
+a handicap and a strong one is not credit carried forward.
+
+---
+
+## Wave plan
+
+### What the rubric pays for
+
+| Weight | Criterion | What moves it here |
+|---:|---|---|
+| **40%** | Engineering & implementation | Circuits that close a named weakness; a contract deployed to a network a judge can query; private state handled properly |
+| **15%** | Quality assurance & reliability | Tests against compiled circuits, not mocks. Every guard has a test that asserts its refusal. Mutation coverage stated as *N of N* |
+| **15%** | Product & vision | A realistic scope and roadmap, and a privacy claim the contract actually enforces |
+| **15%** | User experience & design | A stranger can reach a verdict from the live site without help |
+| **10%** | Communication | Deck and video that describe the deployed contract, not an earlier plan |
+| **5%** | Business development | Named buyer, named adoption path |
+
+Gate, checked before any of the above is scored: a Compact contract that compiles, the
+`midnightntwrk` GitHub label, a public repo under Apache-2.0, a slide deck, a demo video.
+
+**The rule this plan exists to enforce:** work the 55% first and the 10% last. Wave 1 did the
+reverse in its final week. Readiness is not "is the gate met" — the gate was met in Wave 1 — it is
+"where is the next point, and which band is it in."
+
+### Wave 1 — submitted, judged to 26 Sep
+
+Shipped: 5 circuits, preprod deploy `72e52488…d553a`, 141 tests, three live surfaces, the
+[D23](DECISIONS.md#settled) limits published before a judge could find them. D23 is the part to
+keep doing — stating your own gaps is what separates the strongest submissions in this field from
+the rest.
+
+What Wave 2 adds is listed below. The reasoning about what Wave 1 left open is tracked locally in
+`SECURITY-NOTES.local.md`, not here — in this repo we state the rule, not the gap it guards.
+[D23](DECISIONS.md#settled) remains the deliberate, curated statement of the contract's limits.
+
+### 18 – 26 Sep — between waves
+
+Wave 2 requires functionality *newly developed or materially extended inside its window*, so
+contract changes wait for the 27th. This week takes the work that is not contract functionality.
+
+- [x] **Toolchain drift closed.** The tree had artifacts built at 0.34.0 / language 0.26.0 /
+      runtime 0.19.0 while the committed set, the deployed contract and the Wave 1 text all say
+      0.31.1 / 0.23.0 / 0.16.0 — and ledger 9 output will not deploy to preprod, which runs
+      ledger 8. Restored, recompiled at 0.31.1, and the output is identical to the committed
+      artifacts including all ten `zkir` files. `.gitattributes` now pins the generated output to
+      LF so a Windows checkout and a Linux checkout hold the same bytes
+- [ ] **Measure `proveFieldAtMost` / `proveFieldAtLeast`.** The 8 Sep blocker was that they assert
+      `fieldCommitment.member(slot)` and so need an initialised field on-chain; five are now wired,
+      so it is unblocked. These are the circuits a verifier actually waits on
+- [ ] **Close the DUST number** by decoding `DustSpendProcessed` rather than diffing balances —
+      the reason the balance diff gives a 2.4x spread is written up under Phase 0 below
+- [ ] **Build the mutation harness** — a script that reverts each guard in turn and records which
+      tests die, so Wave 2 can report *N of N* instead of a worked example on two
+
+### Wave 2 — 27 Sep – 17 Oct
+
+Engineering first, communication last.
+
+| Days | Band | Work |
+|---|---|---|
+| 27 Sep – 8 Oct | **Eng 40%** | Registrar identity derived in-circuit from a witness secret, never `ownPublicKey()`, with an allowlist pinned at deploy ([D23](DECISIONS.md#settled) item 1, shares its mechanism with Phase 2) · bind field commitments to the content root · widen from 5 wired fields toward 16 · redeploy to preprod, keeping the Wave 1 address quotable so the delta is demonstrable |
+| 6 – 13 Oct | **QA 15%** | Run the mutation harness across every guard and publish the kill table · every new guard gets a test that asserts the circuit refuses, with the refusal checked by message so it cannot pass by accident |
+| 10 – 15 Oct | **UX 15%** | Submission from the page beyond the current 5-runs-a-day path · the what-the-chain-sees panel |
+| 15 – 17 Oct | **Comms 10%, Product 15%, BD 5%** | Deck rebuilt against the deployed v2 contract rather than the earlier three-chip story · new video · submission text with an explicit *what changed since Wave 1* section, which is a stated requirement |
+
+**On widening the fields.** "One predicate working beats six wired up" (below) was written when
+nothing worked end to end yet, and it was right then. The path now works, so widening is no longer
+scaffolding — it is the difference between a demo and a lifecycle. The principle still holds for
+anything *new*: do not wire a field whose predicate has never run.
+
+### Wave 3 — 27 Oct – 16 Nov
+
+Not planned in detail; it depends on what Wave 2 judging says. The candidates are Phase 1 tiered
+disclosure and the first authoritative writer from Phase 2 — the differentiator, and the one thing
+no other submission in this field has.
+
+### Standing check
+
+Every Friday, score the current state against the six weights above and name where the next point
+is. That scorecard replaces "are we good to submit?" as the pre-deadline check.
 
 ---
 

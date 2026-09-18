@@ -504,12 +504,25 @@ D7's reasoning about their liability and reachability holds there unchanged.
 
 | # | Question | Blocks | Owner |
 |---|---|---|---|
-| Q3 | Which Buildathon wave to target? | Phase 0 sizing | Us |
 | Q4 | Is SAP CAP acceptable as a permanent dependency? | Everything downstream | Us — inherited from D1, worth being deliberate about |
 | Q5 | Proving cost at width 32 versus 16 | Whether D15 holds under real cost | Phase 0 measurement |
 | Q6 | Fiat provider — merchant of record or direct? | Billing build | Deferred to Phase 1, turns on EU VAT |
 
 ### Resolved
+
+**Q3 — "Which Buildathon wave to target?" — all three, entered at Wave 1. Settled 2026-09-18.**
+Worth recording how late this is, because the delay cost something. Wave 1 was submitted on
+9 September and closed on the 16th while Q3 still sat in the Open table. Nothing was blocked by
+that in practice — the work happened anyway — but two things followed from it. [ROADMAP.md](ROADMAP.md)
+opened by saying dates attach once Q3 is settled, so it never took dates. And with no wave
+boundaries in the plan, nothing was ever sequenced against the [judging rubric](ROADMAP.md#wave-plan),
+which weights Engineering and QA at 55% combined. The final eight days of Wave 1 went to
+regulation citations, deck corrections and a README — real work, but almost all of it inside the
+10% Communication band, during the only week left to move the 55%.
+
+The answer now: enter every wave. Each is judged fresh on progress made inside its own window, so
+a weak wave is not a handicap and a strong one is not credit carried forward. Wave 2 runs
+27 September – 17 October, Wave 3 27 October – 16 November. See [the wave plan](ROADMAP.md#wave-plan).
 
 **Q1 — "Will ODATANO consider Merkle depth 5 (32 slots)?" — YES, shipped 2026-08-22.**
 NIGHTGATE 0.19.0 introduced `attestation-vault-32`, and `@odatano/dpp-sdk@0.2.0` exposes
