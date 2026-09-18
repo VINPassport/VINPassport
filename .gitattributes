@@ -1,0 +1,15 @@
+# Compiled Compact output is committed so a judge can reproduce it from source
+# (see .gitignore and docs/ROADMAP.md). The compiler emits LF; core.autocrlf on
+# Windows would otherwise rewrite these on checkout, so a clone made on Windows
+# and a clone made on Linux would not hold the same bytes — and the
+# "recompile and compare" check would fail for reasons that have nothing to do
+# with the contract. Pin them to LF and treat the binary ones as binary.
+contracts/**/managed/**/contract/*.js      text eol=lf
+contracts/**/managed/**/contract/*.js.map  text eol=lf
+contracts/**/managed/**/contract/*.d.ts    text eol=lf
+contracts/**/managed/**/compiler/*.json    text eol=lf
+contracts/**/managed/**/zkir/*.zkir        text eol=lf
+contracts/**/managed/**/zkir/*.bzkir       binary
+
+# The .compact source itself is the input to that check.
+*.compact                                   text eol=lf
