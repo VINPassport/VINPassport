@@ -26,7 +26,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-import { readFileSync, writeFileSync, renameSync, existsSync, unlinkSync } from 'node:fs';
+import { readFileSync, writeFileSync, renameSync, existsSync, unlinkSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { randomBytes, randomUUID } from 'node:crypto';
@@ -1223,6 +1223,36 @@ export async function createRunner({ log = console.log } = {}) {
                 curl: `curl -s ${INDEXER_HTTP} -H 'Content-Type: application/json' -d '{"query":"{ contractAction(address: \\"${contractAddress}\\") { __typename transaction { hash block { height } } } }"}'`
             }
         };
+        /*
+         * Persist the receipt.
+         *
+         * Until now the receipt existed only in memory and was served once from
+         * /api/demo/report. That is fine for a visitor, who downloads it, and
+         * wrong for us: the salts in it are the ONLY way to open the field
+         * commitments this run just wrote. Lose them and the field is on chain
+         * for good with no way to prove anything about it — which is exactly
+         * what happened to all 49 fields written before 2026-09-18, and why
+         * proveFieldAtMost/proveFieldAtLeast could not be measured.
+         *
+         * It holds values and salts, so it goes to ../_local-tracking (outside
+         * the repo, and ignored) and never anywhere git can reach.
+         * scripts/spike-measure-proving.mjs reads the same shape.
+         */
+        try {
+            const dir = join(ROOT, '..', '_local-tracking', 'receipts');
+            mkdirSync(dir, { recursive: true });
+            const stamp = job.receipt.finishedAt.replace(/[:.]/g, '-');
+            const tmp = join(dir, `.${stamp}.${vin}.tmp`);
+            const out = join(dir, `${stamp}.${vin}.json`);
+            writeFileSync(tmp, JSON.stringify(job.receipt, null, 2));
+            renameSync(tmp, out);            // atomic: a half-written receipt is worse than none
+            log(`demo: receipt saved to _local-tracking/receipts/${stamp}.${vin}.json`);
+        } catch (e) {
+            // Never fail a completed run over bookkeeping — the run itself
+            // succeeded and the receipt is still served over the API.
+            log('demo: WARNING could not save receipt:', e?.message ?? e);
+        }
+
         job.status = refused.length ? 'done-with-refusals' : 'done';
         job.touch();
     }
