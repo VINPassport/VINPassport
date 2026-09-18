@@ -199,10 +199,12 @@ hash are committed at [`deploy/preprod.json`](deploy/preprod.json). Ask the publ
 yourself:
 
 ```bash
-curl -s -X POST https://indexer.preprod.midnight.network/api/v4/graphql   -H 'Content-Type: application/json'   -d '{"query":"{ contractAction(address: \"72e524881363db50ff0bcf6c01fd9de1b550902540f9ca10e4b649df992d553a\") { __typename transaction { hash block { height } } } }"}'
+curl -s -X POST https://indexer.preprod.midnight.network/api/v4/graphql   -H 'Content-Type: application/json'   -d '{"query":"{ contractAction(address: \"72e524881363db50ff0bcf6c01fd9de1b550902540f9ca10e4b649df992d553a\", offset: { transactionOffset: { hash: \"af31ba67df440a343479be1d1b8b730464ce381f692e0063b8efafcf2830070f\" } }) { __typename transaction { hash block { height } } } }"}'
 ```
 
-> Returns a `ContractDeploy` whose transaction hash matches the committed record.
+> Returns a `ContractDeploy` whose transaction hash matches the committed record, in block
+> 2297964. The offset pins the query to that deployment; without it the indexer answers with
+> the contract's *most recent* action, which today is a `ContractCall` from demo traffic.
 
 **3. The tests exercise the real circuits.** `test/passport-simulator.mjs` loads the *compiled*
 contract and runs it through `@midnight-ntwrk/compact-runtime` at the pinned matching version
