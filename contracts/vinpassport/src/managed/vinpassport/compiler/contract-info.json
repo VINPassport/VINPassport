@@ -4,6 +4,24 @@
   "runtime-version": "0.16.0",
   "circuits": [
     {
+      "name": "registrarIdOf",
+      "pure": true,
+      "proof": false,
+      "arguments": [
+        {
+          "name": "secret",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
       "name": "registerPassport",
       "pure": false,
       "proof": true,
@@ -17,13 +35,6 @@
         },
         {
           "name": "contentRoot",
-          "type": {
-            "type-name": "Bytes",
-            "length": 32
-          }
-        },
-        {
-          "name": "registrarId",
           "type": {
             "type-name": "Bytes",
             "length": 32
@@ -202,6 +213,15 @@
         "type-name": "Bytes",
         "length": 32
       }
+    },
+    {
+      "name": "registrarSecret",
+      "arguments": [
+      ],
+      "result type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
     }
   ],
   "contracts": [
@@ -329,6 +349,16 @@
       "index": 5,
       "exported": true,
       "storage": "Counter"
+    },
+    {
+      "name": "allowedRegistrars",
+      "index": 6,
+      "exported": true,
+      "storage": "Set",
+      "type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
     }
   ]
 }

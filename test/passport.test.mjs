@@ -17,13 +17,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import { describe, it, expect, beforeEach } from 'vitest';
-import { PassportSimulator, Rule, bytes32, hex, fieldKey } from './passport-simulator.mjs';
+import {
+    PassportSimulator, Rule, bytes32, hex, fieldKey,
+    REGISTRAR_SECRET, REGISTRAR_ID, SECOND_SECRET, SECOND_ID, OUTSIDER_SECRET
+} from './passport-simulator.mjs';
 
 const VIN_A = bytes32(0x11);
 const VIN_B = bytes32(0x22);
 const ROOT = bytes32(0xaa);
 const ROOT_B = bytes32(0xbb);
-const REGISTRAR = bytes32(0x77);
+// What a registrar HOLDS. The id the chain records is derived from it.
+const REGISTRAR = REGISTRAR_SECRET;
 
 // Real field labels — blake2b-256 of the field name, as the SDK derives them.
 const ODO = fieldKey('odometerKm');
@@ -67,7 +71,7 @@ describe('registerPassport', () => {
         const l = sim.registerPassport(VIN_A, ROOT, REGISTRAR);
 
         expect(hex(l.passports.lookup(VIN_A))).toBe(hex(ROOT));
-        expect(hex(l.registrar.lookup(VIN_A))).toBe(hex(REGISTRAR));
+        expect(hex(l.registrar.lookup(VIN_A))).toBe(hex(REGISTRAR_ID));
     });
 
     it('creates no fields — registration and history are separate acts', () => {
@@ -89,6 +93,85 @@ describe('registerPassport', () => {
         try { sim.registerPassport(VIN_A, ROOT_B, REGISTRAR); } catch { /* expected */ }
 
         expect(hex(sim.ledger.passports.lookup(VIN_A))).toBe(hex(ROOT));
+    });
+});
+
+// ---------------------------------------------------------------- authority
+
+describe('registrar authority', () => {
+    it('records the DERIVED identity, never the secret behind it', () => {
+        const l = sim.registerPassport(VIN_A, ROOT, REGISTRAR_SECRET);
+
+        expect(hex(l.registrar.lookup(VIN_A))).toBe(hex(REGISTRAR_ID));
+        // The two must differ, or the test above would prove nothing.
+        expect(hex(REGISTRAR_ID)).not.toBe(hex(REGISTRAR_SECRET));
+    });
+
+    it('refuses a secret that was never put on the deploy list', () => {
+        expect(() => sim.registerPassport(VIN_A, ROOT, OUTSIDER_SECRET))
+            .toThrow(rejects('not an authorised registrar'));
+    });
+
+    it('leaves nothing registered after refusing an outsider', () => {
+        try { sim.registerPassport(VIN_A, ROOT, OUTSIDER_SECRET); } catch { /* expected */ }
+
+        expect(sim.ledger.passports.isEmpty()).toBe(true);
+        expect(sim.ledger.registrar.isEmpty()).toBe(true);
+    });
+
+    it('cannot be widened by any circuit — the deploy list is the whole list', () => {
+        const before = sim.ledger.allowedRegistrars.size();
+        registered();
+
+        expect(sim.ledger.allowedRegistrars.size()).toBe(before);
+        expect(sim.ledger.allowedRegistrars.member(REGISTRAR_ID)).toBe(true);
+        expect(sim.ledger.allowedRegistrars.member(SECOND_ID)).toBe(false);
+    });
+
+    it('stops another listed registrar creating a field on a vehicle it did not register', () => {
+        const two = new PassportSimulator([REGISTRAR_ID, SECOND_ID]);
+        two.registerPassport(VIN_A, ROOT, REGISTRAR_SECRET);
+
+        expect(() => two.initialiseField(VIN_A, ODO, Rule.neverFalls, 10n, S1, SECOND_SECRET))
+            .toThrow(rejects('not the registrar for this vehicle'));
+    });
+
+    it('stops another listed registrar writing history on a vehicle it did not register', () => {
+        const two = new PassportSimulator([REGISTRAR_ID, SECOND_ID]);
+        two.registerPassport(VIN_A, ROOT, REGISTRAR_SECRET);
+        two.initialiseField(VIN_A, ODO, Rule.neverFalls, 10n, S1, REGISTRAR_SECRET);
+
+        expect(() => two.recordField(VIN_A, ODO, 20n, S2, undefined, SECOND_SECRET))
+            .toThrow(rejects('not the registrar for this vehicle'));
+    });
+
+    it('keeps the field untouched after refusing the wrong registrar', () => {
+        const two = new PassportSimulator([REGISTRAR_ID, SECOND_ID]);
+        two.registerPassport(VIN_A, ROOT, REGISTRAR_SECRET);
+        two.initialiseField(VIN_A, ODO, Rule.neverFalls, 10n, S1, REGISTRAR_SECRET);
+        const before = two.ledger.updateCount;
+
+        try { two.recordField(VIN_A, ODO, 20n, S2, undefined, SECOND_SECRET); } catch { /* expected */ }
+
+        expect(two.ledger.updateCount).toBe(before);
+    });
+
+    it('still lets ANYONE prove a claim, which is a separate right from writing', () => {
+        registered();
+
+        // No registrar secret is involved in a proof: holding the opening is
+        // the authorisation, and that is deliberate.
+        const l = sim.actAs(OUTSIDER_SECRET).proveFieldAtMost(VIN_A, ODO, 20n);
+
+        expect(l.claims.size()).toBe(1n);
+    });
+
+    it('never writes a registrar secret to the ledger', () => {
+        registered();
+        const { blobs } = sim.ledgerValues();
+
+        expect(blobs).not.toContain(hex(REGISTRAR_SECRET));
+        expect(blobs).toContain(hex(REGISTRAR_ID));
     });
 });
 
@@ -662,9 +745,14 @@ describe('what the public ledger never learns', () => {
         registered();
 
         const { words, blobs } = sim.ledgerValues();
-        expect(blobs).toContain(hex(ROOT));       // public by design
-        expect(blobs).toContain(hex(REGISTRAR));  // public by design
-        expect(words).toContain(5n);              // the update counter
+        expect(blobs).toContain(hex(ROOT));          // public by design
+        expect(blobs).toContain(hex(REGISTRAR_ID));  // public by design
+        expect(words).toContain(5n);                 // the update counter
+
+        // And the pairing that matters: the id is published, the secret it
+        // came from is not. If the collector ever found the secret, every
+        // privacy assertion in this block would be worthless.
+        expect(blobs).not.toContain(hex(REGISTRAR_SECRET));
     });
 
     it('publishes exactly what a verifier needs and nothing else', () => {
@@ -672,7 +760,7 @@ describe('what the public ledger never learns', () => {
         const l = sim.ledger;
 
         expect(hex(l.passports.lookup(VIN_A))).toBe(hex(ROOT));
-        expect(hex(l.registrar.lookup(VIN_A))).toBe(hex(REGISTRAR));
+        expect(hex(l.registrar.lookup(VIN_A))).toBe(hex(REGISTRAR_ID));
         expect(l.fieldCommitment.size()).toBe(5n);
         expect(l.updateCount).toBe(5n);
         for (const [, commitment] of l.fieldCommitment) {

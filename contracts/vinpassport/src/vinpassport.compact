@@ -88,6 +88,19 @@ export ledger claims: Map<Bytes<32>, Claim>;
 // How many field updates have been recorded across every vehicle
 export ledger updateCount: Counter;
 
+// WHO MAY REGISTER A VEHICLE, fixed at deployment and never afterwards. There
+// is no circuit that adds to this set, so the list a verifier reads is the
+// list the contract was deployed with. Four slots because the panel is a
+// national-registry pilot; unused slots repeat an entry, since a set keeps one
+// copy and no secret hashes to an unused value by accident.
+export ledger allowedRegistrars: Set<Bytes<32>>;
+
+constructor(registrars: Vector<4, Bytes<32>>) {
+  for (const id of registrars) {
+    allowedRegistrars.insert(disclose(id));
+  }
+}
+
 // ---------------------------------------------------------------- private state
 
 // The value being written. Never disclosed.
@@ -102,6 +115,10 @@ witness previousSalt(): Bytes<32>;
 // do not produce the same commitment.
 witness newSalt(): Bytes<32>;
 
+// The registrar's authority secret. Never disclosed: only the identity derived
+// from it reaches the ledger, and only when a vehicle is registered.
+witness registrarSecret(): Bytes<32>;
+
 // ---------------------------------------------------------------- helpers
 
 // Where a vehicle's field lives on the ledger. Domain-separated so a slot key
@@ -109,6 +126,19 @@ witness newSalt(): Bytes<32>;
 circuit slotOf(vinHash: Bytes<32>, fieldKey: Bytes<32>): Bytes<32> {
   return persistentHash<Vector<3, Bytes<32>>>(
     [pad(32, "vinpassport:field:v1"), vinHash, fieldKey]
+  );
+}
+
+// A registrar's public identity, derived from a secret only that registrar
+// holds. Identity is DERIVED, never supplied: a caller proves they hold the
+// secret rather than naming who they are, so the name on a passport is a
+// consequence of the proof instead of an argument to it.
+//
+// Domain-separated on its own tag, so a registrar identity can never collide
+// with a field slot or a claim key.
+export circuit registrarIdOf(secret: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>(
+    [pad(32, "vinpassport:registrar:v1"), secret]
   );
 }
 
@@ -132,12 +162,18 @@ circuit claimKey(
 // 32-field payload held off-chain; only its hash is public.
 export circuit registerPassport(
   vinHash: Bytes<32>,
-  contentRoot: Bytes<32>,
-  registrarId: Bytes<32>
+  contentRoot: Bytes<32>
 ): [] {
   assert(!passports.member(disclose(vinHash)), "passport already registered");
+
+  // Disclosed because the ledger records WHICH authority registered the
+  // vehicle, so a later claim is attributable. The secret behind it is not
+  // disclosed and never leaves the circuit.
+  const id = disclose(registrarIdOf(registrarSecret()));
+  assert(allowedRegistrars.member(id), "not an authorised registrar");
+
   passports.insert(disclose(vinHash), disclose(contentRoot));
-  registrar.insert(disclose(vinHash), disclose(registrarId));
+  registrar.insert(disclose(vinHash), id);
 }
 
 // Create a field and fix its integrity rule for good. The opening value is a
@@ -148,6 +184,14 @@ export circuit initialiseField(
   rule: Rule
 ): [] {
   assert(passports.member(disclose(vinHash)), "unknown passport");
+
+  // Compared, not disclosed. The chain already knows which registrar owns this
+  // vehicle, so re-deriving and comparing proves the caller holds that
+  // registrar's secret while adding nothing new to the public record.
+  assert(
+    registrar.lookup(disclose(vinHash)) == registrarIdOf(registrarSecret()),
+    "not the registrar for this vehicle"
+  );
 
   const slot = slotOf(disclose(vinHash), disclose(fieldKey));
   assert(!fieldCommitment.member(slot), "field already initialised");
@@ -163,6 +207,14 @@ export circuit initialiseField(
 // Neither value is disclosed.
 export circuit recordField(vinHash: Bytes<32>, fieldKey: Bytes<32>): [] {
   assert(passports.member(disclose(vinHash)), "unknown passport");
+
+  // Same gate as creation: history is written by the authority that registered
+  // the vehicle. Proving a claim about a field stays open to anyone who can
+  // open its commitment, which is a separate right and deliberately ungated.
+  assert(
+    registrar.lookup(disclose(vinHash)) == registrarIdOf(registrarSecret()),
+    "not the registrar for this vehicle"
+  );
 
   const slot = slotOf(disclose(vinHash), disclose(fieldKey));
   assert(fieldCommitment.member(slot), "field not initialised");

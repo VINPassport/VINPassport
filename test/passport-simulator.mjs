@@ -34,7 +34,8 @@ import { blake2b } from '@noble/hashes/blake2';
 import {
     Contract,
     Rule,
-    ledger
+    ledger,
+    pureCircuits
 } from '../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
 
 export { Rule };
@@ -88,15 +89,50 @@ export const witnesses = {
     previousSalt: (ctx) => [
         ctx.privateState,
         ctx.privateState.store[ctx.privateState.pending.slot]?.salt ?? bytes32(0)
-    ]
+    ],
+    // Whoever is acting right now. The circuit derives the identity from this
+    // and compares it; nothing here chooses what the chain will believe.
+    registrarSecret: (ctx) => [ctx.privateState, ctx.privateState.actor]
 };
 
+/**
+ * Registrar identities.
+ *
+ * Derived with the contract's OWN `registrarIdOf`, never recomputed here, for
+ * the same reason `ref` is not the contract's slot key: a harness that redid
+ * the hash would be asserting its own arithmetic. A secret is what a registrar
+ * holds; the id is what the chain records.
+ */
+export const REGISTRAR_SECRET = bytes32(0x77);
+export const REGISTRAR_ID = pureCircuits.registrarIdOf(REGISTRAR_SECRET);
+
+/** A second authority, on the deploy list but not the owner of any vehicle. */
+export const SECOND_SECRET = bytes32(0x66);
+export const SECOND_ID = pureCircuits.registrarIdOf(SECOND_SECRET);
+
+/** Holds a secret that was never put on the deploy list. */
+export const OUTSIDER_SECRET = bytes32(0x78);
+
 export class PassportSimulator {
-    constructor() {
+    /**
+     * `allowed` is the deploy-pinned registrar list. It is fixed here exactly
+     * as it is fixed on chain: the constructor is the only writer, so a test
+     * cannot widen it later any more than a caller could.
+     */
+    constructor(allowed = [REGISTRAR_ID]) {
         this.contract = new Contract(witnesses);
-        const initial = { store: {}, pending: { slot: null, value: 0n, salt: bytes32(0) } };
+        const initial = {
+            store: {},
+            pending: { slot: null, value: 0n, salt: bytes32(0) },
+            actor: REGISTRAR_SECRET
+        };
+        // Four slots on chain; a set keeps one copy, so repeating the last
+        // entry fills the vector without widening who is authorised.
+        const slots = [...allowed];
+        while (slots.length < 4) slots.push(slots[slots.length - 1]);
         const init = this.contract.initialState(
-            createConstructorContext(initial, '0'.repeat(64))
+            createConstructorContext(initial, '0'.repeat(64)),
+            slots
         );
         this.ctx = createCircuitContext(
             sampleContractAddress(),
@@ -128,6 +164,12 @@ export class PassportSimulator {
         return `${hex(vin)}/${hex(field)}`;
     }
 
+    /** Act as the holder of `secret` from here on. */
+    actAs(secret) {
+        this.ctx.currentPrivateState.actor = secret;
+        return this;
+    }
+
     stage(vin, field, value, salt) {
         this.ctx.currentPrivateState.pending = { slot: this.ref(vin, field), value, salt };
     }
@@ -136,14 +178,21 @@ export class PassportSimulator {
         this.ctx.currentPrivateState.store[this.ref(vin, field)] = { value, salt };
     }
 
-    registerPassport(vin, contentRoot, registrarId) {
+    /**
+     * Register a vehicle. There is no registrar argument: the circuit derives
+     * the identity from the acting secret, so `secret` chooses who is calling,
+     * not what gets written.
+     */
+    registerPassport(vin, contentRoot, secret = REGISTRAR_SECRET) {
+        this.actAs(secret);
         this.ctx = this.contract.impureCircuits.registerPassport(
-            this.ctx, vin, contentRoot, registrarId
+            this.ctx, vin, contentRoot
         ).context;
         return this.ledger;
     }
 
-    initialiseField(vin, field, rule, value, salt) {
+    initialiseField(vin, field, rule, value, salt, secret) {
+        if (secret) this.actAs(secret);
         this.stage(vin, field, value, salt);
         this.ctx = this.contract.impureCircuits.initialiseField(
             this.ctx, vin, field, rule
@@ -159,7 +208,8 @@ export class PassportSimulator {
      * were, which is how the tests impersonate someone who does not actually
      * know them. Omitted, the simulator opens with what it genuinely recorded.
      */
-    recordField(vin, field, value, salt, openWith) {
+    recordField(vin, field, value, salt, openWith, secret) {
+        if (secret) this.actAs(secret);
         const ref = this.ref(vin, field);
         const known = this.privateState.store[ref];
         const restore = known ? { ...known } : undefined;
@@ -236,6 +286,7 @@ export class PassportSimulator {
         walk(l.fieldRule);
         walk(l.claims);
         walk(l.updateCount);
+        walk(l.allowedRegistrars);
         return { words, blobs };
     }
 }

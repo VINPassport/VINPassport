@@ -192,11 +192,14 @@ cat contracts/vinpassport/src/managed/vinpassport/compiler/contract-info.json
 ```
 
 > `"compiler-version": "0.31.1"`, `"language-version": "0.23.0"`, `"runtime-version": "0.16.0"`,
-> the stable ledger-8 line. Five circuits, all with `"proof": true`.
+> the stable ledger-8 line. Six circuits: five proving ones, plus the pure
+> `registrarIdOf` helper that derives a registrar's public identity from a
+> secret the chain never sees.
 
 **2. The deploy is real.** The contract is live on Midnight preprod; address and transaction
-hash are committed at [`deploy/preprod.json`](deploy/preprod.json). Ask the public indexer
-yourself:
+hash are committed at [`deploy/preprod.json`](deploy/preprod.json). That address holds the **Wave 1
+build**; the registrar authority added in Wave 2 goes on chain at the Wave 2 redeploy, and this
+address stays quotable so the two can be compared. Ask the public indexer yourself:
 
 ```bash
 curl -s -X POST https://indexer.preprod.midnight.network/api/v4/graphql   -H 'Content-Type: application/json'   -d '{"query":"{ contractAction(address: \"72e524881363db50ff0bcf6c01fd9de1b550902540f9ca10e4b649df992d553a\", offset: { transactionOffset: { hash: \"af31ba67df440a343479be1d1b8b730464ce381f692e0063b8efafcf2830070f\" } }) { __typename transaction { hash block { height } } } }"}'
@@ -343,7 +346,7 @@ repository begins with no contract at all.
 
 | What was built | Where to look |
 |---|---|
-| **The contract** - five circuits, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
+| **The contract** - six circuits, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one, and registration restricted to a registrar list pinned at deployment | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
 | **Deployed to Midnight preprod**, 28 August, built and signed locally | [`deploy/preprod.json`](deploy/preprod.json) |
 | **141 tests** - 67 contract, 50 application, 24 SDK assumption assertions; both integrity rules mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
 | **Three surfaces** - verification, intake console, proof explorer - all running the compiled circuits, not a mock | [passport.vin](https://passport.vin/) |
@@ -390,7 +393,7 @@ test/
 | [`@odatano/dpp-sdk`](https://github.com/ODATANO) | Salted-Merkle field panel: key derivation, value scaling, tree construction |
 | [`@odatano/nightgate-tx`](https://github.com/ODATANO/NIGHTGATE) | Local transaction building, batch segment ordering, in-process wasm proving |
 
-**Where the line falls.** VINPassport's Compact contract is its own work: five circuits, its own
+**Where the line falls.** VINPassport's Compact contract is its own work: six circuits, its own
 ledger, its own integrity rules. It is not a fork, and it does not extend NIGHTGATE's
 `attestation-vault`. The 32-slot field panel is ours too: the slot layout is a vehicle-domain
 design, built on `@odatano/dpp-sdk` for key derivation, value scaling and Merkle construction.

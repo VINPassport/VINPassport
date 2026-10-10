@@ -15,13 +15,13 @@ export type Witnesses<PS> = {
   previousValue(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint];
   previousSalt(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, Uint8Array];
   newSalt(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, Uint8Array];
+  registrarSecret(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, Uint8Array];
 }
 
 export type ImpureCircuits<PS> = {
   registerPassport(context: __compactRuntime.CircuitContext<PS>,
                    vinHash_0: Uint8Array,
-                   contentRoot_0: Uint8Array,
-                   registrarId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+                   contentRoot_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   initialiseField(context: __compactRuntime.CircuitContext<PS>,
                   vinHash_0: Uint8Array,
                   fieldKey_0: Uint8Array,
@@ -42,8 +42,7 @@ export type ImpureCircuits<PS> = {
 export type ProvableCircuits<PS> = {
   registerPassport(context: __compactRuntime.CircuitContext<PS>,
                    vinHash_0: Uint8Array,
-                   contentRoot_0: Uint8Array,
-                   registrarId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+                   contentRoot_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   initialiseField(context: __compactRuntime.CircuitContext<PS>,
                   vinHash_0: Uint8Array,
                   fieldKey_0: Uint8Array,
@@ -62,13 +61,15 @@ export type ProvableCircuits<PS> = {
 }
 
 export type PureCircuits = {
+  registrarIdOf(secret_0: Uint8Array): Uint8Array;
 }
 
 export type Circuits<PS> = {
+  registrarIdOf(context: __compactRuntime.CircuitContext<PS>,
+                secret_0: Uint8Array): __compactRuntime.CircuitResults<PS, Uint8Array>;
   registerPassport(context: __compactRuntime.CircuitContext<PS>,
                    vinHash_0: Uint8Array,
-                   contentRoot_0: Uint8Array,
-                   registrarId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+                   contentRoot_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   initialiseField(context: __compactRuntime.CircuitContext<PS>,
                   vinHash_0: Uint8Array,
                   fieldKey_0: Uint8Array,
@@ -123,6 +124,12 @@ export type Ledger = {
     [Symbol.iterator](): Iterator<[Uint8Array, Claim]>
   };
   readonly updateCount: bigint;
+  allowedRegistrars: {
+    isEmpty(): boolean;
+    size(): bigint;
+    member(elem_0: Uint8Array): boolean;
+    [Symbol.iterator](): Iterator<Uint8Array>
+  };
 }
 
 export type ContractReferenceLocations = any;
@@ -135,7 +142,8 @@ export declare class Contract<PS = any, W extends Witnesses<PS> = Witnesses<PS>>
   impureCircuits: ImpureCircuits<PS>;
   provableCircuits: ProvableCircuits<PS>;
   constructor(witnesses: W);
-  initialState(context: __compactRuntime.ConstructorContext<PS>): __compactRuntime.ConstructorResult<PS>;
+  initialState(context: __compactRuntime.ConstructorContext<PS>,
+               registrars_0: Uint8Array[]): __compactRuntime.ConstructorResult<PS>;
 }
 
 export declare function ledger(state: __compactRuntime.StateValue | __compactRuntime.ChargedState): Ledger;
