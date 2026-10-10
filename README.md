@@ -214,17 +214,42 @@ contract and runs it through `@midnight-ntwrk/compact-runtime` at the pinned mat
 (`0.16.0`). An assertion that fires in these tests is the same assertion that would reject the
 transaction on chain.
 
-**4. The tests would catch a regression.** Passing tests prove nothing on their own, so both
-integrity rules were checked by mutation. Deleting either guard from `recordField` and recompiling
-fails exactly the tests that guard exists for, and nothing else:
+**4. The tests would catch a regression.** Passing tests prove only that the tests agree with the
+code. So every guard in the contract is checked by mutation: it is deleted, the contract is
+recompiled, and the suite is run against the compiled circuits to see what notices. A guard that
+can be removed with the suite still green is a guard nothing depends on.
 
-| Line deleted | Tests that fail |
-|---|---|
-| `assert(rule != Rule.neverFalls \|\| current >= prev, "value decreased");` | **7**: odometer rollback, erasing an accident, clearing a write-off, reducing keepers |
-| `assert(rule != Rule.neverRises \|\| current <= prev, "value increased");` | **3**: a declining field climbing back up |
+**17 of 17 guards are load-bearing.** Reproduce it yourself:
 
-You can reproduce either; both are one-line edits to
-[`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact).
+```bash
+node scripts/mutate-guards.mjs --list   # the guards, no changes made
+node scripts/mutate-guards.mjs          # delete each in turn, report the kills
+```
+
+| Guard deleted | Circuit | Tests that fail |
+|---|---|---|
+| `passport already registered` | `registerPassport` | 2 |
+| `not an authorised registrar` | `registerPassport` | 2 |
+| `unknown passport` | `initialiseField` | 1 |
+| `not the registrar for this vehicle` | `initialiseField` | 1 |
+| `field already initialised` | `initialiseField` | 2 |
+| `unknown passport` | `recordField` | 1 |
+| `not the registrar for this vehicle` | `recordField` | 2 |
+| `field not initialised` | `recordField` | 1 |
+| `previous value does not open the stored commitment` | `recordField` | 4 |
+| `value decreased` | `recordField` | **7** |
+| `value increased` | `recordField` | 3 |
+| `field not initialised` | `proveFieldAtMost` | 1 |
+| `value does not open the stored commitment` | `proveFieldAtMost` | 1 |
+| `value above the claimed bound` | `proveFieldAtMost` | **5** |
+| `field not initialised` | `proveFieldAtLeast` | 1 |
+| `value does not open the stored commitment` | `proveFieldAtLeast` | 1 |
+| `value below the claimed bound` | `proveFieldAtLeast` | 2 |
+
+The harness restores the tree afterwards, including the prover keys, so a run leaves the repository
+byte-identical to how it found it. It is also the reason one test exists: the first full sweep found
+a single guard that could be deleted unnoticed, and the mirror test that now covers it was written
+because the harness asked for it rather than because anyone remembered to.
 
 **5. Read the contract itself.** It is commented for a reader who does not know Compact: [`contracts/vinpassport/src/vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact).
 

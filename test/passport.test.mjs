@@ -486,6 +486,16 @@ describe('proveFieldAtLeast', () => {
         expect(() => sim.proveFieldAtLeast(VIN_A, DECLINING, PCT(90))).not.toThrow();
     });
 
+    // The mirror of the same case under proveFieldAtMost. Added because the
+    // mutation harness showed this guard could be deleted with the suite still
+    // green, which made it the one assertion in the contract that nothing
+    // depended on. A floor proved about a field that does not exist would be a
+    // claim about nothing.
+    it('rejects a proof about a field that does not exist', () => {
+        expect(() => sim.proveFieldAtLeast(VIN_A, fieldKey('co2FootprintKgCO2e'), 1n))
+            .toThrow(rejects('field not initialised'));
+    });
+
     it('accepts a value exactly on the floor', () => {
         expect(() => sim.proveFieldAtLeast(VIN_A, DECLINING, PCT(96.4))).not.toThrow();
     });
