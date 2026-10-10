@@ -37,13 +37,16 @@ import { UnshieldedWallet, createKeystore, PublicKey } from '@midnightntwrk/wall
 import { DustWallet } from '@midnightntwrk/wallet-sdk-dust-wallet';
 import { makeWasmProvingService } from '@midnightntwrk/wallet-sdk-capabilities';
 import { ZswapSecretKeys, DustSecretKey, LedgerParameters } from '@midnight-ntwrk/ledger-v8';
+import { preprodEndpoints } from './lib/endpoints.mjs';
+
+const EP = preprodEndpoints();
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const NETWORK_ID = process.env.VINPASSPORT_NETWORK_ID ?? 'preprod';
-const INDEXER_HTTP = process.env.VINPASSPORT_INDEXER_HTTP ?? 'https://indexer.preprod.midnight.network/api/v4/graphql';
-const INDEXER_WS = process.env.VINPASSPORT_INDEXER_WS ?? 'wss://indexer.preprod.midnight.network/api/v4/graphql/ws';
-const NODE_WS = process.env.VINPASSPORT_NODE_WS ?? 'wss://rpc.preprod.midnight.network';
-const NODE_HTTP = process.env.VINPASSPORT_NODE_HTTP ?? 'https://rpc.preprod.midnight.network';
+const INDEXER_HTTP = process.env.VINPASSPORT_INDEXER_HTTP ?? EP.indexerHttpUrl;
+const INDEXER_WS = process.env.VINPASSPORT_INDEXER_WS ?? EP.indexerWsUrl;
+const NODE_WS = process.env.VINPASSPORT_NODE_WS ?? EP.nodeWsUrl;
+const NODE_HTTP = process.env.VINPASSPORT_NODE_HTTP ?? EP.nodeHttpUrl;
 
 const DO_IT = process.argv.includes('--register');
 const log = (...a) => console.log(...a);

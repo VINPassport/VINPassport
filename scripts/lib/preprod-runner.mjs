@@ -51,6 +51,7 @@ import {
 import {
     CLAIM_DEFS, planCalls, makeStage, stepLabel, makeWitnessHolder, randomDemoVin
 } from './preprod-plan.mjs';
+import { preprodEndpoints } from './endpoints.mjs';
 
 export { randomDemoVin };
 
@@ -77,10 +78,15 @@ export function proofReusable(atBuild, now) {
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const NETWORK_ID = 'preprod';
-const NODE_HTTP = 'https://rpc.preprod.midnight.network';
-const NODE_WS = 'wss://rpc.preprod.midnight.network/';
-const INDEXER_HTTP = 'https://indexer.preprod.midnight.network/api/v4/graphql';
-const INDEXER_WS = 'wss://indexer.preprod.midnight.network/api/v4/graphql/ws';
+// Resolved on first use, not at import: this module is imported dynamically
+// by the app server, and a missing Blockfrost project id should fail on the
+// preprod path rather than take down a local run that never touches preprod.
+let _ep = null;
+const EP = () => (_ep ??= preprodEndpoints());
+const NODE_HTTP = () => EP().nodeHttpUrl;
+const NODE_WS = () => EP().nodeWsUrl;
+const INDEXER_HTTP = () => EP().indexerHttpUrl;
+const INDEXER_WS = () => EP().indexerWsUrl;
 const ZK_CONFIG_DIR = join(ROOT, 'contracts', 'vinpassport', 'src', 'managed', 'vinpassport');
 // Time budgets.
 //
@@ -210,8 +216,8 @@ export async function createRunner({ log = console.log } = {}) {
     const configuration = {
         networkId: NETWORK_ID,
         provingServerUrl: new URL('http://127.0.0.1:6300'),
-        relayURL: new URL(NODE_WS),
-        indexerClientConnection: { indexerHttpUrl: INDEXER_HTTP, indexerWsUrl: INDEXER_WS },
+        relayURL: new URL(NODE_WS()),
+        indexerClientConnection: { indexerHttpUrl: INDEXER_HTTP(), indexerWsUrl: INDEXER_WS() },
         txHistoryStorage: new InMemoryTransactionHistoryStorage(WalletEntrySchema, mergeWalletEntries),
         costParameters: { additionalFeeOverhead: 1n, feeBlocksMargin: 5 }
     };
@@ -246,7 +252,7 @@ export async function createRunner({ log = console.log } = {}) {
     const dustStreamTip = () => new Promise((resolve) => {
         let settled = false; let ws;
         const done = (v) => { if (!settled) { settled = true; try { ws.close(); } catch { } resolve(v); } };
-        ws = new WebSocket(INDEXER_WS, 'graphql-transport-ws');
+        ws = new WebSocket(INDEXER_WS(), 'graphql-transport-ws');
         const timer = setTimeout(() => done(null), 10000);
         ws.onopen = () => ws.send(JSON.stringify({ type: 'connection_init' }));
         ws.onmessage = (ev) => {
@@ -509,7 +515,7 @@ export async function createRunner({ log = console.log } = {}) {
 
     // ---- indexer helpers ---------------------------------------------------
     async function latestContractAction() {
-        const r = await fetch(INDEXER_HTTP, {
+        const r = await fetch(INDEXER_HTTP(), {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ query: `{ contractAction(address: "${contractAddress}") { __typename transaction { hash block { height } } } }` })
         }).then((x) => x.json()).catch(() => null);
@@ -557,7 +563,7 @@ export async function createRunner({ log = console.log } = {}) {
      */
     async function findByIdentifiers(ids) {
         for (const id of ids) {
-            const r = await fetch(INDEXER_HTTP, {
+            const r = await fetch(INDEXER_HTTP(), {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     query: `{ transactions(offset: { identifier: "${id}" }) { hash block { height } ` +
@@ -669,7 +675,7 @@ export async function createRunner({ log = console.log } = {}) {
      */
     async function nodeReachable() {
         try {
-            const r = await fetch(NODE_HTTP, {
+            const r = await fetch(NODE_HTTP(), {
                 method: 'POST', headers: { 'content-type': 'application/json' },
                 body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'system_chain', params: [] }),
                 signal: AbortSignal.timeout(NODE_PING_TIMEOUT_MS)
@@ -702,7 +708,7 @@ export async function createRunner({ log = console.log } = {}) {
     async function encodeExtrinsic(finalized) {
         const { ApiPromise, HttpProvider } = await import('@polkadot/api');
         const api = await withTimeout(
-            ApiPromise.create({ provider: new HttpProvider(NODE_HTTP), noInitWarn: true }),
+            ApiPromise.create({ provider: new HttpProvider(NODE_HTTP()), noInitWarn: true }),
             NODE_INIT_TIMEOUT_MS,
             `node API did not open within ${NODE_INIT_TIMEOUT_MS / 1000}s`);
         try {
@@ -713,7 +719,7 @@ export async function createRunner({ log = console.log } = {}) {
 
     async function submitFinalized(finalized) {
         const extrinsicHex = await encodeExtrinsic(finalized);
-        return submitExtrinsic(extrinsicHex, { nodeUrl: NODE_WS, timeoutMs: SUBMIT_TIMEOUT_MS });
+        return submitExtrinsic(extrinsicHex, { nodeUrl: NODE_WS(), timeoutMs: SUBMIT_TIMEOUT_MS });
     }
 
     // ---- one run -----------------------------------------------------------
@@ -1118,7 +1124,7 @@ export async function createRunner({ log = console.log } = {}) {
                 // 0.4.1 fixed close(); walletSync skips the sync entirely.
                 const builder = await createTxBuilder({
                     seedHex, networkId: NETWORK_ID,
-                    indexerHttpUrl: INDEXER_HTTP, indexerWsUrl: INDEXER_WS, nodeUrl: NODE_WS,
+                    indexerHttpUrl: INDEXER_HTTP(), indexerWsUrl: INDEXER_WS(), nodeUrl: NODE_WS(),
                     provingMode: 'wasm', zkConfigDir: ZK_CONFIG_DIR,
                     contractClass: Contract, contractName: 'vinpassport',
                     privateStateId: 'vinpassport-demo',
@@ -1312,7 +1318,7 @@ export async function createRunner({ log = console.log } = {}) {
             onChain: stagesOut,
             verify: {
                 how: 'Ask the public indexer for this contract - the transactions above are its latest calls.',
-                curl: `curl -s ${INDEXER_HTTP} -H 'Content-Type: application/json' -d '{"query":"{ contractAction(address: \\"${contractAddress}\\") { __typename transaction { hash block { height } } } }"}'`
+                curl: `curl -s ${INDEXER_HTTP()} -H 'Content-Type: application/json' -d '{"query":"{ contractAction(address: \\"${contractAddress}\\") { __typename transaction { hash block { height } } } }"}'`
             }
         };
         /*

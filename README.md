@@ -204,12 +204,18 @@ build**; the registrar authority added in Wave 2 goes on chain at the Wave 2 red
 address stays quotable so the two can be compared. Ask the public indexer yourself:
 
 ```bash
-curl -s -X POST https://indexer.preprod.midnight.network/api/v4/graphql   -H 'Content-Type: application/json'   -d '{"query":"{ contractAction(address: \"72e524881363db50ff0bcf6c01fd9de1b550902540f9ca10e4b649df992d553a\", offset: { transactionOffset: { hash: \"af31ba67df440a343479be1d1b8b730464ce381f692e0063b8efafcf2830070f\" } }) { __typename transaction { hash block { height } } } }"}'
+curl -s -X POST https://midnight-preprod.blockfrost.io/api/v0   -H 'Content-Type: application/json'   -H "project_id: $BLOCKFROST_MIDNIGHT_PREPROD"   -d '{"query":"{ contractAction(address: \"72e524881363db50ff0bcf6c01fd9de1b550902540f9ca10e4b649df992d553a\", offset: { transactionOffset: { hash: \"af31ba67df440a343479be1d1b8b730464ce381f692e0063b8efafcf2830070f\" } }) { __typename transaction { hash block { height } } } }"}'
 ```
 
 > Returns a `ContractDeploy` whose transaction hash matches the committed record, in block
 > 2297964. The offset pins the query to that deployment; without it the indexer answers with
 > the contract's *most recent* action, which today is a `ContractCall` from demo traffic.
+>
+> Midnight retired its own preprod indexer on 2026-10-09 and the Midnight indexer is now
+> served by Blockfrost, so the query needs a free Blockfrost project id for Midnight
+> Preprod in `BLOCKFROST_MIDNIGHT_PREPROD`. A project id is scoped to one network. The
+> old host answers HTTP 410 and names the
+> [migration guide](https://docs.midnight.network/guides/networks-and-environments).
 
 **3. The tests exercise the real circuits.** `test/passport-simulator.mjs` loads the *compiled*
 contract and runs it through `@midnight-ntwrk/compact-runtime` at the pinned matching version

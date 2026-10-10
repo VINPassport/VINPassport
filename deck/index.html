@@ -192,13 +192,13 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
 
 <!-- ============================================================ 4 built -->
 <section class="slide">
-  <div class="eyebrow">What Wave 1 ships</div>
+  <div class="eyebrow">What ships today</div>
   <h2>A working product, end to end</h2>
   <div class="cols">
     <div class="box">
       <h3>Our own Compact contract</h3>
       <ul>
-        <li><strong>5 circuits</strong>: register, initialise, record, prove-at-most, prove-at-least</li>
+        <li><strong>7 circuits</strong>: register, initialise, record, prove-at-most, prove-at-least, plus two pure helpers that derive a field slot and a registrar identity</li>
         <li>A commitment per (vehicle, field); values never reach the ledger</li>
         <li><strong>Claims ledger</strong>: every successful proof leaves a public, checkable record of the claim, never the value</li>
         <li>A claim is bound to the record version it proved; supersession is visible</li>
@@ -212,7 +212,7 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
         <li><strong>Proof explorer</strong>: every claim, current or superseded</li>
         <li>26-vehicle demo fleet: new (BEV → diesel) and retrofit</li>
       </ul>
-      <p class="url">passport.vin: anyone can start a real preprod transaction, on our dust · npm run app locally</p>
+      <p class="url">passport.vin: the full verification surface, reading the committed ledger export · <code>npm run app</code> runs the compiled circuits locally</p>
     </div>
   </div>
   <div class="slide-foot"><span class="brandline"><i class="footmark" aria-hidden="true"></i><span class="wm"><span class="wm-vin">VIN</span>PASSPORT</span></span><span>4</span></div>
@@ -317,11 +317,11 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
   <div class="cols">
     <div class="box">
       <h3>The numbers</h3>
-      <p><span class="big-num">67</span> contract tests against the <strong>compiled circuits</strong>,
+      <p><span class="big-num">90</span> contract tests against the <strong>compiled circuits</strong>,
       same assertions that reject a transaction on chain</p>
-      <p><span class="big-num">+50</span> app tests · <span class="big-num">+24</span> SDK assumption assertions</p>
+      <p><span class="big-num">+71</span> app tests · <span class="big-num">+24</span> SDK assumption assertions</p>
       <ul>
-        <li><strong>Mutation-checked</strong>: delete an integrity rule → exactly that rule's tests fail, nothing else</li>
+        <li><strong>Mutation-checked, every guard</strong>: each assertion deleted in turn, recompiled and re-run. <strong>20 of 20</strong> killed by the suite</li>
         <li>Committed build reproduces <strong>byte-identically</strong> from source</li>
         <li>Toolchain pinned: Compact 0.31.1, runtime 0.16.0 exact</li>
       </ul>
@@ -347,7 +347,7 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
     <div class="box">
       <h3>Ours</h3>
       <ul>
-        <li>The Compact contract: five circuits, its own ledger and integrity rules. Not a fork of <code>attestation-vault</code></li>
+        <li>The Compact contract: seven circuits, its own ledger and three integrity rules. Not a fork of <code>attestation-vault</code></li>
         <li>The 32-slot vehicle field panel: a vehicle-domain design</li>
         <li>All three surfaces, the demo fleet, the tests</li>
       </ul>
@@ -418,7 +418,7 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
   <h2>Scan a car. Get a verdict. Trust the math, not the seller.</h2>
   <div class="term" style="max-width:640px">
     <div>git clone https://github.com/VINPassport/VINPassport</div>
-    <div>npm install &amp;&amp; npm test&nbsp;&nbsp;<span class="dim"># 67 + 50 + 24, all green</span></div>
+    <div>npm install &amp;&amp; npm test&nbsp;&nbsp;<span class="dim"># 90 + 71 + 24, all green</span></div>
     <div>npm run app&nbsp;&nbsp;<span class="dim"># the whole product on localhost</span></div>
   </div>
   <p style="margin-top:8px">

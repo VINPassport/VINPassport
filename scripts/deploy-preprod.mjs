@@ -39,6 +39,9 @@ import { dirname, join } from 'node:path';
 import { connect, createTxBuilder } from '@odatano/nightgate-tx';
 import { Contract } from '../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
 import { readRegistrarSlots, REGISTRAR_ROLES } from './lib/registrar-slots.mjs';
+import { preprodEndpoints, redacted } from './lib/endpoints.mjs';
+
+const EP = preprodEndpoints();
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const MANAGED = join(ROOT, 'contracts', 'vinpassport', 'src', 'managed', 'vinpassport');
@@ -107,9 +110,9 @@ console.log('\nbuilding and proving the deploy locally (wasm, takes a while)…'
 const builder = await createTxBuilder({
     seedHex: seed,
     networkId: 'preprod',
-    indexerHttpUrl: 'https://indexer.preprod.midnight.network/api/v4/graphql',
-    indexerWsUrl: 'wss://indexer.preprod.midnight.network/api/v4/graphql/ws',
-    nodeUrl: 'wss://rpc.preprod.midnight.network/',
+    indexerHttpUrl: EP.indexerHttpUrl,
+    indexerWsUrl: EP.indexerWsUrl,
+    nodeUrl: EP.nodeWsUrl,
     contractClass: Contract,
     contractName: 'vinpassport',
     privateStateId: 'vinpassport',

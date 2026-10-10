@@ -11,9 +11,15 @@ finished. Between windows the phases win.
 
 [Q3](DECISIONS.md#resolved) settled 2026-09-18: enter every wave, starting at Wave 1. The
 [Midnight Buildathon](https://midnight.network/hackathon/buildathon) runs three separately judged
-waves — **Wave 1** built 27 Aug – 16 Sep (submitted 9 Sep), **Wave 2** 27 Sep – 17 Oct, **Wave 3**
-27 Oct – 16 Nov. Each is scored fresh on progress made inside its own window, so a weak wave is not
+waves. **Wave 1** closed 16 Sep (we submitted on the 9th). **Wave 2** opened 29 Sep and closes
+**19 Oct, 15:00 UTC**; judging runs to 26 Oct. Wave 3 follows, on dates the organiser has not yet
+published. Each wave is scored fresh on progress made inside its own window, so a weak wave is not
 a handicap and a strong one is not credit carried forward.
+
+Dates here are the organiser's, read from the AKINDO API
+(`api.akindo.io/public/wave-hacks/jaMZjqPOBsLXvjdG/waves`) on 10 Oct, not transcribed from the
+announcement. An earlier revision of this file said Wave 2 opened on the 27th and closed on the
+17th; both were wrong by two days, in the direction that costs you time.
 
 ---
 
@@ -67,7 +73,7 @@ contract changes wait for the 27th. This week takes the work that is not contrac
 - [ ] **Build the mutation harness** — a script that reverts each guard in turn and records which
       tests die, so Wave 2 can report *N of N* instead of a worked example on two
 
-### Wave 2 — 27 Sep – 17 Oct
+### Wave 2 — 29 Sep – 19 Oct
 
 Engineering first, communication last.
 
@@ -76,7 +82,7 @@ Engineering first, communication last.
 | 27 Sep – 8 Oct | **Eng 40%** | Registrar identity derived in-circuit from a witness secret, never `ownPublicKey()`, with an allowlist pinned at deploy ([D23](DECISIONS.md#settled) item 1, shares its mechanism with Phase 2) · bind field commitments to the content root · widen from 5 wired fields toward 16 · redeploy to preprod, keeping the Wave 1 address quotable so the delta is demonstrable |
 | 6 – 13 Oct | **QA 15%** | Run the mutation harness across every guard and publish the kill table · every new guard gets a test that asserts the circuit refuses, with the refusal checked by message so it cannot pass by accident |
 | 10 – 15 Oct | **UX 15%** | Submission from the page beyond the current 5-runs-a-day path · the what-the-chain-sees panel |
-| 15 – 17 Oct | **Comms 10%, Product 15%, BD 5%** | Deck rebuilt against the deployed v2 contract rather than the earlier three-chip story · new video · submission text with an explicit *what changed since Wave 1* section, which is a stated requirement |
+| 15 – 19 Oct | **Comms 10%, Product 15%, BD 5%** | Deck brought up to the v2 contract: it was rebuilt chip-free on 9 Sep, but still carries Wave 1's counts and promises a live preprod transaction the cancelled host can no longer serve · new video · submission text with an explicit *what changed since Wave 1* section, which is a stated requirement |
 
 **On widening the fields.** "One predicate working beats six wired up" (below) was written when
 nothing worked end to end yet, and it was right then. The path now works, so widening is no longer
