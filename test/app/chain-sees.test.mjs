@@ -77,6 +77,32 @@ test('it names each thing that stays off the ledger', () => {
     }
 });
 
+/**
+ * The verdict rows above this panel mark an unanswered question with the
+ * dashed `.none` badge, and say in prose what it means: "Nothing on the ledger
+ * answers this question. That is silence, not a no."
+ *
+ * Nothing in the absences list is an unanswered question. Each one is a thing
+ * the design never publishes. Borrowing the badge puts both meanings on one
+ * screen and tells the reader the stronger, wrong one: that we tried to show
+ * who owns the vehicle and failed, rather than that the contract has no owner.
+ *
+ * Found by rendering the page, not by reading it.
+ */
+test('the absences borrow no part of the claim vocabulary', () => {
+    assert.ok(!html.includes('class="none"'),
+        'the dashed badge means "not proven"; a value withheld by design is not an unproven claim');
+    assert.ok(!html.includes('class="tick"'),
+        'nor is an absence a proven claim');
+});
+
+test('the absences are marked up as the list they are', () => {
+    const absentSection = html.slice(html.indexOf('Not on the ledger'));
+    assert.match(absentSection, /<ul[\s>]/, 'a list of six things should be a list');
+    assert.equal((absentSection.match(/<li[\s>]/g) ?? []).length, MUST_NAME_AS_ABSENT.length,
+        'one list item per absence');
+});
+
 test('no field value reaches the panel, because none reaches the ledger', () => {
     // Values are scaled x1000 into the commitments and never published, so any
     // bare reading in the rendered output would have to have come from

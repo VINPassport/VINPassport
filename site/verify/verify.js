@@ -11,7 +11,7 @@
  */
 import { passportView, QUESTIONS } from '../assets/verdict.mjs';
 import { loadState } from '../assets/sources.mjs?v=4';
-import { chainSeesBlock, fmt, short, esc } from '../assets/chain-sees.mjs?v=1';
+import { chainSeesBlock, fmt, short, esc } from '../assets/chain-sees.mjs?v=2';
 
 
 const TICK =

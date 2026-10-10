@@ -26,11 +26,24 @@ export const seeRow = (label, value, note) =>
     <div style="margin-top:3px;font-size:11.5px;line-height:1.5;color:rgba(14,23,38,.55)">${note}</div>
   </div>`;
 
+/**
+ * One thing the ledger does not carry.
+ *
+ * Deliberately NOT the `.none` badge the verdict rows use. That dashed square
+ * is spoken for: it means "no claim on the ledger answers this question", and
+ * the page spells that out in prose a few rows above. Nothing in this list is
+ * an unproven claim. They are things the design never publishes, and wearing
+ * the unproven badge would tell a reader the opposite of what is true: that
+ * we tried to show who owns the vehicle and could not, rather than that the
+ * contract has no concept of an owner at all.
+ *
+ * So these are a plain list, with the list's own marker, and they borrow no
+ * part of the claim vocabulary.
+ */
 const absentRow = (what, why) =>
-    `<div style="padding:8px 0;border-bottom:1px solid rgba(0,74,173,.1);display:flex;gap:9px">
-    <span class="none" style="flex:0 0 auto">&mdash;</span>
-    <span style="font-size:12.5px;line-height:1.5;color:rgba(14,23,38,.72)"><b style="color:#0E1726">${esc(what)}</b> &middot; ${why}</span>
-  </div>`;
+    `<li style="padding:8px 0;border-bottom:1px solid rgba(0,74,173,.1);font-size:12.5px;line-height:1.55;color:rgba(14,23,38,.72)">
+    <b style="color:#0E1726">${esc(what)}</b> &middot; ${why}
+  </li>`;
 
 /**
  * Everything the public ledger holds about this vehicle, and everything it
@@ -91,7 +104,7 @@ export function chainSeesBlock(vin, view, ledger) {
       ${held}
       ${claimRows}
       <span style="display:block;font:600 10px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin:16px 0 2px">Not on the ledger</span>
-      ${absent}
+      <ul style="margin:0;padding:0 0 0 18px">${absent}</ul>
     </div>
   </details>`;
 }
