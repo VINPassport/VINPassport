@@ -22,19 +22,58 @@ const fetchJson = async (url) => {
 
 /**
  * Where /api/ lives for this page: '' when the page is served by the app
- * server itself (npm run app), the public API host when the page is a static
- * copy (GitHub Pages at passport.vin) and that host answers, else null.
- * Resolved once per page load; both probes are one small GET.
+ * server itself (npm run app), else whatever host the page names, else null.
+ * Resolved once per page load.
+ *
+ * EVERY PROBE HAS A DEADLINE. A page that waits on a host which is not
+ * answering is a page that looks broken, and the static export below is a
+ * complete answer, so there is nothing to gain by waiting longer than it takes
+ * to find out. Without a deadline the wait is the browser's connection
+ * timeout, which is tens of seconds, and it is spent before anything renders.
+ *
+ * No host is named here. A hosted demo API is the page's choice, declared as
+ *
+ *   <meta name="vinpassport-api" content="https://…">
+ *
+ * so that retiring one is an edit to the page that used it rather than a
+ * constant in a shared module which every surface then waits on.
  */
-export const PUBLIC_API = 'https://api.passport.vin';
+const PROBE_TIMEOUT_MS = 2000;
+
+/** The API host this page names, if any. */
+export function namedApiBase() {
+    const meta = document.querySelector('meta[name="vinpassport-api"]');
+    const value = meta?.getAttribute('content')?.trim();
+    return value || null;
+}
+
+const probe = async (base) => {
+    const ctl = new AbortController();
+    let timer;
+    // The deadline is a RACE as well as an abort. Aborting asks fetch to stop
+    // and is the part that frees the connection, but it only bounds the wait
+    // if fetch honours the signal. Racing bounds it either way, which is the
+    // property that matters: this runs before anything renders.
+    const deadline = new Promise((resolve) => {
+        timer = setTimeout(() => { ctl.abort(); resolve(false); }, PROBE_TIMEOUT_MS);
+    });
+    try {
+        return await Promise.race([
+            fetch(`${base}/api/health`, { cache: 'no-store', signal: ctl.signal })
+                .then((r) => r.ok, () => false),   // unreachable, refused, or aborted
+            deadline
+        ]);
+    } finally {
+        clearTimeout(timer);
+    }
+};
+
 let apiBasePromise;
 export function resolveApiBase() {
     apiBasePromise ??= (async () => {
-        for (const base of ['', PUBLIC_API]) {
-            try {
-                const r = await fetch(`${base}/api/health`, { cache: 'no-store' });
-                if (r.ok) return base;
-            } catch { /* not this backing */ }
+        for (const base of ['', namedApiBase()]) {
+            if (base === null) continue;
+            if (await probe(base)) return base;
         }
         return null;
     })();
@@ -54,7 +93,7 @@ export async function loadState(staticBase = '', params = new URLSearchParams())
                 const { ledger, vocabulary } = await fetchJson(`${apiBase}/api/ledger`);
                 const badge = apiBase === ''
                     ? 'live: compiled circuits, local ledger'
-                    : 'live: compiled circuits, shared demo ledger at api.passport.vin';
+                    : `live: compiled circuits, shared demo ledger at ${apiBase.replace(/^https?:\/\//, '')}`;
                 return { ledger, vocabulary, mode: 'server', badge };
             }
         } catch { /* no server: fall through to the static export */ }

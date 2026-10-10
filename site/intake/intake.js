@@ -67,7 +67,7 @@ let apiBase = '';
         line.innerHTML = line.innerHTML.replace('Local circuit server found',
             'Circuit server connected');
         statusCard.querySelector('.mono').textContent =
-            'api.passport.vin · shared demo ledger, resets on restart';
+            `${apiBase.replace(/^https?:\/\//, '')} · shared demo ledger, resets on restart`;
     }
     if (!serverMode) {
         dot.style.background = '#8B95FF';

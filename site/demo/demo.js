@@ -166,7 +166,10 @@ goBtn.addEventListener('click', async () => {
     try { base = await apiBase(); }
     catch {
         paintStatus({ enabled: false });
-        capLine.textContent = 'No circuit server is answering. The guided demo needs api.passport.vin.';
+        // Naming a host here ages badly. Say what is missing and where the
+        // visitor can still see the circuits run.
+        capLine.textContent = 'No circuit server is answering, so the guided run is unavailable. '
+            + 'The manual console still runs the real circuits.';
         return;
     }
     await refreshStatus();
