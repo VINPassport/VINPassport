@@ -105,7 +105,8 @@
             "name": "Rule",
             "elements": [
               "neverFalls",
-              "neverRises"
+              "neverRises",
+              "neverChanges"
             ]
           }
         }
@@ -315,7 +316,8 @@
         "name": "Rule",
         "elements": [
           "neverFalls",
-          "neverRises"
+          "neverRises",
+          "neverChanges"
         ]
       }
     },

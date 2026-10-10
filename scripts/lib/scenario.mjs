@@ -16,12 +16,55 @@ export { PassportSimulator, Rule, fieldKey, bytes32, hex };
 // ---------------------------------------------------------------- vocabulary
 
 /** The panel fields the surfaces know how to render. */
+/**
+ * The live, rule-bearing fields: panel slots 0 to 16, in slot order.
+ *
+ * Each rule follows from what the field IS, which is the only defensible way to
+ * choose one, since the rule is fixed at creation and cannot be revised.
+ *
+ *   neverFalls    lifecycle values that accumulate. Mileage, accidents,
+ *                 keepers, services, write-off category, and the inspection
+ *                 date, which moves forward. Backdating any of these is the
+ *                 fraud the rule exists to refuse.
+ *
+ *   neverChanges  type-approval declarations. Recycled content, the CO2
+ *                 figure, the 3R percentages and dismantling time are facts
+ *                 about a design, not events in a vehicle's life. They would
+ *                 be wrong as `neverFalls`, which would permit a recycled
+ *                 content claim to drift upward, the direction that flatters.
+ *                 Revising one means re-anchoring the document, which moves
+ *                 every slot with the content root.
+ *
+ * Provisions, per docs/FIELDS.md: slots 8 and 9 serve Art 6(1) and 6(2) of
+ * Regulation (EU) 2026/1738, slots 7, 12 and 16 serve Art 13, slots 13 to 15
+ * are inherited from Directive 2005/64/EC, and slots 10 and 11 are held for
+ * delegated acts that have not set a target yet.
+ *
+ * Slots 17 to 21 stay reserved. Slot 17 `batteryStateOfHealthPct` is
+ * deliberately NOT here: the battery passport is authoritative for the battery
+ * and a mirror would diverge. Settled 2026-08-27, see docs/FIELDS.md.
+ */
 export const FIELDS = {
-    odometerKm:       { label: 'Mileage',            kind: 'km',       rule: Rule.neverFalls },
-    accidentCount:    { label: 'Reported accidents', kind: 'count',    rule: Rule.neverFalls },
-    ownerCount:       { label: 'Keepers',            kind: 'count',    rule: Rule.neverFalls },
-    writeOffCategory: { label: 'Write-off category', kind: 'category', rule: Rule.neverFalls },
-    serviceCount:     { label: 'Services recorded',  kind: 'count',    rule: Rule.neverFalls }
+    // slots 0-4: the lifecycle counters
+    odometerKm:                { label: 'Mileage',              kind: 'km',       rule: Rule.neverFalls },
+    accidentCount:             { label: 'Reported accidents',   kind: 'count',    rule: Rule.neverFalls },
+    ownerCount:                { label: 'Keepers',              kind: 'count',    rule: Rule.neverFalls },
+    serviceCount:              { label: 'Services recorded',    kind: 'count',    rule: Rule.neverFalls },
+    writeOffCategory:          { label: 'Write-off category',   kind: 'category', rule: Rule.neverFalls },
+    // slots 5-6: identity dates, in epoch days
+    firstRegistrationDate:     { label: 'First registered',     kind: 'date',     rule: Rule.neverChanges },
+    lastInspectionDate:        { label: 'Last inspection',      kind: 'date',     rule: Rule.neverFalls },
+    // slots 7-16: the regulatory declarations
+    co2FootprintKgCO2e:        { label: 'CO2 footprint',        kind: 'kg',       rule: Rule.neverChanges },
+    recycledPlasticPct:        { label: 'Recycled plastic',     kind: 'pct',      rule: Rule.neverChanges },
+    recycledPlasticFromELVPct: { label: 'Recycled plastic, ELV', kind: 'pct',     rule: Rule.neverChanges },
+    recycledSteelPct:          { label: 'Recycled steel',       kind: 'pct',      rule: Rule.neverChanges },
+    recycledAluminiumPct:      { label: 'Recycled aluminium',   kind: 'pct',      rule: Rule.neverChanges },
+    criticalRawMaterialPct:    { label: 'Critical raw material', kind: 'pct',     rule: Rule.neverChanges },
+    reusabilityPct:            { label: 'Reusability',          kind: 'pct',      rule: Rule.neverChanges },
+    recyclabilityPct:          { label: 'Recyclability',        kind: 'pct',      rule: Rule.neverChanges },
+    recoverabilityPct:         { label: 'Recoverability',       kind: 'pct',      rule: Rule.neverChanges },
+    dismantlingTimeMinutes:    { label: 'Dismantling time',     kind: 'minutes',  rule: Rule.neverChanges }
 };
 
 export const K = Object.fromEntries(Object.keys(FIELDS).map((n) => [n, fieldKey(n)]));

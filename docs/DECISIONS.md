@@ -203,17 +203,22 @@ contract the weakest thing in the repository rather than the strongest.
 simply pass the one that suits them. On the ledger and written once, it cannot be renegotiated, and
 recreating a field to change it is refused.
 
-**Why two directions when the panel only uses one:** every field the panel carries today may never
-fall — mileage, accidents, keepers, services, write-off category. A rule that could only ever point
-one way would not be a rule: `initialiseField` would not need the argument and nothing would be
-fixed at creation. Keeping both directions means a field that only declines can be added as a data
-change rather than a contract change, and the tests prove that support is real rather than
-aspirational.
+**Why three rules:** a rule that could only ever point one way would not be a rule —
+`initialiseField` would not need the argument and nothing would be fixed at creation. The panel uses
+two of the three. The lifecycle fields may never fall: mileage, accidents, keepers, services,
+write-off category, and the inspection date. The regulatory declarations may never change at all —
+recycled content, the CO2 figure, the 3R percentages — because they describe a design rather than
+events, and `neverFalls` would permit a recycled-content claim to drift upward, which is the
+direction that flatters. Revising a declaration means re-anchoring the document, which moves every
+slot with the content root. `neverRises` is carried so that a field which only declines can be added
+as a data change rather than a contract change, and the tests prove that support is real rather
+than aspirational.
 
 **Consequence:** `proveFieldAtMost` with a bound of zero expresses "never written off" and "never
 had a reported accident"; the odometer is simply field `odometerKm` under `neverFalls`, one field
-among the panel rather than the subject of the contract. Both guards mutation-checked: removing
-either fails exactly the tests it exists for and nothing else.
+among the panel rather than the subject of the contract. Every guard in the contract is
+mutation-checked, 20 of 20: removing any one of them fails exactly the tests it exists for, and
+`scripts/mutate-guards.mjs` is the standing check rather than a worked example.
 
 **Scope note:** this is the VEHICLE's record. An EV's battery is a separate regime with its own
 passport, and [NIGHTPASS](https://github.com/ODATANO/NIGHTPASS) covers that ground. The panel

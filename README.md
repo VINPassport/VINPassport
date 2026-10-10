@@ -221,7 +221,7 @@ code. So every guard in the contract is checked by mutation: it is deleted, the 
 recompiled, and the suite is run against the compiled circuits to see what notices. A guard that
 can be removed with the suite still green is a guard nothing depends on.
 
-**19 of 19 guards are load-bearing.** Reproduce it yourself:
+**20 of 20 guards are load-bearing.** Reproduce it yourself:
 
 ```bash
 node scripts/mutate-guards.mjs --list   # the guards, no changes made
@@ -241,6 +241,7 @@ node scripts/mutate-guards.mjs          # delete each in turn, report the kills
 | `previous value does not open the stored commitment` | `recordField` | 4 |
 | `value decreased` | `recordField` | **7** |
 | `value increased` | `recordField` | 3 |
+| `value changed` | `recordField` | 3 |
 | `unknown passport` | `proveFieldAtMost` | 1 |
 | `field not initialised` | `proveFieldAtMost` | 1 |
 | `value does not open the stored commitment` | `proveFieldAtMost` | 1 |
@@ -248,7 +249,7 @@ node scripts/mutate-guards.mjs          # delete each in turn, report the kills
 | `unknown passport` | `proveFieldAtLeast` | 1 |
 | `field not initialised` | `proveFieldAtLeast` | 1 |
 | `value does not open the stored commitment` | `proveFieldAtLeast` | 1 |
-| `value below the claimed bound` | `proveFieldAtLeast` | 2 |
+| `value below the claimed bound` | `proveFieldAtLeast` | 3 |
 
 The harness restores the tree afterwards, including the prover keys, so a run leaves the repository
 byte-identical to how it found it. It is also the reason one test exists: the first full sweep found
@@ -377,7 +378,7 @@ repository begins with no contract at all.
 |---|---|
 | **The contract** - seven circuits, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one, and registration restricted to a registrar list pinned at deployment | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
 | **Deployed to Midnight preprod**, 28 August, built and signed locally | [`deploy/preprod.json`](deploy/preprod.json) |
-| **141 tests** - 67 contract, 50 application, 24 SDK assumption assertions; both integrity rules mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
+| **164 tests** - 90 contract, 50 application, 24 SDK assumption assertions; every guard mutation-checked, 20 of 20 | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
 | **Three surfaces** - verification, intake console, proof explorer - all running the compiled circuits, not a mock | [passport.vin](https://passport.vin/) |
 | **On-chain runs from the browser, self-funded**, after a hosted sponsor turned out to be a single point of failure in a demo a judge runs unattended | [D24](docs/DECISIONS.md#settled) |
 | **The regulatory basis read from the Official Journal** rather than secondary analysis - which caught two wrong article citations that had survived months of work | [REGULATION.md](docs/REGULATION.md) |

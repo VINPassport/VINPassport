@@ -96,6 +96,63 @@ describe('registerPassport', () => {
     });
 });
 
+// ------------------------------------------------------------- declarations
+
+/** A type-approval declaration: slot 8, Art 6(1). Recycled plastic, 25%. */
+const DECLARATION = fieldKey('recycledPlasticPct');
+
+describe('a declaration that may never change', () => {
+    beforeEach(() => {
+        registered();
+        sim.initialiseField(VIN_A, DECLARATION, Rule.neverChanges, PCT(25), S1);
+    });
+
+    it('accepts rewriting the identical value, which only re-salts it', () => {
+        expect(() => sim.recordField(VIN_A, DECLARATION, PCT(25), S2)).not.toThrow();
+    });
+
+    it('REJECTS a quiet upward revision — the direction that flatters', () => {
+        expect(() => sim.recordField(VIN_A, DECLARATION, PCT(30), S2))
+            .toThrow(rejects('value changed'));
+    });
+
+    it('REJECTS a downward revision too, because it is not a lifecycle value', () => {
+        expect(() => sim.recordField(VIN_A, DECLARATION, PCT(20), S2))
+            .toThrow(rejects('value changed'));
+    });
+
+    it('leaves the commitment untouched after a refused revision', () => {
+        const before = sim.ledger.updateCount;
+        try { sim.recordField(VIN_A, DECLARATION, PCT(30), S2); } catch { /* expected */ }
+
+        expect(sim.ledger.updateCount).toBe(before);
+    });
+
+    /**
+     * The claim the regulation actually asks for. Art 6(1) sets 15% recycled
+     * plastic from 2032 and 25% from 2036. A verifier needs to know the vehicle
+     * clears the threshold; the manufacturer does not want to publish the
+     * figure. That is a floor proof, and the value never reaches the ledger.
+     */
+    it('proves it clears the 2036 threshold without disclosing the figure', () => {
+        expect(() => sim.proveFieldAtLeast(VIN_A, DECLARATION, PCT(25))).not.toThrow();
+    });
+
+    it('cannot prove a threshold it does not clear', () => {
+        expect(() => sim.proveFieldAtLeast(VIN_A, DECLARATION, PCT(26)))
+            .toThrow(rejects('value below the claimed bound'));
+    });
+
+    it('keeps the declared figure off the ledger', () => {
+        sim.proveFieldAtLeast(VIN_A, DECLARATION, PCT(25));
+        const { words } = sim.ledgerValues();
+
+        // The bound is public and the figure is not, even though they are equal
+        // here: what must be absent is any trace beyond the bound asserted.
+        expect(words.filter((w) => w === PCT(25)).length).toBe(1);
+    });
+});
+
 // ------------------------------------------------------------ document bind
 
 describe('binding to the content root', () => {

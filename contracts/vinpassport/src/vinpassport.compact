@@ -13,12 +13,21 @@
 // passed in per call, so a caller cannot choose the flattering rule at the
 // moment they need it, and recreating a field to change it is refused.
 //
-// TWO DIRECTIONS EXIST because a rule that could only ever point one way would
+// THREE RULES EXIST because a rule that could only ever point one way would
 // not be a rule — `initialiseField` would not need the argument, and nothing
-// would be fixed at creation. Every field in the current panel only ever
-// rises: mileage, accidents, keepers, services, write-off category. A field
-// that may only fall is supported so that adding one later is a data change
-// rather than a contract change.
+// would be fixed at creation.
+//
+// The lifecycle fields only ever rise: mileage, accidents, keepers, services,
+// write-off category, the inspection date. The REGULATORY DECLARATIONS do not
+// move at all within one document: recycled content, the CO2 figure, the 3R
+// percentages are type-approval facts, not events. Declaring them `neverFalls`
+// would permit a quiet upward revision of a recycled-content claim, which is
+// the direction that flatters. So they are `neverChanges`, and revising one
+// means re-anchoring the document, which moves every slot with the root. That
+// is the binding in `slotOf` doing the work rather than a second mechanism.
+//
+// A field that may only fall is supported so that adding one later is a data
+// change rather than a contract change.
 //
 // SCOPE. This is the VEHICLE's record. An electric car's battery is a separate
 // regime with its own passport; the panel carries a reference to that passport
@@ -38,8 +47,9 @@ import CompactStandardLibrary;
 
 // Which way a field is allowed to move over its lifetime.
 export enum Rule {
-  neverFalls,   // every field in the current panel
-  neverRises    // reserved: no panel field uses this yet, by design
+  neverFalls,   // the lifecycle fields: mileage, accidents, keepers, services
+  neverRises,   // reserved: no panel field uses this yet, by design
+  neverChanges  // the regulatory declarations, fixed for a document version
 }
 
 // ---------------------------------------------------------------- claims
@@ -261,11 +271,12 @@ export circuit recordField(vinHash: Bytes<32>, fieldKey: Bytes<32>): [] {
   const current = newValue();
   const rule = fieldRule.lookup(slot);
 
-  // Both guards are evaluated every time; each is vacuous under the other
-  // rule. Written this way rather than as a branch so that the failure a
-  // caller sees names which direction they violated.
+  // All three guards are evaluated every time; each is vacuous under the
+  // other rules. Written this way rather than as a branch so that the failure
+  // a caller sees names what they violated.
   assert(rule != Rule.neverFalls || current >= prev, "value decreased");
   assert(rule != Rule.neverRises || current <= prev, "value increased");
+  assert(rule != Rule.neverChanges || current == prev, "value changed");
 
   fieldCommitment.insert(slot, persistentCommit<Uint<64>>(current, newSalt()));
   updateCount.increment(1);

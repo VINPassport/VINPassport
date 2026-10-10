@@ -1,6 +1,6 @@
 import type * as __compactRuntime from '@midnight-ntwrk/compact-runtime';
 
-export enum Rule { neverFalls = 0, neverRises = 1 }
+export enum Rule { neverFalls = 0, neverRises = 1, neverChanges = 2 }
 
 export type Claim = { slot: Uint8Array;
                       vinHash: Uint8Array;
