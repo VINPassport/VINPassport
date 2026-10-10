@@ -38,7 +38,7 @@ import {
     pureCircuits
 } from '../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
 
-export { Rule };
+export { Rule, pureCircuits };
 
 export const hex = (bytes) => Buffer.from(bytes).toString('hex');
 

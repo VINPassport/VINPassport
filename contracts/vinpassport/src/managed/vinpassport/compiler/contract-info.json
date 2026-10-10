@@ -4,6 +4,38 @@
   "runtime-version": "0.16.0",
   "circuits": [
     {
+      "name": "slotOf",
+      "pure": true,
+      "proof": false,
+      "arguments": [
+        {
+          "name": "vinHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "fieldKey",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "contentRoot",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
       "name": "registrarIdOf",
       "pure": true,
       "proof": false,

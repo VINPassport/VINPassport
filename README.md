@@ -192,9 +192,11 @@ cat contracts/vinpassport/src/managed/vinpassport/compiler/contract-info.json
 ```
 
 > `"compiler-version": "0.31.1"`, `"language-version": "0.23.0"`, `"runtime-version": "0.16.0"`,
-> the stable ledger-8 line. Six circuits: five proving ones, plus the pure
-> `registrarIdOf` helper that derives a registrar's public identity from a
-> secret the chain never sees.
+> the stable ledger-8 line. Seven circuits: five proving ones, plus two pure
+> helpers. `registrarIdOf` derives a registrar's public identity from a secret
+> the chain never sees, and `slotOf` derives where a field lives from the
+> vehicle, the field and the document root. Both are exported so a verifier can
+> recompute them instead of trusting that we did.
 
 **2. The deploy is real.** The contract is live on Midnight preprod; address and transaction
 hash are committed at [`deploy/preprod.json`](deploy/preprod.json). That address holds the **Wave 1
@@ -219,7 +221,7 @@ code. So every guard in the contract is checked by mutation: it is deleted, the 
 recompiled, and the suite is run against the compiled circuits to see what notices. A guard that
 can be removed with the suite still green is a guard nothing depends on.
 
-**17 of 17 guards are load-bearing.** Reproduce it yourself:
+**19 of 19 guards are load-bearing.** Reproduce it yourself:
 
 ```bash
 node scripts/mutate-guards.mjs --list   # the guards, no changes made
@@ -239,9 +241,11 @@ node scripts/mutate-guards.mjs          # delete each in turn, report the kills
 | `previous value does not open the stored commitment` | `recordField` | 4 |
 | `value decreased` | `recordField` | **7** |
 | `value increased` | `recordField` | 3 |
+| `unknown passport` | `proveFieldAtMost` | 1 |
 | `field not initialised` | `proveFieldAtMost` | 1 |
 | `value does not open the stored commitment` | `proveFieldAtMost` | 1 |
 | `value above the claimed bound` | `proveFieldAtMost` | **5** |
+| `unknown passport` | `proveFieldAtLeast` | 1 |
 | `field not initialised` | `proveFieldAtLeast` | 1 |
 | `value does not open the stored commitment` | `proveFieldAtLeast` | 1 |
 | `value below the claimed bound` | `proveFieldAtLeast` | 2 |
@@ -371,7 +375,7 @@ repository begins with no contract at all.
 
 | What was built | Where to look |
 |---|---|
-| **The contract** - six circuits, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one, and registration restricted to a registrar list pinned at deployment | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
+| **The contract** - seven circuits, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one, and registration restricted to a registrar list pinned at deployment | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
 | **Deployed to Midnight preprod**, 28 August, built and signed locally | [`deploy/preprod.json`](deploy/preprod.json) |
 | **141 tests** - 67 contract, 50 application, 24 SDK assumption assertions; both integrity rules mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
 | **Three surfaces** - verification, intake console, proof explorer - all running the compiled circuits, not a mock | [passport.vin](https://passport.vin/) |
@@ -418,7 +422,7 @@ test/
 | [`@odatano/dpp-sdk`](https://github.com/ODATANO) | Salted-Merkle field panel: key derivation, value scaling, tree construction |
 | [`@odatano/nightgate-tx`](https://github.com/ODATANO/NIGHTGATE) | Local transaction building, batch segment ordering, in-process wasm proving |
 
-**Where the line falls.** VINPassport's Compact contract is its own work: six circuits, its own
+**Where the line falls.** VINPassport's Compact contract is its own work: seven circuits, its own
 ledger, its own integrity rules. It is not a fork, and it does not extend NIGHTGATE's
 `attestation-vault`. The 32-slot field panel is ours too: the slot layout is a vehicle-domain
 design, built on `@odatano/dpp-sdk` for key derivation, value scaling and Merkle construction.

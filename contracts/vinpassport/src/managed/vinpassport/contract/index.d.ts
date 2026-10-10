@@ -61,10 +61,17 @@ export type ProvableCircuits<PS> = {
 }
 
 export type PureCircuits = {
+  slotOf(vinHash_0: Uint8Array,
+         fieldKey_0: Uint8Array,
+         contentRoot_0: Uint8Array): Uint8Array;
   registrarIdOf(secret_0: Uint8Array): Uint8Array;
 }
 
 export type Circuits<PS> = {
+  slotOf(context: __compactRuntime.CircuitContext<PS>,
+         vinHash_0: Uint8Array,
+         fieldKey_0: Uint8Array,
+         contentRoot_0: Uint8Array): __compactRuntime.CircuitResults<PS, Uint8Array>;
   registrarIdOf(context: __compactRuntime.CircuitContext<PS>,
                 secret_0: Uint8Array): __compactRuntime.CircuitResults<PS, Uint8Array>;
   registerPassport(context: __compactRuntime.CircuitContext<PS>,

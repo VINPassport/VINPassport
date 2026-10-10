@@ -18,7 +18,7 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
-    PassportSimulator, Rule, bytes32, hex, fieldKey,
+    PassportSimulator, Rule, bytes32, hex, fieldKey, pureCircuits,
     REGISTRAR_SECRET, REGISTRAR_ID, SECOND_SECRET, SECOND_ID, OUTSIDER_SECRET
 } from './passport-simulator.mjs';
 
@@ -93,6 +93,54 @@ describe('registerPassport', () => {
         try { sim.registerPassport(VIN_A, ROOT_B, REGISTRAR); } catch { /* expected */ }
 
         expect(hex(sim.ledger.passports.lookup(VIN_A))).toBe(hex(ROOT));
+    });
+});
+
+// ------------------------------------------------------------ document bind
+
+describe('binding to the content root', () => {
+    /**
+     * The property a verifier actually needs: given the document, confirm a
+     * claim is about THAT document and not merely about the vehicle.
+     *
+     * The check is theirs to run, not ours to assert: recompute the slot from
+     * the vehicle, the field and the root they were handed, and compare it with
+     * the slot the claim carries. `slotOf` is exported from the contract so the
+     * recomputation is the contract's own, not a reimplementation of it.
+     */
+    it('lets a holder of the document recompute a claim\'s slot', () => {
+        registered();
+        const l = sim.proveFieldAtMost(VIN_A, ODO, 20n);
+        const [, claim] = [...l.claims][0];
+
+        expect(hex(claim.slot)).toBe(hex(pureCircuits.slotOf(VIN_A, ODO, ROOT)));
+    });
+
+    it('gives a different slot for a different document, so the check can fail', () => {
+        registered();
+        const l = sim.proveFieldAtMost(VIN_A, ODO, 20n);
+        const [, claim] = [...l.claims][0];
+
+        // Without this the test above would pass for any root at all, and the
+        // binding would be decoration.
+        expect(hex(claim.slot)).not.toBe(hex(pureCircuits.slotOf(VIN_A, ODO, ROOT_B)));
+    });
+
+    it('separates the same field on two vehicles', () => {
+        registered(VIN_A, ROOT);
+        registered(VIN_B, ROOT_B);
+
+        expect(hex(pureCircuits.slotOf(VIN_A, ODO, ROOT)))
+            .not.toBe(hex(pureCircuits.slotOf(VIN_B, ODO, ROOT_B)));
+    });
+
+    it('stores one commitment per vehicle for the same field', () => {
+        registered(VIN_A, ROOT);
+        registered(VIN_B, ROOT_B);
+        const l = sim.ledger;
+
+        // Ten commitments, five fields on each of two vehicles, none shared.
+        expect(l.fieldCommitment.size()).toBe(10n);
     });
 });
 
@@ -420,6 +468,11 @@ describe('proveFieldAtMost', () => {
         sim.recordField(VIN_A, ODO, 120_000n, S2);
     });
 
+    it('rejects a ceiling proof about an unregistered vehicle', () => {
+        expect(() => sim.proveFieldAtMost(VIN_B, ODO, 1n))
+            .toThrow(rejects('unknown passport'));
+    });
+
     it('rejects a proof about a field that does not exist', () => {
         expect(() => sim.proveFieldAtMost(VIN_A, fieldKey('co2FootprintKgCO2e'), 1n))
             .toThrow(rejects('field not initialised'));
@@ -491,6 +544,11 @@ describe('proveFieldAtLeast', () => {
     // green, which made it the one assertion in the contract that nothing
     // depended on. A floor proved about a field that does not exist would be a
     // claim about nothing.
+    it('rejects a floor proof about an unregistered vehicle', () => {
+        expect(() => sim.proveFieldAtLeast(VIN_B, DECLINING, 1n))
+            .toThrow(rejects('unknown passport'));
+    });
+
     it('rejects a proof about a field that does not exist', () => {
         expect(() => sim.proveFieldAtLeast(VIN_A, fieldKey('co2FootprintKgCO2e'), 1n))
             .toThrow(rejects('field not initialised'));

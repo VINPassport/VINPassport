@@ -123,9 +123,34 @@ witness registrarSecret(): Bytes<32>;
 
 // Where a vehicle's field lives on the ledger. Domain-separated so a slot key
 // can never collide with any other hash this contract stores.
-circuit slotOf(vinHash: Bytes<32>, fieldKey: Bytes<32>): Bytes<32> {
-  return persistentHash<Vector<3, Bytes<32>>>(
-    [pad(32, "vinpassport:field:v1"), vinHash, fieldKey]
+//
+// THE SLOT BINDS THE DOCUMENT, not just the vehicle and the field. The content
+// root is the hash of the canonical passport payload, so a field commitment is
+// by construction about one (vehicle, field, document) and not merely about a
+// vehicle. That is what makes the binding checkable by someone who was handed
+// the document: recompute this with the root you hold, and a claim about a
+// different document gives a different slot. Before, a claim named the vehicle
+// but nothing tied it to the payload a verifier was reading.
+//
+// The root is never taken as an argument. Every caller reads it from
+// `passports`, so there is no version for a caller to choose.
+//
+// Exported for that off-chain check. The tag is v2 because the derivation
+// changed: slots written under the previous scheme are a different set, which a
+// fresh deployment makes moot.
+//
+// CONSEQUENCE, stated rather than discovered later: a passport's root is fixed
+// when it is registered, so this is stable today. If revising a document is
+// ever supported, every slot moves with the root and the earlier field history
+// belongs to the earlier document. That is the honest meaning of binding, not
+// a defect of it.
+export circuit slotOf(
+  vinHash: Bytes<32>,
+  fieldKey: Bytes<32>,
+  contentRoot: Bytes<32>
+): Bytes<32> {
+  return persistentHash<Vector<4, Bytes<32>>>(
+    [pad(32, "vinpassport:field:v2"), vinHash, fieldKey, contentRoot]
   );
 }
 
@@ -193,7 +218,9 @@ export circuit initialiseField(
     "not the registrar for this vehicle"
   );
 
-  const slot = slotOf(disclose(vinHash), disclose(fieldKey));
+  const slot = slotOf(
+    disclose(vinHash), disclose(fieldKey), passports.lookup(disclose(vinHash))
+  );
   assert(!fieldCommitment.member(slot), "field already initialised");
 
   const value = newValue();
@@ -216,7 +243,9 @@ export circuit recordField(vinHash: Bytes<32>, fieldKey: Bytes<32>): [] {
     "not the registrar for this vehicle"
   );
 
-  const slot = slotOf(disclose(vinHash), disclose(fieldKey));
+  const slot = slotOf(
+    disclose(vinHash), disclose(fieldKey), passports.lookup(disclose(vinHash))
+  );
   assert(fieldCommitment.member(slot), "field not initialised");
 
   const prev = previousValue();
@@ -249,7 +278,15 @@ export circuit proveFieldAtMost(
   fieldKey: Bytes<32>,
   bound: Uint<64>
 ): [] {
-  const slot = slotOf(disclose(vinHash), disclose(fieldKey));
+  // Reading the root means the passport has to exist. Proving a claim about an
+  // unregistered vehicle was never possible, because no field could have been
+  // initialised for one, but it now refuses for the reason a caller expects
+  // rather than for a reason about slots.
+  assert(passports.member(disclose(vinHash)), "unknown passport");
+
+  const slot = slotOf(
+    disclose(vinHash), disclose(fieldKey), passports.lookup(disclose(vinHash))
+  );
   assert(fieldCommitment.member(slot), "field not initialised");
 
   const value = previousValue();
@@ -285,7 +322,11 @@ export circuit proveFieldAtLeast(
   fieldKey: Bytes<32>,
   bound: Uint<64>
 ): [] {
-  const slot = slotOf(disclose(vinHash), disclose(fieldKey));
+  assert(passports.member(disclose(vinHash)), "unknown passport");
+
+  const slot = slotOf(
+    disclose(vinHash), disclose(fieldKey), passports.lookup(disclose(vinHash))
+  );
   assert(fieldCommitment.member(slot), "field not initialised");
 
   const value = previousValue();
