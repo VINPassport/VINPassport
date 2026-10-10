@@ -10,12 +10,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import { passportView, QUESTIONS } from '../assets/verdict.mjs';
-import { loadState } from '../assets/sources.mjs?v=3';
+import { loadState } from '../assets/sources.mjs?v=4';
+import { chainSeesBlock, fmt, short, esc } from '../assets/chain-sees.mjs?v=1';
 
-const fmt = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-const short = (h) => `${String(h).slice(0, 10)}…${String(h).slice(-6)}`;
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 const TICK =
     '<span class="tick"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" ' +
@@ -156,7 +153,7 @@ const LEDE = `<section class="vfy-lede">
   </div>
 </section>`;
 
-function mainSection(vin, view, vinfo, badge) {
+function mainSection(vin, view, vinfo, badge, ledger) {
     return `<section class="vfy-card"><header style="padding:20px 0 14px;border-bottom:1px solid rgba(0,74,173,.16)">
     <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E">Vehicle passport · Reg (EU) 2026/1738</span>
     <h1 style="margin:5px 0 4px;font-size:clamp(28px,7vw,38px);line-height:1;letter-spacing:.01em;text-transform:uppercase">${esc(vinfo?.title ?? 'Vehicle passport')}</h1>
@@ -164,7 +161,7 @@ function mainSection(vin, view, vinfo, badge) {
   </header>
   ${scoreBand(view, false)}
   ${rowsFor(view, false, { vin, title: vinfo?.title })}
-  <div class="vfy-foot">${statsBlock(view, vinfo, badge)}${HONESTY}</div></section>`;
+  <div class="vfy-foot">${statsBlock(view, vinfo, badge)}${chainSeesBlock(vin, view, ledger)}${HONESTY}</div></section>`;
 }
 
 function secondarySection(vin, view, vinfo, index) {
@@ -213,7 +210,7 @@ function secondarySection(vin, view, vinfo, index) {
     const holder = document.createElement('div');
     holder.innerHTML =
         LEDE +
-        mainSection(main, passportView(ledger, main, vocabulary), byVin[main], state.badge) +
+        mainSection(main, passportView(ledger, main, vocabulary), byVin[main], state.badge, ledger) +
         (rest.length
             ? `<h2 style="margin:8px 0 -8px;font-family:'Barlow Condensed',sans-serif;font-size:20px;letter-spacing:.03em;text-transform:uppercase;color:#002E6E">Other passports on this ledger</h2>
                <p class="vfy-measure" style="margin:0;font-size:13.5px;line-height:1.6;color:rgba(14,23,38,.7)">Two more vehicles, kept collapsed so they do not compete with the one you came to check. They exist to show the range: a record that answers every question, and one that cannot.</p>`

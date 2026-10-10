@@ -56,7 +56,7 @@ let serverMode = false;
 let apiBase = '';
 (async () => {
     try {
-        const { resolveApiBase } = await import('../assets/sources.mjs?v=3');
+        const { resolveApiBase } = await import('../assets/sources.mjs?v=4');
         const base = await resolveApiBase();
         serverMode = base != null;
         apiBase = base ?? '';
