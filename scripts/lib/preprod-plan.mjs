@@ -122,7 +122,7 @@ const zero32 = () => new Uint8Array(32);
  * flight. A missed arming is a loud build error instead of a quiet zero on
  * the public chain.
  */
-export function makeWitnessHolder() {
+export function makeWitnessHolder(registrarSecret) {
     const holder = { pending: { value: 0n, salt: zero32() }, prev: { value: 0n, salt: zero32() }, armed: null };
     const armedRead = (what, pick) => (ctx) => {
         if (!holder.armed) {
@@ -136,7 +136,18 @@ export function makeWitnessHolder() {
             newValue: armedRead('newValue', () => holder.pending.value),
             newSalt: armedRead('newSalt', () => holder.pending.salt),
             previousValue: armedRead('previousValue', () => holder.prev.value),
-            previousSalt: armedRead('previousSalt', () => holder.prev.salt)
+            previousSalt: armedRead('previousSalt', () => holder.prev.salt),
+            // Constant for a whole run rather than armed per call: a run acts
+            // as one registrar throughout. Still refuses to read when absent,
+            // for the same reason the armed reads do - proving against a zero
+            // secret would derive an identity nobody holds and fail on chain
+            // for a confusing reason instead of here for a clear one.
+            registrarSecret: (ctx) => {
+                if (!registrarSecret) {
+                    throw new Error('witness registrarSecret() was read, but makeWitnessHolder was given no secret');
+                }
+                return [ctx.privateState, registrarSecret];
+            }
         },
         arm: (label, state) => () => {
             holder.pending = state.pending ?? { value: 0n, salt: zero32() };

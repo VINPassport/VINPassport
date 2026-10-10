@@ -46,7 +46,7 @@ import { ZswapSecretKeys, DustSecretKey, Transaction } from '@midnight-ntwrk/led
 import { Contract } from '../../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
 import {
     PassportSimulator, hex,
-    FIELDS, K, vinHash as vinHashOf, contentRoot, registrarId, PANEL
+    FIELDS, K, vinHash as vinHashOf, contentRoot, PANEL
 } from './scenario.mjs';
 import {
     CLAIM_DEFS, planCalls, makeStage, stepLabel, makeWitnessHolder, randomDemoVin
@@ -124,6 +124,29 @@ export async function createRunner({ log = console.log } = {}) {
     const seedFile = process.env.VINPASSPORT_SEED_FILE;
     const stateDir = process.env.VINPASSPORT_STATE_DIR;
     if (!seedFile || !stateDir) throw new Error('preprod demo needs VINPASSPORT_SEED_FILE and VINPASSPORT_STATE_DIR');
+
+    // The demo acts as registrar A. Writing a passport now requires the secret
+    // behind an identity the contract was deployed with, so a run cannot start
+    // without it: there would be nothing to prove authority with.
+    const registrarFile = process.env.VINPASSPORT_REGISTRAR_FILE
+        ?? join(ROOT, '..', '_local-tracking', 'REGISTRAR-SECRETS.env');
+    const readRegistrar = (key) => {
+        const prefix = `VINPASSPORT_REGISTRAR_A_${key}_HEX=`;
+        const line = readFileSync(registrarFile, 'utf8').split(/\r?\n/).find((l) => l.startsWith(prefix));
+        const value = line?.slice(prefix.length).trim();
+        if (!/^[0-9a-f]{64}$/.test(value ?? '')) {
+            throw new Error(`${prefix}<64 hex> missing or malformed in ${registrarFile}`);
+        }
+        return Uint8Array.from(Buffer.from(value, 'hex'));
+    };
+    if (!existsSync(registrarFile)) {
+        throw new Error(
+            `no registrar secret at ${registrarFile}. Run ` +
+            '`node scripts/make-registrar-secrets.mjs`, and deploy a contract pinned to the identity it prints.'
+        );
+    }
+    const registrarSecret = readRegistrar('SECRET');
+    const registrarIdBytes = readRegistrar('ID');
     const seedHex = readFileSync(seedFile, 'utf8')
         .split(/\r?\n/).find((l) => l.startsWith('VINPASSPORT_SEED_HEX='))?.slice(21).trim();
     if (!seedHex || seedHex.length !== 128) throw new Error('seed file does not hold VINPASSPORT_SEED_HEX=<128 hex>');
@@ -739,7 +762,7 @@ export async function createRunner({ log = console.log } = {}) {
         const saltFn = (label) => b2b(Uint8Array.from([...runSeed, ...utf8(label)]));
         const vin = intake.vin;
         const vinBytes = vinHashOf(vin);
-        const regId = registrarId(intake.registrar);
+        const regId = registrarIdBytes;
         const croot = contentRoot(vin, intake.fields ?? {}, intake.panel ?? {}, saltFn);
 
         // Every write's value+salt, per field, in order; claims open the last.
@@ -754,11 +777,15 @@ export async function createRunner({ log = console.log } = {}) {
         const simStep = step('simulate', 'Dry-run through the compiled circuits');
         const refused = [];
         await runStep(simStep, async () => {
-            const sim = new PassportSimulator();
+            // Pinned to the identity this demo actually acts as, and acting as
+            // it, so the dry run exercises the same authority check the chain
+            // will apply rather than a permissive stand-in.
+            const sim = new PassportSimulator([registrarIdBytes]);
+            sim.actAs(registrarSecret);
             for (const stage of plan.stages) {
                 stage.steps = stage.steps.filter((s) => {
                     try {
-                        if (s.kind === 'register') sim.registerPassport(vinBytes, croot, regId);
+                        if (s.kind === 'register') sim.registerPassport(vinBytes, croot);
                         else if (s.kind === 'init') {
                             if (!(s.name in FIELDS)) throw new Error('unknown field');
                             const salt = saltOf(s.name, 0);
@@ -794,7 +821,7 @@ export async function createRunner({ log = console.log } = {}) {
         // -- shared witnesses: per-call state swapped in by `before` hooks,
         //    and refused entirely until one has armed them (preprod-plan.mjs
         //    carries the why - an unarmed read would commit a zero value).
-        const { holder, witnesses, arm } = makeWitnessHolder();
+        const { holder, witnesses, arm } = makeWitnessHolder(registrarSecret);
         // Pure: every call is derived from the step's own writeIndex, fixed
         // during the dry-run. A stage that has to be re-planned (a rejected
         // batch split into single calls) therefore rebuilds identical calls.
@@ -802,10 +829,11 @@ export async function createRunner({ log = console.log } = {}) {
         const toCall = (s) => {
             const label = stepLabel(s);
             if (s.kind === 'register') {
-                // Reads no witness, but still arms: a batch behind it must not
-                // inherit an arming that belongs to some earlier call.
+                // Reads the registrar secret, which is constant for the run, and
+                // still arms the value pair: a batch behind it must not inherit
+                // an arming that belongs to some earlier call.
                 return {
-                    circuitId: 'registerPassport', args: [vinBytes, croot, regId],
+                    circuitId: 'registerPassport', args: [vinBytes, croot],
                     before: arm(label, { pending: { value: 0n, salt: zero32() }, prev: { value: 0n, salt: zero32() } })
                 };
             }

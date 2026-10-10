@@ -107,7 +107,10 @@ export const contentRoot = (vin, fields, panel = {}, saltFn = saltFrom) => {
     return Uint8Array.from(Buffer.from(tree.rootHex, 'hex'));
 };
 
-export const registrarId = (name) => fieldKey(`vinpassport:registrar:${name}`);
+// A registrar is no longer named into existence. Its identity is derived in
+// circuit from a secret it holds, and checked against the list pinned at
+// deploy, so there is nothing here to compute from a label. The label survives
+// only as something to display. See `scripts/make-registrar-secrets.mjs`.
 
 // ---------------------------------------------------------------- salts
 
@@ -144,10 +147,11 @@ export function applyIntake(sim, intake, salt) {
         }
     };
 
+    // No registrar argument: whoever the simulator is acting as supplies the
+     // secret, and the circuit derives the identity from it.
     attempt('registerPassport', () =>
         sim.registerPassport(vin,
-            contentRoot(intake.vin, intake.fields, intake.panel ?? {}),
-            registrarId(intake.registrar)));
+            contentRoot(intake.vin, intake.fields, intake.panel ?? {})));
     if (intake.panel && Object.keys(intake.panel).length) {
         applied.push(`anchor panel: ${Object.keys(intake.panel).length} declaration fields in the content root (values stay private)`);
     }

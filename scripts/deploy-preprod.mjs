@@ -12,6 +12,14 @@
  * `registerPassport` is insert-once per VIN — a redeploy starts from an empty
  * ledger. Nothing should be able to spend a deploy by accident.
  *
+ * The registrar list is pinned by the constructor and can never be added to,
+ * so the identities read from `../_local-tracking/REGISTRAR-SECRETS.env` are
+ * the whole authority of the contract for its lifetime. A dry run prints them;
+ * read them before spending the deploy.
+ *
+ *   node scripts/deploy-preprod.mjs --submit --redeploy   replace an existing
+ *                                              record, archiving the old one
+ *
  * Environment (set in the shell, never in a file inside this repo):
  *   VINPASSPORT_SEED_HEX             128 hex chars. Our key. Never leaves the process.
  *   NIGHTGATE_AGENT_TOKEN          the grant token, sent to us privately
@@ -25,7 +33,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync, readFileSync, renameSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { connect, createTxBuilder } from '@odatano/nightgate-tx';
@@ -34,6 +42,8 @@ import { Contract } from '../contracts/vinpassport/src/managed/vinpassport/contr
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const MANAGED = join(ROOT, 'contracts', 'vinpassport', 'src', 'managed', 'vinpassport');
 const SUBMIT = process.argv.includes('--submit');
+const REDEPLOY = process.argv.includes('--redeploy');
+const SECRETS = join(ROOT, '..', '_local-tracking', 'REGISTRAR-SECRETS.env');
 
 const fail = (msg) => { console.error(`\nSTOP: ${msg}`); process.exit(1); };
 
@@ -58,17 +68,49 @@ if (!token || !sponsorSessionId) {
 const baseUrl = process.env.NIGHTGATE_BASE_URL ?? 'https://api.nightgate.dev';
 
 const outPath = join(ROOT, 'deploy', 'preprod.json');
-if (existsSync(outPath) && SUBMIT) {
+if (existsSync(outPath) && SUBMIT && !REDEPLOY) {
     fail(`deploy/preprod.json already exists - a contract is already deployed. ` +
         `The grant allows 2 deploys total and a redeploy is an EMPTY ledger. ` +
-        `Delete the file first if a redeploy is genuinely intended.`);
+        `Pass --redeploy as well if that is genuinely intended; the existing ` +
+        `record is archived rather than lost, so the old address stays quotable.`);
 }
+
+// ---------------------------------------------------- the pinned registrars
+//
+// Identities only. The secrets behind them stay in the file and are never read
+// here, because a deploy does not act as a registrar; it only states which
+// registrars will be allowed to.
+if (!existsSync(SECRETS)) {
+    fail(`no registrar identities at ${SECRETS}. ` +
+        `Run \`node scripts/make-registrar-secrets.mjs\` first. The list is fixed ` +
+        `at deploy and cannot be added to later, so it has to be right now.`);
+}
+const idOf = (label) => {
+    const key = `VINPASSPORT_REGISTRAR_${label}_ID_HEX=`;
+    const line = readFileSync(SECRETS, 'utf8').split(/\r?\n/).find((l) => l.startsWith(key));
+    const hex = line?.slice(key.length).trim();
+    if (!/^[0-9a-f]{64}$/.test(hex ?? '')) fail(`${key}<64 hex> missing or malformed in ${SECRETS}`);
+    return { hex, bytes: Uint8Array.from(Buffer.from(hex, 'hex')) };
+};
+const regA = idOf('A');
+const regB = idOf('B');
+if (regA.hex === regB.hex) fail('registrar A and B have the same identity; regenerate the secrets');
+
+// Four slots on chain. Two distinct authorities, and the remainder repeats B:
+// a set keeps one copy, so repetition fills the vector without widening who is
+// authorised. B registers nothing, and exists so that "only the registrar that
+// registered a vehicle may write its history" is demonstrable as a refusal on
+// the live contract rather than only in the test suite.
+const registrarSlots = [regA.bytes, regB.bytes, regB.bytes, regB.bytes];
 
 // ---------------------------------------------------------------- build
 
 console.log(`network   preprod`);
 console.log(`sponsor   ${baseUrl} (session ${sponsorSessionId.slice(0, 8)}…)`);
 console.log(`mode      ${SUBMIT ? 'SUBMIT - this spends 1 of 2 allowed deploys' : 'dry run - nothing leaves this machine'}`);
+console.log(`registrar A ${regA.hex}  (the demo registrar)`);
+console.log(`registrar B ${regB.hex}  (listed, registers nothing)`);
+console.log(`          this list is fixed for the contract's lifetime`);
 console.log('\nbuilding and proving the deploy locally (wasm, takes a while)…');
 
 const builder = await createTxBuilder({
@@ -94,11 +136,20 @@ const witnesses = {
     newValue: neverCalled('newValue'),
     previousValue: neverCalled('previousValue'),
     previousSalt: neverCalled('previousSalt'),
-    newSalt: neverCalled('newSalt')
+    newSalt: neverCalled('newSalt'),
+    // The constructor pins identities that were derived off-chain; it never
+    // reads a secret. If a deploy ever asks for one, the shape assumption
+    // above has stopped holding and the deploy should die rather than guess.
+    registrarSecret: neverCalled('registrarSecret')
 };
 
 try {
-    const deploy = await builder.buildDeploySponsorable({ initialPrivateState: {}, witnesses, bind: false });
+    const deploy = await builder.buildDeploySponsorable({
+        initialPrivateState: {},
+        constructorArgs: [registrarSlots],
+        witnesses,
+        bind: false
+    });
     console.log(`\ncontract address (known before submission): ${deploy.contractAddress}`);
 
     if (!SUBMIT) {
@@ -118,6 +169,14 @@ try {
     }
 
     mkdirSync(join(ROOT, 'deploy'), { recursive: true });
+    if (existsSync(outPath)) {
+        // Keep the superseded record. The previous address has been quoted in a
+        // submission and in the README's verification steps, and it stays
+        // readable on chain, so losing the file would lose the comparison.
+        const archived = join(ROOT, 'deploy', `preprod-superseded-${Date.now()}.json`);
+        renameSync(outPath, archived);
+        console.log(`\narchived the previous record to ${archived}`);
+    }
     writeFileSync(outPath, JSON.stringify({
         network: 'preprod',
         contractAddress: deploy.contractAddress,

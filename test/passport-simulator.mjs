@@ -183,8 +183,8 @@ export class PassportSimulator {
      * the identity from the acting secret, so `secret` chooses who is calling,
      * not what gets written.
      */
-    registerPassport(vin, contentRoot, secret = REGISTRAR_SECRET) {
-        this.actAs(secret);
+    registerPassport(vin, contentRoot, secret) {
+        if (secret) this.actAs(secret);
         this.ctx = this.contract.impureCircuits.registerPassport(
             this.ctx, vin, contentRoot
         ).context;
