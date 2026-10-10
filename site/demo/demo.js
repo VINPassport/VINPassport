@@ -53,15 +53,21 @@ function paintStatus(status) {
     }
     capLine.textContent = capacityLine(status);
     const ready = status?.enabled && status?.ready && !status?.error;
-    const spent = ready && status.remaining <= 0;
+    // The wallet starts when a run starts, so an idle engine is usable: the
+    // run's first step is the wallet catching up, and the page says so.
+    const idle = status?.enabled && !status?.ready && !status?.error
+        && status?.walletRunning === false;
+    const live = ready || idle;
+    const spent = live && status.remaining <= 0;
     // The daily cap is not the only thing that can stop a run. Starting one
     // with an empty wallet spends a slot to fail at the first fee, so treat
     // no dust exactly like no runs left.
     const broke = ready && status.funds?.dust != null && BigInt(status.funds.dust) === 0n;
-    capDot.style.background = ready && !spent && !broke ? '#004AAD' : '#8B95FF';
+    capDot.style.background = live && !spent && !broke ? '#004AAD' : '#8B95FF';
     capState.textContent = !status?.enabled ? 'Preprod runs are off here'
         : status.error ? 'Preprod runs unavailable'
-            : !status.ready ? 'Wallet syncing'
+            : idle ? 'Ready to run'
+                : !status.ready ? 'Wallet syncing'
                 : broke ? 'Out of dust'
                     : spent ? "Today's runs are used"
                         : 'Connected to preprod';
@@ -74,7 +80,7 @@ function paintStatus(status) {
     }
 
     if (busy) return;
-    if (!ready) {
+    if (!live) {
         disable(!status?.enabled
             ? 'This server does not run preprod demos.'
             : status.error ? status.error
@@ -90,7 +96,9 @@ function paintStatus(status) {
         goNote.textContent = 'the counter resets at 00:00 UTC';
     } else {
         enable();
-        goNote.textContent = `${status.remaining} left today · a run writes permanent public state`;
+        goNote.textContent = idle
+            ? `${status.remaining} left today · the wallet starts with your run, so step one takes a few minutes`
+            : `${status.remaining} left today · a run writes permanent public state`;
     }
 }
 
@@ -107,7 +115,9 @@ function watchUntilReady() {
     setInterval(async () => {
         if (busy) return;
         const s = lastStatus;
-        if (s?.unreachable || (s?.enabled && !s?.ready)) await refreshStatus();
+        // An idle engine is a resting state, not a pending one: polling it
+        // forever is exactly the background cost this page should not add.
+        if (s?.unreachable || (s?.enabled && !s?.ready && s?.walletRunning !== false)) await refreshStatus();
     }, 20000);
 }
 

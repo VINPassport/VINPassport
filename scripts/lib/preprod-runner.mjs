@@ -198,6 +198,18 @@ export async function createRunner({ log = console.log } = {}) {
     let warmError = null;
     const dust = { applied: -1n, tip: -1n };
 
+    // The wallet is the only thing on this box that costs money while nobody
+    // is using it: three live indexer and node connections streaming every
+    // preprod event, around the clock, whether or not anyone visits. So it
+    // starts when a run asks for it and is put away when the demo goes quiet.
+    // Bandwidth, not latency, is the binding cost here.
+    const MAX_SNAPSHOT_AGE_MS = Number(process.env.VINPASSPORT_MAX_SNAPSHOT_AGE_H || 48) * 3_600_000;
+    const WARMUP_CEILING_MS = Number(process.env.VINPASSPORT_WARMUP_CEILING_M || 30) * 60_000;
+    const IDLE_SHUTDOWN_MS = Number(process.env.VINPASSPORT_IDLE_SHUTDOWN_M || 20) * 60_000;
+    const DISCARD_STALE = process.env.VINPASSPORT_DISCARD_STALE_SNAPSHOTS === '1';
+    let warmup = null;
+    let lastUseAt = Date.now();
+
     const peek = () => new Promise((res) => {
         let sub; const t = setTimeout(() => { if (sub) sub.unsubscribe(); res(null); }, 15000);
         try {
@@ -375,30 +387,82 @@ export async function createRunner({ log = console.log } = {}) {
         } catch (e) { log('demo: snapshot failed:', e?.message ?? e); }
     }
 
-    const warmup = (async () => {
-        log('demo: starting wallet facade from snapshots...');
-        facade = await WalletFacade.init({
-            configuration,
-            provingService: () => makeWasmProvingService(),
-            shielded: () => restore.shielded ? ShieldedWallet(configuration).restore(restore.shielded)
-                : ShieldedWallet(configuration).startWithSecretKeys(zswapKeys),
-            unshielded: () => restore.unshielded ? UnshieldedWallet(configuration).restore(restore.unshielded)
-                : UnshieldedWallet(configuration).startWithPublicKey(PublicKey.fromKeyStore(keystore)),
-            dust: () => DustWallet(configuration).restore(restore.dust)
+    async function teardown(why) {
+        const f = facade;
+        facade = null; ready = false; warmup = null;
+        if (!f) return;
+        try { await f.stop(); log(`demo: wallet stopped (${why})`); }
+        catch (e) { log('demo: wallet stop failed:', e?.message ?? e); }
+    }
+
+    /**
+     * A snapshot is replayed forward from the moment it was taken. Replay the
+     * wrong side of a couple of days and the wallet does not catch up slowly:
+     * it refuses the stream and retries, which streams for as long as the
+     * process lives without ever reaching the tip. So age snapshots out and
+     * name the reason, rather than beginning a long unattended catch-up that
+     * costs as much as the loop it replaces. Resyncing is a deliberate act.
+     */
+    function staleReason() {
+        if (DISCARD_STALE) return null;
+        let savedAt;
+        try { savedAt = Date.parse(JSON.parse(readFileSync(join(stateDir, 'meta.json'), 'utf8')).savedAt); }
+        catch { return null; }
+        if (!Number.isFinite(savedAt)) return null;
+        const age = Date.now() - savedAt;
+        if (age <= MAX_SNAPSHOT_AGE_MS) return null;
+        const d = (ms) => (ms / 86_400_000).toFixed(1);
+        return `the wallet snapshots are ${d(age)} days old, past the ${d(MAX_SNAPSHOT_AGE_MS)} day replay limit. `
+            + 'Start once with VINPASSPORT_DISCARD_STALE_SNAPSHOTS=1 to resync from scratch, and watch the first hour';
+    }
+
+    function startWarmup() {
+        if (warmup) return warmup;
+        const p = (async () => {
+            const stale = staleReason();
+            if (stale) throw new Error(stale);
+            log('demo: starting wallet facade from snapshots...');
+            facade = await WalletFacade.init({
+                configuration,
+                provingService: () => makeWasmProvingService(),
+                shielded: () => restore.shielded ? ShieldedWallet(configuration).restore(restore.shielded)
+                    : ShieldedWallet(configuration).startWithSecretKeys(zswapKeys),
+                unshielded: () => restore.unshielded ? UnshieldedWallet(configuration).restore(restore.unshielded)
+                    : UnshieldedWallet(configuration).startWithPublicKey(PublicKey.fromKeyStore(keystore)),
+                dust: () => DustWallet(configuration).restore(restore.dust)
+            });
+            await facade.start(zswapKeys, dustKey);
+            watchState();
+            await gateToTip(WARMUP_CEILING_MS);
+            ready = true;
+            log(`demo: wallet at tip (dust applied=${dust.applied}); preprod runs enabled`);
+            await snapshot('warmup');
+        })().catch(async (e) => {
+            log('demo: warmup FAILED:', e?.message ?? e);
+            // A warm-up that failed must not leave a half-synced wallet
+            // streaming behind it. Stop first, then record why, because
+            // teardown clears the in-flight promise.
+            await teardown('warm-up failed');
+            warmError = e;
         });
-        await facade.start(zswapKeys, dustKey);
-        watchState();
-        await gateToTip(30 * 60_000);
-        ready = true;
-        log(`demo: wallet at tip (dust applied=${dust.applied}); preprod runs enabled`);
-        await snapshot('warmup');
-    })().catch((e) => { warmError = e; log('demo: warmup FAILED:', e?.message ?? e); });
+        warmup = p;
+        return p;
+    }
 
     // Never snapshot mid-run: a run between balancing and confirmation has
     // pending atoms by design, and freezing that is the same trap as freezing
     // a reject.
-    const snapTimer = setInterval(() => { if (ready && queueLength === 0) snapshot('periodic'); }, 30 * 60_000);
+    const snapTimer = setInterval(() => { if (ready && facade && queueLength === 0) snapshot('periodic'); }, 30 * 60_000);
     snapTimer.unref?.();
+
+    // Put the wallet away once the demo goes quiet, so one visitor in an
+    // afternoon does not cost a day of streaming. The next run warms it again.
+    const idleTimer = setInterval(() => {
+        if (!ready || !facade || queueLength > 0) return;
+        if (Date.now() - lastUseAt < IDLE_SHUTDOWN_MS) return;
+        Promise.resolve(snapshot('idle')).then(() => teardown('idle'));
+    }, 60_000);
+    idleTimer.unref?.();
 
     // ---- daily cap ---------------------------------------------------------
     const counterPath = join(stateDir, 'demo-counter.json');
@@ -770,7 +834,7 @@ export async function createRunner({ log = console.log } = {}) {
         // -- wait for the wallet, then run stage by stage
         const walletStep = step('wallet', 'Wallet at chain tip, node reachable, dust ready');
         await runStep(walletStep, async () => {
-            await warmup;
+            await startWarmup();
             if (warmError) throw warmError;
             // Ask the node whether it is there before proving anything for it.
             // Same argument as the dust floor below: a run that discovers at
@@ -1335,6 +1399,14 @@ export async function createRunner({ log = console.log } = {}) {
         // A run that would not stop is still holding the one facade. Refuse
         // rather than start a second one beside it.
         if (wedged) throw Object.assign(new Error(wedged), { code: 'WEDGED' });
+        // Checked before the slot is taken: refusing to start costs nothing,
+        // but a warm-up that cannot succeed would spend a run to say so.
+        const stale = staleReason();
+        if (stale) throw new Error(stale);
+        // Asking for a run is what starts the wallet. The run's first step
+        // already waits on it, so the wait is visible rather than hidden.
+        lastUseAt = Date.now();
+        startWarmup();
         takeSlot();                       // counts against today even if it later fails
         const job = makeJob(kind);
         queueLength += 1;
@@ -1462,6 +1534,11 @@ export async function createRunner({ log = console.log } = {}) {
                 // it as an error rather than a quiet refusal means the page
                 // explains itself instead of the button just not working.
                 ready: ready && !wedged,
+                // Whether the wallet is up at all. With it started on
+                // demand, a quiet box is the resting state rather than a slow
+                // one, and a page that cannot tell the two apart would poll
+                // "still warming" forever. The page derives the rest.
+                walletRunning: !!warmup,
                 warming: !ready && !warmError && !wedged,
                 error: warmError ? String(warmError.message) : wedged,
                 capacity, used: c.used, remaining: Math.max(0, capacity - c.used),
