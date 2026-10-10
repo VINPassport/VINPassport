@@ -38,6 +38,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { connect, createTxBuilder } from '@odatano/nightgate-tx';
 import { Contract } from '../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
+import { readRegistrarSlots, REGISTRAR_ROLES } from './lib/registrar-slots.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const MANAGED = join(ROOT, 'contracts', 'vinpassport', 'src', 'managed', 'vinpassport');
@@ -77,39 +78,29 @@ if (existsSync(outPath) && SUBMIT && !REDEPLOY) {
 
 // ---------------------------------------------------- the pinned registrars
 //
-// Identities only. The secrets behind them stay in the file and are never read
-// here, because a deploy does not act as a registrar; it only states which
-// registrars will be allowed to.
-if (!existsSync(SECRETS)) {
-    fail(`no registrar identities at ${SECRETS}. ` +
-        `Run \`node scripts/make-registrar-secrets.mjs\` first. The list is fixed ` +
-        `at deploy and cannot be added to later, so it has to be right now.`);
+// Four slots on chain, four distinct authorities, read and checked by
+// scripts/lib/registrar-slots.mjs so the one irreversible input has tests of
+// its own:
+//
+//   A  the demo registrar, which registers vehicles
+//   B  listed, registers nothing, so that "only the registrar that registered
+//      a vehicle may write its history" is demonstrable as a refusal on the
+//      live contract rather than only in the test suite
+//   C  a third distinct authority
+//   D  a fourth, held unused
+let regs, registrarSlots;
+try {
+    ({ regs, slots: registrarSlots } = readRegistrarSlots(SECRETS));
+} catch (e) {
+    fail(e.message);
 }
-const idOf = (label) => {
-    const key = `VINPASSPORT_REGISTRAR_${label}_ID_HEX=`;
-    const line = readFileSync(SECRETS, 'utf8').split(/\r?\n/).find((l) => l.startsWith(key));
-    const hex = line?.slice(key.length).trim();
-    if (!/^[0-9a-f]{64}$/.test(hex ?? '')) fail(`${key}<64 hex> missing or malformed in ${SECRETS}`);
-    return { hex, bytes: Uint8Array.from(Buffer.from(hex, 'hex')) };
-};
-const regA = idOf('A');
-const regB = idOf('B');
-if (regA.hex === regB.hex) fail('registrar A and B have the same identity; regenerate the secrets');
-
-// Four slots on chain. Two distinct authorities, and the remainder repeats B:
-// a set keeps one copy, so repetition fills the vector without widening who is
-// authorised. B registers nothing, and exists so that "only the registrar that
-// registered a vehicle may write its history" is demonstrable as a refusal on
-// the live contract rather than only in the test suite.
-const registrarSlots = [regA.bytes, regB.bytes, regB.bytes, regB.bytes];
 
 // ---------------------------------------------------------------- build
 
 console.log(`network   preprod`);
 console.log(`sponsor   ${baseUrl} (session ${sponsorSessionId.slice(0, 8)}…)`);
 console.log(`mode      ${SUBMIT ? 'SUBMIT - this spends 1 of 2 allowed deploys' : 'dry run - nothing leaves this machine'}`);
-console.log(`registrar A ${regA.hex}  (the demo registrar)`);
-console.log(`registrar B ${regB.hex}  (listed, registers nothing)`);
+for (const r of regs) console.log(`registrar ${r.label} ${r.hex}  (${REGISTRAR_ROLES[r.label]})`);
 console.log(`          this list is fixed for the contract's lifetime`);
 console.log('\nbuilding and proving the deploy locally (wasm, takes a while)…');
 
