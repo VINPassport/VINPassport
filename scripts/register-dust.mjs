@@ -112,9 +112,31 @@ log(`waiting ${Math.round(settleMs / 1000)}s for the wallet to see the chain...`
 await new Promise((r) => setTimeout(r, settleMs));
 
 const now = () => new Date();
-const utxos = [...(facade.unshielded.totalCoins ?? [])];
-const dustNow = facade.dust.balance(now());
-const balances = facade.unshielded.balances ?? {};
+
+/**
+ * Balances live on the wallet STATE the facade emits, not on the wallet
+ * handles. `facade.dust.balance` and `facade.unshielded.balances` are both
+ * undefined, and reading them does not throw a useful error: it reports a
+ * confident ZERO for a funded wallet, which here would print "nothing to
+ * register" at exactly the moment there is something to register. The same
+ * trap is documented in lib/preprod-runner.mjs, which already reads state.
+ */
+let latest = null;
+facade.state().subscribe({ next: (v) => { latest = v; }, error: () => { } });
+for (let i = 0; i < 40 && latest == null; i++) {
+    await new Promise((r) => setTimeout(r, 250));
+}
+if (latest == null) {
+    log('\nThe wallet emitted no state, so balances cannot be read. Not registering.');
+    await facade.stop().catch(() => { });
+    process.exit(1);
+}
+
+const utxos = [...(latest.unshielded?.totalCoins ?? [])];
+const dustNow = typeof latest.dust?.balance === 'function'
+    ? BigInt(latest.dust.balance(now()))
+    : 0n;
+const balances = latest.unshielded?.balances ?? {};
 const nightTotal = Object.values(balances).reduce((a, v) => a + BigInt(v), 0n);
 
 log(`\nNIGHT   ${nightTotal} across ${utxos.length} utxo(s)`);
