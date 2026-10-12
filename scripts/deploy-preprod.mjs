@@ -22,7 +22,11 @@
  *
  * Environment (set in the shell, never in a file inside this repo):
  *   VINPASSPORT_SEED_HEX             128 hex chars. Our key. Never leaves the process.
- *   NIGHTGATE_AGENT_TOKEN          the grant token, sent to us privately
+ *   ODATANO_GATEWAY_KEY            a gateway key, `oda_` + 40 hex, from
+ *                                  https://api.odatano.dev. This is the
+ *                                  current scheme
+ *   NIGHTGATE_AGENT_TOKEN          the older `ngat_` grant token, for the
+ *                                  legacy host only. Refused by the new one
  *   NIGHTGATE_SPONSOR_SESSION_ID   the sponsor session the grant is pinned to
  *   NIGHTGATE_BASE_URL             optional, defaults to https://api.nightgate.dev
  *
@@ -64,12 +68,36 @@ const seed = process.env.VINPASSPORT_SEED_HEX ?? '';
 if (!/^[0-9a-fA-F]{128}$/.test(seed)) {
     fail('VINPASSPORT_SEED_HEX must be 128 hex characters. Set it in the shell; never write it to a file in this repo.');
 }
-const token = process.env.NIGHTGATE_AGENT_TOKEN;
+// Two credential schemes, because ODATANO moved.
+//
+// NIGHTGATE now lives under api.<network>.odatano.dev and authenticates with
+// a gateway key, `oda_` plus 40 hex, sent as a Bearer token. The older
+// `ngat_` agent token is refused by the new host with
+//   {"error":"not a gateway key (expected oda_ followed by 40 hex characters)"}
+// A key carries a unit balance; `sponsorUnboundTransaction`, which is what a
+// deploy uses, is one of the actions a sandbox key may call.
+//
+// The legacy path is kept so an older grant still works against the old host
+// if ODATANO keeps it alive, but the gateway key wins when both are set.
+const gatewayKey = process.env.ODATANO_GATEWAY_KEY?.trim();
+const legacyAgentToken = process.env.NIGHTGATE_AGENT_TOKEN?.trim();
 const sponsorSessionId = process.env.NIGHTGATE_SPONSOR_SESSION_ID;
-if (!token || !sponsorSessionId) {
-    fail('NIGHTGATE_AGENT_TOKEN and NIGHTGATE_SPONSOR_SESSION_ID are required (from the onboarding note).');
+
+if (!gatewayKey && !legacyAgentToken) {
+    fail('no sponsor credential. Set ODATANO_GATEWAY_KEY to a gateway key (oda_ + 40 hex) '
+        + 'from https://api.odatano.dev, or NIGHTGATE_AGENT_TOKEN for the legacy host.');
 }
-const baseUrl = process.env.NIGHTGATE_BASE_URL ?? 'https://api.nightgate.dev';
+if (gatewayKey && !/^oda_[0-9a-f]{40}$/.test(gatewayKey)) {
+    fail(`ODATANO_GATEWAY_KEY is not shaped like a gateway key (oda_ + 40 hex); got ${gatewayKey.length} characters.`);
+}
+if (!sponsorSessionId) {
+    fail('NIGHTGATE_SPONSOR_SESSION_ID is required. A sandbox key uses the shared pool session; '
+        + 'a key of your own reports its session at GET /api/me on the gateway.');
+}
+
+const baseUrl = process.env.NIGHTGATE_BASE_URL
+    ?? (gatewayKey ? 'https://api.preprod.odatano.dev' : 'https://api.nightgate.dev');
+const auth = gatewayKey ? { token: gatewayKey } : { agentToken: legacyAgentToken };
 
 const outPath = join(ROOT, 'deploy', 'preprod.json');
 if (existsSync(outPath) && SUBMIT && !REDEPLOY) {
@@ -101,7 +129,7 @@ try {
 // ---------------------------------------------------------------- build
 
 console.log(`network   preprod`);
-console.log(`sponsor   ${baseUrl} (session ${sponsorSessionId.slice(0, 8)}…)`);
+console.log(`sponsor   ${baseUrl} (session ${sponsorSessionId.slice(0, 8)}…, ${gatewayKey ? 'gateway key' : 'legacy agent token'})`);
 console.log(`mode      ${SUBMIT ? 'SUBMIT - this spends 1 of 2 allowed deploys' : 'dry run - nothing leaves this machine'}`);
 for (const r of regs) console.log(`registrar ${r.label} ${r.hex}  (${REGISTRAR_ROLES[r.label]})`);
 console.log(`          this list is fixed for the contract's lifetime`);
@@ -152,7 +180,7 @@ try {
         process.exit(0);
     }
 
-    const ng = connect({ baseUrl, agentToken: token });
+    const ng = connect({ baseUrl, ...auth });
     console.log('\nhanding the unbound transaction to the sponsor…');
     const job = await ng.sponsorUnbound({ unboundTxB64: deploy.unboundTxB64, sponsorSessionId });
     const out = await ng.waitForJob({ jobId: job.jobId, sessionId: sponsorSessionId });

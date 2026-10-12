@@ -30,7 +30,7 @@ import { readFileSync, writeFileSync, renameSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { HDWallet, Roles } from '@midnightntwrk/wallet-sdk-hd';
-import { WalletFacade } from '@midnightntwrk/wallet-sdk-facade';
+import { WalletFacade, WalletEntrySchema, mergeWalletEntries } from '@midnightntwrk/wallet-sdk-facade';
 import { InMemoryTransactionHistoryStorage } from '@midnightntwrk/wallet-sdk-abstractions';
 import { ShieldedWallet } from '@midnightntwrk/wallet-sdk-shielded';
 import { UnshieldedWallet, createKeystore, PublicKey } from '@midnightntwrk/wallet-sdk-unshielded-wallet';
@@ -47,6 +47,10 @@ const INDEXER_HTTP = process.env.VINPASSPORT_INDEXER_HTTP ?? EP.indexerHttpUrl;
 const INDEXER_WS = process.env.VINPASSPORT_INDEXER_WS ?? EP.indexerWsUrl;
 const NODE_WS = process.env.VINPASSPORT_NODE_WS ?? EP.nodeWsUrl;
 const NODE_HTTP = process.env.VINPASSPORT_NODE_HTTP ?? EP.nodeHttpUrl;
+
+// Proving happens in wasm in this process, so nothing is sent here; the
+// configuration still wants the field.
+const PROVING_SERVER_URL = process.env.VINPASSPORT_PROVING_SERVER ?? 'http://127.0.0.1:6300';
 
 const DO_IT = process.argv.includes('--register');
 const log = (...a) => console.log(...a);
@@ -71,11 +75,18 @@ const loadBlob = (n) => existsSync(blobPath(n)) ? readFileSync(blobPath(n), 'utf
 const saveBlob = (n, d) => { const t = blobPath(n) + '.tmp'; writeFileSync(t, d); renameSync(t, blobPath(n)); };
 const restore = { shielded: loadBlob('shielded'), unshielded: loadBlob('unshielded'), dust: loadBlob('dust') };
 
+// The shape the wallet SDK actually reads. An older shape here (`indexer`,
+// `node`, `transactionHistoryStorage`) was silently accepted by the facade and
+// then failed deep inside the shielded builder on
+// `config.indexerClientConnection.indexerHttpUrl`. This matches
+// lib/preprod-runner.mjs, which is the copy that has run against preprod.
 const configuration = {
-    indexer: { url: INDEXER_HTTP, wsUrl: INDEXER_WS },
-    node: { url: NODE_HTTP, wsUrl: NODE_WS },
     networkId: NETWORK_ID,
-    transactionHistoryStorage: new InMemoryTransactionHistoryStorage()
+    provingServerUrl: new URL(PROVING_SERVER_URL),
+    relayURL: new URL(NODE_WS),
+    indexerClientConnection: { indexerHttpUrl: INDEXER_HTTP, indexerWsUrl: INDEXER_WS },
+    txHistoryStorage: new InMemoryTransactionHistoryStorage(WalletEntrySchema, mergeWalletEntries),
+    costParameters: { additionalFeeOverhead: 1n, feeBlocksMargin: 5 }
 };
 
 log(`network ${NETWORK_ID}`);
