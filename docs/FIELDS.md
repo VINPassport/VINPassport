@@ -1,6 +1,6 @@
 # Provable field registry
 
-**Target: `attestation-vault-32` — 32 slots, depth 5.** 26 fields in use, 6 reserved.
+**Target: `attestation-vault-32`, 32 slots, depth 5.** 26 fields in use, 6 reserved.
 
 > This document was rewritten on 2026-08-23. NIGHTGATE 0.19.0 (22 Aug) introduced a 32-slot vault
 > lineage, lifting what had been this project's tightest constraint. The previous revision described
@@ -10,7 +10,7 @@
 
 `@odatano/dpp-sdk@0.2.0` exposes `VAULT_SLOT_WIDTHS = [8, 16, 32]`, with `MERKLE_DEPTH = 4`
 documented as *"DEFAULT tree depth (16-slot panel), **not a limit**"*. Width maps to depth via
-`depthForWidth()` — 16 → 4, 32 → 5.
+`depthForWidth()`: 16 → 4, 32 → 5.
 
 NIGHTGATE's own note on why the menu stops at 32:
 
@@ -27,7 +27,7 @@ different contract lineage. We choose 32 now, while we have nothing anchored and
 registry ordering is frozen shared vocabulary.
 
 **Reserved slots must be typed by position.** A slot reserved *after* the strings can only ever hold
-a string. Adding a numeric later would mean reordering — which changes every root. So the reserve is
+a string. Adding a numeric later would mean reordering, which changes every root. So the reserve is
 split: four numeric slots before the strings, two string slots after.
 
 **Overflow is loud, not silent.** `padToWidth` throws rather than dropping the tail, *"a registry
@@ -40,7 +40,7 @@ that outgrew its width would otherwise silently stop anchoring its last fields."
 Numerics scale ×1000 into Uint64 (`VALUE_SCALE = 1000`). Strings commit to the blake2b-256 digest of
 the exact string. Public label is `fieldKeyHex(name)` = blake2b-256 of the field name.
 
-### Numeric — slots 0–17
+### Numeric: slots 0 to 17
 
 | # | Field | Serves | Note |
 |---|---|---|---|
@@ -54,24 +54,24 @@ the exact string. Public label is `fieldKeyHex(name)` = blake2b-256 of the field
 | 7 | `co2FootprintKgCO2e` | Art 13 | Environmental declaration |
 | 8 | `recycledPlasticPct` | Art 6(1) / 10 | 15 % from 2032, 25 % from 2036; declared under Art. 10 |
 | 9 | `recycledPlasticFromELVPct` | Art 6(2) | At least 20 % of the Art. 6(1) target, from end-of-life vehicles |
-| 10 | `recycledSteelPct` | Recital 33 | **No target yet** — delegated act empowered, slot held ready |
-| 11 | `recycledAluminiumPct` | Recital 34 | **No target yet** — delegated act empowered, slot held ready |
+| 10 | `recycledSteelPct` | Recital 33 | **No target yet**: delegated act empowered, slot held ready |
+| 11 | `recycledAluminiumPct` | Recital 34 | **No target yet**: delegated act empowered, slot held ready |
 | 12 | `criticalRawMaterialPct` | Art 13 | CRM declaration |
 | 13 | `reusabilityPct` | 3R | Inherited from Directive 2005/64/EC |
 | 14 | `recyclabilityPct` | 3R | Inherited from Directive 2005/64/EC |
 | 15 | `recoverabilityPct` | 3R | Inherited from Directive 2005/64/EC |
 | 16 | `dismantlingTimeMinutes` | Art 13 | Design-for-dismantling evidence |
 
-### Reserved numeric — slots 17–21
+### Reserved numeric: slots 17 to 21
 
 Deliberately empty. Absent leaves are still salted and still anchored, so occupying one later costs
 a re-anchor but no reordering.
 
-### String — slots 22–29
+### String: slots 22 to 29
 
 | # | Field | Serves | Note |
 |---|---|---|---|
-| 22 | `vinHash` | Fraud | Identity. **Public on-chain and VIN-reversible**: `vinHash = blake2b(VIN)`, unsalted, and a VIN is on the windscreen. It is the passport's public address, not a confidential field — tiered disclosure applies to the *values*, not to the VIN key. See [D23](DECISIONS.md#settled) |
+| 22 | `vinHash` | Fraud | Identity. **Public on-chain and VIN-reversible**: `vinHash = blake2b(VIN)`, unsalted, and a VIN is on the windscreen. It is the passport's public address, not a confidential field, and tiered disclosure applies to the *values*, not to the VIN key. See [D23](DECISIONS.md#settled) |
 | 23 | `vehicleCategory` | Art 13 | M1 / N1 / etc. |
 | 24 | `euTypeApprovalNumber` | Art 13 | Binds to type approval |
 | 25 | `manufacturerBPN` | Supply chain | Business partner number |
@@ -79,15 +79,15 @@ a re-anchor but no reordering.
 | 27 | `batteryChemistry` | Interop | Mirrors the battery passport's own field |
 | 28 | `emissionsClass` | Art 13 | Euro standard |
 | 29 | `batteryPassportId` | Interop | **The explicit link to a battery passport** |
-| 30 | `passportOrigin` | Art 13 | `new` — issued at first placing on the market; `retrofit` — added to a vehicle produced before the regulation applies. Provisional occupancy 2026-08-27; the two paths share fields today, and this is how a record says which it took |
+| 30 | `passportOrigin` | Art 13 | `new` is issued at first placing on the market, `retrofit` is added to a vehicle produced before the regulation applies. Provisional occupancy 2026-08-27; the two paths share fields today, and this is how a record says which it took |
 
-### Reserved string — slot 31
+### Reserved string: slot 31
 
 ---
 
 ## Why the reserve exists
 
-The previous 16-slot panel was full on day one, and twelve credible fields had to be cut — several
+The previous 16-slot panel was full on day one, and twelve credible fields had to be cut, several
 plausibly mandatory once 2026/1738 applies in 2028. Filling 32/32 would repeat that mistake at a
 larger scale.
 
@@ -95,20 +95,20 @@ Six reserved slots is roughly 19% headroom, split by type so either kind of fiel
 without reordering. Anything beyond that needs a genuine re-anchor round, which the SDK's own
 guidance says to do **in one batch, never field by field**.
 
-## Where our passport ends — SETTLED (2026-08-27)
+## Where our passport ends: SETTLED (2026-08-27)
 
 VINPassport covers the **vehicle's** record. An EV's battery is a separate regime with its own
 passport, mandatory from February 2027 under
 [Reg (EU) 2023/1542](https://eur-lex.europa.eu/eli/reg/2023/1542/oj), and
 [NIGHTPASS](https://github.com/ODATANO/NIGHTPASS) covers that ground.
 
-**Slot 29 `batteryPassportId` is clearly ours to hold** — it is the reference out, populated only
+**Slot 29 `batteryPassportId` is clearly ours to hold**: it is the reference out, populated only
 when the vehicle is electric. That reference *is* the regulation's interoperability clause made
 concrete, and it is what makes a NIGHTPASS composition demo real rather than rhetorical.
 
 **Slot 17 `batteryStateOfHealthPct` returns to the reserve.** State of health is a claim about
 the battery, not about the vehicle. Holding it here would restate someone else's record, and the two
-would eventually disagree — at which point a verifier has two answers and no way to choose. The
+would eventually disagree, at which point a verifier has two answers and no way to choose. The
 battery passport is authoritative for the battery; we hold the link and stop.
 
 **Slot 27 `batteryChemistry` stays.** It is descriptive rather than a claim, so it carries no
@@ -135,18 +135,18 @@ npx nightgate-fetch-keys attestation-vault-32
 *"Prover keys are part of the artifact generation digest. A server booting without them says so by
 name; container images already contain them."*
 
-**Every document-bound action must name the wider vault** — `compiledArtifactRef:
-'attestation-vault-32'` — and browser consumers import
+**Every document-bound action must name the wider vault**: `compiledArtifactRef:
+'attestation-vault-32'`, and browser consumers import
 `@odatano/nightgate/browser/attestation-vault-32` and pass `slotWidth: 32` to the `prepare*` helpers.
 
 **`allowedMask` widened to Integer64.** SQLite needs nothing. **PostgreSQL and HANA need a schema
-redeploy** — which bites at deployment rather than in development, since we develop on SQLite.
+redeploy**, which bites at deployment rather than in development, since we develop on SQLite.
 
 ---
 
 ## Verification status
 
-**Verified by execution against the installed `@odatano/dpp-sdk@0.2.0` — 24/24 on 2026-08-23.**
+**Verified by execution against the installed `@odatano/dpp-sdk@0.2.0`: 24/24 on 2026-08-23.**
 Run it yourself:
 
 ```bash
@@ -160,7 +160,7 @@ treat a passing run as valid only for the version it ran against.
 |---|---|
 | `VAULT_SLOT_WIDTHS = [8, 16, 32]` | ✅ executed |
 | `MERKLE_DEPTH = 4` is a default, not a cap | ✅ executed |
-| `depthForWidth` / `widthForDepth` — 16 ↔ 4, 32 ↔ 5 | ✅ executed |
+| `depthForWidth` / `widthForDepth`: 16 ↔ 4, 32 ↔ 5 | ✅ executed |
 | `depthForWidth` rejects non-powers-of-two | ✅ executed |
 | `VALUE_SCALE = 1000`, numerics ×1000 into Uint64 | ✅ executed |
 | Numeric fields precede all string fields | ✅ executed |
@@ -172,20 +172,20 @@ treat a passing run as valid only for the version it ran against.
 ### Two things execution revealed that reading did not
 
 **The SDK itself supports up to 1024 slots.** `depthForWidth` rejects bad input with *"slot width
-must be a power of two in 2..1024"*. So 32 is not an SDK limit — it is the widest **vault contract
+must be a power of two in 2..1024"*. So 32 is not an SDK limit: it is the widest **vault contract
 lineage NIGHTGATE ships**, bounded by wasm proving memory (their note: the ceiling is hit at 64). If
 a future panel genuinely needed 64, the blockers are the contract and prover memory, not this
 library.
 
-**Overflow messages are specific** — *"33 entries do not fit a 32-slot tree"* — so a registry that
+**Overflow messages are specific** (*"33 entries do not fit a 32-slot tree"*), so a registry that
 outgrows its width fails loudly and legibly rather than silently dropping fields.
 
 ### Still to confirm by running the full stack
 
 - [ ] A 32-slot custom panel needs no contract change beyond naming `attestation-vault-32`
-- [ ] Proving time, memory and DUST cost at width 32 versus 16 — Phase 0 cost measurement (Q5)
+- [ ] Proving time, memory and DUST cost at width 32 versus 16: Phase 0 cost measurement (Q5)
 - [ ] `contentSaltSeed` persistence, and a tested restore path
 
 Note that `@odatano/dpp-sdk@0.2.0` was published to npm **without a corresponding commit in the
 GitHub repository**, which still shows only 0.1.0. Verify against the installed package, not the
-repo — which is exactly what `test:sdk` does.
+repo, which is exactly what `test:sdk` does.
