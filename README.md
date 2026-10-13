@@ -115,7 +115,7 @@ seconds.
 | `npm run test:app` | 71 tests on the application paths: verdicts, the deploy's registrar list, the submission path and the chain-sees panel, via `node --test` |
 | `npm run test:sdk` | 24 assertions pinning our assumptions about `@odatano/dpp-sdk` |
 | `npm run app` | All three surfaces + the circuits, one dependency-free server |
-| `npm run serve:site` | The site statically, as GitHub Pages serves it — no circuits, demo state only |
+| `npm run serve:site` | The site statically, as GitHub Pages serves it: no circuits, demo state only |
 | `npm run demo:export` | Regenerate `site/verify/` demo ledger by running the compiled circuits |
 | `npm run deploy:preprod` | Build + prove the deploy locally; `--submit` hands it to the sponsor |
 | `npm run compile` | Recompile the Compact contract: **WSL2, macOS or Linux only**, see below |
@@ -155,7 +155,7 @@ saw. It is capped per UTC day and gives every run a fresh random VIN. The intake
 console carries the same thing as a *Submit to Midnight preprod* toggle.
 
 This needs a funded, synced wallet, so it is off unless the server is started with
-`VINPASSPORT_PREPROD=1` and pointed at a seed file and wallet snapshots — a plain
+`VINPASSPORT_PREPROD=1` and pointed at a seed file and wallet snapshots. A plain
 `npm run app` is unchanged and needs no secrets. [docs/DEMO-MODE.md](docs/DEMO-MODE.md)
 has the design, the API, and the two ledger rules that decide how calls pack into
 transactions.
@@ -369,7 +369,7 @@ It proves a reading is **the one that was committed**, and that it satisfies a b
 prove the reading matches physical reality. A producer who commits a false value produces a
 cryptographically valid proof of a false fact.
 
-Closing that gap means the value is written by a party already accountable for it — the open
+Closing that gap means the value is written by a party already accountable for it. The open
 problem is **provenance of the writer**, not tamper resistance. That is a data-relationship
 problem before it is a cryptographic one, and nothing in this build solves it. **No date is
 claimed for it.** The limit is stated in full in
@@ -434,7 +434,7 @@ queryable on chain, and this paragraph will say so for as long as that is true.
 | Compact contract: 7 circuits | **Done.** Compiles clean, artifacts committed and reproducible from source |
 | Contract test suite | **Done.** 90 tests; every guard mutation-checked, 20 of 20 |
 | SDK assumption guard | **Done.** 24 assertions against `@odatano/dpp-sdk` 0.2.0 |
-| Provable-field registry, 32 slots | **Settled** ([FIELDS.md](docs/FIELDS.md)). 26 in use, reserve 17–21 and 31. Slots 0–16 are wired end to end and provable; the rest are salted into the content root but carry no rule yet |
+| Provable-field registry, 32 slots | **Settled** ([FIELDS.md](docs/FIELDS.md)). 26 in use, reserve 17 to 21, and 31. Slots 0 to 16 are wired end to end and provable; the rest are salted into the content root but carry no rule yet |
 | Deployment to Midnight preprod | **Wave 1's contract is live (28 Aug 2026).** Built, proven and signed locally; the deploy fee was sponsored by ODATANO ([D20](docs/DECISIONS.md#settled)). Address and tx committed at [`deploy/preprod.json`](deploy/preprod.json). **The Wave 2 contract is not yet deployed** - see [Built during Wave 2](#built-during-wave-2) |
 | Frontend: verification, intake console, proof explorer | **Done.** Three surfaces against the compiled circuits (`npm run app`), live for anyone at [passport.vin](https://passport.vin/) |
 | Live preprod runs from the browser | **Built, not currently hosted.** `/demo/` and the intake console write real transactions to the deployed contract, paying their own DUST ([D24](docs/DECISIONS.md#settled)), capped per UTC day, every hash linking to the [preprod explorer](https://preprod.midnightexplorer.com). The host that served them was cancelled on 10 Oct 2026, so the page now reports that preprod runs are unavailable rather than pretending otherwise. `npm run app` runs the same path locally |
@@ -476,15 +476,15 @@ builds, batches and proves every transaction locally against our own key. And OD
 NIGHTGATE **sponsored the contract deployment** on 28 August 2026 under a metered grant.
 
 **Ongoing fees are no longer sponsored.** Since [D24](docs/DECISIONS.md#settled) the demo pays its
-own DUST from a wallet we fund and submits to the public preprod node itself — no token, no sponsor
+own DUST from a wallet we fund and submits to the public preprod node itself: no token, no sponsor
 session, no hosted call in the runtime path. That was the fallback [D20](docs/DECISIONS.md#settled)
 anticipated after a sponsor outage on 25 August, and it cost one function precisely because every
 transaction was *already* built, proven and signed on our side. **NIGHTGATE never saw a witness when
 it paid, and there is no witness to see now.**
 
 VINPassport does not use NIGHTGATE's CAP service, its OData layer, its `attestation-vault` contract,
-or its disclosure grants. Those are on the roadmap — disclosure grants are the piece Phase 1
-actually needs — not in this submission. See [D20](docs/DECISIONS.md#settled).
+or its disclosure grants. Those are on the roadmap (disclosure grants are the piece Phase 1
+actually needs), not in this submission. See [D20](docs/DECISIONS.md#settled).
 
 Thanks to **[ODATANO](https://github.com/ODATANO)** for the SDK, for the deployment grant, for
 review, and for the [reference integration](https://github.com/maxalexweber1/VINPassport-NIGHTGATE-DEMO)
