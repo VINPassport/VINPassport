@@ -84,7 +84,24 @@ const configuration = {
     networkId: NETWORK_ID,
     provingServerUrl: new URL(PROVING_SERVER_URL),
     relayURL: new URL(NODE_WS),
-    indexerClientConnection: { indexerHttpUrl: INDEXER_HTTP, indexerWsUrl: INDEXER_WS },
+    indexerClientConnection: {
+        indexerHttpUrl: INDEXER_HTTP,
+        indexerWsUrl: INDEXER_WS,
+        // The same windows `scripts/sync-dust.mjs` uses. At the defaults the
+        // in-flight queue fills in under a second, the client disposes the
+        // subscription and re-opens it from a cursor, and the apply loop can
+        // stop dead there with `isConnected` still true and nothing thrown.
+        // Wider windows make that far rarer. See sync-dust.mjs for the detail.
+        bufferSize: Number(process.env.DUST_SYNC_BUFFER ?? 150_000),
+        resumeThreshold: Number(process.env.DUST_SYNC_RESUME_AT ?? 75_000)
+    },
+    // Batching the apply loop: at the defaults it is capped near 2,000 events a
+    // second whatever the machine can do, because it waits between every batch.
+    batchUpdates: {
+        size: Number(process.env.DUST_SYNC_BATCH ?? 1000),
+        timeout: Number(process.env.DUST_SYNC_BATCH_TIMEOUT_MS ?? 100),
+        spacing: Number(process.env.DUST_SYNC_SPACING_MS ?? 0)
+    },
     txHistoryStorage: new InMemoryTransactionHistoryStorage(WalletEntrySchema, mergeWalletEntries),
     costParameters: { additionalFeeOverhead: 1n, feeBlocksMargin: 5 }
 };

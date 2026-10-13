@@ -12,9 +12,12 @@
  *
  * So this script does three things the facade does not:
  *
- *   1. It runs the dust wallet ALONE. The shielded and unshielded wallets have
- *      their own streams and their own restore cost, and neither is needed to
- *      find out how much dust we have.
+ *   1. It runs the dust wallet ALONE. The shielded wallet replays a stream of
+ *      its own that is the same order of magnitude (1,649,469 zswap events,
+ *      about 395 MB, measured 13 Oct against the same tip), and the unshielded
+ *      wallet's stream is scoped to one address and costs almost nothing.
+ *      Neither is needed to find out how much dust we have, so neither is
+ *      started here.
  *   2. It CHECKPOINTS. The serialized snapshot carries an `offset`, and
  *      `restore` resumes the subscription from it, so a cut connection costs
  *      one checkpoint interval rather than the whole sync. Re-run to resume.
