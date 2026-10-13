@@ -71,6 +71,20 @@ const EMIT = process.argv.includes('--emit-unbound');
  * the two it does read.
  */
 const EMIT_BOUND = process.argv.includes('--emit-bound');
+
+/**
+ * Pay the deploy's own fee out of the DUST this wallet generates, and submit
+ * it straight to the public node. No sponsor, no gateway, no credential.
+ *
+ * `@odatano/nightgate-tx` only builds a deploy in the sponsorable, fee-unpaid
+ * form, so this builds the bound form and then balances it here, which is
+ * exactly what the demo engine already does for every call it makes
+ * ([D24](../docs/DECISIONS.md#settled)). It needs a dust snapshot at the tip:
+ * see `scripts/sync-dust-until-done.sh`.
+ *
+ * On its own it stops before submitting. Add --submit to actually deploy.
+ */
+const SELF_FUND = process.argv.includes('--self-fund');
 const REDEPLOY = process.argv.includes('--redeploy');
 const SECRETS = join(ROOT, '..', '_local-tracking', 'REGISTRAR-SECRETS.env');
 
@@ -109,7 +123,7 @@ const sponsorSessionId = localCredential('NIGHTGATE_SPONSOR_SESSION_ID', 'ODATAN
 // both stop before it, so neither should demand one: requiring a key to prove
 // a transaction locally would be asking for a secret that the work does not
 // use.
-const NEEDS_SPONSOR = SUBMIT && !EMIT;
+const NEEDS_SPONSOR = SUBMIT && !EMIT && !SELF_FUND;
 
 if (NEEDS_SPONSOR && !gatewayKey && !legacyAgentToken) {
     fail([
@@ -167,12 +181,39 @@ console.log(`sponsor   ${NEEDS_SPONSOR
     : 'none needed for this mode; nothing is sponsored here'}`);
 console.log(`mode      ${EMIT
     ? 'EMIT - build and prove, write the unbound transaction, submit nothing'
-    : SUBMIT
-        ? 'SUBMIT - this spends 1 of 2 allowed deploys'
-        : 'dry run - nothing leaves this machine'}`);
+    : SELF_FUND
+        ? (SUBMIT
+            ? 'SELF-FUND + SUBMIT - we pay the fee from our own dust and deploy'
+            : 'SELF-FUND dry run - build, prove and pay the fee, submit nothing')
+        : SUBMIT
+            ? 'SUBMIT - this spends 1 of 2 allowed deploys'
+            : 'dry run - nothing leaves this machine'}`);
 for (const r of regs) console.log(`registrar ${r.label} ${r.hex}  (${REGISTRAR_ROLES[r.label]})`);
 console.log(`          this list is fixed for the contract's lifetime`);
 console.log('\nbuilding and proving the deploy locally (wasm, takes a while)…');
+
+/**
+ * Write the public record of a deployment, keeping whatever was there before.
+ *
+ * The previous address has been quoted in a submission and in the README's
+ * verification steps, and it stays readable on chain, so losing the file would
+ * lose the comparison a reviewer makes between the two contracts.
+ */
+function recordDeploy(contractAddress, txHash) {
+    mkdirSync(join(ROOT, 'deploy'), { recursive: true });
+    if (existsSync(outPath)) {
+        const archived = join(ROOT, 'deploy', `preprod-superseded-${Date.now()}.json`);
+        renameSync(outPath, archived);
+        console.log(`\narchived the previous record to ${archived}`);
+    }
+    writeFileSync(outPath, JSON.stringify({
+        network: 'preprod',
+        contractAddress,
+        txHash,
+        contract: 'vinpassport',
+        note: 'Public record of the deployment. Address and tx hash are public by definition.'
+    }, null, 2) + '\n');
+}
 
 const builder = await createTxBuilder({
     seedHex: seed,
@@ -209,7 +250,9 @@ try {
         initialPrivateState: {},
         constructorArgs: [registrarSlots],
         witnesses,
-        bind: EMIT_BOUND ? true : false
+        // Self-funding balances the fee here, and the balancing path reads the
+        // BOUND form, so it builds the same shape --emit-bound does.
+        bind: (EMIT_BOUND || SELF_FUND) ? true : false
     });
     console.log(`\ncontract address (known before submission): ${deploy.contractAddress}`);
 
@@ -231,9 +274,32 @@ try {
         process.exit(0);
     }
 
+    if (SELF_FUND) {
+        const { payFromOwnDust } = await import('./lib/self-fund.mjs');
+        const paid = await payFromOwnDust({
+            finalizedTxB64: deploy.finalizedTxB64,
+            seedHex: seed,
+            submit: SUBMIT,
+            log: (...a) => console.log(...a)
+        });
+        if (!paid.submitted) {
+            console.log('\nSELF-FUND dry run complete. The fee was balanced from our own dust and the');
+            console.log('transaction finalized, but NOTHING was submitted. Re-run with --submit to deploy.');
+            console.log(`dust before ${paid.dustBefore}`);
+            process.exit(0);
+        }
+        recordDeploy(deploy.contractAddress, paid.txHash);
+        console.log(`\nDEPLOYED  ${deploy.contractAddress}`);
+        console.log(`tx        ${paid.txHash}`);
+        console.log(`fee paid  from our own dust (${paid.dustBefore} before)`);
+        console.log(`recorded  deploy/preprod.json - commit it.`);
+        process.exit(0);
+    }
+
     if (!SUBMIT) {
         console.log('\nDry run complete. The transaction was proven and signed but NOT submitted.');
-        console.log('Re-run with --submit to spend a deploy, or --emit-unbound to sponsor elsewhere.');
+        console.log('Re-run with --submit to spend a deploy, --self-fund to pay for it ourselves,');
+        console.log('or --emit-unbound to sponsor the bytes elsewhere.');
         process.exit(0);
     }
 
@@ -247,22 +313,7 @@ try {
         fail(`landed address ${landedAt} differs from the locally computed ${deploy.contractAddress} - do not record either; investigate.`);
     }
 
-    mkdirSync(join(ROOT, 'deploy'), { recursive: true });
-    if (existsSync(outPath)) {
-        // Keep the superseded record. The previous address has been quoted in a
-        // submission and in the README's verification steps, and it stays
-        // readable on chain, so losing the file would lose the comparison.
-        const archived = join(ROOT, 'deploy', `preprod-superseded-${Date.now()}.json`);
-        renameSync(outPath, archived);
-        console.log(`\narchived the previous record to ${archived}`);
-    }
-    writeFileSync(outPath, JSON.stringify({
-        network: 'preprod',
-        contractAddress: deploy.contractAddress,
-        txHash: out.txHash,
-        contract: 'vinpassport',
-        note: 'Public record of the deployment. Address and tx hash are public by definition.'
-    }, null, 2) + '\n');
+    recordDeploy(deploy.contractAddress, out.txHash);
 
     console.log(`\nDEPLOYED  ${deploy.contractAddress}`);
     console.log(`tx        ${out.txHash}`);
