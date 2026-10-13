@@ -388,8 +388,8 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
       where the obligation starts: second-hand dealers are stage 3, inheriting passports
       rather than adopting a new system.</p>
       <h3 style="margin-top:6px">Honest about pricing</h3>
-      <p>Price points wait on <strong>measured unit cost</strong> (DUST per anchor and per proof
-      a named Wave 2 task). The structure is already built: billing gates the action, not the
+      <p>Price points wait on <strong>measured unit cost</strong>: DUST per anchor and per proof,
+      still unmeasured. The structure is already built: billing gates the action, not the
       chain, so pricing never touches crypto code.</p>
     </div>
   </div>
@@ -399,10 +399,12 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
 <!-- ============================================================ 11 roadmap -->
 <section class="slide">
   <div class="eyebrow">Roadmap</div>
-  <h2>Each wave states its delta in advance</h2>
+  <h2>Each wave states its delta in advance, and reports it after</h2>
   <table style="flex:1">
-    <tr><th style="width:130px">Wave 2</th>
-        <td><strong>A second contract that closes the limits we named</strong>: register and initialise gated on a registrar identity, an allowlist pinned at deploy, field commitments bound in-circuit to the content root, and more than one anchored root per vehicle - which is what makes <em>documentComparison</em>, the detector for the frauds nobody thought to ask about, buildable at all. Then <strong>the full NIGHTGATE integration</strong>: tiered disclosure (buyer / trade / authority see genuinely different views), disclosure grants, live browser reads, the CAP service layer, and <strong>measured unit economics</strong> that turn the pricing structure into prices</td></tr>
+    <tr><th style="width:130px">Wave 2<br><span style="font-weight:400;opacity:.65">shipped</span></th>
+        <td><strong>A second contract that closes the limits we named</strong>: register and initialise gated on a registrar identity derived in-circuit, an allowlist pinned at deploy, field commitments bound in-circuit to the content root, a third integrity rule with the panel widened from 5 fields to 17, and every guard mutation-checked, 20 of 20</td></tr>
+    <tr><th>Wave 2<br><span style="font-weight:400;opacity:.65">deferred</span></th>
+        <td><strong>The NIGHTGATE integration</strong>: tiered disclosure, disclosure grants, live browser reads, the CAP service layer, and <strong>measured unit economics</strong>. Named for Wave 2 and held back on purpose, because a passport that cannot tell one writer from another is not worth adding tiers to. <em>documentComparison</em> waits on more than one anchored root per vehicle</td></tr>
     <tr><th>Wave 3</th>
         <td><strong>Composition &amp; commerce</strong>: the battery passport link exercised against NIGHTPASS end to end, cross-root integrity in the product flow, the dealer workflow, fleet view, and one real pilot conversation</td></tr>
     <tr><th>Horizon</th>
