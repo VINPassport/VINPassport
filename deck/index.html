@@ -321,9 +321,9 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
       same assertions that reject a transaction on chain</p>
       <p><span class="big-num">+71</span> app tests · <span class="big-num">+24</span> SDK assumption assertions</p>
       <ul>
-        <li><strong>Mutation-checked, every guard</strong>: each assertion deleted in turn, recompiled and re-run. <strong>20 of 20</strong> killed by the suite</li>
+        <li><strong>Mutation-checked</strong>: every guard deleted in turn, recompiled, re-run. <strong>20 of 20</strong> killed</li>
         <li>Reproduces <strong>byte-identically</strong> from source, toolchain pinned exact</li>
-        <li><strong>Proving measured</strong>: a registration proves and signs in <strong>16.6s</strong> median in wasm, on the write path</li>
+        <li><strong>Proving measured</strong>, wasm: register <strong>16.6s</strong> · at-most <strong>29.4s</strong> · at-least <strong>27.1s</strong>. Paid at issue, not at verification</li>
       </ul>
     </div>
     <div class="box">
