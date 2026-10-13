@@ -199,17 +199,25 @@ cat contracts/vinpassport/src/managed/vinpassport/compiler/contract-info.json
 > recompute them instead of trusting that we did.
 
 **2. The deploy is real.** The contract is live on Midnight preprod; address and transaction
-hash are committed at [`deploy/preprod.json`](deploy/preprod.json). That address holds the **Wave 1
-build**; the registrar authority added in Wave 2 goes on chain at the Wave 2 redeploy, and this
-address stays quotable so the two can be compared. Ask the public indexer yourself:
+hash are committed at [`deploy/preprod.json`](deploy/preprod.json). That address holds the **Wave 2
+build**, the seven-circuit contract with the registrar authority, deployed on 2026-10-13 with the
+fee paid by ODATANO's sponsor. The Wave 1 address is kept at
+`deploy/preprod-superseded-*.json` so the two can be compared. Ask the public indexer yourself:
 
 ```bash
-curl -s -X POST https://midnight-preprod.blockfrost.io/api/v0   -H 'Content-Type: application/json'   -H "project_id: $BLOCKFROST_MIDNIGHT_PREPROD"   -d '{"query":"{ contractAction(address: \"72e524881363db50ff0bcf6c01fd9de1b550902540f9ca10e4b649df992d553a\", offset: { transactionOffset: { hash: \"af31ba67df440a343479be1d1b8b730464ce381f692e0063b8efafcf2830070f\" } }) { __typename transaction { hash block { height } } } }"}'
+curl -s -X POST https://midnight-preprod.blockfrost.io/api/v0   -H 'Content-Type: application/json'   -H "project_id: $BLOCKFROST_MIDNIGHT_PREPROD"   -d '{"query":"{ contractAction(address: \"c8dc0aa462cc5058e68b0239e89d65b1562520db3ba9eb79daa15685e04f7957\", offset: { transactionOffset: { hash: \"fe633e69fa286a3502353271c4f2b6a6b5e1435f11a5ef5df565c78b01184342\" } }) { __typename transaction { hash block { height } } } }"}'
 ```
 
 > Returns a `ContractDeploy` whose transaction hash matches the committed record, in block
-> 2297964. The offset pins the query to that deployment; without it the indexer answers with
-> the contract's *most recent* action, which today is a `ContractCall` from demo traffic.
+> 2962145. The offset pins the query to that deployment; without it the indexer answers with
+> the contract's *most recent* action, which on this address is still the deploy, because
+> nothing has called it yet.
+>
+> **The hash in the record is the one the indexer resolves, which is not the one the
+> submitter returned.** The sponsor reported a 33-byte identifier
+> (`00e528df...`, kept in the record as `submitterReportedId`) that the indexer rejects as
+> not a transaction hash. Only the resolvable hash is published, because a hash that
+> answers nothing is worse than none.
 >
 > Midnight retired its own preprod indexer on 2026-10-09 and the Midnight indexer is now
 > served by Blockfrost, so the query needs a free Blockfrost project id for Midnight
@@ -420,12 +428,15 @@ tree at each wave's close, not from memory.
 | **A panel that states what the chain does *not* hold** | A verifier who misreads silence as a denial is the failure this project exists to prevent, so the page names the absences instead of leaving them to inference | [passport.vin/verify](https://passport.vin/verify/) |
 | **Moved to the Blockfrost indexer** after the preprod indexer was decommissioned mid-wave and began answering HTTP 410 | A submission a judge cannot run is not a submission | [`scripts/lib/endpoints.mjs`](scripts/lib/endpoints.mjs) |
 
-**Not yet done, and it is the one that matters.** The Wave 2 contract compiles, passes all 185 tests
-and builds a proven deployment transaction locally, but it is **not yet on preprod**: the address in
-[`deploy/preprod.json`](deploy/preprod.json) is still Wave 1's five-circuit contract. The deploy is
-held up on a transaction-format mismatch with the fee sponsor, not on the contract. Until that
-clears, everything above is reproducible from this repository but only the Wave 1 contract is
-queryable on chain, and this paragraph will say so for as long as that is true.
+**Deployed on 2026-10-13**, in block 2962145, with the fee paid by ODATANO's sponsor. For most of
+the wave this paragraph said the opposite, because the sponsor refused the bytes with what read
+like a transaction-format mismatch: it named both serialization forms it had tried and failed to
+deserialize. It was not a format problem. The sponsor was decoding 12,257 bytes where we had built
+12,269, because the base64 had been handed over as a literal argument and sixteen characters had
+dropped out of a run of near-identical sixteen-character groups. The bytes on disk were correct the
+whole time. Transactions now travel to the sponsor as a file path, and both ends print the
+character count, the byte count and a sha256 of the decoded bytes, so the next transit loss is one
+line of comparison rather than two days of reading tag names.
 
 ## Where this actually stands
 
@@ -435,7 +446,7 @@ queryable on chain, and this paragraph will say so for as long as that is true.
 | Contract test suite | **Done.** 90 tests; every guard mutation-checked, 20 of 20 |
 | SDK assumption guard | **Done.** 24 assertions against `@odatano/dpp-sdk` 0.2.0 |
 | Provable-field registry, 32 slots | **Settled** ([FIELDS.md](docs/FIELDS.md)). 26 in use, reserve 17 to 21, and 31. Slots 0 to 16 are wired end to end and provable; the rest are salted into the content root but carry no rule yet |
-| Deployment to Midnight preprod | **Wave 1's contract is live (28 Aug 2026).** Built, proven and signed locally; the deploy fee was sponsored by ODATANO ([D20](docs/DECISIONS.md#settled)). Address and tx committed at [`deploy/preprod.json`](deploy/preprod.json). **The Wave 2 contract is not yet deployed** - see [Built during Wave 2](#built-during-wave-2) |
+| Deployment to Midnight preprod | **Done. The Wave 2 contract is live (13 Oct 2026), block 2962145.** Built, proven and signed locally; the deploy fee was sponsored by ODATANO ([D20](docs/DECISIONS.md#settled)). Address and the indexer-resolvable tx hash committed at [`deploy/preprod.json`](deploy/preprod.json); Wave 1's address kept alongside it as `preprod-superseded-*.json` |
 | Frontend: verification, intake console, proof explorer | **Done.** Three surfaces against the compiled circuits (`npm run app`), live for anyone at [passport.vin](https://passport.vin/) |
 | Live preprod runs from the browser | **Built, not currently hosted.** `/demo/` and the intake console write real transactions to the deployed contract, paying their own DUST ([D24](docs/DECISIONS.md#settled)), capped per UTC day, every hash linking to the [preprod explorer](https://preprod.midnightexplorer.com). The host that served them was cancelled on 10 Oct 2026, so the page now reports that preprod runs are unavailable rather than pretending otherwise. `npm run app` runs the same path locally |
 | CAP service layer, tier redaction | **Not in this submission, and not in Wave 2.** See [D20](docs/DECISIONS.md#settled) |

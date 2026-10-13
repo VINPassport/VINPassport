@@ -1,7 +1,10 @@
 {
   "network": "preprod",
-  "contractAddress": "72e524881363db50ff0bcf6c01fd9de1b550902540f9ca10e4b649df992d553a",
-  "txHash": "af31ba67df440a343479be1d1b8b730464ce381f692e0063b8efafcf2830070f",
+  "contractAddress": "c8dc0aa462cc5058e68b0239e89d65b1562520db3ba9eb79daa15685e04f7957",
+  "txHash": "fe633e69fa286a3502353271c4f2b6a6b5e1435f11a5ef5df565c78b01184342",
+  "blockHeight": 2962145,
+  "submitterReportedId": "00e528df9ccf6bd016b280edb8d6e735acbbc9aec4b1a044fc34e23a80d0fd489e",
   "contract": "vinpassport",
-  "note": "Public record of the deployment. Address and tx hash are public by definition."
+  "confirmedOnIndexer": true,
+  "note": "Public record of the deployment. Address and tx hash are public by definition. txHash is the hash the public indexer resolves for this deploy; submitterReportedId, when present, is the different identifier the submitter returned."
 }

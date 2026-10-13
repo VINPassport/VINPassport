@@ -357,7 +357,7 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
       <ul>
         <li><code>@odatano/dpp-sdk</code>: key derivation, value scaling, Merkle construction</li>
         <li><code>@odatano/nightgate-tx</code>: transaction building, batch ordering, in-process proving - against our own key</li>
-        <li>Hosted NIGHTGATE <strong>sponsored our deploy</strong> under a metered grant: live on preprod since 28 Aug, contract <code>72e52488…d553a</code></li>
+        <li>Hosted NIGHTGATE <strong>sponsored both our deploys</strong> under a metered grant: Wave 1 on 28 Aug, the seven-circuit Wave 2 contract on 13 Oct, live at <code>c8dc0aa4…f7957</code></li>
         <li>Running fees are <strong>not sponsored</strong>: the demo pays its own DUST. Every transaction was already built, proven and signed our side, so <strong>no witness ever leaves</strong></li>
       </ul>
       <p>Not used: CAP service, OData layer, <code>attestation-vault</code>, disclosure grants. Tiered disclosure was deferred on purpose: a passport that cannot tell one writer from another is not worth adding tiers to.</p>
@@ -402,7 +402,7 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
   <h2>Each wave states its delta in advance, and reports it after</h2>
   <table style="flex:1">
     <tr><th style="width:130px">Wave 2<br><span style="font-weight:400;opacity:.65">shipped</span></th>
-        <td><strong>A second contract that closes the limits we named</strong>: register and initialise gated on a registrar identity derived in-circuit, an allowlist pinned at deploy, field commitments bound in-circuit to the content root, a third integrity rule with the panel widened from 5 fields to 17, and every guard mutation-checked, 20 of 20</td></tr>
+        <td><strong>A second contract that closes the limits we named, live on preprod</strong>: register and initialise gated on a registrar identity derived in-circuit, an allowlist pinned at deploy, field commitments bound in-circuit to the content root, a third integrity rule with the panel widened from 5 fields to 17, and every guard mutation-checked, 20 of 20. Deployed 13 Oct 2026, block 2962145</td></tr>
     <tr><th>Wave 2<br><span style="font-weight:400;opacity:.65">deferred</span></th>
         <td><strong>The NIGHTGATE integration</strong>: tiered disclosure, disclosure grants, live browser reads, the CAP service layer, and <strong>measured unit economics</strong>. Named for Wave 2 and held back on purpose, because a passport that cannot tell one writer from another is not worth adding tiers to. <em>documentComparison</em> waits on more than one anchored root per vehicle</td></tr>
     <tr><th>Wave 3</th>

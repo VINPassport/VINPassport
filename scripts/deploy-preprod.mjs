@@ -166,9 +166,17 @@ if (NEEDS_SPONSOR && !gatewayKey && !legacyAgentToken) {
 if (gatewayKey && !/^oda_[0-9a-f]{40}$/.test(gatewayKey)) {
     fail(`ODATANO_GATEWAY_KEY is not shaped like a gateway key (oda_ + 40 hex); got ${gatewayKey.length} characters.`);
 }
-if (NEEDS_SPONSOR && !sponsorSessionId) {
-    fail('NIGHTGATE_SPONSOR_SESSION_ID is required. A sandbox key uses the shared pool session; '
-        + 'a key of your own reports its session at GET /api/me on the gateway.');
+// `sponsorSessionId` is OPTIONAL and normally absent. A sponsored job runs
+// under a session the SERVER picks from the treasury pool, which is why
+// `@odatano/nightgate-tx` reads the session id off the job it gets back rather
+// than taking one from the caller ("the caller cannot know it", sdk/client.mjs).
+// Omitting it uses the pool; setting it pins one session, which is a security
+// boundary and stays exact. Requiring it here was wrong: it made a sandbox key,
+// which has no session of its own, look unusable.
+if (NEEDS_SPONSOR && sponsorSessionId) {
+    // Truncated, as everywhere else: a pinned session is an identifier we have
+    // no reason to print in full.
+    console.log(`sponsor session pinned to ${sponsorSessionId.slice(0, 8)}...`);
 }
 
 const baseUrl = process.env.NIGHTGATE_BASE_URL
@@ -216,16 +224,29 @@ if (SPONSOR_FILE) {
     // independent failures and hid that the second form was never tried.
     const idempotencyKey = `vinpassport-sponsor-${fp.sha256.slice(0, 16)}-${Date.now()}`;
     console.log(`\nhanding them to the sponsor (idempotencyKey ${idempotencyKey})...`);
-    const fileJob = await ngFile.sponsorUnbound({ unboundTxB64: b64, sponsorSessionId, idempotencyKey });
-    console.log(`jobId ${fileJob.jobId}`);
-    const fileOut = await ngFile.waitForJob({ jobId: fileJob.jobId, sessionId: sponsorSessionId });
+    // sponsorUnbound polls to completion itself and reads the session id off
+    // the job, so this does not wait again and does not pin a session unless
+    // one was deliberately configured.
+    const fileOut = await ngFile.sponsorUnbound({
+        unboundTxB64: b64,
+        idempotencyKey,
+        ...(sponsorSessionId ? { sponsorSessionId } : {})
+    });
+    console.log(`jobId ${fileOut.jobId ?? '(none reported)'}`);
 
     const landed = fileOut.deployed?.[0];
     if (!landed || !fileOut.txHash) {
-        fail(`the sponsor did not report a deploy. jobId ${fileJob.jobId}, status ${fileOut.status ?? '(none)'}, `
-            + `error ${fileOut.errorMessage ?? '(none)'}`);
+        fail([
+            `the sponsor did not report a deploy. jobId ${fileOut.jobId ?? '(none reported)'}`,
+            `  status  ${fileOut.status ?? '(none)'}`,
+            `  code    ${fileOut.errorCode ?? '(none)'}`,
+            `  message ${fileOut.errorMessage ?? '(none)'}`,
+            '',
+            `  If the message reports a byte count other than ${fp.bytes}, the bytes were`,
+            '  damaged in transit, not malformed. Quote the jobId and the three figures above.'
+        ].join('\n'));
     }
-    recordDeploy(landed, fileOut.txHash);
+    await recordConfirmedDeploy(landed, fileOut.txHash);
     console.log(`\nDEPLOYED  ${landed}`);
     console.log(`tx        ${fileOut.txHash}`);
     console.log(`recorded  deploy/preprod.json - commit it.`);
@@ -263,7 +284,7 @@ try {
 
 console.log(`network   preprod`);
 console.log(`sponsor   ${NEEDS_SPONSOR
-    ? `${baseUrl} (session ${sponsorSessionId.slice(0, 8)}…, ${gatewayKey ? 'gateway key' : 'legacy agent token'})`
+    ? `${baseUrl} (${sponsorSessionId ? `session ${sponsorSessionId.slice(0, 8)}...` : 'treasury pool session, chosen by the server'}, ${gatewayKey ? 'gateway key' : 'legacy agent token'})`
     : 'none needed for this mode; nothing is sponsored here'}`);
 console.log(`mode      ${EMIT
     ? 'EMIT - build and prove, write the unbound transaction, submit nothing'
@@ -285,19 +306,99 @@ console.log('\nbuilding and proving the deploy locally (wasm, takes a while)…'
  * verification steps, and it stays readable on chain, so losing the file would
  * lose the comparison a reviewer makes between the two contracts.
  */
-function recordDeploy(contractAddress, txHash) {
+/**
+ * Ask the public indexer which transaction carries the deploy of this address.
+ *
+ * This exists because the hash a submitter hands back is not necessarily the
+ * one a verifier can look up. On 2026-10-13 the sponsor returned a 33-byte
+ * identifier (`00e528df...`, which the indexer rejects outright as not a
+ * 32-byte hash) while the deploy actually sat in `fe633e69...`. Recording the
+ * submitter's value would have published a hash that resolves to nothing,
+ * which is worse than publishing none. So the record carries the hash the
+ * indexer confirms, and keeps the submitter's identifier beside it, labelled.
+ *
+ * Returns null when the indexer has not caught up yet; the caller decides.
+ */
+async function confirmOnIndexer(contractAddress) {
+    const query = `query Deploy($address: HexEncoded!) {
+      contractAction(address: $address) {
+        __typename
+        address
+        transaction { hash block { height } }
+      }
+    }`;
+    try {
+        const r = await fetch(EP.indexerHttpUrl, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ query, variables: { address: contractAddress } })
+        });
+        const j = await r.json();
+        const a = j?.data?.contractAction;
+        if (!a || a.address !== contractAddress) return null;
+        return {
+            kind: a.__typename,
+            txHash: a.transaction?.hash ?? null,
+            blockHeight: a.transaction?.block?.height ?? null
+        };
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Wait for the indexer to show the deploy, then record it. A deploy needs a
+ * block or two to be indexed, so this polls rather than asking once, and
+ * records the submitter's value with `confirmedOnIndexer: false` if the wait
+ * runs out. The deploy is on chain either way; only the published hash is in
+ * question.
+ */
+async function recordConfirmedDeploy(contractAddress, submitterTxHash, { tries = 20, waitMs = 6000 } = {}) {
+    process.stdout.write('confirming on the public indexer');
+    for (let i = 0; i < tries; i++) {
+        const confirmed = await confirmOnIndexer(contractAddress);
+        if (confirmed?.txHash) {
+            console.log(`\nconfirmed  ${confirmed.kind} in block ${confirmed.blockHeight}`);
+            if (confirmed.txHash !== submitterTxHash) {
+                console.log(`NOTE  the submitter reported ${submitterTxHash}`);
+                console.log(`      the indexer resolves   ${confirmed.txHash}`);
+                console.log('      the indexer hash is the one recorded and published.');
+            }
+            recordDeploy(contractAddress, submitterTxHash, confirmed);
+            return confirmed;
+        }
+        process.stdout.write('.');
+        await new Promise((r) => setTimeout(r, waitMs));
+    }
+    console.log('\nthe indexer has not shown this deploy yet.');
+    console.log('Recording the submitter identifier and marking it unconfirmed; re-check before publishing it.');
+    recordDeploy(contractAddress, submitterTxHash, null);
+    return null;
+}
+
+function recordDeploy(contractAddress, txHash, confirmed = null) {
     mkdirSync(join(ROOT, 'deploy'), { recursive: true });
     if (existsSync(outPath)) {
         const archived = join(ROOT, 'deploy', `preprod-superseded-${Date.now()}.json`);
         renameSync(outPath, archived);
         console.log(`\narchived the previous record to ${archived}`);
     }
+    // The published hash is the one a verifier can resolve. The submitter's
+    // identifier is kept for traceability but never presented as the tx hash.
+    const published = confirmed?.txHash ?? txHash;
     writeFileSync(outPath, JSON.stringify({
         network: 'preprod',
         contractAddress,
-        txHash,
+        txHash: published,
+        ...(confirmed?.blockHeight ? { blockHeight: confirmed.blockHeight } : {}),
+        ...(confirmed?.txHash && confirmed.txHash !== txHash
+            ? { submitterReportedId: txHash }
+            : {}),
         contract: 'vinpassport',
-        note: 'Public record of the deployment. Address and tx hash are public by definition.'
+        confirmedOnIndexer: Boolean(confirmed?.txHash),
+        note: 'Public record of the deployment. Address and tx hash are public by definition. '
+            + 'txHash is the hash the public indexer resolves for this deploy; '
+            + 'submitterReportedId, when present, is the different identifier the submitter returned.'
     }, null, 2) + '\n');
 }
 
@@ -382,7 +483,7 @@ try {
             console.log(`dust before ${paid.dustBefore}`);
             process.exit(0);
         }
-        recordDeploy(deploy.contractAddress, paid.txHash);
+        await recordConfirmedDeploy(deploy.contractAddress, paid.txHash);
         console.log(`\nDEPLOYED  ${deploy.contractAddress}`);
         console.log(`tx        ${paid.txHash}`);
         console.log(`fee paid  from our own dust (${paid.dustBefore} before)`);
@@ -398,16 +499,46 @@ try {
     }
 
     const ng = connect({ baseUrl, ...auth });
-    console.log('\nhanding the unbound transaction to the sponsor…');
-    const job = await ng.sponsorUnbound({ unboundTxB64: deploy.unboundTxB64, sponsorSessionId });
-    const out = await ng.waitForJob({ jobId: job.jobId, sessionId: sponsorSessionId });
+
+    // On this path the base64 is never copied: it goes from the builder to the
+    // request in one process. The fingerprint is printed anyway, so that a
+    // refusal can be compared against what the sponsor says it received before
+    // anyone starts reading tag names (see --sponsor-file above).
+    const fp = fingerprint(deploy.unboundTxB64);
+    console.log(`\nunbound transaction  ${fp.chars} base64 characters, ${fp.bytes} decoded bytes`);
+    console.log(`sha256(decoded)      ${fp.sha256}`);
+
+    const idempotencyKey = `vinpassport-deploy-${fp.sha256.slice(0, 16)}-${Date.now()}`;
+    console.log('\nhanding the unbound transaction to the sponsor...');
+    // sponsorUnbound already polls to completion and returns the finished job,
+    // so there is no second waitForJob here. Only pin a session when one was
+    // configured; otherwise the server picks from the pool.
+    const out = await ng.sponsorUnbound({
+        unboundTxB64: deploy.unboundTxB64,
+        idempotencyKey,
+        ...(sponsorSessionId ? { sponsorSessionId } : {})
+    });
+    console.log(`jobId ${out.jobId ?? '(none reported)'}  (idempotencyKey ${idempotencyKey})`);
+
+    if (!out.txHash) {
+        fail([
+            `the sponsor did not submit. jobId ${out.jobId ?? '(none reported)'}`,
+            `  status  ${out.status ?? '(none)'}`,
+            `  code    ${out.errorCode ?? '(none)'}`,
+            `  message ${out.errorMessage ?? '(none)'}`,
+            '',
+            '  If the message reports a byte count other than '
+                + `${fp.bytes}, the bytes were damaged in transit, not malformed.`,
+            '  Quote the jobId and the three figures above to the sponsor.'
+        ].join('\n'));
+    }
 
     const landedAt = out.deployed?.[0];
     if (landedAt && landedAt !== deploy.contractAddress) {
         fail(`landed address ${landedAt} differs from the locally computed ${deploy.contractAddress} - do not record either; investigate.`);
     }
 
-    recordDeploy(deploy.contractAddress, out.txHash);
+    await recordConfirmedDeploy(deploy.contractAddress, out.txHash);
 
     console.log(`\nDEPLOYED  ${deploy.contractAddress}`);
     console.log(`tx        ${out.txHash}`);
