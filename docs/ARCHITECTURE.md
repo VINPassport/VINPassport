@@ -1,19 +1,19 @@
 # Architecture
 
 The legal basis for everything below is
-**[Regulation (EU) 2026/1738](https://eur-lex.europa.eu/eli/reg/2026/1738/oj)**, Article 13 — see
+**[Regulation (EU) 2026/1738](https://eur-lex.europa.eu/eli/reg/2026/1738/oj)**, Article 13: see
 [REGULATION.md](REGULATION.md) for primary sources and the scope boundaries that constrain what we
 may claim.
 
 ## Shape
 
-> **What Wave 1 actually ships is smaller than the diagram below.** Per
+> **What actually ships is smaller than the diagram below.** Per
 > [D20](DECISIONS.md#settled), the submission deploys and calls `vinpassport` through
-> **`@odatano/nightgate-tx`** — transactions are built, batched, proven and signed locally.
+> **`@odatano/nightgate-tx`**: transactions are built, batched, proven and signed locally.
 > Per [D24](DECISIONS.md#settled), the fee is then balanced from **our own DUST** and submitted
 > straight to the public preprod node; ODATANO's hosted NIGHTGATE sponsored the *deployment* only,
 > and is not in the runtime path. Either way no witness ever leaves the process. There is no CAP
-> application — the `@odatano/nightgate` *plugin* below is Wave 2 work.
+> application. The `@odatano/nightgate` *plugin* below is not built, in Wave 1 or Wave 2.
 > The target architecture is unchanged; this note exists so nobody reads the diagram as a
 > description of what is running today.
 
@@ -38,7 +38,7 @@ surfaces.
 └────────────────────────┬────────────────────────────────┘
                          │
 ┌────────────────────────▼────────────────────────────────┐
-│  Midnight — preprod (ledger 8)                          │
+│  Midnight - preprod (ledger 8)                          │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -52,16 +52,16 @@ document recorded "no Compact toolchain required" as a benefit of that. **[D16](
 reversed it.** The passport's distinguishing logic is ours and lives in
 [`contracts/vinpassport`](../contracts/vinpassport), so Compact is on the critical
 path. Compiled artifacts are committed, so only contributors *changing* the contract need the
-toolchain — but they need WSL2, macOS or Linux, because Compact has no native Windows binary.
+toolchain, but they need WSL2, macOS or Linux, because Compact has no native Windows binary.
 
-**Provided by NIGHTGATE (Wave 2 onward — see [D20](DECISIONS.md#settled)):** document anchoring,
+**Provided by NIGHTGATE (not in this submission, see [D20](DECISIONS.md#settled)):** document anchoring,
 salted-Merkle field proofs, six predicate kinds,
 three-level on-chain disclosure grants, async job orchestration, wallet and proving infrastructure,
 OData V4 query semantics over all of it, and transaction fee sponsoring.
 
 **Ours to build:** the passport contract itself, the vehicle domain model, the provable-field
 registry, tier redaction rules and their query guard, both UIs, document storage, the auth strategy,
-and all HTTP security middleware. NIGHTGATE deliberately installs no global middleware — CORS, CSP
+and all HTTP security middleware. NIGHTGATE deliberately installs no global middleware: CORS, CSP
 and HSTS are the host's problem.
 
 ## Disclosure tiers
@@ -74,37 +74,37 @@ NIGHTGATE's three levels map onto vehicle stakeholders cleanly:
 | 1 | `trade` | Dealer, recycler, insurer, lender | + write-off category, accident count, owner count, service count, mileage |
 | 2 | `authority` | DMV, police, notified body, ELV facility | + VIN, supplier identities, full lineage, dismantling data |
 
-Two enforcement layers, and the second is not optional. Redaction after a database read is
-**bypassable via `$filter`, `$orderby` and `$apply`** — an attacker who cannot *see* a column can
-still binary-search its value by filtering on it. So the service must also reject queries that
-*probe* an invisible column, not merely strip it from the response. NIGHTPASS learned this; we
-inherit the lesson rather than rediscovering it.
+Two enforcement layers, and the second is not optional. Shaping the response is not sufficient on
+its own: the service must also **reject a query that probes a column the caller may not see**, not
+merely strip that column from the answer. Tier boundaries are therefore enforced at query
+admission as well as at response shaping. NIGHTPASS established the rule; we inherit it rather
+than rediscovering it.
 
 On-chain grants can **elevate** a caller above their login role for a specific passport. Grantee
-identities are `sha256(did)` — a pseudonym, never PII.
+identities are `sha256(did)`, a pseudonym, never PII.
 
 ## Predicates worth demonstrating
 
 | Claim | Mechanism | Why it lands |
 |---|---|---|
-| Never written off | `proveFieldAtMost` — `writeOffCategory ≤ 0` | The costliest lie in the used market, and the one a buyer cannot check today |
-| Never had a reported accident | `proveFieldAtMost` — `accidentCount ≤ 0` | A clean-history claim that discloses nothing about incidents |
-| One keeper from new | `proveFieldAtMost` — `ownerCount ≤ 1` | Provenance, without naming anybody |
+| Never written off | `proveFieldAtMost`, `writeOffCategory ≤ 0` | The costliest lie in the used market, and the one a buyer cannot check today |
+| Never had a reported accident | `proveFieldAtMost`, `accidentCount ≤ 0` | A clean-history claim that discloses nothing about incidents |
+| One keeper from new | `proveFieldAtMost`, `ownerCount ≤ 1` | Provenance, without naming anybody |
 | Mileage has never decreased | `recordField` under `neverFalls` | The fraud everyone recognises, proven without revealing a reading |
-| Nothing changed but the service fields | `documentComparison` across anchor versions | The general detector: catches the frauds nobody thought to ask about — **Wave 2: needs ≥2 anchored roots per vehicle; the Wave 1 `vinpassport` contract stores one immutable `contentRoot`, so this predicate is not buildable on it yet** |
-| Recycled content meets threshold | `proveFieldAtMost` / `AtLeast` on slots 8–11 | Compliance proof that does not leak supplier economics |
+| Nothing changed but the service fields | `documentComparison` across anchor versions | The general detector: catches the frauds nobody thought to ask about. **Not buildable yet: it needs two or more anchored roots per vehicle, and the contract stores one immutable `contentRoot`** |
+| Recycled content meets threshold | `proveFieldAtMost` / `AtLeast` on slots 8 to 11 | Compliance proof that does not leak supplier economics |
 
 **Build the write-off and accident claims first.** They are one circuit call each, they are what a
-buyer actually asks, and they demonstrate the whole mechanism — a claim answered against an anchored
+buyer actually asks, and they demonstrate the whole mechanism: a claim answered against an anchored
 record with nothing disclosed. The mileage case is the same machinery on a field people already have
 intuitions about, which makes it the better *explanation* but not the better first build.
 
-A false claim **aborts during local proving, before submission** — it never reaches the chain. A
+A false claim **aborts during local proving, before submission**, so it never reaches the chain. A
 successful transaction *is* the proof.
 
 A successful proof also **records the claim**: which vehicle, which field, which direction, which
 bound, and the commitment it was proven against. That is what gives a verifier something to read
-afterwards rather than requiring them to be handed a transaction hash — see
+afterwards rather than requiring them to be handed a transaction hash. See
 [D19](DECISIONS.md#settled). The claim names its field, deliberately; it never carries the value.
 Binding it to the commitment is what stops a claim outliving the value it was made about.
 
@@ -120,14 +120,14 @@ So:
 
 > **The producer is trusted to input truthful values.** A ZK proof shows a value *opens the
 > commitment previously recorded for that vehicle and field* and satisfies a bound. Two things it
-> does **not** show. First, nothing about whether that value matches physical reality. Second — and
-> this is a property of the contract, not of physics — the per-field commitments and the anchored
+> does **not** show. First, nothing about whether that value matches physical reality. Second (and
+> this is a property of the contract, not of physics), the per-field commitments and the anchored
 > `contentRoot` are written by independent circuit calls, and no circuit cross-checks them; so a
 > proof binds a value to its field commitment, not to the anchored document. Consistency between the
 > two is the producer's responsibility in Wave 1, not a property the contract enforces (see
 > [D23](DECISIONS.md#settled)).
 
-For batteries this is tolerable — a manufacturer declaring its own carbon footprint is the assumed
+For batteries this is tolerable: a manufacturer declaring its own carbon footprint is the assumed
 model, and the regulation is built around accountable self-declaration.
 
 **For self-declared history and VIN integrity it is the entire problem.** A garage that anchors a
@@ -142,21 +142,21 @@ Three honest responses, and we intend all three:
 2. **Prove consistency, not truth.** Monotonicity across versions catches the common rollback case
    without any trust assumption, because it compares the producer's own prior commitments.
 3. **Close the gap at the writer, not the sensor.** A proof inherits the trust of whoever wrote the
-   value, so the gap closes when the value is committed by a party already accountable for it —
+   value, so the gap closes when the value is committed by a party already accountable for it:
    registries, testers, insurers writing under an accountable identity, with marking that lets a
    verifier tell such a write from a self-declared one. That is a data-relationship problem before
    it is a cryptographic one, and it is precisely the gap NIGHTGATE documents and does not attempt
    to fill. **Attestation at the sensor would also close it, but on-device hardware is out of scope
-   with no timeline and must not be presented as a dated phase** — see the scope notice below.
+   with no timeline and must not be presented as a dated phase**. See the scope notice below.
 
 Nothing shipped should be described as preventing fraud. It makes fraud attributable and rollbacks
 detectable. That is a real claim; the stronger one would be false.
 
 > **Scope notice, 9 September 2026.** On-device chip proving is **out of scope with no timeline**.
-> It is not a phase, not a milestone, and must not appear as one — here, in the roadmap, in the
+> It is not a phase, not a milestone, and must not appear as one: here, in the roadmap, in the
 > deck, or in a conversation. Recorded formally as [R5](DECISIONS.md#reversed) on 9 September 2026,
 > which amends the hardware half of **D6** and rewrites the Phase 2 section of `ROADMAP.md`.
-> Chip-free with no hardware root of trust — the rest of D6 — stands.
+> Chip-free with no hardware root of trust (the rest of D6) stands.
 
 ## Hard constraints
 
@@ -164,8 +164,8 @@ detectable. That is a real claim; the stronger one would be false.
 |---|---|
 | **No in-circuit signature verification on mainnet.** Compact 0.31.x / ledger 8 has none. `jubjubSchnorrVerify` exists only on the ledger-9 RC line (0.33+), undocumented and deployed nowhere public. | No signature of any kind can be verified in-circuit on a public network today, so nothing in the design may depend on one. This is a constraint on Compact, not a scheduling note: [R5](DECISIONS.md#reversed) removed the hardware work, so there is no signature spec left to write. |
 | **NIGHTGATE hard-gates mainnet off** (`allowMainnetSubmission: false`). | Preprod is the target. Plan no mainnet demo. |
-| **32 provable slots** via `attestation-vault-32` (NIGHTGATE 0.19.0). Width is effectively permanent — cross-root proofs relate same-width documents only. | 26 in use, 6 reserved. See [FIELDS.md](FIELDS.md). No longer the binding constraint, but the width choice is one-way. |
-| **Sponsor throughput scales with wallet count**, not balance — one dust spend in flight per wallet. | Treasury is a pool. See [BUILD-SCOPE.md](BUILD-SCOPE.md). |
+| **32 provable slots** via `attestation-vault-32` (NIGHTGATE 0.19.0). Width is effectively permanent: cross-root proofs relate same-width documents only. | 26 in use, 6 reserved. See [FIELDS.md](FIELDS.md). No longer the binding constraint, but the width choice is one-way. |
+| **Sponsor throughput scales with wallet count**, not balance: one dust spend in flight per wallet. | Treasury is a pool. See [BUILD-SCOPE.md](BUILD-SCOPE.md). |
 | **`setNetworkId()` is process-global.** | One network per process. No multi-network single deployment. |
 | **NIGHTGATE is 0.x, shipping breaking changes roughly weekly.** A whole attestation lane was removed at 0.16.0; salting at 0.16.0 broke every older client. | **Pin exact versions.** Never use `^` on `@odatano/*`. Upgrade deliberately, with a re-anchor plan. |
 | **Bus factor of one** across the entire ODATANO org. | Apache-2.0 makes a fork legally trivial. Keep a vendored copy of the exact version in use, and do not accrete dependencies on unreleased behaviour. |
@@ -175,4 +175,4 @@ detectable. That is a real claim; the stronger one would be false.
 
 This document is derived from reading public ODATANO repositories and Midnight release notes. It has
 **not** been validated by running the stack. Before building on any specific claim here, confirm it
-against the installed packages — the checklist in [FIELDS.md](FIELDS.md) is the starting point.
+against the installed packages: the checklist in [FIELDS.md](FIELDS.md) is the starting point.
