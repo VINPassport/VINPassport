@@ -44,7 +44,11 @@ import { dirname, join } from 'node:path';
 import { connect, createTxBuilder } from '@odatano/nightgate-tx';
 import { Contract } from '../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
 import { readRegistrarSlots, REGISTRAR_ROLES } from './lib/registrar-slots.mjs';
-import { preprodEndpoints, redacted } from './lib/endpoints.mjs';
+import { preprodEndpoints, redacted, guardLogs } from './lib/endpoints.mjs';
+
+// Before anything connects: the indexer credential travels in every URL,
+// and a library that logs a URL logs the credential.
+guardLogs();
 import { localCredential, credentialPath } from './lib/local-credentials.mjs';
 
 const EP = preprodEndpoints();

@@ -37,7 +37,11 @@ import { UnshieldedWallet, createKeystore, PublicKey } from '@midnightntwrk/wall
 import { DustWallet } from '@midnightntwrk/wallet-sdk-dust-wallet';
 import { makeWasmProvingService } from '@midnightntwrk/wallet-sdk-capabilities';
 import { ZswapSecretKeys, DustSecretKey, LedgerParameters } from '@midnight-ntwrk/ledger-v8';
-import { preprodEndpoints } from './lib/endpoints.mjs';
+import { preprodEndpoints, guardLogs } from './lib/endpoints.mjs';
+
+// Before anything connects: the indexer credential travels in every URL,
+// and a library that logs a URL logs the credential.
+guardLogs();
 
 const EP = preprodEndpoints();
 

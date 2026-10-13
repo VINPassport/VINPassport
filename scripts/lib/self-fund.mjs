@@ -40,7 +40,11 @@ import { UnshieldedWallet, createKeystore, PublicKey } from '@midnightntwrk/wall
 import { DustWallet } from '@midnightntwrk/wallet-sdk-dust-wallet';
 import { makeWasmProvingService } from '@midnightntwrk/wallet-sdk-capabilities';
 import { ZswapSecretKeys, DustSecretKey, Transaction } from '@midnight-ntwrk/ledger-v8';
-import { preprodEndpoints } from './endpoints.mjs';
+import { preprodEndpoints, guardLogs } from './endpoints.mjs';
+
+// Before anything connects: the indexer credential travels in every URL,
+// and a library that logs a URL logs the credential.
+guardLogs();
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_DUST_STATE = join(HERE, '..', '..', '..', '_local-tracking', 'dust-state');

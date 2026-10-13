@@ -51,7 +51,11 @@ import {
 import {
     CLAIM_DEFS, planCalls, makeStage, stepLabel, makeWitnessHolder, randomDemoVin
 } from './preprod-plan.mjs';
-import { preprodEndpoints } from './endpoints.mjs';
+import { preprodEndpoints, guardLogs } from './endpoints.mjs';
+
+// Before anything connects: the indexer credential travels in every URL,
+// and a library that logs a URL logs the credential.
+guardLogs();
 
 export { randomDemoVin };
 

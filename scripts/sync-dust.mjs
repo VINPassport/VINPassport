@@ -49,7 +49,11 @@ import { WalletEntrySchema, mergeWalletEntries } from '@midnightntwrk/wallet-sdk
 import { InMemoryTransactionHistoryStorage } from '@midnightntwrk/wallet-sdk-abstractions';
 import { DustWallet } from '@midnightntwrk/wallet-sdk-dust-wallet';
 import { DustSecretKey, LedgerParameters } from '@midnight-ntwrk/ledger-v8';
-import { preprodEndpoints, redacted } from './lib/endpoints.mjs';
+import { preprodEndpoints, redacted, guardLogs } from './lib/endpoints.mjs';
+
+// Before anything connects: the indexer credential travels in every URL,
+// and a library that logs a URL logs the credential.
+guardLogs();
 
 const EP = preprodEndpoints();
 const NETWORK_ID = process.env.VINPASSPORT_NETWORK_ID ?? 'preprod';

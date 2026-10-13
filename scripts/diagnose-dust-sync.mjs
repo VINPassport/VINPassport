@@ -21,7 +21,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import { createClient } from 'graphql-ws';
-import { preprodEndpoints, redacted } from './lib/endpoints.mjs';
+import { preprodEndpoints, redacted, guardLogs } from './lib/endpoints.mjs';
+
+// Before anything connects: the indexer credential travels in every URL,
+// and a library that logs a URL logs the credential.
+guardLogs();
 
 const EP = preprodEndpoints();
 

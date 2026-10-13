@@ -16,8 +16,18 @@
  *
  * Auth is a per-network Blockfrost project id, accepted either as a
  * `project_id` header or as `?project_id=`. The query-string form is used here
- * because a WebSocket client cannot set headers, and one form everywhere beats
- * two. The id is a credential: it is read from the environment or from
+ * because every client in this repo takes a URL string and offers no way to
+ * pass a header: the wallet SDK's `indexerClientConnection`, `createTxBuilder`
+ * and the Polkadot providers all want URLs. So the credential rides in the URL
+ * whether we like it or not.
+ *
+ * The consequence is that any library which logs a URL logs the credential, and
+ * `@polkadot/api` does exactly that when a socket closes. `guardLogs()` at the
+ * bottom of this file is the answer, and it has to be called before anything
+ * connects. Storing the id outside the repository was never the weak point; the
+ * output was.
+ *
+ * The id is a credential: it is read from the environment or from
  * `_local-tracking/`, which sits above the repository root, and it must never
  * reach browser code, where it would be public.
  *
@@ -30,6 +40,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { inspect } from 'node:util';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const TOKEN_FILE = join(HERE, '..', '..', '..', '_local-tracking', 'BLOCKFROST.env');
@@ -88,4 +99,92 @@ export function preprodEndpoints() {
  */
 export function redacted(url) {
     return String(url).replace(/project_id=[^&]*/g, 'project_id=…');
+}
+
+/**
+ * Redact the project id from everything this process writes, including what
+ * libraries write.
+ *
+ * `redacted()` only helps where WE do the printing. The credential travels in
+ * the URL because every client here takes a URL string and gives us no way to
+ * send a header instead, and `@polkadot/api` prints the whole URL when a socket
+ * closes:
+ *
+ *   RPC-CORE: subscribeRuntimeVersion(): disconnected from
+ *   wss://rpc.midnight-preprod.blockfrost.io/?project_id=<the credential>
+ *
+ * That is not configurable, so on 2026-10-13 a deploy run printed the project
+ * id in full and it had to be rotated. Wrapping the two output streams catches
+ * it wherever it comes from.
+ *
+ * Call this BEFORE anything connects. Returns a function that restores the
+ * original streams.
+ *
+ * A stream wrapper alone is NOT enough, and the gap is the one that matters.
+ * Node prints an uncaught exception through an internal fatal-error printer
+ * that never calls `process.stderr.write`, so the wrapper cannot see it, and
+ * that dump inspects the whole error including any `Response` object holding
+ * the request URL. Measured on 2026-10-13: with the wrapper alone, five
+ * occurrences were redacted and one still got through, from exactly there. So
+ * the fatal handlers below print the error themselves, through the guarded
+ * stream, and keep exit code 1.
+ *
+ * Honest about the remaining limit: this replaces the secret in each chunk as
+ * it is written, so a secret split across two separate writes would slip
+ * through. In practice a log line is one write. It is a backstop, not a licence
+ * to print credentials.
+ */
+export function guardLogs({ alsoRedact = [], fatal = true } = {}) {
+    const secrets = [blockfrostToken({ required: false }), ...alsoRedact]
+        // A short or empty needle would match everywhere and rewrite the stream
+        // character by character. Refuse rather than mangle: that exact mistake
+        // destroyed a run log on 2026-10-13.
+        .filter((s) => typeof s === 'string' && s.trim().length >= 8)
+        .map((s) => s.trim());
+
+    if (!secrets.length) return () => { };
+
+    const restorers = [];
+    for (const stream of [process.stdout, process.stderr]) {
+        const original = stream.write;
+        restorers.push(() => { stream.write = original; });
+        stream.write = function (chunk, encoding, callback) {
+            let out = chunk;
+            if (typeof out === 'string') {
+                for (const s of secrets) if (out.includes(s)) out = out.split(s).join('<redacted>');
+            } else if (Buffer.isBuffer(out)) {
+                const text = out.toString('utf8');
+                let replaced = text;
+                for (const s of secrets) if (replaced.includes(s)) replaced = replaced.split(s).join('<redacted>');
+                if (replaced !== text) out = Buffer.from(replaced, 'utf8');
+            }
+            return original.call(this, out, encoding, callback);
+        };
+    }
+
+    if (fatal) {
+        // Print the error ourselves so it goes through the wrapper above, then
+        // exit 1, which is what an uncaught exception does anyway. Nothing is
+        // swallowed: the whole error is inspected deeply enough to show the
+        // cause chain the default dump would have shown.
+        const onFatal = (label) => (err) => {
+            try {
+                console.error(`${label}: ${inspect(err, { depth: 8, colors: false })}`);
+            } catch {
+                console.error(`${label}: <the error could not be formatted>`);
+            }
+            process.exit(1);
+        };
+        // Do not clobber a handler something else installed deliberately.
+        for (const [event, label] of [['uncaughtException', 'uncaught exception'],
+            ['unhandledRejection', 'unhandled rejection']]) {
+            if (process.listenerCount(event) === 0) {
+                const h = onFatal(label);
+                process.on(event, h);
+                restorers.push(() => process.removeListener(event, h));
+            }
+        }
+    }
+
+    return () => restorers.forEach((r) => r());
 }
