@@ -44,6 +44,7 @@ import { connect, createTxBuilder } from '@odatano/nightgate-tx';
 import { Contract } from '../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
 import { readRegistrarSlots, REGISTRAR_ROLES } from './lib/registrar-slots.mjs';
 import { preprodEndpoints, redacted } from './lib/endpoints.mjs';
+import { localCredential, credentialPath } from './lib/local-credentials.mjs';
 
 const EP = preprodEndpoints();
 
@@ -79,13 +80,18 @@ if (!/^[0-9a-fA-F]{128}$/.test(seed)) {
 //
 // The legacy path is kept so an older grant still works against the old host
 // if ODATANO keeps it alive, but the gateway key wins when both are set.
-const gatewayKey = process.env.ODATANO_GATEWAY_KEY?.trim();
+const gatewayKey = localCredential('ODATANO_GATEWAY_KEY', 'ODATANO.env');
 const legacyAgentToken = process.env.NIGHTGATE_AGENT_TOKEN?.trim();
-const sponsorSessionId = process.env.NIGHTGATE_SPONSOR_SESSION_ID;
+const sponsorSessionId = localCredential('NIGHTGATE_SPONSOR_SESSION_ID', 'ODATANO.env')
+    ?? process.env.NIGHTGATE_SPONSOR_SESSION_ID;
 
 if (!gatewayKey && !legacyAgentToken) {
-    fail('no sponsor credential. Set ODATANO_GATEWAY_KEY to a gateway key (oda_ + 40 hex) '
-        + 'from https://api.odatano.dev, or NIGHTGATE_AGENT_TOKEN for the legacy host.');
+    fail([
+        'no sponsor credential.',
+        `  Put a gateway key in ${credentialPath('ODATANO.env')}`,
+        '  as ODATANO_GATEWAY_KEY=oda_<40 hex>. Get one at https://api.odatano.dev.',
+        '  (Or set NIGHTGATE_AGENT_TOKEN to use the legacy host.)'
+    ].join('\n'));
 }
 if (gatewayKey && !/^oda_[0-9a-f]{40}$/.test(gatewayKey)) {
     fail(`ODATANO_GATEWAY_KEY is not shaped like a gateway key (oda_ + 40 hex); got ${gatewayKey.length} characters.`);
