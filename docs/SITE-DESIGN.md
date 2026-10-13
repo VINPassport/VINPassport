@@ -25,7 +25,7 @@ The original handoff text follows.
 
 ---
 
-# CLAUDE.md — VINPassport site (passport.vin)
+# CLAUDE.md: VINPassport site (passport.vin)
 
 Read this before touching any file in `site/`.
 
@@ -97,7 +97,7 @@ Structure: square corners everywhere. Hairline borders. Section headers are a
 numbered uppercase kicker (`01 ·`, `02 ·`) above a full-width 1px rule. Cards
 carry the blueprint frame: `class="blueprint"` plus four
 `<i class="corner tl|tr|bl|br"></i>` children that draw the registration marks.
-**Never delete those `<i>` elements** — they are the marks, not decoration.
+**Never delete those `<i>` elements**: they are the marks, not decoration.
 
 Only two things live in `site/assets/site.css`: the blueprint frame rules and
 the page-level tokens and resets. Everything else is inline on purpose, so a
@@ -157,7 +157,7 @@ Preserve it:
   excludes vehicles at Art. 1(2), so citing it as the *basis* for a vehicle
   passport is a factual error. But Art. 13(1) of 2026/1738 makes alignment with
   ESPR-established passports mandatory, so it is not merely irrelevant. Do not
-  resolve the tension by deleting either half — the panel is there because the
+  resolve the tension by deleting either half. The panel is there because the
   distinction is easy to get wrong in both directions.
 - Do not soften the "what this does not prove" panel on `/`. A valid proof of a
   falsely committed value is a real limitation and the site says so on purpose.
@@ -169,7 +169,7 @@ Preserve it:
 `site/CNAME` already contains `passport.vin`, and `.nojekyll` is present so
 Jekyll does not process the folder.
 
-Option A, simplest — serve from a folder on the default branch:
+Option A, the simplest, serves from a folder on the default branch:
 
 1. Copy the contents of `site/` to the repo root (or to `docs/`).
 2. Settings → Pages → Source: *Deploy from a branch*, branch `main`,
@@ -183,7 +183,7 @@ Option A, simplest — serve from a folder on the default branch:
 5. Verify: `https://passport.vin/`, `/regulation/`, `/mockups/` all load and the
    pages look identical to the files in this bundle.
 
-Option B — GitHub Actions, if you want `site/` to stay a subfolder:
+Option B, GitHub Actions, if you want `site/` to stay a subfolder:
 
 ```yaml
 name: Deploy site

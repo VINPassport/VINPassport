@@ -1,6 +1,6 @@
 /**
  * Shared scenario machinery for everything that builds ledger state off-chain:
- * the demo export and the intake runner. One module so the two cannot drift —
+ * the demo export and the intake runner. One module, so the two cannot drift.
  * a vehicle added through the console is built by exactly the code that built
  * the demo vehicles.
  *
@@ -168,12 +168,12 @@ export const saltStream = () => {
 // ---------------------------------------------------------------- intake
 
 /**
- * Apply one intake — a vehicle's registration, history and requested claims —
+ * Apply one intake: a vehicle's registration, history and requested claims.
  * to a simulator, through the real compiled circuits.
  *
  * Refusals are results, not crashes: an update that breaks a field's rule or
  * a claim the state cannot support is REFUSED IN-CIRCUIT, reported as such,
- * and the run continues. The intake runner's honesty mirrors the chain's — a
+ * and the run continues. The intake runner's honesty mirrors the chain's: a
  * refused claim writes nothing, so it can never appear proven.
  *
  * Returns { vinHex, applied: [..], refused: [{step, reason}] }.

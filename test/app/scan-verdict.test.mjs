@@ -48,7 +48,7 @@ test('vehicle A: the mileage verdict carries its public bound, never a reading',
 
 // ---------------------------------------------------------------- vehicle B
 
-test('vehicle B: unproven questions are not-proven — never inferred as a no', () => {
+test('vehicle B: unproven questions are not-proven, never inferred as a no', () => {
     const b = answers(B);
     assert.equal(b.writeOffCategory.status, 'not-proven');
     assert.equal(b.accidentCount.status, 'not-proven');
@@ -67,7 +67,7 @@ test('vehicle B: a not-proven question carries no claim to mis-render', () => {
 
 test('a claim stops being current when the field moves on', () => {
     // Simulate the on-chain future: vehicle A gets a new odometer commitment.
-    // The claim row is untouched — exactly what a verifier would face.
+    // The claim row is untouched: exactly what a verifier would face.
     const later = structuredClone(ledger);
     const odoClaim = later.claims.find(
         (c) => c.vinHash === A && c.bound === '150000'
@@ -113,7 +113,7 @@ test('a claim outside the standard questions still surfaces as an extra', () => 
     assert.equal(view.extras[0].claim.atMost, false);
 });
 
-test('every ledger claim is either an answer or an extra — none vanish', () => {
+test('every ledger claim is either an answer or an extra, and none vanish', () => {
     for (const vin of [A, B]) {
         const view = passportView(ledger, vin, vocabulary);
         const shown =

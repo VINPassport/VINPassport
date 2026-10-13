@@ -1,4 +1,4 @@
-# Manufacturer batch intake — structure and flow
+# Manufacturer batch intake: structure and flow
 
 **Status: design specification, pre-implementation.** This document defines the structure,
 data flow and screen inventory for the manufacturer console: the surface where a vehicle
@@ -9,8 +9,8 @@ what is shown, and in which order.
 ## The one-sentence version
 
 A manufacturer picks their brand, defines a model's shared field values **once**, pastes a
-list of VINs, and the system runs the real circuits per VIN off that single template —
-`registerPassport` plus field initialisation for each — with every acceptance and refusal
+list of VINs, and the system runs the real circuits per VIN off that single template:
+`registerPassport` plus field initialisation for each, with every acceptance and refusal
 shown per VIN, never summarised away.
 
 ## Why this fits the contract as-is
@@ -79,14 +79,14 @@ so the interface can label itself honestly.
 ```
 
 (The real file additionally carries `sources` per brand; the API strips them from the public
-response — they are working provenance, not interface content.)
+response, because they are working provenance, not interface content.)
 
 ## The flow: five steps, one direction
 
 A batch is a wizard, not a dashboard. The manufacturer moves forward through five steps;
 going back never loses entered data; nothing writes to the ledger until step 5 says so.
 
-### Step 1 — Brand
+### Step 1 · Brand
 
 - **Shown:** parent-company groups as headings, their brands selectable beneath; filter
   chips from `filterVocabulary` (powertrain, segment, market status) narrowing the list;
@@ -95,15 +95,15 @@ going back never loses entered data; nothing writes to the ledger until step 5 s
 - **Rule:** exactly one brand per batch. The brand is recorded as the registrar identity
   prefix (`registrar: "Audi (Volkswagen Group)"`) on every passport in the batch.
 
-### Step 2 — Model specification (the shared template)
+### Step 2 · Model specification (the shared template)
 
 - **Shown:** model name and variant (free text, e.g. "Q4 e-tron 45"), then the field panel
   from [FIELDS.md](FIELDS.md) split into two visibly distinct sections:
-  - **Shared by every unit** — vehicle category, fuel/powertrain type (pre-narrowed to the
+  - **Shared by every unit**: vehicle category, fuel/powertrain type (pre-narrowed to the
     brand's offered powertrains from step 1), emissions class, EU type-approval number,
     write-off category (0 for new vehicles), and the new-vehicle zeros: odometer 0,
     accidents 0, keepers 0, service entries 0.
-  - **Per-VIN at registration** — first-registration date (defaults to batch date, per-VIN
+  - **Per-VIN at registration**: first-registration date (defaults to batch date, per-VIN
     override in step 3's table), and anything else that genuinely varies per unit.
 - **Claim defaults:** the standard new-vehicle claim set, on by default, individually
   toggleable: never written off, no accidents, at most one keeper, mileage under threshold.
@@ -111,36 +111,36 @@ going back never loses entered data; nothing writes to the ledger until step 5 s
 - **Rule:** the spec must be complete before step 3 unlocks; incomplete required fields are
   listed by name, not as a count.
 
-### Step 3 — VINs
+### Step 3 · VINs
 
 - **Input:** a paste area (one VIN per line) and a CSV upload accepting a single-column
   file or a two-column `vin,firstRegistrationDate` file for per-VIN date overrides.
 - **Validation table, one row per VIN, shown before anything runs:**
-  - format: 17 characters, no I/O/Q — malformed rows flagged, not silently dropped;
-  - duplicates inside the batch — flagged, second occurrence excluded;
-  - already on the ledger — checked against the API; these will be **refused by the
+  - format: 17 characters, no I/O/Q, and malformed rows are flagged, not silently dropped;
+  - duplicates inside the batch are flagged and the second occurrence excluded;
+  - already on the ledger, checked against the API; these will be **refused by the
     circuit** if submitted, and the table says so in advance.
 - **Shown:** total pasted / valid / flagged counts; flagged rows carry the reason in words.
 - **Rule:** the batch proceeds with valid rows only, and says how many it excluded. Batch
   cap: 500 VINs per run in demo mode (a server bound, restated in the UI).
 
-### Step 4 — Review and dry run
+### Step 4 · Review and dry run
 
-- **Shown:** the complete batch as it will execute — brand and registrar line, the shared
+- **Shown:** the complete batch as it will execute: brand and registrar line, the shared
   spec as a read-only panel, VIN count, circuits per VIN, total circuit executions.
 - **Dry run (always available, never skippable by accident):** runs the whole batch through
-  the circuits **without writing** — the server simulates against a copy of the ledger.
+  the circuits **without writing**, so the server simulates against a copy of the ledger.
   Output is the same per-VIN result table as a live run, labelled as a rehearsal.
 - **Rule:** the execute button states what it does: "REGISTER {N} PASSPORTS". In demo mode
   it also states where: "on the shared demo ledger (resets on restart)". Nothing implies
-  chain persistence that does not exist — same honesty rule as the rest of the site.
+  chain persistence that does not exist, which is the same honesty rule as the rest of the site.
 
-### Step 5 — Execution and receipt
+### Step 5 · Execution and receipt
 
-- **Shown live:** a per-VIN progress table — queued → running → **registered** or
-  **refused (reason)** — plus a running counter. Refusals are results, rendered with the
+- **Shown live:** a per-VIN progress table: queued → running → **registered** or
+  **refused (reason)**, plus a running counter. Refusals are results, rendered with the
   circuit's reason; the batch never halts on one.
-- **On completion:** the batch receipt —
+- **On completion:** the batch receipt holds
   - summary: N registered, M refused, timestamps;
   - per VIN: the vinHash, applied steps, claims proven, a link to `/verify/?v={vinHash}`;
   - **download**: a JSON receipt file of exactly the above, the manufacturer's record.
@@ -162,29 +162,29 @@ passport.vin origins, JSON in and out, values never echoed beyond the submitting
 
 ## Modes, stated plainly
 
-- **Demo mode (first implementation):** identical trust model to the current intake console —
+- **Demo mode (first implementation):** identical trust model to the current intake console:
   real compiled circuits, shared in-memory ledger, resets on restart. This is what ships
   first and what the public demo runs.
 - **Chain mode (after preprod wiring):** the same five steps, but step 5 submits real
   transactions to the deployed preprod contract, fees paid in dust from the project wallet.
   The step-5 screen gains per-VIN transaction status (proving → submitted → in block) and
-  realistic timing expectations. Nothing in steps 1–4 changes, which is the point of
+  realistic timing expectations. Nothing in steps 1 to 4 changes, which is the point of
   designing the wizard now.
 
 ## What the visual mockup needs to show (checklist for the design pass)
 
-1. **The wizard frame** — five steps with a visible position indicator; back never destroys.
-2. **Step 1** — grouped brand list with parent headings, filter chips, search, selected-brand
+1. **The wizard frame**: five steps with a visible position indicator; back never destroys.
+2. **Step 1**: grouped brand list with parent headings, filter chips, search, selected-brand
    card. Show one group expanded, one filter active.
-3. **Step 2** — the two-section field panel (shared vs per-VIN), claim toggles with the live
+3. **Step 2**: the two-section field panel (shared vs per-VIN), claim toggles with the live
    circuit count, model/variant heading.
-4. **Step 3** — paste area and upload side by side, the validation table with at least one
+4. **Step 3**: paste area and upload side by side, the validation table with at least one
    of each flag type visible (malformed, duplicate, already-registered), the counts line.
-5. **Step 4** — the review panel, the dry-run result table, the execute button with its
+5. **Step 4**: the review panel, the dry-run result table, the execute button with its
    honest label and demo-mode caption.
-6. **Step 5** — the live progress table mid-run (mixed registered/refused rows), then the
+6. **Step 5**: the live progress table mid-run (mixed registered/refused rows), then the
    receipt state with the download and per-VIN verify links.
-7. **Empty and error states** — no brand data (sample fallback note), zero valid VINs,
+7. **Empty and error states**: no brand data (sample fallback note), zero valid VINs,
    server unreachable (the existing static-mode messaging pattern).
 
 ## Open decisions (settle before implementation, none block the mockup)

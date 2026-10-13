@@ -2,7 +2,7 @@
  * Generate `site/verify/demo-data.json` and `site/verify/fields.json`.
  *
  * The demo data is NOT hand-written. It is the public ledger of the real
- * compiled contract after a scripted history, exported as JSON — so the scan
+ * compiled contract after a scripted history, exported as JSON, so the scan
  * page renders exactly what an observer of the chain would see, nothing more.
  * Values and salts live only in this process and are not exported.
  *
@@ -10,8 +10,8 @@
  * runner: a vehicle added through the console is built by exactly the code
  * that builds these two.
  *
- *   Vehicle A — a clean history with claims to show for it.
- *   Vehicle B — a passport whose clean-history proofs would abort in-circuit,
+ *   Vehicle A: a clean history with claims to show for it.
+ *   Vehicle B: a passport whose clean-history proofs would abort in-circuit,
  *               so no such claims exist and the page must say "not proven".
  *
  * Run: npm run demo:export

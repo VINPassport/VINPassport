@@ -11,9 +11,9 @@ visitor triggers a run that registers a passport, records history, and proves
 claims **on the deployed preprod contract** (`deploy/preprod.json`), pays real
 dust fees from the project wallet, and walks away with two artifacts:
 
-1. **On-chain evidence** — transaction hashes and block heights anyone can
+1. **On-chain evidence**: transaction hashes and block heights anyone can
    check against the public indexer, plus the exact `curl` to do it.
-2. **A receipt file** — the *private half* of the passport: every value and
+2. **A receipt file**: the *private half* of the passport: every value and
    salt, none of which ever touched the chain. The receipt is the ownership
    proof: whoever holds it can open the commitments; nobody else can.
 
@@ -26,8 +26,8 @@ registrar's own intake down the same engine. Both share
 
 | Route | Who drives | What happens |
 |---|---|---|
-| **Guided** (`POST /api/demo/run`) | The server | A plausible vehicle is generated (fresh random `VPD…` VIN), registered with four live fields and a panel of declarations, given one odometer update, then asked four questions — **one of which is designed to fail**: "one keeper" on a two-keeper car. The visitor watches the circuit refuse it, and the refusal appears in the report as a result, not an apology. |
-| **Manual** (`POST /api/demo/intake`) | The visitor | The same intake shape the console uses — fields, panel declarations, up to two update rounds, requested claims — but executed on preprod. The VIN is **always server-generated** (`VPD` prefix): demos never squat a real VIN and never collide with each other. |
+| **Guided** (`POST /api/demo/run`) | The server | A plausible vehicle is generated (fresh random `VPD…` VIN), registered with four live fields and a panel of declarations, given one odometer update, then asked four questions, **one of which is designed to fail**: "one keeper" on a two-keeper car. The visitor watches the circuit refuse it, and the refusal appears in the report as a result, not an apology. |
+| **Manual** (`POST /api/demo/intake`) | The visitor | The same intake shape the console uses (fields, panel declarations, up to two update rounds, requested claims), but executed on preprod. The VIN is **always server-generated** (`VPD` prefix): demos never squat a real VIN and never collide with each other. |
 
 Both routes share one queue (runs never conflict), one engine, and one cap.
 
@@ -35,8 +35,8 @@ Both routes share one queue (runs never conflict), one engine, and one cap.
 
 **5 runs per UTC day, global, guided and manual counted together.** The status
 endpoint shows used/remaining and the reset time, so the limit is visible
-before anyone starts. A run counts when it starts, whether or not it succeeds
-— retry-spam cannot stretch the budget. The cap exists because every run
+before anyone starts. A run counts when it starts, whether or not it succeeds,
+so retry-spam cannot stretch the budget. The cap exists because every run
 writes permanent public state and spends real (self-replenishing) dust.
 
 ## Anatomy of a run
@@ -44,7 +44,7 @@ writes permanent public state and spends real (self-replenishing) dust.
 ```
 simulate      dry-run every step through the compiled circuits, locally.
               In-circuit refusals are caught HERE, reported, and never
-              submitted — a failed proof writes nothing, so nothing is sent
+              submitted: a failed proof writes nothing, so nothing is sent
               that would fail.
 wallet        confirm the funding wallet is at the chain tip.
 then per stage (a stage = one transaction, up to 8 batched calls):
@@ -64,11 +64,11 @@ transaction.** The ledger's sequencing check refuses such a call when a later
 intent follows it, and the node reports only a bare `1010`.
 
 > **Sub-code note, corrected 2026-08-31.** This originally read "sub-code 188". Code 188
-> (`SequencingCheckFailure`) is **retired** — the current ledger never emits it and keeps the number
-> reserved so it cannot be reused. Live sequencing refusals arrive as **219–224**
+> (`SequencingCheckFailure`) is **retired**: the current ledger never emits it and keeps the number
+> reserved so it cannot be reused. Live sequencing refusals arrive as **219 to 224**
 > (`CallSequencingViolation` through `CallHasEmptyTranscripts`; causality is **223**). Separately,
-> **170 is `InvalidDustSpendProof`** — a refused *fee proof*, usually from proving against a dust
-> root the node has moved past — and **not** an out-of-dust condition. Treating it as one cost us a
+> **170 is `InvalidDustSpendProof`**, a refused *fee proof*, usually from proving against a dust
+> root the node has moved past, and **not** an out-of-dust condition. Treating it as one cost us a
 > run: the wallet held 1.06e19 SPECKs while the message said it was empty. Genuine
 > out-of-dust is **138** (`BalanceCheckOverspend`, DUST side). Verified against
 > `midnightntwrk/midnight-node`, `ledger/src/versions/common/types.rs`; the runner's table lives
@@ -82,7 +82,7 @@ Reading our own circuits tells you which calls those are:
 | `recordField` | **overwrites** the slot, then `updateCount.increment()` | **yes, twice** |
 | `proveFieldAtMost` | fresh `claimKey` into `claims` | no |
 
-`updateCount` is a `Counter` — one cell, always populated — which is why
+`updateCount` is a `Counter`, one cell that is always populated, which is why
 initialisations and updates each close a transaction, while registration and
 proofs batch freely. It is also why the vendor's "anchor first, then proofs"
 shape is the one that works. A guided run collapses from nine transactions to
@@ -91,7 +91,7 @@ five: `[register + first init]`, `[init]`, `[init]`, `[update]`, `[all claims]`.
 **Per-call private state must be armed explicitly.** nightgate-tx runs a
 call's `before` hook only when the transaction carries a *batch*; a single
 call is proven with the witnesses exactly as they stand. An unarmed holder
-reads as value 0 with a zero salt — and since `initialiseField` asserts
+reads as value 0 with a zero salt, and since `initialiseField` asserts
 nothing about prior state, that **proves and lands**, writing a commitment
 nobody can ever open. The engine therefore arms the first call itself and the
 witness holder refuses to be read until something has armed it, so a missed
@@ -108,8 +108,8 @@ accepting it*.
 | Endpoint | Returns |
 |---|---|
 | `GET /api/demo/status` | `enabled`, `ready`/`warming`, capacity/used/remaining, reset time, queue length, contract address |
-| `POST /api/demo/run` | `202 {jobId}` — guided run queued |
-| `POST /api/demo/intake` | `202 {jobId}` — manual run queued (body: `fields`, `panel?`, `updates?`, `prove?`, `registrar?`) |
+| `POST /api/demo/run` | `202 {jobId}`, guided run queued |
+| `POST /api/demo/intake` | `202 {jobId}`, manual run queued (body: `fields`, `panel?`, `updates?`, `prove?`, `registrar?`) |
 | `GET /api/demo/job?id=` | Job status + per-step progress + receipt when done |
 | `GET /api/demo/report?id=` | The receipt as a file download |
 | exhausted cap | `429` with the reset time |
@@ -154,7 +154,7 @@ run: in-process circuits, in-memory ledger, no wallet, no chain, no secrets.
 Three things a deployment needs that a clone does not:
 
 1. **The prover keys.** `contracts/vinpassport/src/managed/vinpassport/keys/`
-   is gitignored — 18 MB of build artifacts that `compact compile` regenerates,
+   is gitignored: 18 MB of build artifacts that `compact compile` regenerates,
    and that the simulator (which proves nothing) never touches. Real proving
    does need them, so they have to be copied to the host or recompiled there.
 2. **A synced wallet.** Building the dust state from nothing replays the whole
@@ -165,7 +165,7 @@ Three things a deployment needs that a clone does not:
 ## How it is deployed
 
 Two services, because restoring the wallet is heavy synchronous WASM work that
-blocks the Node event loop outright on a small box — a single process would
+blocks the Node event loop outright on a small box, and a single process would
 take the public API down for minutes on every restart:
 
 | Service | Port | Holds the wallet | Job |

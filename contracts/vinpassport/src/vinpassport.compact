@@ -1,4 +1,4 @@
-// VINPassport — Digital Circularity Vehicle Passport
+// VINPassport: Digital Circularity Vehicle Passport
 // Regulation (EU) 2026/1738, Article 13
 //
 // SPDX-License-Identifier: Apache-2.0
@@ -6,7 +6,7 @@
 // A vehicle passport is not one number. This contract holds a COMMITMENT per
 // (vehicle, field): the write-off category, the accident count, the number of
 // keepers, the service and inspection record, the odometer. No field value
-// ever reaches the ledger — only a commitment to it, and proofs about it.
+// ever reaches the ledger, only a commitment to it, and proofs about it.
 //
 // EACH FIELD CARRIES ITS OWN INTEGRITY RULE, fixed when the field is created
 // and unchangeable afterwards. The rule is stored on the ledger rather than
@@ -14,7 +14,7 @@
 // moment they need it, and recreating a field to change it is refused.
 //
 // THREE RULES EXIST because a rule that could only ever point one way would
-// not be a rule — `initialiseField` would not need the argument, and nothing
+// not be a rule: `initialiseField` would not need the argument, and nothing
 // would be fixed at creation.
 //
 // The lifecycle fields only ever rise: mileage, accidents, keepers, services,
@@ -36,8 +36,8 @@
 // A PROVEN CLAIM IS RECORDED, the value behind it is not. A proof circuit that
 // only asserted would leave nothing for a verifier to read afterwards: the
 // transaction's success is the proof, but nothing would index it by vehicle.
-// So a successful proof writes a Claim — which vehicle, which field, which
-// direction, which bound — and never the value that satisfied it.
+// So a successful proof writes a Claim, naming which vehicle, which field,
+// which direction and which bound, and never the value that satisfied it.
 
 pragma language_version >= 0.20;
 
@@ -67,7 +67,7 @@ export enum Rule {
 //
 // `slot` is carried so a verifier can find the current commitment by direct
 // lookup. Deriving it needs persistentHash, which a plain browser page has no
-// way to compute — see D19.
+// way to compute; see D19.
 export struct Claim {
   slot: Bytes<32>,
   vinHash: Bytes<32>,

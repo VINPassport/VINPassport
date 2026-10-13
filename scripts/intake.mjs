@@ -1,5 +1,5 @@
 /**
- * Run an intake file — produced by the console page at app/console/ — through
+ * Run an intake file, produced by the console page at app/console/, through
  * the real compiled circuits, and regenerate the scan page's ledger with the
  * new vehicle in it.
  *
@@ -12,7 +12,7 @@
  *
  * Refusals are results: an update that breaks a field's rule, or a claim the
  * state cannot support, is refused by the circuit, reported here, and writes
- * nothing — exactly as on chain.
+ * nothing, exactly as on chain.
  *
  * SPDX-License-Identifier: Apache-2.0
  */

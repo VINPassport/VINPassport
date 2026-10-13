@@ -1,8 +1,8 @@
 /**
  * A local simulator for the `vinpassport` contract.
  *
- * The contract runs here exactly as it runs on chain — same compiled circuits,
- * same ledger semantics, same assertions — but against an in-memory ledger and
+ * The contract runs here exactly as it runs on chain, with the same compiled circuits,
+ * the same ledger semantics and the same assertions, but against an in-memory ledger and
  * with proving switched off. That makes the privacy properties testable: the
  * whole public ledger can be inspected after every call, so the tests can check
  * what did NOT reach it.
@@ -11,7 +11,7 @@
  *
  * The four witnesses take no arguments. They are the boundary between the
  * caller's private world and the circuit, so everything they return has to come
- * from private state — including which vehicle and which field is being
+ * from private state, including which vehicle and which field is being
  * operated on. A real holder's wallet does the same thing: it stages the values
  * for the call it is about to make, then makes it.
  *
@@ -20,7 +20,7 @@
  *
  * Witnesses here are pure readers. `store` is only advanced after a circuit
  * returns successfully, mirroring a wallet that commits private state once the
- * transaction is accepted — which matters for the tests, because a rejected
+ * transaction is accepted, which matters for the tests, because a rejected
  * call must leave the holder's record untouched.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -58,7 +58,7 @@ export const fieldKey = (name) =>
  * The fields these tests exercise, with the rule each is created under.
  *
  * Every field the panel actually uses today only ever rises. `reservedNumeric0`
- * stands in for a field that may only fall — the contract supports the
+ * stands in for a field that may only fall. The contract supports the
  * direction so that adding such a field later is a data change rather than a
  * contract change, and the tests have to prove that support is real.
  */
@@ -76,8 +76,8 @@ export const FIELDS = {
  *
  * `previousValue` and `previousSalt` fall back to zero rather than throwing
  * when nothing is known, on purpose: a caller who does not know the current
- * value must be stopped by the CIRCUIT — that is what the commitment-opening
- * assert is for — and not by a helpful local error that would mask its absence.
+ * value must be stopped by the CIRCUIT, which is what the commitment-opening
+ * assert is for, and not by a helpful local error that would mask its absence.
  */
 export const witnesses = {
     newValue: (ctx) => [ctx.privateState, ctx.privateState.pending.value],
@@ -157,7 +157,7 @@ export class PassportSimulator {
      * NOTE this is NOT the contract's slot key. The contract derives its slot
      * with a domain-separated `persistentHash` inside the circuit; this is just
      * how the simulator's wallet files what it knows. Keeping them separate is
-     * deliberate — if the test harness recomputed the contract's key it would
+     * deliberate: if the test harness recomputed the contract's key it would
      * be asserting its own arithmetic rather than the contract's.
      */
     ref(vin, field) {
@@ -256,7 +256,7 @@ export class PassportSimulator {
      *
      * The privacy tests use this to assert that a field value never reaches the
      * ledger. Structure matters here: an earlier version of this searched a
-     * concatenated hex dump for the value's hex digits, which is unsound —
+     * concatenated hex dump for the value's hex digits, which is unsound:
      * `12345` is `3039`, and four hex characters turn up inside a random
      * 32-byte commitment often enough to make the test flap in both directions.
      * Comparing whole values instead means a pass means what it says.

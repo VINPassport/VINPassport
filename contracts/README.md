@@ -1,7 +1,7 @@
 # Contracts
 
 VINPassport's own Compact contracts. Layout follows
-[NIGHTGATE's convention](https://github.com/ODATANO/NIGHTGATE/tree/main/contracts) —
+[NIGHTGATE's convention](https://github.com/ODATANO/NIGHTGATE/tree/main/contracts):
 `<name>/src/<name>.compact` with compiled output under `src/managed/<name>/`.
 
 | Contract | Circuits | Purpose |
@@ -20,7 +20,7 @@ compact compile contracts/vinpassport/src/vinpassport.compact \
 
 Add `--skip-zk` for a fast syntax and type check that skips PLONK key generation.
 
-Verified with **Compact CLI 0.5.2, compiler 0.31.1 (language 0.23, ledger 8)** — the stable line.
+Verified with **Compact CLI 0.5.2, compiler 0.31.1 (language 0.23, ledger 8)**, which is the stable line.
 The ledger-9 line (compiler 0.33+) is not deployed to any public network.
 
 ## The private-state model
@@ -28,15 +28,15 @@ The ledger-9 line (compiler 0.33+) is not deployed to any public network.
 No field value ever reaches the ledger. Only `persistentCommit(value, salt)` is stored, one per
 (vehicle, field) slot.
 
-`recordField` requires the caller to open the *existing* commitment in-circuit — proving they know
-the current value — then asserts the change respects the field's rule, and replaces the commitment.
+`recordField` requires the caller to open the *existing* commitment in-circuit, proving they know
+the current value, then asserts the change respects the field's rule, and replaces the commitment.
 Both values stay witnesses throughout, so the chain records that an integrity check passed without
 recording what passed it.
 
 **The rule is per field and fixed at creation.** Every field the panel uses today may never fall:
 mileage, accident count, keeper count, service count, write-off category. The opposite direction is
-supported so that adding a field which only declines is a data change rather than a contract change
-— and because a rule that could only ever point one way would not be fixing anything at creation.
+supported so that adding a field which only declines is a data change rather than a contract change,
+and because a rule that could only ever point one way would not be fixing anything at creation.
 
 Storing the rule on the ledger rather than accepting it per call is what stops a caller choosing the
 flattering rule at the moment they need it; recreating a field to change it is refused.
@@ -48,9 +48,9 @@ accident"* is simply `proveFieldAtMost` with a bound of zero.
 ## What this does and does not prove
 
 It proves a reading is **the one that was committed** and that it satisfies a bound. It does not
-prove the reading matches physical reality — a producer who commits a false value produces a
+prove the reading matches physical reality: a producer who commits a false value produces a
 cryptographically valid proof of a false fact.
 
-That gap closes at the writer rather than the sensor — a value committed by a party already
+That gap closes at the writer rather than the sensor, with a value committed by a party already
 accountable for it, marked so a verifier can tell such a write from a self-declared one. No hardware
 is scheduled. See [`../docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md).

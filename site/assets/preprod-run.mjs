@@ -205,7 +205,7 @@ function receiptPanel(job, base) {
         return `<div class="row" style="padding:11px 0">
           <span class="${proven ? 'tick' : 'none'}">${proven
             ? '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"></path></svg>'
-            : '–'}</span>
+            : `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12h14"></path></svg>`}</span>
           <div style="flex:1 1 220px;min-width:0">
             <b style="display:block;font-size:14px">${esc(c.label)}</b>
             <span style="font-size:12px;color:rgba(14,23,38,.62)">${esc(c.outcome)}</span>
@@ -216,7 +216,7 @@ function receiptPanel(job, base) {
     const refusals = (r.refused ?? []).length
         ? `<div style="padding:12px 15px;border-top:1px solid rgba(0,74,173,.26);background:rgba(139,149,255,.18)">
              <b style="font-size:13px">Refused in-circuit, nothing written</b>
-             ${r.refused.map((x) => `<div style="margin-top:5px;font-size:12.5px;line-height:1.55;color:rgba(14,23,38,.85)"><span class="mono" style="font-size:11px">${esc(x.step)}</span> — ${esc(x.reason)}</div>`).join('')}
+             ${r.refused.map((x) => `<div style="margin-top:5px;font-size:12.5px;line-height:1.55;color:rgba(14,23,38,.85)"><span class="mono" style="font-size:11px">${esc(x.step)}</span>: ${esc(x.reason)}</div>`).join('')}
            </div>`
         : '';
 

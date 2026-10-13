@@ -18,9 +18,9 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
 
 const claimTitle = (meta, c) => {
     // No meta means the claim's fieldKey is not a canonical VINPassport field.
-    // Name it as invalid rather than lending it a generic "Field" label — a
+    // Name it as invalid rather than lending it a generic "Field" label, because a
     // forged key (e.g. "odometerKm " with a trailing space) must not read as real.
-    if (!meta) return `⚠ Unrecognised field key ${short(c.fieldKey)} — not canonical`;
+    if (!meta) return `⚠ Unrecognised field key ${short(c.fieldKey)}, not canonical`;
     const label = meta.label ?? 'Field';
     const op = c.atMost ? '≤' : '≥';
     const suffix = meta.kind === 'km' ? ' km' : '';

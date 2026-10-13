@@ -29,13 +29,13 @@ const ROOT_B = bytes32(0xbb);
 // What a registrar HOLDS. The id the chain records is derived from it.
 const REGISTRAR = REGISTRAR_SECRET;
 
-// Real field labels — blake2b-256 of the field name, as the SDK derives them.
+// Real field labels: blake2b-256 of the field name, as the SDK derives them.
 const ODO = fieldKey('odometerKm');
 const ACCIDENTS = fieldKey('accidentCount');
 const OWNERS = fieldKey('ownerCount');
 const WRITE_OFF = fieldKey('writeOffCategory');
 // Every field the panel uses today only rises. This one stands in for a field
-// that may only fall — see FIELDS in the simulator for why the contract keeps
+// that may only fall; see FIELDS in the simulator for why the contract keeps
 // that direction available.
 const DECLINING = fieldKey('reservedNumeric0');
 
@@ -74,7 +74,7 @@ describe('registerPassport', () => {
         expect(hex(l.registrar.lookup(VIN_A))).toBe(hex(REGISTRAR_ID));
     });
 
-    it('creates no fields — registration and history are separate acts', () => {
+    it('creates no fields: registration and history are separate acts', () => {
         const l = sim.registerPassport(VIN_A, ROOT, REGISTRAR);
 
         expect(l.fieldCommitment.isEmpty()).toBe(true);
@@ -111,7 +111,7 @@ describe('a declaration that may never change', () => {
         expect(() => sim.recordField(VIN_A, DECLARATION, PCT(25), S2)).not.toThrow();
     });
 
-    it('REJECTS a quiet upward revision — the direction that flatters', () => {
+    it('REJECTS a quiet upward revision, the direction that flatters', () => {
         expect(() => sim.recordField(VIN_A, DECLARATION, PCT(30), S2))
             .toThrow(rejects('value changed'));
     });
@@ -224,7 +224,7 @@ describe('registrar authority', () => {
         expect(sim.ledger.registrar.isEmpty()).toBe(true);
     });
 
-    it('cannot be widened by any circuit — the deploy list is the whole list', () => {
+    it('cannot be widened by any circuit: the deploy list is the whole list', () => {
         const before = sim.ledger.allowedRegistrars.size();
         registered();
 
@@ -353,7 +353,7 @@ describe('initialiseField', () => {
 
 // ------------------------------------------------------ fields that never fall
 
-describe('recordField — a field that may never fall', () => {
+describe('recordField: a field that may never fall', () => {
     beforeEach(() => { registered(); });
 
     it('rejects a write to a vehicle that has no passport', () => {
@@ -375,11 +375,11 @@ describe('recordField — a field that may never fall', () => {
         expect(l.updateCount).toBe(6n);
     });
 
-    it('accepts an unchanged odometer — a vehicle can sit still', () => {
+    it('accepts an unchanged odometer: a vehicle can sit still', () => {
         expect(() => sim.recordField(VIN_A, ODO, 12n, S2)).not.toThrow();
     });
 
-    it('REJECTS a lowered odometer — the anti-rollback property', () => {
+    it('REJECTS a lowered odometer: the anti-rollback property', () => {
         sim.recordField(VIN_A, ODO, 18_430n, S2);
 
         expect(() => sim.recordField(VIN_A, ODO, 9_000n, S3))
@@ -400,7 +400,7 @@ describe('recordField — a field that may never fall', () => {
             .toThrow(rejects('value decreased'));
     });
 
-    it('REJECTS clearing a write-off — the title-washing move', () => {
+    it('REJECTS clearing a write-off: the title-washing move', () => {
         sim.recordField(VIN_A, WRITE_OFF, 2n, S2);   // category S, structural
 
         expect(() => sim.recordField(VIN_A, WRITE_OFF, 0n, S3))
@@ -426,7 +426,7 @@ describe('recordField — a field that may never fall', () => {
 
 // ------------------------------------------------------ fields that never rise
 
-describe('recordField — a field that may never rise', () => {
+describe('recordField: a field that may never rise', () => {
     beforeEach(() => { registered(); });
 
     it('accepts degradation', () => {
@@ -478,7 +478,7 @@ describe('recordField — a field that may never rise', () => {
 
 // ------------------------------------------------------------- knowing the value
 
-describe('recordField — proving you know the current value', () => {
+describe('recordField: proving you know the current value', () => {
     beforeEach(() => { registered(); });
 
     it('rejects a caller who does not know the current VALUE', () => {
@@ -494,14 +494,14 @@ describe('recordField — proving you know the current value', () => {
     it('rejects a rollback dressed up with a matching false opening', () => {
         // To get 5 accepted, a seller must first convince the circuit that the
         // stored commitment opens to something no greater than 5. It does not,
-        // so this fails on the opening rather than on monotonicity — there is
+        // so this fails on the opening rather than on monotonicity: there is
         // no order of operations that gets a rollback through.
         expect(() => sim.recordField(VIN_A, ODO, 5n, S2, { value: 4n, salt: S1 }))
             .toThrow(rejects('previous value does not open the stored commitment'));
     });
 
     it('rejects opening one field with another field\'s value', () => {
-        // odometer is 12, accidents is 0 — both on the same vehicle, both under
+        // odometer is 12, accidents is 0, both on the same vehicle, both under
         // the same salt. The slots must still be independent.
         expect(() => sim.recordField(VIN_A, ACCIDENTS, 1n, S2, { value: 12n, salt: S1 }))
             .toThrow(rejects('previous value does not open the stored commitment'));
@@ -573,7 +573,7 @@ describe('proveFieldAtMost', () => {
             .toThrow(rejects('value does not open the stored commitment'));
     });
 
-    it('changes nothing — a query is not an update', () => {
+    it('changes nothing: a query is not an update', () => {
         const before = sim.ledger.updateCount;
         sim.proveFieldAtMost(VIN_A, ODO, 150_000n);
 
@@ -642,7 +642,7 @@ describe('proveFieldAtLeast', () => {
 
 // ------------------------------------------------------ the disclosure claim
 
-describe('claims — what a verifier can read afterwards', () => {
+describe('claims: what a verifier can read afterwards', () => {
     // A proof circuit that only asserted would leave nothing behind: the
     // transaction's success IS the proof, but nothing would index it by
     // vehicle, so a scan-to-verdict page would have no state to read.

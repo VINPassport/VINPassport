@@ -1328,7 +1328,7 @@ export async function createRunner({ log = console.log } = {}) {
          * /api/demo/report. That is fine for a visitor, who downloads it, and
          * wrong for us: the salts in it are the ONLY way to open the field
          * commitments this run just wrote. Lose them and the field is on chain
-         * for good with no way to prove anything about it — which is exactly
+         * for good with no way to prove anything about it, which is exactly
          * what happened to all 49 fields written before 2026-09-18, and why
          * proveFieldAtMost/proveFieldAtLeast could not be measured.
          *
@@ -1346,7 +1346,7 @@ export async function createRunner({ log = console.log } = {}) {
             renameSync(tmp, out);            // atomic: a half-written receipt is worse than none
             log(`demo: receipt saved to _local-tracking/receipts/${stamp}.${vin}.json`);
         } catch (e) {
-            // Never fail a completed run over bookkeeping — the run itself
+            // Never fail a completed run over bookkeeping: the run itself
             // succeeded and the receipt is still served over the API.
             log('demo: WARNING could not save receipt:', e?.message ?? e);
         }

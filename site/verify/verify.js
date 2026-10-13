@@ -40,7 +40,7 @@ function detailBlock(a, ctx) {
         data-vehicle="${esc(ctx?.title ?? 'this vehicle')}" data-vin="${esc(ctx?.vin ?? '')}"
         data-claim="${esc(qLabel(a, a.claim))}"
         style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;min-height:44px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;background:#004AAD;color:#EDE4D8;border:1px solid #004AAD;padding:10px 18px;cursor:pointer">COPY THE REQUEST</button>
-      <span style="display:block;margin-top:9px;font-size:12px;color:rgba(14,23,38,.55)">Copies the vehicle and the claim as text you can send to the seller. Nothing leaves this page — there is no request inbox behind it.</span>
+      <span style="display:block;margin-top:9px;font-size:12px;color:rgba(14,23,38,.55)">Copies the vehicle and the claim as text you can send to the seller. Nothing leaves this page: there is no request inbox behind it.</span>
     </div>`;
     }
     const c = a.claim;
@@ -65,7 +65,7 @@ function rowsFor(view, secondary = false, ctx = null) {
         invalid: !x.meta,
         label: x.meta
             ? `${x.meta.label} ${x.claim.atMost ? 'at most' : 'at least'} ${fmt(x.claim.bound)}`
-            : 'Unrecognised field key — not a canonical VINPassport claim',
+            : 'Unrecognised field key, not a canonical VINPassport claim',
         status: x.status, claim: x.claim
     }));
     const all = view.answers.concat(extras);
@@ -79,7 +79,7 @@ function rowsFor(view, secondary = false, ctx = null) {
     return all.map((a, i) => {
         const proven = a.status !== 'not-proven';
         const open = i === openAt;
-        const mark = proven ? TICK : '<span class="none">—</span>';
+        const mark = proven ? TICK : '<span class="none"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12h14"></path></svg></span>';
         const name = proven
             ? `<b style="display:block;font-size:15.5px">${esc(qLabel(a, a.claim))}</b>`
             : `<b style="display:block;font-size:15.5px;color:rgba(14,23,38,.78)">${esc(qLabel(a, null))}</b>`;
@@ -145,11 +145,11 @@ const LEDE = `<section class="vfy-lede">
     This is a buyer's verdict on one vehicle. Each line is a question a buyer actually asks, answered
     against the record anchored on the ledger. Open any line to see the proof behind it: which field it
     covers, the commitment it was proven against, and where it sits on the ledger.
-    <b>No reading is ever shown, because none was ever published</b> &mdash; not to this page, and not to the chain.
+    <b>No reading is ever shown, because none was ever published</b>, not to this page and not to the chain.
   </p>
   <div class="vfy-legend">
     <div>${TICK}<span style="font-size:13px;line-height:1.5;color:rgba(14,23,38,.72)"><b style="display:block;font-size:14px;color:#0E1726">Proven</b>A zero-knowledge proof for this claim was accepted on the ledger. It could not exist unless the hidden value satisfied the bound.</span></div>
-    <div><span class="none">&mdash;</span><span style="font-size:13px;line-height:1.5;color:rgba(14,23,38,.72)"><b style="display:block;font-size:14px;color:#0E1726">Not proven</b>Nothing on the ledger answers this question. That is silence, <b>not a no</b> &mdash; the difference matters, and the page will not blur it.</span></div>
+    <div><span class="none"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12h14"></path></svg></span><span style="font-size:13px;line-height:1.5;color:rgba(14,23,38,.72)"><b style="display:block;font-size:14px;color:#0E1726">Not proven</b>Nothing on the ledger answers this question. That is silence, <b>not a no</b>. The difference matters, and the page will not blur it.</span></div>
   </div>
 </section>`;
 

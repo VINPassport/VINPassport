@@ -2,15 +2,15 @@
 
 What we are building, what we are building it with, and the order it happens in.
 
-Structure follows [NIGHTPASS](https://github.com/ODATANO/NIGHTPASS) — the reference consumer
-application on NIGHTGATE — because matching a working pattern beats inventing one.
+Structure follows [NIGHTPASS](https://github.com/ODATANO/NIGHTPASS), the reference consumer
+application on NIGHTGATE, because matching a working pattern beats inventing one.
 
 ---
 
 ## Three product constraints
 
 Everything below is downstream of these. They are settled; see
-[DECISIONS.md](DECISIONS.md) D11–D14.
+[DECISIONS.md](DECISIONS.md) D11 to D14.
 
 1. **Simple enough for anyone.** No user of any kind ever sees a wallet, a key, or the word
    "blockchain" unless they go looking for it.
@@ -24,7 +24,7 @@ Everything below is downstream of these. They are settled; see
 A buyer standing in a forecourt with a phone:
 
 **Scan a QR code → see a verdict.** No login, no app, no wallet, no explanation of zero-knowledge
-proofs. A page that says *Never written off ✓ · No reported accidents ✓ · One keeper ✓* — and, if
+proofs. A page that says *Never written off ✓ · No reported accidents ✓ · One keeper ✓*. And if
 they tap, *how do you know that?*
 
 Three rules follow, and they bind every consumer-facing surface:
@@ -39,13 +39,13 @@ Three rules follow, and they bind every consumer-facing surface:
 ## Sponsoring model
 
 > **Scope: this is the product design, not the Wave 1 build.** Wave 1 signs every transaction with
-> a single VINPassport wallet and pays the fee from its own DUST ([D24](DECISIONS.md#settled)) — no
+> a single VINPassport wallet and pays the fee from its own DUST ([D24](DECISIONS.md#settled)): no
 > per-organisation sessions, no `sponsorSessionId`, no lease pool. Everything below describes where
 > custody and sponsoring are going once organisations onboard; treat the present tense as intent.
 > The distinction matters for attribution: today the record says VINPassport asserted the fact,
 > which is exactly Model A, and Model A is rejected below. Reaching Model B is Phase 1 work.
 
-Three custody models were considered. The distinction is not cosmetic — it decides who the record
+Three custody models were considered. The distinction is not cosmetic: it decides who the record
 says asserted a fact.
 
 | | Who signs | Attribution lands on | Verdict |
@@ -57,9 +57,9 @@ says asserted a fact.
 **Why A is rejected.** If VINPassport signs everything, VINPassport asserts everything. A dealer supplies
 a false accident count and the record says *we* claimed it. That transfers liability for data we
 cannot verify onto the party least able to verify it, and it destroys the traceability that Phases
-0–1 exist to provide.
+0 and 1 exist to provide.
 
-**Model B, as designed** (not yet built — see the scope note above). VINPassport custodies one wallet
+**Model B, as designed** (not yet built; see the scope note above). VINPassport custodies one wallet
 session per organisation. A treasury **pool** pays every fee via NIGHTGATE's `sponsorSessionId`. The
 dealer authenticates with an email and a password, and their name lands on the record.
 
@@ -73,8 +73,8 @@ the reason matters:
 
 Each sponsored job leases one wallet for its duration; callers queue on the pool
 (`NIGHTGATE_SPONSOR_LEASE_WAIT_MS`, default 120s); a sponsor failing retryably is benched
-(`NIGHTGATE_SPONSOR_COOLDOWN_MS`) while the job tries the next. Omitting `sponsorSessionId` — or
-passing the reserved pool sentinel — uses the pool. Pinning an explicit session is a security
+(`NIGHTGATE_SPONSOR_COOLDOWN_MS`) while the job tries the next. Omitting `sponsorSessionId`, or
+passing the reserved pool sentinel, uses the pool. Pinning an explicit session is a security
 boundary and stays exact.
 
 **Consequence for capacity planning:** peak concurrent anchoring is bounded by the number of sponsor
@@ -83,7 +83,7 @@ of wallets, not a balance.
 
 ### Batching is the primary cost lever
 
-NIGHTGATE 0.19.0's txbuilder takes `buildSponsorable({ calls: [...] })` — up to **8 circuit calls in
+`@odatano/nightgate-tx` takes `buildSponsorable({ calls: [...] })`, carrying up to **8 circuit calls in
 one transaction, one fee, one sponsoring**, with a pre-proving causality check so a violating batch
 fails locally and spends nothing.
 
@@ -94,7 +94,7 @@ Phase 0.
 **Built to accept Model C.** `srv/lib/sponsor.ts` puts the signing source behind an interface with
 two implementations: custodial now, external signer later. The treasury pays either way. An
 enterprise customer that wants self-custody uses
-[`@odatano/nightgate-tx`](https://github.com/ODATANO/NIGHTGATE) — they build, prove and sign locally
+[`@odatano/nightgate-tx`](https://github.com/ODATANO/NIGHTGATE): they build, prove and sign locally
 and hand us a fee-unpaid transaction; we never see a key or a witness.
 
 ### What custodial signing does and does not prove
@@ -105,20 +105,20 @@ Stated plainly, because overclaiming here would be dishonest:
 
 A custodial signature proves VINPassport's infrastructure produced the record on an organisation's
 behalf. It does not cryptographically prove that organisation intended it. Every attestation is
-therefore paired with an **authenticated intent record** — who authenticated, when, from where, and
+therefore paired with an **authenticated intent record**: who authenticated, when, from where, and
 what they submitted. That is ordinary business evidence, not cryptographic proof, and it is
 sufficient for commerce but not for a contested legal claim. Model C closes the gap for customers
 who need it.
 
 ### Security requirements this creates
 
-The wallets hold no funds — only the authority to attest, plus fees we supply. So this is not
+The wallets hold no funds, only the authority to attest, plus fees we supply. So this is not
 financial custody. The real exposure is that a compromised key store would let false attestations be
 written under a real organisation's name. That is harm to *our customer* caused by *our* breach, and
 it is engineered against directly:
 
 - Encryption key in a managed KMS, never an environment variable
-- Per-organisation rate limits — we pay for every transaction, so an unmetered API is a cash leak
+- Per-organisation rate limits: we pay for every transaction, so an unmetered API is a cash leak
   as well as an abuse vector
 - Volume anomaly alerting per organisation
 - Full audit trail of authenticated intent
@@ -127,7 +127,7 @@ it is engineered against directly:
 
 ## Billing model
 
-**Deferred — no billing in Phase 0.** The entitlement layer is designed so a provider drops in
+**Deferred: no billing in Phase 0.** The entitlement layer is designed so a provider drops in
 later; nothing is integrated until unit costs are known.
 
 **The principle: billing gates the action, not the chain.** Entitlement is checked in `srv/` before
@@ -138,7 +138,7 @@ crypto code.
 proof is measured. If an anchor costs more than a transfer fee nets, the model inverts. **Measuring
 this is a Phase 0 task**, not a later one.
 
-**Provider choice is open** and turns on EU VAT rather than features — a merchant-of-record provider
+**Provider choice is open** and turns on EU VAT rather than features: a merchant-of-record provider
 assumes VAT registration and remittance across member states, while a direct processor leaves that
 obligation with us. Decide when billing is actually built.
 
@@ -163,7 +163,7 @@ obligation with us. Decide when billing is actually built.
 >
 > Nothing is written in TypeScript: the repository is plain `.mjs` throughout, per
 > [D11](DECISIONS.md#settled) and D21. Keep the tree below as the shape to grow back into when the
-> service layer arrives in Phase 1 — the module names still describe real responsibilities, and
+> service layer arrives in Phase 1: the module names still describe real responsibilities, and
 > `query-guard` in particular is a requirement, not a nicety.
 
 ```
@@ -172,8 +172,8 @@ db/
   demo-schema.cds             seeded demo vehicles
 
 srv/
-  passport-service.{cds,ts}   read side — tier redaction + query guard
-  producer-service.{cds,ts}   write side — create, anchor, prove
+  passport-service.{cds,ts}   read side: tier redaction, query guard
+  producer-service.{cds,ts}   write side: create, anchor, prove
   demo-service.{cds,ts}       scripted scenarios
   lib/
     fields.ts                 the 32-slot provable registry (26 used, 6 reserved)
@@ -187,7 +187,7 @@ srv/
   auth.ts   http-security.ts   server.ts
 
 app/
-  scan/        public QR landing — mobile-first
+  scan/        public QR landing, mobile-first
   explorer/    public verification
   console/     operator console
 
@@ -197,45 +197,45 @@ deploy/        docker-compose, Caddyfile
 test/          unit, integration, ui-smoke
 ```
 
-`query-guard.ts` is not optional. Redaction after a database read is bypassable — a caller who
-cannot see a column can still binary-search its value by filtering on it. NIGHTPASS ships the same
-module for the same reason.
+`query-guard.ts` is not optional. Redaction has to be enforced inside the query rather than
+applied to its results, because a filter is as much a read as a projection is. NIGHTPASS ships the
+same module for the same reason.
 
 ## Stack
 
-**What is actually installed and running** — verified against `package.json` and `node_modules`:
+**What is actually installed and running**, verified against `package.json` and `node_modules` on 2026-10-13:
 
 | Layer | Choice | Why |
 |---|---|---|
 | Runtime | Node ≥22, plain `.mjs` | No build step, per [D11](DECISIONS.md#settled) / [D21](DECISIONS.md#settled) |
 | Framework | none | One dependency-free Node server (D21). No CAP, no database |
 | Contract | `vinpassport`, our own Compact contract | [D16](DECISIONS.md#settled) / [D18](DECISIONS.md#settled); compiler 0.31.1, language 0.23.0 |
-| Chain runtime | `@midnight-ntwrk/compact-runtime` **0.16.0**, `ledger-v8` 8.1.1 | Must match what the contract was compiled against |
+| Chain runtime | `@midnight-ntwrk/compact-runtime` **0.16.0**, `ledger-v8` 8.1.3 | Must match what the contract was compiled against |
 | DPP core | `@odatano/dpp-sdk` **0.2.0**, exact | Width-aware Merkle helpers |
-| Tx building | `@odatano/nightgate-tx` **0.4.0**, exact | Local build, batch ordering, in-process wasm proving |
+| Tx building | `@odatano/nightgate-tx` **0.11.0**, exact | Local build, batch ordering, in-process wasm proving |
 | Proving | in-process wasm | No proof server, no Docker |
-| Fees | our own wallet's DUST | [D24](DECISIONS.md#settled) — not sponsored |
+| Fees | our own wallet's DUST | [D24](DECISIONS.md#settled), not sponsored |
 | Submission | `@polkadot/api` 16.5.6 → `author_submitExtrinsic` | Straight to the public preprod node |
-| Contract tests | **vitest** — 67 | Midnight's own convention — see D17 |
-| App unit tests | `node --test` — 20 | Platform runner, no `tsx` needed without TypeScript |
-| SDK guard | `node test/sdk-assumptions.mjs` — 24 | Pins our assumptions about `dpp-sdk` |
+| Contract tests | **vitest**, 90 | Midnight's own convention; see D17 |
+| App unit tests | `node --test`, 71 | Platform runner, no `tsx` needed without TypeScript |
+| SDK guard | `node test/sdk-assumptions.mjs`, 24 | Pins our assumptions about `dpp-sdk` |
 | All UI | Plain HTML / CSS / JS | See below |
 | Network | Preprod | Mainnet submission is gated off |
 
 **Planned for Phase 1, not installed:** `@sap/cds` ^10 and the `@odatano/nightgate` CAP plugin
-(0.19.0 pinned), a SQLite→Postgres database, Playwright for E2E, and the `attestation-vault-32`
-vault — we deployed our own contract instead, so the vault is a NIGHTGATE facility we have not
+(0.32.0 pinned), a SQLite→Postgres database, Playwright for E2E, and the `attestation-vault-32`
+vault. We deployed our own contract instead, so the vault is a NIGHTGATE facility we have not
 taken up. This table previously listed all of these as the stack; they were the pre-D20 plan.
 
 **On UI:** NIGHTPASS uses SAPUI5 for operator apps and plain HTML for public ones. We use plain HTML
 throughout, including the console. The product constraint is that this be simple enough for anyone,
-and a framework that reads as enterprise software works against that — including for the small
+and a framework that reads as enterprise software works against that, including for the small
 independent dealer, who since [R6](DECISIONS.md#reversed) is stage three of the go-to-market cascade
 rather than the beachhead, and is still someone the console has to suit.
 
 **On version pinning:** ODATANO uses caret ranges on their own packages. We pin exact. Different risk
 position when you are not the author. `@midnight-ntwrk/compact-runtime` is pinned to **0.16.0**
-because it has to equal the `runtime-version` the compiler stamps into the contract — a caret range
+because it has to equal the `runtime-version` the compiler stamps into the contract, and a caret range
 would silently allow a mismatch.
 
 **On two test runners:** contract tests and application tests exercise different things and follow
@@ -247,23 +247,23 @@ different conventions. See [DECISIONS.md](DECISIONS.md) D17.
 
 Ordered by dependency.
 
-1. **Verify the [FIELDS.md](FIELDS.md) checklist** against installed packages — gates everything else
-2. Scaffold CAP + NIGHTGATE 0.19.0, config modelled on NIGHTPASS's `cds.requires` block, registering
+1. **Verify the [FIELDS.md](FIELDS.md) checklist** against installed packages; gates everything else
+2. Scaffold CAP + NIGHTGATE 0.32.0, config modelled on NIGHTPASS's `cds.requires` block, registering
    `attestation-vault-32`
-3. `npx nightgate-fetch-keys attestation-vault-32` — 32-slot prover keys are not packed in npm and
+3. `npx nightgate-fetch-keys attestation-vault-32`: 32-slot prover keys are not packed in npm and
    are part of the artifact generation digest
 4. `vehicle-schema.cds` + the 32-slot registry
 5. Canonicalisation → anchor, one vehicle, end to end on preprod
-6. **Treasury pool and sponsor wiring** — at least two sponsor wallets, each with a registered NIGHT
+6. **Treasury pool and sponsor wiring**: at least two sponsor wallets, each with a registered NIGHT
    UTxO, to exercise the lease pool rather than a single-wallet happy path. Confirm attribution lands
    on the organisation, not on us
 7. **Measure DUST cost** per anchor and per proof, **batched versus unbatched**, and at width 32
-   versus 16 — gates all pricing
-8. Predicates end to end — write-off status and accident count first, then a monotonic field
-9. The verification surface — QR to verdict, mobile, no login (built at `site/verify/`)
+   versus 16; gates all pricing
+8. Predicates end to end: write-off status and accident count first, then a monotonic field
+9. The verification surface: QR to verdict, mobile, no login (built at `site/verify/`)
 10. Seed data and a demo scenario
 
 **Not in Phase 0:** billing, hardware, tiered disclosure UI, the console beyond a rough form.
 
 Sponsoring and cost measurement come **before** any polished UI. If the unit economics do not work,
-the UI is wasted effort — better learned in week one than week six.
+the UI is wasted effort, and that is better learned in week one than week six.

@@ -10,7 +10,7 @@
  *
  *   npm run test:sdk
  *
- * Last full pass: dpp-sdk 0.2.0 — 24/24 on 2026-08-23.
+ * Last full pass: dpp-sdk 0.2.0: 24/24 on 2026-08-23.
  */
 import {
   VAULT_SLOT_WIDTHS, MERKLE_DEPTH, LEAF_COUNT, DEFAULT_SLOT_WIDTH,
