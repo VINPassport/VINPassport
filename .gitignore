@@ -7,7 +7,7 @@ dist/
 gen/
 *.tsbuildinfo
 
-# ── Secrets — NEVER commit ────────────────────────────────────────────────────
+# ── Secrets: NEVER commit ────────────────────────────────────────────────────
 .env
 .env.*
 !.env.example
@@ -27,7 +27,7 @@ zk-artifacts/
 *.db
 
 # Compiled Compact output: contract/, compiler/ and zkir/ ARE committed, so
-# judges and consumers can inspect the build without a Compact toolchain —
+# judges and consumers can inspect the build without a Compact toolchain,
 # NIGHTGATE's own convention. PLONK prover/verifier keys are large and fully
 # regenerable, so those stay out.
 **/managed/**/keys/
@@ -43,7 +43,7 @@ patent/
 Midnight Build Club/
 Archive - GitHub Repos*/
 
-# ── Local-only tracking — security backlog and open issues ────────────────────
+# ── Local-only tracking: security backlog and open issues ────────────────────
 # Canonical copies live OUTSIDE this repo at ../_local-tracking/. These patterns
 # are a second line of defence in case one is ever created in the tree.
 # GitHub Issues/Wiki/Projects are disabled on this repo by design.
@@ -66,7 +66,7 @@ Thumbs.db
 .idea/
 private/
 
-# ── Security notes — LOCAL ONLY, never committed ──────────────────────────────
+# ── Security notes: LOCAL ONLY, never committed ──────────────────────────────
 # Standing rule: security findings and open issues are tracked locally, not in
 # a public repository, and not in commit messages either. Anything matching
 # these patterns stays on the machine it was written on.
