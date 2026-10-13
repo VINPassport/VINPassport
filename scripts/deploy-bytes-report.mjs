@@ -17,6 +17,7 @@ import { readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import { Transaction } from '@midnight-ntwrk/ledger-v8';
 import { createRequire } from 'node:module';
+import { createHash } from 'node:crypto';
 
 const require = createRequire(import.meta.url);
 const files = process.argv.slice(2);
@@ -54,6 +55,12 @@ for (const f of files) {
     const header = ascii.slice(0, (ascii.indexOf('):') + 1) || 90);
 
     console.log(`\n${basename(f)}`);
+    // Character count and decoded-byte digest first, because a transit loss
+    // shows up here and nowhere else. A sponsor that reports a different byte
+    // count from this one received a different string, whatever its error says
+    // about tags.
+    console.log(`  base64 chars     ${b64.length}`);
+    console.log(`  sha256(decoded)  ${createHash('sha256').update(buf).digest('hex')}`);
     console.log(`  bytes            ${bytes.length}`);
     console.log(`  header           ${header}`);
     console.log(`  first 90 raw     ${buf.subarray(0, 90).toString('latin1').replace(/[^\x20-\x7e]/g, '.')}`);

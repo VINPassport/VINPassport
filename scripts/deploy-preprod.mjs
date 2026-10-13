@@ -9,7 +9,7 @@
  *   node scripts/deploy-preprod.mjs --submit   actually spend a deploy
  *
  * Dry-run is the default because the grant allows TWO deploys, ever, and
- * `registerPassport` is insert-once per VIN — a redeploy starts from an empty
+ * `registerPassport` is insert-once per VIN, so a redeploy starts from an empty
  * ledger. Nothing should be able to spend a deploy by accident.
  *
  * The registrar list is pinned by the constructor and can never be added to,
@@ -31,13 +31,14 @@
  *   NIGHTGATE_BASE_URL             optional, defaults to https://api.nightgate.dev
  *
  * On success the public record of the deployment is written to
- * `deploy/preprod.json` — address and transaction hash only, both public by
+ * `deploy/preprod.json` holds the address and transaction hash only, both public by
  * definition. Commit it: the scan page's live source and every verifier
  * instruction will point at it.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 import { existsSync, mkdirSync, writeFileSync, readFileSync, renameSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { connect, createTxBuilder } from '@odatano/nightgate-tx';
@@ -85,6 +86,29 @@ const EMIT_BOUND = process.argv.includes('--emit-bound');
  * On its own it stops before submitting. Add --submit to actually deploy.
  */
 const SELF_FUND = process.argv.includes('--self-fund');
+
+/**
+ * Sponsor a transaction already written out by --emit-unbound, read from the
+ * file rather than retyped.
+ *
+ *   node scripts/deploy-preprod.mjs --sponsor-file <path/to.b64>
+ *
+ * This exists because of a real failure on 2026-10-13. The emitted bytes were
+ * handed to the sponsor by passing the base64 as a literal argument to a tool
+ * call, which means something had to reproduce 16,360 characters exactly. One
+ * 16-character group went missing from a run of near-identical groups, the
+ * sponsor decoded 12,257 bytes instead of 12,269, and the refusal read as a
+ * deserialization error, which sent us looking at tag names for two days. The
+ * bytes on disk were correct the whole time.
+ *
+ * A large blob must therefore travel as a PATH, never as a literal argument,
+ * and whatever sends it reads the file itself. Both ends print the character
+ * count and the sha256 of the decoded bytes so any copy can be checked against
+ * the original in one line.
+ */
+const sponsorFileAt = process.argv.indexOf('--sponsor-file');
+const SPONSOR_FILE = sponsorFileAt === -1 ? null : process.argv[sponsorFileAt + 1];
+
 const REDEPLOY = process.argv.includes('--redeploy');
 const SECRETS = join(ROOT, '..', '_local-tracking', 'REGISTRAR-SECRETS.env');
 
@@ -92,15 +116,20 @@ const fail = (msg) => { console.error(`\nSTOP: ${msg}`); process.exit(1); };
 
 // ---------------------------------------------------------------- preflight
 
+// --sponsor-file builds nothing and signs nothing, so it needs neither the
+// prover keys nor the seed. Demanding them would be asking for a secret the
+// work does not use.
 const CIRCUITS = ['registerPassport', 'initialiseField', 'recordField', 'proveFieldAtMost', 'proveFieldAtLeast'];
-for (const c of CIRCUITS) {
-    if (!existsSync(join(MANAGED, 'keys', `${c}.prover`))) {
-        fail(`missing prover key for ${c}. Keys are gitignored - run \`npm run compile\` in WSL first.`);
+if (!SPONSOR_FILE) {
+    for (const c of CIRCUITS) {
+        if (!existsSync(join(MANAGED, 'keys', `${c}.prover`))) {
+            fail(`missing prover key for ${c}. Keys are gitignored - run \`npm run compile\` in WSL first.`);
+        }
     }
 }
 
 const seed = process.env.VINPASSPORT_SEED_HEX ?? '';
-if (!/^[0-9a-fA-F]{128}$/.test(seed)) {
+if (!SPONSOR_FILE && !/^[0-9a-fA-F]{128}$/.test(seed)) {
     fail('VINPASSPORT_SEED_HEX must be 128 hex characters. Set it in the shell; never write it to a file in this repo.');
 }
 // Two credential schemes, because ODATANO moved.
@@ -123,7 +152,7 @@ const sponsorSessionId = localCredential('NIGHTGATE_SPONSOR_SESSION_ID', 'ODATAN
 // both stop before it, so neither should demand one: requiring a key to prove
 // a transaction locally would be asking for a secret that the work does not
 // use.
-const NEEDS_SPONSOR = SUBMIT && !EMIT && !SELF_FUND;
+const NEEDS_SPONSOR = (SUBMIT && !EMIT && !SELF_FUND) || Boolean(SPONSOR_FILE);
 
 if (NEEDS_SPONSOR && !gatewayKey && !legacyAgentToken) {
     fail([
@@ -145,6 +174,63 @@ if (NEEDS_SPONSOR && !sponsorSessionId) {
 const baseUrl = process.env.NIGHTGATE_BASE_URL
     ?? (gatewayKey ? 'https://api.preprod.odatano.dev' : 'https://api.nightgate.dev');
 const auth = gatewayKey ? { token: gatewayKey } : { agentToken: legacyAgentToken };
+
+/** Character count and decoded-byte fingerprint of a serialized transaction. */
+function fingerprint(b64) {
+    const bytes = Buffer.from(b64, 'base64');
+    return {
+        chars: b64.length,
+        bytes: bytes.length,
+        sha256: createHash('sha256').update(bytes).digest('hex')
+    };
+}
+
+if (SPONSOR_FILE) {
+    if (!existsSync(SPONSOR_FILE)) fail(`no such file: ${SPONSOR_FILE}`);
+
+    // Read, never retyped. `trim()` only removes surrounding whitespace; any
+    // whitespace INSIDE the base64 would be skipped silently by the decoder and
+    // cost bytes, so it is refused rather than tolerated.
+    const raw = readFileSync(SPONSOR_FILE, 'utf8');
+    const b64 = raw.trim();
+    if (/\s/.test(b64)) fail('the base64 in that file contains whitespace inside it. Re-emit it.');
+    if (!/^[A-Za-z0-9+/]+={0,2}$/.test(b64)) fail('that file is not a single base64 string.');
+    if (b64.length % 4 !== 0) fail(`base64 length ${b64.length} is not a multiple of 4, so characters are missing.`);
+
+    const fp = fingerprint(b64);
+    console.log(`\nsponsoring the bytes in\n  ${SPONSOR_FILE}`);
+    console.log(`  ${fp.chars} base64 characters`);
+    console.log(`  ${fp.bytes} decoded bytes`);
+    console.log(`  sha256(decoded) ${fp.sha256}`);
+    console.log('\nQuote all three to the sponsor. If their received counts differ from these,');
+    console.log('the string was damaged in transit and the tag names are not the problem.');
+
+    if (!SUBMIT) {
+        console.log('\nNothing was sent. Re-run with --submit to hand these bytes to the sponsor.');
+        process.exit(0);
+    }
+
+    const ngFile = connect({ baseUrl, ...auth });
+    // A fresh idempotency key per attempt. Reusing one returns the FIRST job's
+    // cached outcome, which on 2026-10-13 made one refused send look like two
+    // independent failures and hid that the second form was never tried.
+    const idempotencyKey = `vinpassport-sponsor-${fp.sha256.slice(0, 16)}-${Date.now()}`;
+    console.log(`\nhanding them to the sponsor (idempotencyKey ${idempotencyKey})...`);
+    const fileJob = await ngFile.sponsorUnbound({ unboundTxB64: b64, sponsorSessionId, idempotencyKey });
+    console.log(`jobId ${fileJob.jobId}`);
+    const fileOut = await ngFile.waitForJob({ jobId: fileJob.jobId, sessionId: sponsorSessionId });
+
+    const landed = fileOut.deployed?.[0];
+    if (!landed || !fileOut.txHash) {
+        fail(`the sponsor did not report a deploy. jobId ${fileJob.jobId}, status ${fileOut.status ?? '(none)'}, `
+            + `error ${fileOut.errorMessage ?? '(none)'}`);
+    }
+    recordDeploy(landed, fileOut.txHash);
+    console.log(`\nDEPLOYED  ${landed}`);
+    console.log(`tx        ${fileOut.txHash}`);
+    console.log(`recorded  deploy/preprod.json - commit it.`);
+    process.exit(0);
+}
 
 const outPath = join(ROOT, 'deploy', 'preprod.json');
 if (existsSync(outPath) && SUBMIT && !REDEPLOY) {
@@ -263,11 +349,19 @@ try {
             `unbound-deploy-${new Date().toISOString().replace(/[:.]/g, '-')}.b64`);
         const b64 = EMIT_BOUND ? deploy.finalizedTxB64 : deploy.unboundTxB64;
         writeFileSync(emitPath, b64, 'utf8');
-        console.log(`\nunbound transaction written to\n  ${emitPath}`);
-        console.log(`  ${b64.length} base64 characters, ${EMIT_BOUND ? "BOUND/finalized" : "unbound"}`);
+        const fp = fingerprint(b64);
+        console.log(`\n${EMIT_BOUND ? 'BOUND/finalized' : 'unbound'} transaction written to\n  ${emitPath}`);
+        console.log(`  ${fp.chars} base64 characters`);
+        console.log(`  ${fp.bytes} decoded bytes`);
+        console.log(`  sha256(decoded) ${fp.sha256}`);
         console.log('\nNothing was submitted. Hand those bytes to a sponsor that holds a key:');
-        console.log('  sponsor_unbound_transaction { unboundTxB64: <contents of that file> }');
-        console.log('then poll get_job_status with the jobId and the sessionId it returns.');
+        console.log(`  node scripts/deploy-preprod.mjs --sponsor-file ${emitPath} --submit`);
+        console.log('\nSend the PATH, never the contents. Reproducing 16 thousand characters by');
+        console.log('hand or through a tool argument drops a group out of a repetitive run, and');
+        console.log('the sponsor then reports a deserialization error that reads like a tag');
+        console.log('mismatch. That cost us two days on 2026-10-13. If a sponsor must receive');
+        console.log('the string some other way, quote the three figures above and have them');
+        console.log('confirm all three before anyone looks at tag names.');
         console.log('\nThe bytes are valid for the transaction TTL (about 30 minutes) and');
         console.log('against the contract state at build time. If sponsoring fails with');
         console.log('CHAIN_EXECUTION_FAILED, build again rather than resending these.');
