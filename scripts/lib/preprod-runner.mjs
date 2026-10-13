@@ -677,19 +677,47 @@ export async function createRunner({ log = console.log } = {}) {
      * time - only bounding the submit itself covers that - so this is a fast
      * honest failure, not a guarantee.
      */
+    /**
+     * Is the node answering? Asked more than once, because one ping is not
+     * evidence about this node.
+     *
+     * Measured on 2026-10-13, the same `system_chain` call five times in a row:
+     * three timed out past 20s, two answered in about 1.2s. A single 8s ping
+     * therefore fails roughly half the time on a node that is working, and it
+     * gates a run whose slot has ALREADY been counted (deliberately, so retry
+     * spam cannot stretch the budget), so a flaky moment costs a fifth of the
+     * day's capacity and writes nothing.
+     *
+     * Retrying inside one run does not touch that: it buys no extra runs, it
+     * just stops one run losing to a single unlucky packet. Three attempts with
+     * a short backoff still fail fast, well before anything is proven or any
+     * fee is spent, which is the property this gate exists for.
+     */
     async function nodeReachable() {
-        try {
-            const r = await fetch(NODE_HTTP(), {
-                method: 'POST', headers: { 'content-type': 'application/json' },
-                body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'system_chain', params: [] }),
-                signal: AbortSignal.timeout(NODE_PING_TIMEOUT_MS)
-            });
-            if (!r.ok) return { ok: false, why: `HTTP ${r.status}` };
-            const j = await r.json();
-            return j?.result ? { ok: true, chain: String(j.result) } : { ok: false, why: 'no result' };
-        } catch (e) {
-            return { ok: false, why: String(e?.message ?? e) };
+        const attempts = Number(process.env.VINPASSPORT_NODE_PING_ATTEMPTS ?? 3);
+        let why = 'not attempted';
+        for (let i = 1; i <= attempts; i++) {
+            try {
+                const r = await fetch(NODE_HTTP(), {
+                    method: 'POST', headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'system_chain', params: [] }),
+                    signal: AbortSignal.timeout(NODE_PING_TIMEOUT_MS)
+                });
+                if (!r.ok) { why = `HTTP ${r.status}`; }
+                else {
+                    const j = await r.json();
+                    if (j?.result) return { ok: true, chain: String(j.result), attempts: i };
+                    why = 'no result';
+                }
+            } catch (e) {
+                why = String(e?.message ?? e);
+            }
+            if (i < attempts) {
+                log(`demo: node ping ${i}/${attempts} failed (${why}); retrying`);
+                await new Promise((r) => setTimeout(r, 1500 * i));
+            }
         }
+        return { ok: false, why: `${why} after ${attempts} attempts` };
     }
 
     // ---- submission (the path that works: encode HTTP, submit one-shot ws) -

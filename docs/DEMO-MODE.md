@@ -46,7 +46,12 @@ simulate      dry-run every step through the compiled circuits, locally.
               In-circuit refusals are caught HERE, reported, and never
               submitted: a failed proof writes nothing, so nothing is sent
               that would fail.
-wallet        confirm the funding wallet is at the chain tip.
+wallet        confirm the funding wallet is at the chain tip, and that the
+              node answers at all, before anything is proven for it.
+              Pinged up to 3 times: measured 2026-10-13, the same
+              `system_chain` call timed out 3 of 5 tries on a node that
+              was working, and a single ping gated a run whose slot was
+              already counted.
 then per stage (a stage = one transaction, up to 8 batched calls):
   build       prove the contract calls in-process (wasm), sign with our key
   fund        balance the fee in dust from our wallet, prove the dust spend
