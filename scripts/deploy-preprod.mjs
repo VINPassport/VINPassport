@@ -51,6 +51,26 @@ const EP = preprodEndpoints();
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const MANAGED = join(ROOT, 'contracts', 'vinpassport', 'src', 'managed', 'vinpassport');
 const SUBMIT = process.argv.includes('--submit');
+
+/**
+ * Build, prove and sign, then write the unbound transaction out and stop.
+ *
+ * Sponsoring is the only step that needs a credential, and it takes nothing
+ * but these bytes. Emitting them lets the sponsoring happen wherever the key
+ * already lives, so the key never has to be copied anywhere to deploy: the
+ * caller's own key still never leaves this machine, exactly as in --submit.
+ */
+const EMIT = process.argv.includes('--emit-unbound');
+
+/**
+ * Build the BOUND (finalized) form instead, for the finalized sponsor channel.
+ *
+ * The unbound form serialises as transaction(signature, proof, embedded-fr),
+ * and a sponsor that deserialises only (signature, proof, binding) or
+ * (signature, proof, pre-binding) cannot read it. The bound form is one of
+ * the two it does read.
+ */
+const EMIT_BOUND = process.argv.includes('--emit-bound');
 const REDEPLOY = process.argv.includes('--redeploy');
 const SECRETS = join(ROOT, '..', '_local-tracking', 'REGISTRAR-SECRETS.env');
 
@@ -85,18 +105,25 @@ const legacyAgentToken = process.env.NIGHTGATE_AGENT_TOKEN?.trim();
 const sponsorSessionId = localCredential('NIGHTGATE_SPONSOR_SESSION_ID', 'ODATANO.env')
     ?? process.env.NIGHTGATE_SPONSOR_SESSION_ID;
 
-if (!gatewayKey && !legacyAgentToken) {
+// Only the sponsoring step needs a credential. A dry run and --emit-unbound
+// both stop before it, so neither should demand one: requiring a key to prove
+// a transaction locally would be asking for a secret that the work does not
+// use.
+const NEEDS_SPONSOR = SUBMIT && !EMIT;
+
+if (NEEDS_SPONSOR && !gatewayKey && !legacyAgentToken) {
     fail([
         'no sponsor credential.',
         `  Put a gateway key in ${credentialPath('ODATANO.env')}`,
         '  as ODATANO_GATEWAY_KEY=oda_<40 hex>. Get one at https://api.odatano.dev.',
-        '  (Or set NIGHTGATE_AGENT_TOKEN to use the legacy host.)'
+        '  (Or set NIGHTGATE_AGENT_TOKEN to use the legacy host.)',
+        '  Or run with --emit-unbound and sponsor the bytes wherever the key already is.'
     ].join('\n'));
 }
 if (gatewayKey && !/^oda_[0-9a-f]{40}$/.test(gatewayKey)) {
     fail(`ODATANO_GATEWAY_KEY is not shaped like a gateway key (oda_ + 40 hex); got ${gatewayKey.length} characters.`);
 }
-if (!sponsorSessionId) {
+if (NEEDS_SPONSOR && !sponsorSessionId) {
     fail('NIGHTGATE_SPONSOR_SESSION_ID is required. A sandbox key uses the shared pool session; '
         + 'a key of your own reports its session at GET /api/me on the gateway.');
 }
@@ -135,8 +162,14 @@ try {
 // ---------------------------------------------------------------- build
 
 console.log(`network   preprod`);
-console.log(`sponsor   ${baseUrl} (session ${sponsorSessionId.slice(0, 8)}…, ${gatewayKey ? 'gateway key' : 'legacy agent token'})`);
-console.log(`mode      ${SUBMIT ? 'SUBMIT - this spends 1 of 2 allowed deploys' : 'dry run - nothing leaves this machine'}`);
+console.log(`sponsor   ${NEEDS_SPONSOR
+    ? `${baseUrl} (session ${sponsorSessionId.slice(0, 8)}…, ${gatewayKey ? 'gateway key' : 'legacy agent token'})`
+    : 'none needed for this mode; nothing is sponsored here'}`);
+console.log(`mode      ${EMIT
+    ? 'EMIT - build and prove, write the unbound transaction, submit nothing'
+    : SUBMIT
+        ? 'SUBMIT - this spends 1 of 2 allowed deploys'
+        : 'dry run - nothing leaves this machine'}`);
 for (const r of regs) console.log(`registrar ${r.label} ${r.hex}  (${REGISTRAR_ROLES[r.label]})`);
 console.log(`          this list is fixed for the contract's lifetime`);
 console.log('\nbuilding and proving the deploy locally (wasm, takes a while)…');
@@ -176,13 +209,31 @@ try {
         initialPrivateState: {},
         constructorArgs: [registrarSlots],
         witnesses,
-        bind: false
+        bind: EMIT_BOUND ? true : false
     });
     console.log(`\ncontract address (known before submission): ${deploy.contractAddress}`);
 
+    if (EMIT || EMIT_BOUND) {
+        // Outside the repository: these bytes are not secret, but they are
+        // large, single-use and tied to one moment of contract state.
+        const emitPath = join(ROOT, '..', '_local-tracking',
+            `unbound-deploy-${new Date().toISOString().replace(/[:.]/g, '-')}.b64`);
+        const b64 = EMIT_BOUND ? deploy.finalizedTxB64 : deploy.unboundTxB64;
+        writeFileSync(emitPath, b64, 'utf8');
+        console.log(`\nunbound transaction written to\n  ${emitPath}`);
+        console.log(`  ${b64.length} base64 characters, ${EMIT_BOUND ? "BOUND/finalized" : "unbound"}`);
+        console.log('\nNothing was submitted. Hand those bytes to a sponsor that holds a key:');
+        console.log('  sponsor_unbound_transaction { unboundTxB64: <contents of that file> }');
+        console.log('then poll get_job_status with the jobId and the sessionId it returns.');
+        console.log('\nThe bytes are valid for the transaction TTL (about 30 minutes) and');
+        console.log('against the contract state at build time. If sponsoring fails with');
+        console.log('CHAIN_EXECUTION_FAILED, build again rather than resending these.');
+        process.exit(0);
+    }
+
     if (!SUBMIT) {
         console.log('\nDry run complete. The transaction was proven and signed but NOT submitted.');
-        console.log('Re-run with --submit to spend a deploy.');
+        console.log('Re-run with --submit to spend a deploy, or --emit-unbound to sponsor elsewhere.');
         process.exit(0);
     }
 
