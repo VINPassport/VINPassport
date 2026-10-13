@@ -16,15 +16,75 @@
       "label": "Keepers",
       "kind": "count"
     },
+    "48bdd789ee03fb0debd23d7e156228d3233f0110d48ed2d7dda663fb22521aff": {
+      "name": "serviceCount",
+      "label": "Services recorded",
+      "kind": "count"
+    },
     "177d70535ec71b35583722c2d5f1ec963e3b32b7553dce868e547c0c5140e3c0": {
       "name": "writeOffCategory",
       "label": "Write-off category",
       "kind": "category"
     },
-    "48bdd789ee03fb0debd23d7e156228d3233f0110d48ed2d7dda663fb22521aff": {
-      "name": "serviceCount",
-      "label": "Services recorded",
-      "kind": "count"
+    "d6a1032dae79c0e2217f889a516efaaaa566a73cd9a42783a9abc00e391ae08e": {
+      "name": "firstRegistrationDate",
+      "label": "First registered",
+      "kind": "date"
+    },
+    "ce79864aa31581c7cd2e0173bdd8d7a203e4b6628ea25897a161420386ffbd0d": {
+      "name": "lastInspectionDate",
+      "label": "Last inspection",
+      "kind": "date"
+    },
+    "6d89c56c909e2d9309a132ced2bea500b282d66aba30a3b7ec4f6abd9ae3624d": {
+      "name": "co2FootprintKgCO2e",
+      "label": "CO2 footprint",
+      "kind": "kg"
+    },
+    "f3d6612c37230ffd3abae6096f167486053e7cfabf45a49d7d8b4b6ad053c929": {
+      "name": "recycledPlasticPct",
+      "label": "Recycled plastic",
+      "kind": "pct"
+    },
+    "6934091c00c82ce3b92847fae4dccefc5e0f952413e25c30a391a02193a631f9": {
+      "name": "recycledPlasticFromELVPct",
+      "label": "Recycled plastic, ELV",
+      "kind": "pct"
+    },
+    "6c3eeeb2f6be7cf321e8184f66d2582d0377ef7b4a24b175bfbb10150f881272": {
+      "name": "recycledSteelPct",
+      "label": "Recycled steel",
+      "kind": "pct"
+    },
+    "0ad04df9f0207f2abd85344463d22b47aca81418e3539c580b79cee4794e8602": {
+      "name": "recycledAluminiumPct",
+      "label": "Recycled aluminium",
+      "kind": "pct"
+    },
+    "2128a5ba193d3cff38d24ccf85b02c3b8f4f8d2a38161631639c3b5b11ce6035": {
+      "name": "criticalRawMaterialPct",
+      "label": "Critical raw material",
+      "kind": "pct"
+    },
+    "5bd1edb425d007b653e4490af3f74ed7a2e34ea99c34bfae30f5fc28c77d9ce7": {
+      "name": "reusabilityPct",
+      "label": "Reusability",
+      "kind": "pct"
+    },
+    "3371329d727c1c37565fa3ec53caed4616b302ab99ebc0274c1ea28e246380b8": {
+      "name": "recyclabilityPct",
+      "label": "Recyclability",
+      "kind": "pct"
+    },
+    "4476b64ee5296f5c19835b30cdbd0aa3cb94175e581d1130fbcbaa617c63ac4f": {
+      "name": "recoverabilityPct",
+      "label": "Recoverability",
+      "kind": "pct"
+    },
+    "66091547a5fee99a3c97de242569f4501ce1839bd49fbdc6ee356cef2f49baf2": {
+      "name": "dismantlingTimeMinutes",
+      "label": "Dismantling time",
+      "kind": "minutes"
     }
   },
   "demoVehicles": [

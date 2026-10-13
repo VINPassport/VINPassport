@@ -95,14 +95,14 @@ npm install
 npm test
 ```
 
-Expected: **67 contract tests, 20 app tests and 24 SDK assertions, all passing**, in a couple of
+Expected: **90 contract tests, 71 app tests and 24 SDK assertions, all passing**, in a couple of
 seconds.
 
 ```
  Test Files  1 passed (1)
-      Tests  67 passed (67)
+      Tests  90 passed (90)
 
-# pass 20
+# pass 71
 
 ================ 24 passed, 0 failed ================
 ```
@@ -110,9 +110,9 @@ seconds.
 | Command | What it does |
 |---|---|
 | `npm test` | Everything below, in one run |
-| `npm run test:contract` | The 67 contract tests, against the compiled circuits |
+| `npm run test:contract` | The 90 contract tests, against the compiled circuits |
 | `npm run test:watch` | The same, re-running on change |
-| `npm run test:app` | 20 tests on the verification page's verdict logic, via `node --test` |
+| `npm run test:app` | 71 tests on the application paths: verdicts, the deploy's registrar list, the submission path and the chain-sees panel, via `node --test` |
 | `npm run test:sdk` | 24 assertions pinning our assumptions about `@odatano/dpp-sdk` |
 | `npm run app` | All three surfaces + the circuits, one dependency-free server |
 | `npm run serve:site` | The site statically, as GitHub Pages serves it — no circuits, demo state only |
@@ -382,9 +382,9 @@ repository begins with no contract at all.
 
 | What was built | Where to look |
 |---|---|
-| **The contract** - seven circuits, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one, and registration restricted to a registrar list pinned at deployment | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
+| **The contract** - five circuits, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
 | **Deployed to Midnight preprod**, 28 August, built and signed locally | [`deploy/preprod.json`](deploy/preprod.json) |
-| **164 tests** - 90 contract, 50 application, 24 SDK assumption assertions; every guard mutation-checked, 20 of 20 | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
+| **141 tests** - 67 contract, 50 application, 24 SDK assumption assertions; both integrity rules mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
 | **Three surfaces** - verification, intake console, proof explorer - all running the compiled circuits, not a mock | [passport.vin](https://passport.vin/) |
 | **On-chain runs from the browser, self-funded**, after a hosted sponsor turned out to be a single point of failure in a demo a judge runs unattended | [D24](docs/DECISIONS.md#settled) |
 | **The regulatory basis read from the Official Journal** rather than secondary analysis - which caught two wrong article citations that had survived months of work | [REGULATION.md](docs/REGULATION.md) |
@@ -395,18 +395,50 @@ unarmed holder reads as value zero with a zero salt - so it proved, landed on th
 wrote a commitment nobody can ever open. The engine now arms the first call itself and the holder
 refuses to be read until armed, so a missed arming is a loud build error instead of a quiet zero.
 
+## Built during Wave 2
+
+Wave 2 runs 29 September - 19 October 2026. Wave 1 closed with five circuits, five wired fields and
+141 tests. What follows was built inside Wave 2's window, and the numbers either side are from the
+tree at each wave's close, not from memory.
+
+| | Wave 1 close | Now |
+|---|---:|---:|
+| Exported circuits | 5 | **7** |
+| Integrity rules | 2 | **3** |
+| Fields wired end to end | 5 | **17** |
+| Contract tests | 67 | **90** |
+| Application tests | 50 | **71** |
+| SDK assumption assertions | 24 | 24 |
+| Guards checked by mutation | the two integrity rules | **20 of 20** |
+
+| What changed | Why it matters | Where to look |
+|---|---|---|
+| **The registrar is derived in-circuit** from a witness secret, and checked against an allowlist pinned at deployment. `registrarIdOf` is a new circuit | Wave 1 took the caller's word for who was writing. A contract that cannot tell one writer from another cannot refuse the wrong one | `registrarIdOf`, `registerPassport` |
+| **Every field commitment is bound to the content root** it was taken from | A commitment that floats free of its document can be replayed against a different document. Binding it means a revised document moves every slot with it | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact) |
+| **A third integrity rule, `neverChanges`**, and the panel widened from 5 fields to 17 | The lifecycle fields accumulate, so `neverFalls` fits them. The regulatory declarations do not move inside one document version, and filing them under `neverFalls` would have let a recycled-content figure drift upward - the direction that flatters | [`scenario.mjs`](scripts/lib/scenario.mjs), [FIELDS.md](docs/FIELDS.md) |
+| **Every guard mutation-checked, 20 of 20**, with the kill table published and the harness in the repo | "Tests pass" says nothing about whether a guard is load-bearing. Deleting it and watching what dies does | `node scripts/mutate-guards.mjs` |
+| **A panel that states what the chain does *not* hold** | A verifier who misreads silence as a denial is the failure this project exists to prevent, so the page names the absences instead of leaving them to inference | [passport.vin/verify](https://passport.vin/verify/) |
+| **Moved to the Blockfrost indexer** after the preprod indexer was decommissioned mid-wave and began answering HTTP 410 | A submission a judge cannot run is not a submission | [`scripts/lib/endpoints.mjs`](scripts/lib/endpoints.mjs) |
+
+**Not yet done, and it is the one that matters.** The Wave 2 contract compiles, passes all 185 tests
+and builds a proven deployment transaction locally, but it is **not yet on preprod**: the address in
+[`deploy/preprod.json`](deploy/preprod.json) is still Wave 1's five-circuit contract. The deploy is
+held up on a transaction-format mismatch with the fee sponsor, not on the contract. Until that
+clears, everything above is reproducible from this repository but only the Wave 1 contract is
+queryable on chain, and this paragraph will say so for as long as that is true.
+
 ## Where this actually stands
 
 | Component | Status |
 |---|---|
-| Compact contract: 5 circuits | **Done.** Compiles clean, artifacts committed and reproducible from source |
-| Contract test suite | **Done.** 67 tests; integrity rules and the claim write both mutation-checked |
+| Compact contract: 7 circuits | **Done.** Compiles clean, artifacts committed and reproducible from source |
+| Contract test suite | **Done.** 90 tests; every guard mutation-checked, 20 of 20 |
 | SDK assumption guard | **Done.** 24 assertions against `@odatano/dpp-sdk` 0.2.0 |
-| Provable-field registry, 32 slots | **Settled** ([FIELDS.md](docs/FIELDS.md)). 26 in use, reserve 17–21 and 31; not yet wired |
-| Deployment to Midnight preprod | **Done (28 Aug 2026).** Built, proven and signed locally; the deploy fee was sponsored by ODATANO ([D20](docs/DECISIONS.md#settled)). Address and tx committed at [`deploy/preprod.json`](deploy/preprod.json) |
+| Provable-field registry, 32 slots | **Settled** ([FIELDS.md](docs/FIELDS.md)). 26 in use, reserve 17–21 and 31. Slots 0–16 are wired end to end and provable; the rest are salted into the content root but carry no rule yet |
+| Deployment to Midnight preprod | **Wave 1's contract is live (28 Aug 2026).** Built, proven and signed locally; the deploy fee was sponsored by ODATANO ([D20](docs/DECISIONS.md#settled)). Address and tx committed at [`deploy/preprod.json`](deploy/preprod.json). **The Wave 2 contract is not yet deployed** - see [Built during Wave 2](#built-during-wave-2) |
 | Frontend: verification, intake console, proof explorer | **Done.** Three surfaces against the compiled circuits (`npm run app`), live for anyone at [passport.vin](https://passport.vin/) |
-| Live preprod runs from the browser | **Done.** `/demo/` and the intake console write real transactions to the deployed contract, paying their own DUST ([D24](docs/DECISIONS.md#settled)); capped per UTC day, every hash links to the [preprod explorer](https://preprod.midnightexplorer.com) |
-| CAP service layer, tier redaction | **Not in this submission.** Wave 2: see [D20](docs/DECISIONS.md#settled) |
+| Live preprod runs from the browser | **Built, not currently hosted.** `/demo/` and the intake console write real transactions to the deployed contract, paying their own DUST ([D24](docs/DECISIONS.md#settled)), capped per UTC day, every hash linking to the [preprod explorer](https://preprod.midnightexplorer.com). The host that served them was cancelled on 10 Oct 2026, so the page now reports that preprod runs are unavailable rather than pretending otherwise. `npm run app` runs the same path locally |
+| CAP service layer, tier redaction | **Not in this submission, and not in Wave 2.** See [D20](docs/DECISIONS.md#settled) |
 
 ## Repository map
 
@@ -415,9 +447,13 @@ contracts/vinpassport/
   src/vinpassport.compact     the contract: start here
   src/managed/                       compiled output, committed on purpose
 docs/                                design, decisions, regulatory basis
+scripts/
+  mutate-guards.mjs                  deletes each guard in turn, reports the kills
+  lib/scenario.mjs                   the 32-slot panel and its integrity rules
 test/
   passport-simulator.mjs             harness: compiled circuits + a local ledger
-  passport.test.mjs                  67 contract tests
+  passport.test.mjs                  90 contract tests
+  app/                               71 tests on the paths around the circuits
   sdk-assumptions.mjs                24 assertions pinning @odatano/dpp-sdk behaviour
 ```
 
