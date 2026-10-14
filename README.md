@@ -100,7 +100,7 @@ npm install
 npm test
 ```
 
-Expected: **90 contract tests, 71 app tests and 24 SDK assertions, all passing**, in a couple of
+Expected: **99 contract tests, 77 app tests and 24 SDK assertions, all passing**, in a couple of
 seconds.
 
 ```
@@ -115,7 +115,7 @@ seconds.
 | Command | What it does |
 |---|---|
 | `npm test` | Everything below, in one run |
-| `npm run test:contract` | The 90 contract tests, against the compiled circuits |
+| `npm run test:contract` | The 99 contract tests, against the compiled circuits |
 | `npm run test:watch` | The same, re-running on change |
 | `npm run test:app` | 71 tests on the application paths: verdicts, the deploy's registrar list, the submission path and the chain-sees panel, via `node --test` |
 | `npm run test:sdk` | 24 assertions pinning our assumptions about `@odatano/dpp-sdk` |
@@ -478,7 +478,7 @@ line of comparison rather than two days of reading tag names.
 | Component | Status |
 |---|---|
 | Compact contract: 7 circuits | **Done.** Compiles clean, artifacts committed and reproducible from source |
-| Contract test suite | **Done.** 90 tests; every guard mutation-checked, 20 of 20 |
+| Contract test suite | **Done.** 99 tests; every guard mutation-checked, 20 of 20 |
 | SDK assumption guard | **Done.** 24 assertions against `@odatano/dpp-sdk` 0.2.0 |
 | Proving cost, all five circuits | **Measured 13 Oct 2026**, wasm in-process, no proof server, 32 cores, n=3 each. Build, prove and sign: `registerPassport` **16.6s** (5,228 B), `proveFieldAtMost` **29.4s** (5,568 B), `proveFieldAtLeast` **27.1s** (5,569 B). Registration is 3.5x Wave 1's 4.77s, the cost of the registrar identity derived in-circuit and the field commitments bound to the content root. **These are the times to ISSUE a claim, paid once by whoever writes it.** A verifier reads the verdict off the ledger and waits on a query, never on a proof, which is why a proven claim is recorded rather than re-proven on demand ([D19](docs/DECISIONS.md#settled)). DUST cost per anchor and per proof is still unmeasured; latency is not cost |
 | Provable-field registry, 32 slots | **Settled** ([FIELDS.md](docs/FIELDS.md)). 26 in use, reserve 17 to 21, and 31. Slots 0 to 16 are wired end to end and provable; the rest are salted into the content root but carry no rule yet |
@@ -499,7 +499,7 @@ scripts/
   lib/scenario.mjs                   the 32-slot panel and its integrity rules
 test/
   passport-simulator.mjs             harness: compiled circuits + a local ledger
-  passport.test.mjs                  90 contract tests
+  passport.test.mjs                  99 contract tests
   app/                               71 tests on the paths around the circuits
   sdk-assumptions.mjs                24 assertions pinning @odatano/dpp-sdk behaviour
 ```

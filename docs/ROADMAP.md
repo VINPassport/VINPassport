@@ -65,13 +65,22 @@ contract changes wait for the 27th. This week takes the work that is not contrac
       ledger 8. Restored, recompiled at 0.31.1, and the output is identical to the committed
       artifacts including all ten `zkir` files. `.gitattributes` now pins the generated output to
       LF so a Windows checkout and a Linux checkout hold the same bytes
-- [ ] **Measure `proveFieldAtMost` / `proveFieldAtLeast`.** The 8 Sep blocker was that they assert
-      `fieldCommitment.member(slot)` and so need an initialised field on-chain; five are now wired,
-      so it is unblocked. These are the circuits a verifier actually waits on
-- [ ] **Close the DUST number** by decoding `DustSpendProcessed` rather than diffing balances:
-      the reason the balance diff gives a 2.4x spread is written up under Phase 0 below
-- [ ] **Build the mutation harness**: a script that reverts each guard in turn and records which
-      tests die, so Wave 2 can report *N of N* instead of a worked example on two
+- [x] **Measure `proveFieldAtMost` / `proveFieldAtLeast`.** DONE 13 Oct: median 29.4s and
+      27.1s in wasm, n=3 each, against the deployed contract. The blocker had been that
+      both assert `fieldCommitment.member(slot)`, so they need a field initialised on
+      chain whose opening is still held; a guided run produced one. These are the times
+      to ISSUE a claim, not to read one
+- [x] **Close the DUST number.** DONE 14 Oct, by a better route than decoding
+      `DustSpendProcessed`: ask the ledger directly with `Transaction.fees(params)` on a
+      proven transaction, which sidesteps the balance-diff problem written up under
+      Phase 0 below. The finding that matters is that a fee is cost times PRICE, and
+      preprod cannot supply the price: its fee market has decayed to the floor, so every
+      transaction there costs 1 SPECK. Figures are therefore quoted at the protocol
+      reference price, and one block of mainnet parameters closes the rest
+- [x] **Build the mutation harness.** DONE: `scripts/mutate-guards.mjs` reverts each guard
+      in turn and records which tests die. 20 of 20 are load-bearing, and the kill table
+      is published in the README, so Wave 2 reports *N of N* rather than a worked example
+      on two
 
 ### Wave 2: 29 Sep to 19 Oct
 
@@ -145,7 +154,12 @@ circuit here.
 - [x] Fee funding: **not** the planned treasury pool. [D24](DECISIONS.md#settled): one wallet,
       self-renewing DUST from registered NIGHT. Per-organisation sessions, and the attribution that
       comes with them, are Phase 1
-- [ ] **Measure DUST cost** per anchor and per proof, batched versus unbatched, width 32 versus 16:
+- [x] **Measure DUST cost per anchor and per proof, batched versus unbatched.** DONE
+      14 Oct, and it reversed the assumption this plan was built on: batching is
+      fee-neutral for register+init (0.3%) and costs **15% more** for two proofs, because
+      a fee tracks the work rather than the number of transactions. BUILD-SCOPE is
+      corrected. Width 32 versus 16 remains unmeasured. The original note on why the
+      balance-diff approach failed is kept below, because the trap is still a trap:
       gates all pricing; see [BUILD-SCOPE.md](BUILD-SCOPE.md). **Not yet measured to a number worth
       pricing from**, and the reason is worth writing down so the next attempt does not repeat it:
       the wallet balance either side of a fee measures the dust *note* the balancer consumed, not
@@ -196,8 +210,10 @@ one, and the difference is visible to a verifier.
 > design against ledger 9. On-device chip proving is out of scope with no timeline, so those items
 > are removed rather than deferred. What remains is the half that was never about hardware.
 
-- [ ] Writer identity in-circuit: derived from a witness secret and compared to pinned ledger
-      state, never `ownPublicKey()`. Shares its mechanism with [D23](DECISIONS.md#settled) item 1
+- [x] Writer identity in-circuit: DONE in Wave 2. `registrarIdOf(registrarSecret())` derives
+      the identity from a witness secret and compares it against `allowedRegistrars`,
+      pinned at deployment. Never `ownPublicKey()`, which a caller controls. Closes
+      [D23](DECISIONS.md#settled) item 1
 - [ ] Provenance marking: an authoritative-source write distinguishable from a self-declared one,
       and rendered as such on the verification surface rather than left in the data
 - [ ] One authoritative source actually writing: a registry, a tester or an insurer, under an
