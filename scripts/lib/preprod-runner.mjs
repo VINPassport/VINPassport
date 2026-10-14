@@ -51,7 +51,7 @@ import {
 import {
     CLAIM_DEFS, planCalls, makeStage, stepLabel, makeWitnessHolder, randomDemoVin
 } from './preprod-plan.mjs';
-import { preprodEndpoints, guardLogs } from './endpoints.mjs';
+import { preprodEndpoints, publicPreprodEndpoints, assertNoSecrets, guardLogs } from './endpoints.mjs';
 
 // Before anything connects: the indexer credential travels in every URL,
 // and a library that logs a URL logs the credential.
@@ -90,6 +90,9 @@ const EP = () => (_ep ??= preprodEndpoints());
 const NODE_HTTP = () => EP().nodeHttpUrl;
 const NODE_WS = () => EP().nodeWsUrl;
 const INDEXER_HTTP = () => EP().indexerHttpUrl;
+// Reader-facing strings are built from these, never from EP(): see the receipt's
+// verify block, and assertNoSecrets() which enforces it.
+const PUBLIC_EP = publicPreprodEndpoints();
 const INDEXER_WS = () => EP().indexerWsUrl;
 const ZK_CONFIG_DIR = join(ROOT, 'contracts', 'vinpassport', 'src', 'managed', 'vinpassport');
 // Time budgets.
@@ -1348,11 +1351,31 @@ export async function createRunner({ log = console.log } = {}) {
             }),
             refused,
             onChain: stagesOut,
+            /*
+             * A stranger reads this block, so every URL in it comes from the
+             * PUBLIC endpoints and the reader supplies their own project id.
+             * Nothing reader-facing is built from INDEXER_HTTP(), whose URLs
+             * must carry our credential because the clients accept nothing
+             * else. assertNoSecrets() below enforces that rather than trusting
+             * it, and the explorer links need no key from anyone.
+             */
             verify: {
-                how: 'Ask the public indexer for this contract - the transactions above are its latest calls.',
-                curl: `curl -s ${INDEXER_HTTP()} -H 'Content-Type: application/json' -d '{"query":"{ contractAction(address: \\"${contractAddress}\\") { __typename transaction { hash block { height } } } }"}'`
+                how: 'Ask the public indexer for this contract: the transactions above are its latest calls.',
+                curl: `curl -s -X POST ${PUBLIC_EP.indexerHttpUrl} -H 'Content-Type: application/json' -H 'project_id: YOUR_PROJECT_ID' -d '{"query":"{ contractAction(address: \\"${contractAddress}\\") { __typename transaction { hash block { height } } } }"}'`,
+                note: 'Blockfrost wants a free per-network project id of your own, from blockfrost.io. Ours is not in this file on purpose. The explorer links below need no key at all.',
+                explorer: stagesOut.map((s) => ({
+                    stage: s.stage,
+                    label: s.label,
+                    url: `https://preprod.midnightexplorer.com/transactions/${encodeURIComponent(s.txHash)}`
+                }))
             }
         };
+
+        // Before it is written or served: the receipt goes to a visitor, so it
+        // must not carry anything of ours. Throwing here fails the run that
+        // introduced the leak, which is the only time it is cheap to find.
+        assertNoSecrets(job.receipt, 'the demo receipt');
+
         /*
          * Persist the receipt.
          *

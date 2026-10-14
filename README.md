@@ -14,9 +14,14 @@
 > **Status: pre-alpha, under active development.** The Compact contract is written, compiles and is
 > covered by tests, and the three application surfaces (verification, intake console, proof
 > explorer) run against the compiled circuits with one command (`npm run app`). The contract is
-> **deployed on Midnight preprod** (28 Aug 2026, [`deploy/preprod.json`](deploy/preprod.json)).
-> The `/demo/` surface and the intake console write **real transactions to the deployed contract**,
-> paying their own DUST, capped per UTC day. The other pages read committed demo state, so the site
+> **deployed on Midnight preprod** (13 Oct 2026, block 2962145,
+> [`deploy/preprod.json`](deploy/preprod.json)) and has been **exercised end to end on chain**:
+> registration, three field initialisations, a monotonic update and two proven claims, across
+> blocks 2963321 to 2963430, with a third claim refused in-circuit because the rule held.
+> The `/demo/` surface and the intake console write **real transactions to that contract**, paying
+> their own DUST, capped per UTC day. They run locally under `npm run app`; the hosted copy reports
+> preprod runs as unavailable, because the host that served them was cancelled on 10 Oct 2026.
+> The other pages read committed demo state, so the site
 > stays fully functional as a static export. The table under
 > [Where this actually stands](#where-this-actually-stands) says exactly what does and does not
 > exist today.

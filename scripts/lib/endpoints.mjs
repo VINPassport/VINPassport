@@ -82,15 +82,61 @@ export function blockfrostToken({ required = true } = {}) {
  * The RPC host takes a WebSocket upgrade on its root (verified 101) and has
  * no separate `/ws` path, unlike the indexer.
  */
+const HOSTS = {
+    indexerHttpUrl: 'https://midnight-preprod.blockfrost.io/api/v0',
+    indexerWsUrl: 'wss://midnight-preprod.blockfrost.io/api/v0/ws',
+    nodeHttpUrl: 'https://rpc.midnight-preprod.blockfrost.io/',
+    nodeWsUrl: 'wss://rpc.midnight-preprod.blockfrost.io/'
+};
+
 export function preprodEndpoints() {
     const q = `?project_id=${encodeURIComponent(blockfrostToken())}`;
     return {
         networkId: 'preprod',
-        indexerHttpUrl: `https://midnight-preprod.blockfrost.io/api/v0${q}`,
-        indexerWsUrl: `wss://midnight-preprod.blockfrost.io/api/v0/ws${q}`,
-        nodeHttpUrl: `https://rpc.midnight-preprod.blockfrost.io/${q}`,
-        nodeWsUrl: `wss://rpc.midnight-preprod.blockfrost.io/${q}`
+        indexerHttpUrl: `${HOSTS.indexerHttpUrl}${q}`,
+        indexerWsUrl: `${HOSTS.indexerWsUrl}${q}`,
+        nodeHttpUrl: `${HOSTS.nodeHttpUrl}${q}`,
+        nodeWsUrl: `${HOSTS.nodeWsUrl}${q}`
     };
+}
+
+/**
+ * The same endpoints with no credential attached.
+ *
+ * The authenticated form above exists because every client here takes a URL
+ * and offers no way to send a header. That is fine for a socket we open. It is
+ * wrong for anything we HAND SOMEONE: a receipt a visitor downloads, a command
+ * printed on a page. Those get this, and the reader supplies their own project
+ * id. The endpoint is public; the credential is ours.
+ */
+export function publicPreprodEndpoints() {
+    return { networkId: 'preprod', ...HOSTS };
+}
+
+/**
+ * Refuse to let a value carrying the project id leave this process.
+ *
+ * `guardLogs()` covers what we PRINT. This covers what we HAND OVER: anything
+ * assembled for a reader, such as a receipt a visitor downloads or a command
+ * shown on a page. The rule is that reader-facing strings come from
+ * `publicPreprodEndpoints()` and the reader brings their own project id. This
+ * makes that rule enforced rather than remembered.
+ *
+ * It throws instead of scrubbing. A value that needs scrubbing on its way out
+ * is a bug where it was built, and silently cleaning it hides the bug while
+ * keeping the habit that produced it.
+ */
+export function assertNoSecrets(value, what = 'value') {
+    const token = blockfrostToken({ required: false });
+    if (!token || token.trim().length < 8) return value;
+    const text = typeof value === 'string' ? value : JSON.stringify(value);
+    if (text && text.includes(token.trim())) {
+        throw new Error(
+            `refusing to release ${what}: it contains the Blockfrost project id. `
+            + 'Build reader-facing strings from publicPreprodEndpoints(), not preprodEndpoints().'
+        );
+    }
+    return value;
 }
 
 /**
