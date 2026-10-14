@@ -70,6 +70,95 @@ Restating them here would create two records that can disagree. Whether the pane
 
 ---
 
+## The one that binds first
+
+### Regulation (EU) 2024/1257: Euro 7
+
+**[Read the full text on EUR-Lex →](https://eur-lex.europa.eu/eli/reg/2024/1257/oj)**
+
+Euro 7 creates the **Environmental Vehicle Passport (EVP)**, and unlike the circularity passport it
+is already law with a date six years earlier. Every provision quoted below was read from the
+Official Journal HTML on 2026-10-14.
+
+| Milestone | Date | Source |
+|---|---|---|
+| Entered into force | 28 May 2024 | twentieth day after publication |
+| Commission to adopt EVP implementing acts, M1 and N1 | 29 May 2025 | Art. 14(8)(a) |
+| **Applies to new TYPES of M1 and N1** | **29 November 2026** | Art. 21 |
+| Applies to all new M1 and N1 vehicles | 29 November 2027 | Art. 21 |
+| Commission to adopt EVP implementing acts, heavy and trailers | 29 November 2026 | Art. 14(9)(a) |
+| Applies to new types of M2, M3, N2, N3, O3, O4 | 29 May 2028 | Art. 21 |
+| Applies to all new M2, M3, N2, N3, O3, O4 | 29 May 2029 | Art. 21 |
+| Small-volume manufacturers, M1 and N1 | 1 July 2030 | Art. 21 |
+
+#### The obligation
+
+**Article 7(4)** is the operative provision, and it binds manufacturers:
+
+> Manufacturers **shall issue an EVP for each vehicle** and deliver that passport to the purchaser
+> together with the vehicle, extracting the relevant data from sources, such as the certificate of
+> conformity and the type-approval documentation. Manufacturers **shall ensure** that EVP data are
+> available for display in the vehicle electronic systems or **through a QR code**, or any similar
+> method, and that EVP data can be transmitted from on- to off- board.
+
+**Article 3(68)** defines what it holds: *"a record in digital form that contains information on the
+environmental performance of a vehicle at the moment of registration"*, covering pollutant emission
+limits, CO2 emissions, fuel consumption, electric energy consumption, electric range, engine or
+electric motor power, and **battery durability and other related values**.
+
+**Article 4(10)** extends the data beyond the moment of registration:
+
+> Those data shall cover data from the EVP, the OBM system and the OBFCM device, **including
+> lifetime values**, and the **state of health of the traction battery**.
+
+#### Why this provision in particular is the one to build against
+
+<!-- disclosure-ok: Article 4(7) of Reg (EU) 2024/1257, quoted verbatim from the OJ -->
+
+**Article 4(7)** requires manufacturers to design vehicles so as to **minimise tampering
+vulnerabilities**, and the list of what must be protected is the subject matter of this repository:
+
+> Manufacturers **shall** design, construct and assemble vehicles of categories M1, M2, M3, N1, N2
+> and N3 in such a way as to **minimise vulnerabilities**, arising in all phases of their
+> life-cycle, that may lead to **tampering** with the following:
+> (a) fuel and reagent injection system, (b) engine and engine control units,
+> **(c) traction batteries and related management systems, (d) odometer,**
+> (e) pollution control systems, (f) electric motor and related control units,
+> (g) OBFCM device, (h) OBD system, (i) OBM system, and **(j) EVP.**
+
+<!-- /disclosure-ok -->
+
+A ledger that refuses the write when a value moves the wrong way is a direct answer to 4(7)(d) and
+4(7)(j). This is the closest thing in current EU law to a statutory requirement for what the
+`vinpassport` contract does, and it binds **five years and nine months before** the Digital
+Circularity Vehicle Passport does.
+
+#### The implementing act
+
+**Article 14(4)(t)** empowers the Commission to specify *"the format and data and off-board
+communication methods for the EVP"*. For M1 and N1 that act is **Commission Implementing Regulation
+(EU) 2025/1707** of 25 July 2025.
+
+> **Unread, and it is the gap in this section.** EUR-Lex would not serve the text of 2025/1707 on
+> 2026-10-14, across four URL forms. Secondary sources report that its EVP annex requires access
+> through a secure web link, that the QR code resolves to a vehicle-specific or generic landing
+> page, and that access must need no additional software, registration or data beyond the **VIN**.
+> If accurate that is close to what `/verify/` already does, but **it is not verified and must not
+> be repeated as fact.** Read the annex before any claim rests on it.
+
+#### What this changes
+
+The circularity passport is our legal basis and does not move. What Euro 7 adds is a **customer with
+a date**: manufacturers of new M1 and N1 types, obliged from 29 November 2026 to issue a tamper
+resistant digital environmental record per vehicle, carrying odometer-adjacent lifetime values and
+battery state of health, reachable by QR.
+
+Note the overlap with [Regulation (EU) 2023/1542](#regulation-eu-20231542-batteries-and-waste-batteries):
+battery state of health appears in both, four months apart. A single record that satisfies the EVP
+and composes with a battery passport is a stronger position than either alone.
+
+---
+
 ## The one it must interoperate with
 
 ### Regulation (EU) 2023/1542: batteries and waste batteries
@@ -132,6 +221,12 @@ the tension by deleting the exclusion warning above: both halves are load-bearin
 
 Article numbers (46, 29), the repeals, and the OJ publication date were read from the EUR-Lex text
 of 2026/1738 directly.
+
+**Euro 7 was read from the Official Journal on 2026-10-14.** Articles 3(68), 4(7), 4(10), 7(4),
+14(4)(t), 14(8)(a), 14(9)(a) and 21 are quoted from the EUR-Lex HTML of 2024/1257, not from
+summaries. The one gap is **Commission Implementing Regulation (EU) 2025/1707**, which carries the
+EVP format and data for M1 and N1: EUR-Lex would not serve its text across four URL forms that day,
+so its annex is unread and nothing in this repository may rest on what it contains.
 
 Dates for entry into force, general application, and the 2032 passport deadline come from secondary
 legal analysis rather than the operative articles. They are consistent across multiple independent

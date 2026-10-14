@@ -83,11 +83,89 @@ function stagedAdditions() {
     const diff = git('diff', '--cached', '--unified=0', '--no-color');
     const out = [];
     let file = '?';
+    let lineNo = 0;
     for (const line of diff.split(/\r?\n/)) {
         if (line.startsWith('+++ b/')) { file = line.slice(6); continue; }
-        if (line.startsWith('+') && !line.startsWith('+++')) out.push({ file, text: line.slice(1) });
+        // @@ -old,n +new,n @@ gives the first line of the added run, so every
+        // '+' after it lands on a known line of the new file. This used to be
+        // thrown away, which is why staged hits printed no line number, and a
+        // hit you cannot locate is one you are tempted to wave through.
+        const hunk = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(line);
+        if (hunk) { lineNo = Number(hunk[1]); continue; }
+        if (line.startsWith('+') && !line.startsWith('+++')) {
+            out.push({ file, text: line.slice(1), line: lineNo });
+            lineNo++;
+        }
     }
     return out;
+}
+
+/**
+ * Regions a file marks as quoted material.
+ *
+ * A third category the ALLOW list above cannot express: text that trips the
+ * patterns because it QUOTES something, usually legislation. Article 4(7) of
+ * Euro 7 obliges manufacturers to "minimise vulnerabilities". That is a term
+ * of art in a law this project has to cite, not a statement about this
+ * system, and rewording a quotation to get it past a grep would make the
+ * citation worthless.
+ *
+ *   <!-- disclosure-ok: Article 4(7) of Reg (EU) 2024/1257, quoted verbatim -->
+ *   ...
+ *   <!-- /disclosure-ok -->
+ *
+ * Deliberately awkward, and deliberately loud. The marker has to be written
+ * into the committed file, it has to state a reason, and every region it
+ * waives is printed on every run. It is a poor way to hide a finding, since
+ * hiding one would mean writing "disclosure-ok" directly above it, in the
+ * file, where the next reader looks.
+ */
+const REGION_OPEN = /<!--\s*disclosure-ok:\s*(.+?)\s*-->/;
+const REGION_CLOSE = /<!--\s*\/disclosure-ok\s*-->/;
+const regionCache = new Map();
+const waived = [];
+
+function exemptRegions(file) {
+    if (regionCache.has(file)) return regionCache.get(file);
+    let regions = [];
+    try {
+        const lines = readFileSync(join(ROOT, file), 'utf8').split(/\r?\n/);
+        let open = null;
+        lines.forEach((l, i) => {
+            const o = REGION_OPEN.exec(l);
+            if (o && !open) { open = { from: i + 1, reason: o[1] }; return; }
+            if (open && REGION_CLOSE.test(l)) { regions.push({ ...open, to: i + 1 }); open = null; }
+        });
+        // An unclosed marker waives nothing. Failing open here would let one
+        // stray opener near the top of a file silence the rest of it.
+        if (open) regions.push({ ...open, to: open.from, unclosed: true });
+    } catch { regions = []; }
+    regionCache.set(file, regions);
+    return regions;
+}
+
+function isExempt(file, line) {
+    if (!line) return false;
+    for (const r of exemptRegions(file)) {
+        if (!r.unclosed && line > r.from && line < r.to) {
+            waived.push({ file, reason: r.reason });
+            return true;
+        }
+    }
+    return false;
+}
+
+/** Print every waived region. A silent exemption is the thing to avoid. */
+function reportWaived() {
+    if (!waived.length) return;
+    const tally = new Map();
+    for (const w of waived) {
+        const k = `${w.file}: ${w.reason}`;
+        tally.set(k, (tally.get(k) ?? 0) + 1);
+    }
+    console.error('\n  disclosure check: waived inside marked regions. Confirm these are quotes:');
+    for (const [k, n] of tally) console.error(`    ${n} line(s)  ${k}`);
+    console.error('');
 }
 
 function report(hits) {
@@ -140,15 +218,17 @@ if (mode === '--msg') {
         hits.push(...scan(git('log', '-1', '--format=%B', sha), `commit ${sha.slice(0, 8)}`));
     }
 } else {
-    for (const { file, text } of stagedAdditions()) {
+    for (const { file, text, line } of stagedAdditions()) {
         // The local notes file is where this material belongs, and this file
         // has to spell the vocabulary out to look for it. Everything else is
         // fair game.
         if (/\.local\.md$/.test(file)) continue;
         if (/check-disclosure\.mjs$/.test(file)) continue;
-        hits.push(...scan(text, file).map((h) => ({ ...h, line: null })));
+        if (isExempt(file, line)) continue;
+        hits.push(...scan(text, file).map((h) => ({ ...h, line })));
     }
 }
 
+reportWaived();
 if (hits.length) { report(hits); process.exit(1); }
 console.log(`disclosure check: clean (${mode})`);
