@@ -96,3 +96,18 @@ test('the guide is reachable from the pages it explains', () => {
     const sitemap = readFileSync(join(site, 'sitemap.xml'), 'utf8');
     assert.ok(sitemap.includes('https://passport.vin/guide/'), 'the guide is absent from the sitemap');
 });
+
+test('the verify page keeps its guide link after the script rebuilds it', () => {
+    // The first version of the test above passed while a visitor saw nothing.
+    // verify.js replaces the whole body on load from its own LEDE constant,
+    // so a link that exists only in the served markup is thrown away before
+    // anyone can click it. Checking the file the page is ASSEMBLED from is
+    // the part that corresponds to what gets rendered; the markup copy is
+    // only the fallback for a visitor whose script never runs.
+    const js = readFileSync(join(HERE, '..', '..', 'site', 'verify', 'verify.js'), 'utf8');
+    assert.ok(js.includes('../guide/#verify'),
+        'verify.js rebuilds the page and would drop a link held only in index.html');
+    const lede = js.slice(js.indexOf('const LEDE'), js.indexOf('const LEDE') + 2000);
+    assert.ok(lede.includes('../guide/#verify'),
+        'the link must sit in the lede the page actually renders');
+});

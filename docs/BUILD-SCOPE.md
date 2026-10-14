@@ -232,7 +232,7 @@ same module for the same reason.
 | Fees | our own wallet's DUST | [D24](DECISIONS.md#settled), not sponsored |
 | Submission | `@polkadot/api` 16.5.6 → `author_submitExtrinsic` | Straight to the public preprod node |
 | Contract tests | **vitest**, 99 | Midnight's own convention; see D17 |
-| App unit tests | `node --test`, 90 | Platform runner, no `tsx` needed without TypeScript |
+| App unit tests | `node --test`, 91 | Platform runner, no `tsx` needed without TypeScript |
 | SDK guard | `node test/sdk-assumptions.mjs`, 24 | Pins our assumptions about `dpp-sdk` |
 | All UI | Plain HTML / CSS / JS | See below |
 | Network | Preprod | Mainnet submission is gated off |
