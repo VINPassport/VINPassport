@@ -11,8 +11,8 @@ may claim.
 > [D20](DECISIONS.md#settled), the submission deploys and calls `vinpassport` through
 > **`@odatano/nightgate-tx`**: transactions are built, batched, proven and signed locally.
 > Per [D24](DECISIONS.md#settled), the fee is then balanced from **our own DUST** and submitted
-> straight to the public preprod node; ODATANO's hosted NIGHTGATE sponsored the *deployment* only,
-> and is not in the runtime path. Either way no witness ever leaves the process. There is no CAP
+> straight to the public preprod node. ODATANO's hosted NIGHTGATE sponsored the Wave 1 deployment
+> and is in no path now: the contract deployed on 14 October 2026 paid its own fee as well. Either way no witness ever leaves the process. There is no CAP
 > application. The `@odatano/nightgate` *plugin* below is not built, in Wave 1 or Wave 2.
 > The target architecture is unchanged; this note exists so nobody reads the diagram as a
 > description of what is running today.
@@ -137,8 +137,14 @@ So:
 >
 > *Attribution.* Every write is gated on an identity derived in-circuit from a registrar secret and
 > checked against `allowedRegistrars`, a set fixed in the constructor with no circuit that adds to
-> it. The ledger records which identity registered a vehicle, and only that identity may initialise
-> or update its fields.
+> it. The ledger records which identity registered a vehicle, and which identity last wrote each
+> of its fields.
+>
+> *Custody.* A vehicle outlives the party that registered it, so the registrar may authorise
+> another identity to write **one** vehicle, and withdraw it again
+> ([D25](DECISIONS.md#settled)). Delegation hands over the pen and nothing else: the integrity
+> rule was fixed when the field was created and the circuit applies it to every writer, so an
+> authorised dealership can record a higher odometer reading and still cannot record a lower one.
 >
 > Neither makes a value true. Mapping one of those on-chain identities to a legal person is an
 > off-chain admission step, and the first value written for a vehicle that joins the system

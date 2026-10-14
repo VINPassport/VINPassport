@@ -1,11 +1,11 @@
 {
-  "note": "A recording of the guided run of 13 October 2026, kept so the page can still show a real run while no circuit server is answering. Every field below is already public on the preprod chain: the claims and their bounds are on the ledger, and no field reading appears here, because none was published.",
+  "note": "A recording of the guided run of 14 October 2026, kept so the page can still show a real run while no circuit server is answering. Every field below is already public on the preprod chain: the claims and their bounds are on the ledger, and no field reading appears here, because none was published.",
   "network": "preprod",
-  "contractAddress": "c8dc0aa462cc5058e68b0239e89d65b1562520db3ba9eb79daa15685e04f7957",
-  "vinHash": "e838bfc057cb38e390c3120c81c4a941c3dad5c0634d2d04d71b0fc3852486a0",
+  "contractAddress": "314beac1224fe680d0736835829fda85648d901e6556d4fcd0463424b0666f65",
+  "vinHash": "223bb835b1a22e03bf574febe8393a3883965d7346e4d1913517d99e6fcc3bf8",
   "registrarId": "9ecd472baaaa93fe3f1dd92b610c7ae4fff14bed398f3e48530402812a2938be",
-  "contentRoot": "89cbe1fb7a62e10b7f7b01bef63c824648a055d5c00c5751fa9c71e3a5e9df41",
-  "finishedAt": "2026-10-13T13:34:17.781Z",
+  "contentRoot": "438236487305dd086438fe98bfab6a57f8692f186675adfe918f80ad96c27bf0",
+  "finishedAt": "2026-10-14T13:58:00.594Z",
   "stages": [
     {
       "stage": 1,
@@ -14,9 +14,9 @@
         "registerPassport",
         "initialiseField odometerKm"
       ],
-      "txHash": "dfb9ef19f3b791b211bf0eb5f035611418f167406c3c3bb2683d8a35b3ff578b",
-      "blockHeight": 2963321,
-      "explorer": "https://preprod.midnightexplorer.com/transactions/dfb9ef19f3b791b211bf0eb5f035611418f167406c3c3bb2683d8a35b3ff578b"
+      "txHash": "a7d1963ad0cc52e5e1525d51b1332a0e816197302cd36728745ed3f993f30b69",
+      "blockHeight": 2977985,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/a7d1963ad0cc52e5e1525d51b1332a0e816197302cd36728745ed3f993f30b69"
     },
     {
       "stage": 2,
@@ -24,9 +24,9 @@
       "calls": [
         "initialiseField accidentCount"
       ],
-      "txHash": "6dc50ddd55ced14190e7fe620fe097595219d7c8b8f83eb74843fcefa863aa34",
-      "blockHeight": 2963336,
-      "explorer": "https://preprod.midnightexplorer.com/transactions/6dc50ddd55ced14190e7fe620fe097595219d7c8b8f83eb74843fcefa863aa34"
+      "txHash": "bb71d8f1405f60f00b325c389ed2a78774ac1a1362861d4f31a10df95100abd9",
+      "blockHeight": 2978001,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/bb71d8f1405f60f00b325c389ed2a78774ac1a1362861d4f31a10df95100abd9"
     },
     {
       "stage": 3,
@@ -34,9 +34,9 @@
       "calls": [
         "initialiseField ownerCount"
       ],
-      "txHash": "153ea956679f05f3b53e4d74b49f7863c0e9fb39277644de1390d74970e10489",
-      "blockHeight": 2963348,
-      "explorer": "https://preprod.midnightexplorer.com/transactions/153ea956679f05f3b53e4d74b49f7863c0e9fb39277644de1390d74970e10489"
+      "txHash": "30d2ce4900befb3cbb7a3a97ea9f4361988f81758a0e30fe2c2e6528f234b47e",
+      "blockHeight": 2978017,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/30d2ce4900befb3cbb7a3a97ea9f4361988f81758a0e30fe2c2e6528f234b47e"
     },
     {
       "stage": 4,
@@ -44,9 +44,9 @@
       "calls": [
         "update 1: odometerKm, new value committed"
       ],
-      "txHash": "45680371483a044f5a3b73d5a9f9641ded024dcf194d1d2aca254dffea2b18e7",
-      "blockHeight": 2963364,
-      "explorer": "https://preprod.midnightexplorer.com/transactions/45680371483a044f5a3b73d5a9f9641ded024dcf194d1d2aca254dffea2b18e7"
+      "txHash": "26556a8a4898b9c62e4d9e0c575a687f97a040d4edce8a8dd9553c7ebccc4c9c",
+      "blockHeight": 2978052,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/26556a8a4898b9c62e4d9e0c575a687f97a040d4edce8a8dd9553c7ebccc4c9c"
     },
     {
       "stage": 5,
@@ -55,9 +55,9 @@
         "prove noAccidents",
         "prove mileageUnder 150000"
       ],
-      "txHash": "b62e2d207808737bc05d49312dd7591348bfefe68eb855cd5c53539aac8aa47f",
-      "blockHeight": 2963430,
-      "explorer": "https://preprod.midnightexplorer.com/transactions/b62e2d207808737bc05d49312dd7591348bfefe68eb855cd5c53539aac8aa47f"
+      "txHash": "6bd1c25b57dbff1733026a7c2d9491f1709bc8203d5aff99f3d695693078a44e",
+      "blockHeight": 2978071,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/6bd1c25b57dbff1733026a7c2d9491f1709bc8203d5aff99f3d695693078a44e"
     }
   ],
   "claims": [

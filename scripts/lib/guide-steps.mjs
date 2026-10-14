@@ -42,6 +42,14 @@ export const VERIFY = [
  'Point a phone camera at the code on the windscreen or the listing. The passport opens. There is nothing to install and nothing to sign up for.',
  'This is the normal way in, and the one the regulation has in mind: Euro 7 <b>Article 7(4)</b> requires the data to be reachable <b>through a QR code</b>, or a similar method. The same panel is on this page, so once you are here you can save the code, send it to a mechanic, or hand it to the next buyer. <b>The link carries only the vehicle hash</b>, which the ledger already publishes, so passing it on gives nothing away that was private.'],
 
+['v11-find-by-vin', 'Or arrive with nothing but the VIN',
+ 'Type the 17 characters into <b>LOOK UP A VEHICLE BY VIN</b> and press <b>FIND THE PASSPORT</b>. Spaces, dashes and lower case are all accepted, because that is how a VIN is written down in real life.',
+ 'Not every buyer is standing at the car with a phone camera. A VIN copied from a listing, an invoice or a service book is enough to reach the record. The VIN is <b>hashed in this browser</b> and only the hash is used to look the passport up, so the VIN itself is never sent to a server, never stored, and never put in the address bar, where it would survive in a browser history or in any link that gets shared. Implementing Regulation (EU) 2025/1707 <b>Annex V, point 4.2.3</b> says the passport must not require the user to install software, register, or provide any data beyond the VIN. This box is that sentence, implemented literally.'],
+
+['v12-not-found', 'See what happens when there is no record',
+ 'Type a VIN this ledger does not hold. The page says so and stops.',
+ '<b>This is not a verdict on the vehicle.</b> A passport that was never issued cannot say anything about a car, good or bad, and a page that met an unknown VIN with anything resembling a clean bill of health would be worse than useless. So it names the three ordinary reasons, in the order they actually happen, and it does not imply the car is suspect. This is the same discipline the claim rows follow one level up: <b>absence is silence, not a denial</b>.'],
+
 ['v1-how-to-read', 'Read what the page is before you read the answer',
  'The block at the top says what this page is, who it is for, and what it does not do.',
  'A verdict with no stated scope is worth very little. This page is one buyer’s view of one vehicle, and saying so first is what lets the rest of it be read plainly.'],
@@ -69,6 +77,10 @@ export const VERIFY = [
 ['v5-chain-sees', 'Check what the chain actually holds',
  'Open <b>WHAT THE CHAIN SEES</b>. It lists every public value for this vehicle, and then everything that stays off the ledger.',
  'Most systems tell you what they protect. This one lists <b>what it publishes and what it does not</b>, in the same panel, because a verifier who reads silence as a denial is the exact failure this project exists to prevent. The VIN, every field value, the salts and the registrar’s secret are each named as absent rather than left to be worked out.'],
+
+['v13-written-by', 'See who wrote each figure, not only that it holds',
+ 'Still inside <b>WHAT THE CHAIN SEES</b>, read the end of each claim row. It names the party that last wrote the field that claim was proven against.',
+ 'A car outlives whoever registered it. The manufacturer opens the passport, a dealership records the handover, a garage records the service, and a verifier is entitled to know which of them wrote the figure they are relying on. The registrar can hand the right to write <b>one vehicle</b> to another party and take it back again, and the circuit enforces that: a party who was never authorised cannot write, however the request is made. The mileage above was last written by the dealership rather than the manufacturer, and it still could not be made to fall, because <b>delegation hands over the pen, never the right to break the rule</b>. The rule was fixed when the field was created and applies to everyone who writes it afterwards.'],
 
 ['v6-summary', 'See who stands behind the record',
  'The summary names the registrar identity, counts the claims on the ledger, and says where the data came from.',

@@ -477,10 +477,22 @@ the receiving identity is wrong or its secret is lost, and nothing is recoverabl
 per-vehicle writer list gets the life cycle without that risk, and `allowedRegistrars` remains
 fixed at deployment as [D23](#settled) describes.
 
-**Status: written, compiled and tested, not on chain.** The deployed preprod contract of
-13 October is the seven-export build without these circuits. Deploying this one means a new
-address, a new guided run, and re-measuring proving and DUST, so it is a decision taken on its own
-rather than folded into a submission week.
+**Status: deployed 14 October 2026**, at
+`314beac1224fe680d0736835829fda85648d901e6556d4fcd0463424b0666f65`, block 2977555, fee paid from
+our own dust. The address before it, the seven-export build of 13 October, is archived at
+`deploy/preprod-superseded-*.json`.
+
+Deploying meant a new address, a new guided run and re-measuring, which is why it was taken as its
+own decision rather than folded in. It also created a hazard worth naming: a circuit's verifier
+key is fixed at deployment, so a working tree ahead of the chain builds calls the node refuses
+with nothing useful to say. `deploy/preprod.json` therefore carries a `buildId` over the compiled
+artefacts, and anything about to submit compares before it spends a fee
+(`scripts/lib/build-id.mjs`).
+
+The demonstration ledger now shows the life cycle rather than describing it: the authority
+registers vehicle A, a service garage records two services, and the selling dealership records the
+reading at handover. `/verify/` names the party that last wrote the field behind each claim, and
+the mileage claim on that vehicle resolves to the dealership rather than the manufacturer.
 
 ## Reversed
 

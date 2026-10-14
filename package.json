@@ -41,7 +41,9 @@
     "hooks:install": "node scripts/check-disclosure.mjs --install",
     "build:guide": "node scripts/build-guide.mjs",
     "check:video": "node scripts/check-video.mjs",
-    "check:dust": "node scripts/check-dust.mjs"
+    "check:dust": "node scripts/check-dust.mjs",
+    "shots": "node scripts/capture-guide-shots.mjs",
+    "record:run": "node scripts/record-run.mjs"
   },
   "overrides": {
     "@midnight-ntwrk/ledger-v8": "8.1.3",

@@ -15,10 +15,10 @@
 > **Status: pre-alpha, under active development.** The Compact contract is written, compiles and is
 > covered by tests, and the three application surfaces (verification, intake console, proof
 > explorer) run against the compiled circuits with one command (`npm run app`). The contract is
-> **deployed on Midnight preprod** (13 Oct 2026, block 2962145,
+> **deployed on Midnight preprod** (14 Oct 2026, block 2977555,
 > [`deploy/preprod.json`](deploy/preprod.json)) and has been **exercised end to end on chain**:
 > registration, three field initialisations, a monotonic update and two proven claims, across
-> blocks 2963321 to 2963430, with a third claim refused in-circuit because the rule held.
+> blocks 2977985 to 2978071, with a third claim refused in-circuit because the rule held.
 > The `/demo/` surface and the intake console write **real transactions to that contract**, paying
 > their own DUST, capped per UTC day. They run locally under `npm run app`; the hosted copy reports
 > preprod runs as unavailable, because the host that served them was cancelled on 10 Oct 2026.
@@ -213,36 +213,43 @@ cat contracts/vinpassport/src/managed/vinpassport/compiler/contract-info.json
 ```
 
 > `"compiler-version": "0.31.1"`, `"language-version": "0.23.0"`, `"runtime-version": "0.16.0"`,
-> the stable ledger-8 line. Seven circuits: five proving ones, plus two pure
+> the stable ledger-8 line. Ten exported circuits: seven proving ones, plus three pure
 > helpers. `registrarIdOf` derives a registrar's public identity from a secret
-> the chain never sees, and `slotOf` derives where a field lives from the
-> vehicle, the field and the document root. Both are exported so a verifier can
+> the chain never sees, `slotOf` derives where a field lives from the
+> vehicle, the field and the document root, and `writerKeyOf` derives the entry that says a
+> given party may write a given vehicle. All three are exported so a verifier can
 > recompute them instead of trusting that we did.
 
 **2. The deploy is real.** The contract is live on Midnight preprod; address and transaction
 hash are committed at [`deploy/preprod.json`](deploy/preprod.json). That address holds the **Wave 2
-build of 13 October 2026**: seven exported circuits, five of them proved, with the registrar
-authority. The fee was paid by ODATANO's sponsor.
+build of 14 October 2026**: ten exported circuits, seven of them proved, with the registrar
+authority and the per-vehicle writer list ([D25](docs/DECISIONS.md#settled)). We paid the fee
+ourselves, out of dust this project's own wallet generates.
 
-> **The repository is ahead of that address.** The writer circuits added on 14 October
-> ([D25](docs/DECISIONS.md#settled)) are written, compiled and tested, and they are **not** at
-> this address. Nothing here claims them as deployed, and `deploy/preprod.json` records what is. The Wave 1 address is kept at
-`deploy/preprod-superseded-*.json` so the two can be compared. Ask the public indexer yourself:
+> **The repository matches that address, and the build proves it rather than asserting it.**
+> `deploy/preprod.json` carries a `buildId`: a sha256 over the compiled `contract/index.js` and
+> every circuit `.bzkir`, here `1b5c25ac8b4c6665`. Anything about to submit compares its own
+> build against it first. A circuit's verifier key is fixed at deployment, so a working tree
+> ahead of the chain produces calls the node refuses with nothing useful to say, and the check
+> turns that into one sentence before a fee is spent. Earlier addresses are kept at
+> `deploy/preprod-superseded-*.json` so they can be compared. Ask the public indexer yourself:
 
 ```bash
-curl -s -X POST https://midnight-preprod.blockfrost.io/api/v0   -H 'Content-Type: application/json'   -H "project_id: $BLOCKFROST_MIDNIGHT_PREPROD"   -d '{"query":"{ contractAction(address: \"c8dc0aa462cc5058e68b0239e89d65b1562520db3ba9eb79daa15685e04f7957\", offset: { transactionOffset: { hash: \"fe633e69fa286a3502353271c4f2b6a6b5e1435f11a5ef5df565c78b01184342\" } }) { __typename transaction { hash block { height } } } }"}'
+curl -s -X POST https://midnight-preprod.blockfrost.io/api/v0   -H 'Content-Type: application/json'   -H "project_id: $BLOCKFROST_MIDNIGHT_PREPROD"   -d '{"query":"{ contractAction(address: \"314beac1224fe680d0736835829fda85648d901e6556d4fcd0463424b0666f65\", offset: { transactionOffset: { hash: \"370b7cb3a1ad182b712567faf75ec501f75ab80a704bec205be54e7f4b90ce7a\" } }) { __typename transaction { hash block { height } } } }"}'
 ```
 
 > Returns a `ContractDeploy` whose transaction hash matches the committed record, in block
-> 2962145. The offset pins the query to that deployment; without it the indexer answers with
-> the contract's *most recent* action, which on this address is still the deploy, because
-> nothing has called it yet.
+> 2977555, which is what it returned when this command was last run on 14 October. The offset
+> pins the query to that deployment; without it the indexer answers with the contract's *most
+> recent* action, which changes as the contract is called.
 >
 > **The hash in the record is the one the indexer resolves, which is not the one the
-> submitter returned.** The sponsor reported a 33-byte identifier
-> (`00e528df...`, kept in the record as `submitterReportedId`) that the indexer rejects as
-> not a transaction hash. Only the resolvable hash is published, because a hash that
-> answers nothing is worse than none.
+> submitter returned.** Our submitter reported `0x0b88793d...`, kept in the record as
+> `submitterReportedId`; the indexer resolves `370b7cb3...` for the same deployment. The
+> Wave 1 deploy diverged the same way through ODATANO's sponsor, which returned a 33-byte
+> identifier the indexer rejects outright as not a transaction hash. Two different submission
+> paths, the same divergence, so it is the submission path and not the sponsor. Only the
+> resolvable hash is published, because a hash that answers nothing is worse than none.
 >
 > Midnight retired its own preprod indexer on 2026-10-09 and the Midnight indexer is now
 > served by Blockfrost, so the query needs a free Blockfrost project id for Midnight
@@ -260,7 +267,7 @@ code. So every guard in the contract is checked by mutation: it is deleted, the 
 recompiled, and the suite is run against the compiled circuits to see what notices. A guard that
 can be removed with the suite still green is a guard nothing depends on.
 
-**20 of 20 guards are load-bearing.** Reproduce it yourself:
+**25 of 25 guards are load-bearing.** Reproduce it yourself:
 
 ```bash
 node scripts/mutate-guards.mjs --list   # the guards, no changes made
@@ -495,12 +502,14 @@ tree at each wave's close, not from memory.
 | **The registrar is derived in-circuit** from a witness secret, and checked against an allowlist pinned at deployment. `registrarIdOf` is a new circuit | Wave 1 took the caller's word for who was writing. A contract that cannot tell one writer from another cannot refuse the wrong one | `registrarIdOf`, `registerPassport` |
 | **Every field commitment is bound to the content root** it was taken from | A commitment that floats free of its document can be replayed against a different document. Binding it means a revised document moves every slot with it | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact) |
 | **A third integrity rule, `neverChanges`**, and the panel widened from 5 fields to 17 | The lifecycle fields accumulate, so `neverFalls` fits them. The regulatory declarations do not move inside one document version, and filing them under `neverFalls` would have let a recycled-content figure drift upward - the direction that flatters | [`scenario.mjs`](scripts/lib/scenario.mjs), [FIELDS.md](docs/FIELDS.md) |
-| **Every guard mutation-checked, 20 of 20**, with the kill table published and the harness in the repo | "Tests pass" says nothing about whether a guard is load-bearing. Deleting it and watching what dies does | `node scripts/mutate-guards.mjs` |
+| **Every guard mutation-checked, 25 of 25**, with the kill table published and the harness in the repo | "Tests pass" says nothing about whether a guard is load-bearing. Deleting it and watching what dies does | `node scripts/mutate-guards.mjs` |
 | **A panel that states what the chain does *not* hold** | A verifier who misreads silence as a denial is the failure this project exists to prevent, so the page names the absences instead of leaving them to inference | [passport.vin/verify](https://passport.vin/verify/) |
 | **Moved to the Blockfrost indexer** after the preprod indexer was decommissioned mid-wave and began answering HTTP 410 | A submission a judge cannot run is not a submission | [`scripts/lib/endpoints.mjs`](scripts/lib/endpoints.mjs) |
 
-**Deployed on 2026-10-13**, in block 2962145, with the fee paid by ODATANO's sponsor. For most of
-the wave this paragraph said the opposite, because the sponsor refused the bytes with what read
+**Deployed on 2026-10-14**, in block 2977555, with the fee paid out of our own dust
+([D24](docs/DECISIONS.md#settled)). The deploy before it, on 13 October, was sponsored by
+ODATANO, and for most of Wave 1 this paragraph said the opposite, because the sponsor refused
+the bytes with what read
 like a transaction-format mismatch: it named both serialization forms it had tried and failed to
 deserialize. It was not a format problem. The sponsor was decoding 12,257 bytes where we had built
 12,269, because the base64 had been handed over as a literal argument and sixteen characters had
@@ -513,12 +522,12 @@ line of comparison rather than two days of reading tag names.
 
 | Component | Status |
 |---|---|
-| Compact contract: 7 circuits | **Done.** Compiles clean, artifacts committed and reproducible from source |
-| Contract test suite | **Done.** 99 tests; every guard mutation-checked, 20 of 20 |
+| Compact contract: 10 circuits, 7 of them proving | **Done.** Compiles clean, artifacts committed and reproducible from source |
+| Contract test suite | **Done.** 115 tests; every guard mutation-checked, 25 of 25 |
 | SDK assumption guard | **Done.** 24 assertions against `@odatano/dpp-sdk` 0.2.0 |
 | Proving cost, the three circuits a verifier waits on | **Measured 13 Oct 2026**, wasm in-process, no proof server, 32 cores, n=3 each. Build, prove and sign: `registerPassport` **16.6s** (5,228 B), `proveFieldAtMost` **29.4s** (5,568 B), `proveFieldAtLeast` **27.1s** (5,569 B). Registration is 3.5x Wave 1's 4.77s, the cost of the registrar identity derived in-circuit and the field commitments bound to the content root. **These are the times to ISSUE a claim, paid once by whoever writes it.** A verifier reads the verdict off the ledger and waits on a query, never on a proof, which is why a proven claim is recorded rather than re-proven on demand ([D19](docs/DECISIONS.md#settled)). DUST cost per anchor and per proof was **measured on 14 Oct 2026** against the deployed contract with real proofs, and is published in [BUILD-SCOPE](docs/BUILD-SCOPE.md); latency is not cost |
 | Provable-field registry, 32 slots | **Settled** ([FIELDS.md](docs/FIELDS.md)). 26 in use, reserve 17 to 21, and 31. Slots 0 to 16 are wired end to end and provable; the rest are salted into the content root but carry no rule yet |
-| Deployment to Midnight preprod | **Done. The Wave 2 contract is live (13 Oct 2026), block 2962145.** Built, proven and signed locally; the deploy fee was sponsored by ODATANO ([D20](docs/DECISIONS.md#settled)). Address and the indexer-resolvable tx hash committed at [`deploy/preprod.json`](deploy/preprod.json); Wave 1's address kept alongside it as `preprod-superseded-*.json` |
+| Deployment to Midnight preprod | **Done. The Wave 2 contract is live (14 Oct 2026), block 2977555.** Built, proven, signed and paid for locally: the fee came out of our own dust ([D24](docs/DECISIONS.md#settled)), not a sponsor. Address and the indexer-resolvable tx hash committed at [`deploy/preprod.json`](deploy/preprod.json), with a `buildId` fingerprinting the artefacts that address holds, so a working tree ahead of the chain is caught before a fee is spent. Earlier addresses kept alongside it as `preprod-superseded-*.json` |
 | Frontend: verification, intake console, proof explorer | **Done.** Three surfaces against the compiled circuits (`npm run app`), live for anyone at [passport.vin](https://passport.vin/) |
 | Live preprod runs from the browser | **Built, not currently hosted.** `/demo/` and the intake console write real transactions to the deployed contract, paying their own DUST ([D24](docs/DECISIONS.md#settled)), capped per UTC day, every hash linking to the [preprod explorer](https://preprod.midnightexplorer.com). The host that served them was cancelled on 10 Oct 2026, so the page now reports that preprod runs are unavailable rather than pretending otherwise. `npm run app` runs the same path locally |
 | CAP service layer, tier redaction | **Not in this submission, and not in Wave 2.** See [D20](docs/DECISIONS.md#settled) |

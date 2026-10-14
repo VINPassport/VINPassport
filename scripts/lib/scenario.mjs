@@ -6,7 +6,10 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-import { PassportSimulator, Rule, fieldKey, bytes32, hex } from '../../test/passport-simulator.mjs';
+import {
+    PassportSimulator, Rule, fieldKey, bytes32, hex,
+    REGISTRAR_SECRET, DEALER_SECRET, DEALER_ID, GARAGE_SECRET, GARAGE_ID
+} from '../../test/passport-simulator.mjs';
 import { buildTree, padToWidth } from '@odatano/dpp-sdk/merkle';
 import { blake2b } from '@noble/hashes/blake2';
 import { randomBytes } from 'node:crypto';
@@ -224,13 +227,34 @@ export function applyIntake(sim, intake, salt) {
             sim.initialiseField(vin, K[name], FIELDS[name].rule, BigInt(value), salt()));
     }
 
+    // A vehicle outlives the party that registered it. The registrar may hand
+    // the right to write this ONE vehicle to a dealership or a garage, and
+    // take it back; the circuit checks the authorisation, so a party that was
+    // never given it cannot write however it is asked. Identities are derived
+    // in-circuit from secrets the chain never sees.
+    const writers = new Map((intake.writers ?? []).map((w) => [w.label, w]));
+    const asRegistrar = () => { if (intake.registrarSecret) sim.actAs(intake.registrarSecret); };
+    for (const w of writers.values()) {
+        asRegistrar();
+        attempt(`authoriseWriter ${w.label}`, () => sim.authoriseWriter(vin, w.id));
+    }
+
     for (const [i, update] of (intake.updates ?? []).entries()) {
-        for (const [name, value] of Object.entries(update)) {
+        // `by` names which authorised party is writing this round. Without it
+        // the registrar writes, which is what every existing intake expects.
+        const { by, ...values } = update;
+        const writer = by ? writers.get(by) : null;
+        if (by && !writer) { refused.push({ step: `update ${i + 1}`, reason: `unknown writer "${by}"` }); continue; }
+        for (const [name, value] of Object.entries(values)) {
             if (!(name in FIELDS)) { refused.push({ step: `update ${i + 1} ${name}`, reason: 'unknown field' }); continue; }
-            attempt(`update ${i + 1}: ${name} -> ${value}`, () =>
-                sim.recordField(vin, K[name], BigInt(value), salt()));
+            const who = writer ? ` (by ${writer.label})` : '';
+            attempt(`update ${i + 1}: ${name} -> ${value}${who}`, () => {
+                if (writer) sim.actAs(writer.secret); else asRegistrar();
+                sim.recordField(vin, K[name], BigInt(value), salt());
+            });
         }
     }
+    asRegistrar();
 
     const CLAIMS = {
         neverWrittenOff: () => sim.proveFieldAtMost(vin, K.writeOffCategory, 0n),
@@ -260,10 +284,25 @@ export function buildDemoVehicles(sim, salt) {
             firstRegistrationDate: 20_240, co2FootprintKgCO2e: 8_400,
             recycledPlasticPct: 26.5, recycledSteelPct: 31.0
         },
+        // This vehicle shows a LIFE, not a snapshot. The authority registers
+        // it, then hands the right to write this one vehicle to the selling
+        // dealership and to a service garage, each writing under its own
+        // identity. The integrity rules still apply to every one of them:
+        // delegation hands over the pen, never the right to break the rule.
+        registrarSecret: REGISTRAR_SECRET,
+        writers: [
+            { label: 'dealership', id: DEALER_ID, secret: DEALER_SECRET },
+            { label: 'service garage', id: GARAGE_ID, secret: GARAGE_SECRET }
+        ],
         updates: [
-            { odometerKm: 44_210, serviceCount: 2 },
-            { odometerKm: 61_890, serviceCount: 3 },
-            { odometerKm: 83_260, serviceCount: 4 }
+            { odometerKm: 44_210, serviceCount: 2, by: 'service garage' },
+            { odometerKm: 61_890, serviceCount: 3, by: 'service garage' },
+            { serviceCount: 4, by: 'service garage' },
+            // The resale: the dealership takes the car in and records the
+            // reading at handover. It is the last party to write the
+            // odometer, which is why the panel can name it rather than the
+            // manufacturer who registered the vehicle years earlier.
+            { odometerKm: 83_260, by: 'dealership' }
         ],
         prove: { neverWrittenOff: true, noAccidents: true, oneKeeper: true, mileageUnder: 150_000 }
     }, salt);
@@ -304,6 +343,16 @@ export function exportLedger(sim, sourceNote) {
         registrar: mapToObj(l.registrar, hex),
         fieldCommitment: mapToObj(l.fieldCommitment, hex),
         fieldRule: mapToObj(l.fieldRule, (r) => Number(r)),
+        // Who wrote each field, and who is allowed to.
+        //
+        // A passport that cannot say who last touched a value is asking to be
+        // taken on trust, and over a vehicle's life the writer changes: the
+        // manufacturer registers it, a dealership records the handover, a
+        // garage records the service. The ledger holds the identity, derived
+        // in-circuit from a secret it never sees, so publishing it discloses
+        // nothing that was private and lets a reader see the custody chain.
+        writers: [...l.writers].map(hex),
+        fieldWriter: mapToObj(l.fieldWriter, hex),
         claims,
         updateCount: l.updateCount.toString()
     };

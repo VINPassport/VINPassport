@@ -72,14 +72,30 @@ export function chainSeesBlock(vin, view, ledger) {
         seeRow('Updates recorded', String(ledger.updateCount ?? 0),
             'How many times a field was written across every vehicle. A count, not a history.'),
         seeRow('Field commitments on this ledger', String(commitments),
-            'Across all vehicles. A slot is a hash of the vehicle, the field and the document, so this list names no vehicle by itself.')
+            'Across all vehicles. A slot is a hash of the vehicle, the field and the document, so this list names no vehicle by itself.'),
+        seeRow('Delegated writers on this ledger', String((ledger.writers ?? []).length),
+            'A registrar can hand the right to write <i>one</i> vehicle to a dealership or a garage, and take it back. Each entry is a hash of the vehicle and the party, so the list names neither by itself.')
     ].join('');
+
+    // Who last wrote the field a claim was proven against. The claim names
+    // its own slot, and the ledger records a writer per slot, so this is the
+    // one place the custody chain can be shown per vehicle without deriving
+    // slots the page has no reason to know.
+    const wroteIt = (slot) => {
+        const who = (ledger.fieldWriter ?? {})[slot];
+        if (!who) return '';
+        const delegated = who !== (view.registrar ?? '');
+        return ` Last written by <span class="mono">${esc(short(who))}</span>`
+            + (delegated
+                ? ', which is not the registrar: this field was written by a party the registrar authorised for this vehicle.'
+                : ', the registrar that registered it.');
+    };
 
     const claimRows = claims.length
         ? claims.map((c) => seeRow(
             `Claim · ${c.atMost ? '≤' : '≥'} ${fmt(c.bound)}`,
             short(c.commitment),
-            `Proven against that commitment, at slot ${esc(short(c.slot))}. The bound is public because it is the question asked; the value that satisfied it is not here.`)).join('')
+            `Proven against that commitment, at slot ${esc(short(c.slot))}. The bound is public because it is the question asked; the value that satisfied it is not here.${wroteIt(c.slot)}`)).join('')
         : `<div style="padding:9px 0;font-size:12.5px;color:rgba(14,23,38,.62)">No claims proven yet. Registration publishes a root and a registrar and nothing else.</div>`;
 
     const absent = [
@@ -102,7 +118,7 @@ export function chainSeesBlock(vin, view, ledger) {
       </p>
       <span style="display:block;font:600 10px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin:12px 0 2px">On the ledger</span>
       ${held}
-      ${claimRows}
+      <div class="vfy-claims-on-ledger">${claimRows}</div>
       <span style="display:block;font:600 10px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin:16px 0 2px">Not on the ledger</span>
       <ul style="margin:0;padding:0 0 0 18px">${absent}</ul>
     </div>
