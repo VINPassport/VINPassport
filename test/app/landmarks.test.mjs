@@ -92,5 +92,16 @@ test('regenerating the guide cannot drop either of them', () => {
     const gen = readFileSync(join(ROOT, 'scripts', 'build-guide.mjs'), 'utf8');
     assert.match(gen, /<main id="main">/, 'the generator emits no main');
     assert.match(gen, /<\/main>/, 'the generator never closes the main');
-    assert.match(gen, /<a class="nav-skip" href="#main">/, 'the generator emits no skip link');
+
+    // The skip link arrives with the bar, and the bar now comes from
+    // scripts/build-nav.mjs so that all seven pages share one definition.
+    // Assert on what reaches the page rather than on which file holds the
+    // string: this test used to grep the guide generator, and moving the bar
+    // out of it broke the test while the page stayed correct.
+    const nav = readFileSync(join(ROOT, 'scripts', 'build-nav.mjs'), 'utf8');
+    assert.match(nav, /<a class="nav-skip" href="#main">/, 'the nav builder emits no skip link');
+
+    const built = read('guide/index.html');
+    assert.match(built, /<a class="nav-skip" href="#main">/, 'the built guide has no skip link');
+    assert.match(built, /<main id="main">/, 'the built guide has no main');
 });

@@ -83,3 +83,46 @@ test('the stylesheet the pages ask for is the one that carries the rule', () => 
     }
     assert.equal(keys.size, 1, `pages disagree on the stylesheet version: ${[...keys].join(', ')}`);
 });
+
+test('every bar is the shared one, character for character', async () => {
+    // The bars had drifted into three different sets of items: the home page
+    // offered Watch, How it works and Honest limits; the application pages
+    // offered Intake, Proofs and Verify; the content pages offered a mix. A
+    // reader moving between them saw the site change shape. They are now
+    // generated from one definition, and this is what keeps them that way.
+    const { navMarkup, PAGES: NAV_PAGES } = await import('../../scripts/build-nav.mjs');
+    for (const page of NAV_PAGES) {
+        const html = readFileSync(join(SITE, page.file), 'utf8').replace(/\r\n/g, '\n');
+        const a = html.indexOf('<nav');
+        const b = html.indexOf('</nav>', a);
+        assert.equal(html.slice(a, b + 6), navMarkup(page),
+            `${page.file} has drifted from the shared bar; run node scripts/build-nav.mjs`);
+    }
+});
+
+test('every bar offers SCAN A VEHICLE', () => {
+    for (const page of PAGES) {
+        const nav = navOf(page);
+        assert.ok(nav.includes('SCAN A VEHICLE'), `${page} has no SCAN A VEHICLE`);
+        if (page === 'verify/index.html') {
+            // It IS the scan page, so the bar marks the spot rather than
+            // offering a trip to where the reader already is.
+            assert.ok(!/<a[^>]*>SCAN A VEHICLE/.test(nav),
+                'the verify page should mark SCAN A VEHICLE, not link to itself');
+        } else {
+            assert.match(nav, /<a href="[^"]*verify\/"[^>]*>SCAN A VEHICLE<\/a>/,
+                `${page} does not link SCAN A VEHICLE to the verify page`);
+        }
+    }
+});
+
+test('one gap under the bar, on every page', () => {
+    // Each page used to set its own: 96px at home, 76px on the guide and the
+    // regulation page, 40px on the consoles, and nothing at all on /verify/,
+    // where the first line sat against the bar. Those are inline paddings, so
+    // the rule that replaces them has to outrank an inline style.
+    const css = readFileSync(join(SITE, 'assets', 'site.css'), 'utf8');
+    assert.match(css, /--main-top:/, 'there is no shared top-gap token');
+    assert.match(css, /main#main\s*>\s*:first-child\{padding-top:var\(--main-top\)!important\}/,
+        'the shared top gap is missing, so pages can set their own again');
+});

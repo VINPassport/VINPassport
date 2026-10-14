@@ -40,6 +40,8 @@
     "check:disclosure": "node scripts/check-disclosure.mjs --staged",
     "hooks:install": "node scripts/check-disclosure.mjs --install",
     "build:guide": "node scripts/build-guide.mjs",
+    "build:nav": "node scripts/build-nav.mjs",
+    "check:nav": "node scripts/build-nav.mjs --check",
     "check:video": "node scripts/check-video.mjs",
     "check:dust": "node scripts/check-dust.mjs",
     "shots": "node scripts/capture-guide-shots.mjs",

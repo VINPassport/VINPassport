@@ -8,6 +8,11 @@ import { writeFileSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { CREATE, VERIFY } from './lib/guide-steps.mjs';
+// The bar comes from the same definition every hand-written page uses, so a
+// guide rebuild cannot quietly revert it (scripts/build-nav.mjs).
+import { navMarkup, PAGES as NAV_PAGES } from './build-nav.mjs';
+
+const GUIDE_NAV = navMarkup(NAV_PAGES.find((p) => p.file === 'guide/index.html'));
 
 const SITE = join(dirname(fileURLToPath(import.meta.url)), '..', 'site');
 
@@ -83,26 +88,12 @@ const html = `<!DOCTYPE html>
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://passport.vin/assets/vinpassport-banner.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700&family=Barlow+Condensed:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="../assets/site.css?v=11">
+<link rel="stylesheet" href="../assets/site.css?v=12">
 </head>
 <body>
 <div style="max-width:1200px;margin:0 auto;padding:0 var(--edge)">
 
-  <nav class="nav-bar" style="display:flex;align-items:center;flex-wrap:wrap;gap:14px 26px;padding:18px 0;min-height:75px;border-bottom:1px solid rgba(0,74,173,.26)">
-    <a class="nav-skip" href="#main">Skip to content</a>
-    <a href="../" style="display:flex;align-items:center;margin-right:auto;flex:none;text-decoration:none">
-      <img src="../assets/vinpassport-logo.png" alt="VINPassport" width="546" height="102" style="height:32px;width:auto">
-    </a>
-    <div class="nav-links" id="navmenu">
-      <span style="font-size:14px;color:#004AAD;white-space:nowrap;border-bottom:2px solid #004AAD;padding-bottom:2px">Guide</span>
-      <a href="../#how" ${NAVLINK}>How it works</a>
-      <a href="../regulation/" ${NAVLINK}>Regulation</a>
-      <a href="../demo/" ${NAVLINK}>Live demo</a>
-      <a href="../verify/" style="${CTA_GHOST}">SCAN A VEHICLE</a>
-      <a href="../intake/" style="${CTA_SOLID}">ADD PASSPORT</a>
-    </div>
-    <button class="nav-burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="navmenu"><i></i><i></i><i></i></button>
-  </nav>
+  ${GUIDE_NAV}
 
   <main id="main">
   <section style="padding:clamp(40px,7vw,76px) 0 34px">
