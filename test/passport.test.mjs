@@ -964,3 +964,175 @@ describe('what the public ledger never learns', () => {
         expect(other.ledger.updateCount).toBe(mine);
     });
 });
+
+// ---------------------------------------------------------------- disclosure
+
+describe('selective disclosure: one field, not the panel', () => {
+    // A run receipt is the holder's master copy and opens every field. Handing
+    // it to a verifier who asked about the mileage hands them the whole
+    // vehicle, which contradicts the one sentence this project leads with. A
+    // disclosure is the narrow answer, and these tests pin both halves: that
+    // it verifies for the field it names, and that it is useless for any
+    // other.
+    //
+    // The disclosure helpers recompute the slot and the commitment in plain
+    // JavaScript. That only means anything if the arithmetic matches the
+    // compiled circuit exactly, so the first test compares against ledger
+    // state the real circuits wrote rather than against another JS value.
+
+    // No plaintext `vin`: the simulator keys passports by a synthetic hash
+    // that no real VIN string hashes to, and a disclosure is stronger without
+    // one anyway. The VIN round trip is checked on its own below, with a
+    // consistent pair.
+    const RECEIPT = () => ({
+        vinHash: hex(VIN_A),
+        contentRoot: hex(ROOT),
+        network: 'preprod',
+        contractAddress: 'c8dc0aa4',
+        fields: {
+            odometerKm: [{ writeIndex: 0, value: '12', salt: hex(S1) }],
+            accidentCount: [{ writeIndex: 0, value: '0', salt: hex(S1) }]
+        }
+    });
+
+    it('recomputes the slot and the commitment the circuits actually wrote', async () => {
+        const { slotOf, commitmentOf } = await import('../scripts/lib/disclosure.mjs');
+        registered();
+
+        const slot = slotOf(hex(VIN_A), hex(ODO), hex(ROOT));
+        const stored = sim.ledger.fieldCommitment.lookup(slot);
+
+        // 12n and S1 are what registered() initialised the odometer with.
+        expect(hex(commitmentOf(12n, hex(S1)))).toBe(hex(stored));
+    });
+
+    it('verifies the field it names, against real ledger state', async () => {
+        const { buildDisclosure, verifyDisclosure } = await import('../scripts/lib/disclosure.mjs');
+        registered();
+
+        const d = buildDisclosure(RECEIPT(), ['odometerKm']);
+        const onChain = (slotHex) => {
+            try { return hex(sim.ledger.fieldCommitment.lookup(Uint8Array.from(Buffer.from(slotHex, 'hex')))); }
+            catch { return null; }
+        };
+
+        const r = verifyDisclosure(d, onChain);
+        expect(r.ok).toBe(true);
+        expect(r.fields).toHaveLength(1);
+        expect(r.fields[0].fieldName).toBe('odometerKm');
+    });
+
+    it('carries no seed, and nothing that opens another field', async () => {
+        const { buildDisclosure } = await import('../scripts/lib/disclosure.mjs');
+        const d = buildDisclosure(RECEIPT(), ['odometerKm']);
+        const text = JSON.stringify(d);
+
+        for (const banned of ['runSeed', 'saltRule', 'seed']) {
+            expect(Object.keys(d)).not.toContain(banned);
+        }
+        // The other field's salt and name must be absent entirely: not merely
+        // unreferenced, but not present as bytes anywhere in the document.
+        expect(d.fields.map((f) => f.fieldName)).toEqual(['odometerKm']);
+        expect(text).not.toContain('accidentCount');
+        expect(text).not.toContain(hex(ACCIDENTS));
+    });
+
+    it('a disclosure for one field cannot open another, even on the same salt', async () => {
+        const { buildDisclosure, verifyDisclosure, slotOf } = await import('../scripts/lib/disclosure.mjs');
+        registered();
+
+        const d = buildDisclosure(RECEIPT(), ['odometerKm']);
+        // Point the one disclosed opening at the accident slot. The commitment
+        // is over a different value, so it cannot match, and this is the
+        // check that a salt is not a skeleton key.
+        d.fields[0].fieldName = 'accidentCount';
+        d.fields[0].fieldKey = hex(ACCIDENTS);
+        d.fields[0].slot = hex(slotOf(hex(VIN_A), hex(ACCIDENTS), hex(ROOT)));
+
+        const onChain = (slotHex) => {
+            try { return hex(sim.ledger.fieldCommitment.lookup(Uint8Array.from(Buffer.from(slotHex, 'hex')))); }
+            catch { return null; }
+        };
+        const r = verifyDisclosure(d, onChain);
+        expect(r.ok).toBe(false);
+        expect(r.fields[0].why).toMatch(/does not open/);
+    });
+
+    it('refuses an altered value, a moved slot and a wrong VIN', async () => {
+        const { buildDisclosure, verifyDisclosure } = await import('../scripts/lib/disclosure.mjs');
+        registered();
+        const onChain = (slotHex) => {
+            try { return hex(sim.ledger.fieldCommitment.lookup(Uint8Array.from(Buffer.from(slotHex, 'hex')))); }
+            catch { return null; }
+        };
+
+        const flattering = buildDisclosure(RECEIPT(), ['odometerKm']);
+        flattering.fields[0].value = '11';                       // one kilometre less
+        expect(verifyDisclosure(flattering, onChain).ok).toBe(false);
+
+        const moved = buildDisclosure(RECEIPT(), ['odometerKm']);
+        moved.fields[0].slot = hex(bytes32(0x77));
+        expect(verifyDisclosure(moved, onChain).fields[0].why).toMatch(/slot does not follow/);
+
+        const wrongCar = buildDisclosure(RECEIPT(), ['odometerKm']);
+        wrongCar.vin = 'WP0ZZZ99ZTS000000';     // a VIN that does not hash to vinHash
+        const r = verifyDisclosure(wrongCar, onChain);
+        expect(r.vinMatchesHash).toBe(false);
+        expect(r.ok).toBe(false);
+    });
+
+    it('checks the VIN round trip when one is included, and omits it on request', async () => {
+        const { buildDisclosure, verifyDisclosure, vinHashOf } = await import('../scripts/lib/disclosure.mjs');
+        const VIN = 'WP0ZZZ99ZTS392124';
+
+        // A consistent pair: this is the shape a real receipt has.
+        const receipt = {
+            vin: VIN,
+            vinHash: hex(vinHashOf(VIN)),
+            contentRoot: hex(ROOT),
+            fields: { odometerKm: [{ writeIndex: 0, value: '12', salt: hex(S1) }] }
+        };
+
+        const named = buildDisclosure(receipt, ['odometerKm']);
+        expect(named.vin).toBe(VIN);
+        // No chain lookup here: the VIN round trip is what is under test, and
+        // it is checked before anything is fetched.
+        expect(verifyDisclosure(named).vinMatchesHash).toBe(true);
+
+        // The stronger form: the document names no vehicle, and the verifier
+        // supplies the VIN they read off the car.
+        const anonymous = buildDisclosure(receipt, ['odometerKm'], { includeVin: false });
+        expect(anonymous.vin).toBeUndefined();
+        expect(JSON.stringify(anonymous)).not.toContain(VIN);
+        expect(verifyDisclosure(anonymous).vinMatchesHash).toBe(null);
+        // Still locates the same slot, so omitting the VIN costs the verifier
+        // nothing once they have the car in front of them.
+        expect(anonymous.fields[0].slot).toBe(named.fields[0].slot);
+    });
+
+    it('defaults to the latest write, because an earlier one no longer matches', async () => {
+        const { buildDisclosure, verifyDisclosure } = await import('../scripts/lib/disclosure.mjs');
+        registered();
+        sim.recordField(VIN_A, ODO, 83_327n, S2);
+
+        const receipt = RECEIPT();
+        receipt.fields.odometerKm = [
+            { writeIndex: 0, value: '12', salt: hex(S1) },
+            { writeIndex: 1, value: '83327', salt: hex(S2) }
+        ];
+        const onChain = (slotHex) => {
+            try { return hex(sim.ledger.fieldCommitment.lookup(Uint8Array.from(Buffer.from(slotHex, 'hex')))); }
+            catch { return null; }
+        };
+
+        const latest = buildDisclosure(receipt, ['odometerKm']);
+        expect(latest.fields[0].writeIndex).toBe(1);
+        expect(verifyDisclosure(latest, onChain).ok).toBe(true);
+
+        // Asking for the superseded write is allowed, and it does not verify:
+        // the ledger moved on. Better to say so than to quietly hand over an
+        // opening that reads as a forgery.
+        const stale = buildDisclosure(receipt, ['odometerKm'], { writeIndex: 0 });
+        expect(verifyDisclosure(stale, onChain).ok).toBe(false);
+    });
+});

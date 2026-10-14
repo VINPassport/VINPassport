@@ -36,6 +36,7 @@
     "deploy:preprod": "node scripts/deploy-preprod.mjs",
     "app": "node scripts/app-server.mjs",
     "intake": "node scripts/intake.mjs",
+    "disclose": "node scripts/disclose.mjs",
     "check:disclosure": "node scripts/check-disclosure.mjs --staged",
     "hooks:install": "node scripts/check-disclosure.mjs --install"
   },

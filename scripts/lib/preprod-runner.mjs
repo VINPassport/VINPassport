@@ -1333,14 +1333,30 @@ export async function createRunner({ log = console.log } = {}) {
         // -- the receipt: the private half of the passport, for its holder
         job.receipt = {
             title: 'VINPassport preprod demo receipt',
-            note: 'This file is the passport: the values and salts below never touched the chain. The chain holds only commitments; anyone can check the transactions listed here, and only the holder of this file can open them.',
+            note: 'This file is the passport: the values and salts below never touched the chain. '
+                + 'The chain holds only commitments; anyone can check the transactions listed here, '
+                + 'and only the holder of this file can open them. To answer ONE question without '
+                + 'handing over the rest, emit a disclosure: node scripts/disclose.mjs <this file> <field>',
             network: NETWORK_ID, contractAddress,
             kind: job.kind, finishedAt: new Date().toISOString(),
             vin, vinHash: hex(vinBytes),
             registrar: { name: intake.registrar, id: hex(regId) },
             contentRoot: hex(croot),
-            runSeed: Buffer.from(runSeed).toString('hex'),
-            saltRule: 'fieldSalt = blake2b256(runSeed || ":salt:<field>:<writeIndex>"), leafSalt = blake2b256(runSeed || ":leafsalt:v0:<vin>:<slot>")',
+            //
+            // `runSeed` AND the salt rule used to be here, and they are gone.
+            //
+            // Every salt in a run is blake2b(runSeed || label) with public,
+            // predictable labels, so the seed opened every field of this
+            // vehicle plus every content-root leaf, including the slots the
+            // holder never claimed about. That made the receipt a master key
+            // at exactly the moment it is most likely to be forwarded, and it
+            // bought nothing: each field's salt is enumerated below, so the
+            // seed was never needed to open anything, and no code read it.
+            //
+            // If a content-root inclusion proof is wanted later, enumerate the
+            // leaf salts per slot the way the field salts are enumerated here.
+            // Publishing the key that derives them is not the same thing.
+            //
             fields: Object.fromEntries(Object.entries(writes).map(([name, ws]) => [name, ws.map((w, i) => ({ writeIndex: i, value: w.value.toString(), salt: hex(w.salt) }))])),
             panel: intake.panel ?? {},
             claims: (intake.prove ? Object.entries(CLAIM_DEFS) : []).flatMap(([claim, def]) => {
