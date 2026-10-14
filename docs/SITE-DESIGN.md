@@ -255,9 +255,25 @@ git rm --cached site/assets/vinpassport-explainer-vertical.mp4
 ```
 
 `.gitignore` carries `site/assets/*.mp4` so a later `git add -A` cannot put
-them back. **Check the page plays from the release URL before removing the
-files**, including seeking, because a release asset is served from a different
-host than the page.
+them back.
+
+**Check two things before removing the local files.** A release asset is served
+from a different host than the page, as a 302 to
+`release-assets.githubusercontent.com`:
+
+```sh
+curl -sIL "https://github.com/VINPassport/VINPassport/releases/download/\
+site-media-2026-10/vinpassport-explainer.mp4" | grep -iE "content-type|accept-ranges"
+```
+
+1. `Content-Type: video/mp4`. `gh` sets it from the extension. If it comes back
+   `application/octet-stream`, the browser may refuse to decode it; re-upload
+   with `--clobber` or host the file elsewhere.
+2. `Accept-Ranges: bytes`, or the viewer cannot seek.
+
+Then open the page and actually play it, including a drag of the scrubber.
+`Content-Disposition: attachment` on the asset is expected and does not stop a
+`<video>` element: it applies to navigation, not to a media subresource.
 
 This does not shrink the existing history. Removing what is already in there
 means rewriting every commit that touched it, which breaks every clone and
