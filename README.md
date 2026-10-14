@@ -100,14 +100,14 @@ npm install
 npm test
 ```
 
-Expected: **99 contract tests, 101 app tests and 24 SDK assertions, all passing**, in a couple of
+Expected: **99 contract tests, 104 app tests and 24 SDK assertions, all passing**, in a couple of
 seconds.
 
 ```
  Test Files  1 passed (1)
       Tests  99 passed (99)
 
-# pass 101
+# pass 104
 
 ================ 24 passed, 0 failed ================
 ```
@@ -117,7 +117,7 @@ seconds.
 | `npm test` | Everything below, in one run |
 | `npm run test:contract` | The 99 contract tests, against the compiled circuits |
 | `npm run test:watch` | The same, re-running on change |
-| `npm run test:app` | 101 tests on the application paths: verdicts, the deploy's registrar list, the submission path and the chain-sees panel, via `node --test` |
+| `npm run test:app` | 104 tests on the application paths: verdicts, the deploy's registrar list, the submission path and the chain-sees panel, via `node --test` |
 | `npm run test:sdk` | 24 assertions pinning our assumptions about `@odatano/dpp-sdk` |
 | `npm run app` | All three surfaces + the circuits, one dependency-free server |
 | `npm run serve:site` | The site statically, as GitHub Pages serves it: no circuits, demo state only |
@@ -425,9 +425,9 @@ repository begins with no contract at all.
 
 | What was built | Where to look |
 |---|---|
-| **The contract** - five circuits, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
+| **The contract** - seven circuits, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
 | **Deployed to Midnight preprod**, 28 August, built and signed locally | [`deploy/preprod.json`](deploy/preprod.json) |
-| **141 tests** - 67 contract, 50 application, 24 SDK assumption assertions; both integrity rules mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
+| **227 tests** - 99 contract, 104 application, 24 SDK assumption assertions; all twenty guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
 | **Three surfaces** - verification, intake console, proof explorer - all running the compiled circuits, not a mock | [passport.vin](https://passport.vin/) |
 | **On-chain runs from the browser, self-funded**, after a hosted sponsor turned out to be a single point of failure in a demo a judge runs unattended | [D24](docs/DECISIONS.md#settled) |
 | **The regulatory basis read from the Official Journal** rather than secondary analysis - which caught two wrong article citations that had survived months of work | [REGULATION.md](docs/REGULATION.md) |
@@ -450,7 +450,7 @@ tree at each wave's close, not from memory.
 | Integrity rules | 2 | **3** |
 | Fields wired end to end | 5 | **17** |
 | Contract tests | 67 | **99** |
-| Application tests | 50 | **101** |
+| Application tests | 50 | **104** |
 | SDK assumption assertions | 24 | 24 |
 | Guards checked by mutation | the two integrity rules | **20 of 20** |
 
@@ -480,7 +480,7 @@ line of comparison rather than two days of reading tag names.
 | Compact contract: 7 circuits | **Done.** Compiles clean, artifacts committed and reproducible from source |
 | Contract test suite | **Done.** 99 tests; every guard mutation-checked, 20 of 20 |
 | SDK assumption guard | **Done.** 24 assertions against `@odatano/dpp-sdk` 0.2.0 |
-| Proving cost, all five circuits | **Measured 13 Oct 2026**, wasm in-process, no proof server, 32 cores, n=3 each. Build, prove and sign: `registerPassport` **16.6s** (5,228 B), `proveFieldAtMost` **29.4s** (5,568 B), `proveFieldAtLeast` **27.1s** (5,569 B). Registration is 3.5x Wave 1's 4.77s, the cost of the registrar identity derived in-circuit and the field commitments bound to the content root. **These are the times to ISSUE a claim, paid once by whoever writes it.** A verifier reads the verdict off the ledger and waits on a query, never on a proof, which is why a proven claim is recorded rather than re-proven on demand ([D19](docs/DECISIONS.md#settled)). DUST cost per anchor and per proof is still unmeasured; latency is not cost |
+| Proving cost, the three circuits a verifier waits on | **Measured 13 Oct 2026**, wasm in-process, no proof server, 32 cores, n=3 each. Build, prove and sign: `registerPassport` **16.6s** (5,228 B), `proveFieldAtMost` **29.4s** (5,568 B), `proveFieldAtLeast` **27.1s** (5,569 B). Registration is 3.5x Wave 1's 4.77s, the cost of the registrar identity derived in-circuit and the field commitments bound to the content root. **These are the times to ISSUE a claim, paid once by whoever writes it.** A verifier reads the verdict off the ledger and waits on a query, never on a proof, which is why a proven claim is recorded rather than re-proven on demand ([D19](docs/DECISIONS.md#settled)). DUST cost per anchor and per proof was **measured on 14 Oct 2026** against the deployed contract with real proofs, and is published in [BUILD-SCOPE](docs/BUILD-SCOPE.md); latency is not cost |
 | Provable-field registry, 32 slots | **Settled** ([FIELDS.md](docs/FIELDS.md)). 26 in use, reserve 17 to 21, and 31. Slots 0 to 16 are wired end to end and provable; the rest are salted into the content root but carry no rule yet |
 | Deployment to Midnight preprod | **Done. The Wave 2 contract is live (13 Oct 2026), block 2962145.** Built, proven and signed locally; the deploy fee was sponsored by ODATANO ([D20](docs/DECISIONS.md#settled)). Address and the indexer-resolvable tx hash committed at [`deploy/preprod.json`](deploy/preprod.json); Wave 1's address kept alongside it as `preprod-superseded-*.json` |
 | Frontend: verification, intake console, proof explorer | **Done.** Three surfaces against the compiled circuits (`npm run app`), live for anyone at [passport.vin](https://passport.vin/) |
@@ -500,7 +500,7 @@ scripts/
 test/
   passport-simulator.mjs             harness: compiled circuits + a local ledger
   passport.test.mjs                  99 contract tests
-  app/                               101 tests on the paths around the circuits
+  app/                               104 tests on the paths around the circuits
   sdk-assumptions.mjs                24 assertions pinning @odatano/dpp-sdk behaviour
 ```
 

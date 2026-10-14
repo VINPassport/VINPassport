@@ -232,7 +232,7 @@ same module for the same reason.
 | Fees | our own wallet's DUST | [D24](DECISIONS.md#settled), not sponsored |
 | Submission | `@polkadot/api` 16.5.6 → `author_submitExtrinsic` | Straight to the public preprod node |
 | Contract tests | **vitest**, 99 | Midnight's own convention; see D17 |
-| App unit tests | `node --test`, 101 | Platform runner, no `tsx` needed without TypeScript |
+| App unit tests | `node --test`, 104 | Platform runner, no `tsx` needed without TypeScript |
 | SDK guard | `node test/sdk-assumptions.mjs`, 24 | Pins our assumptions about `dpp-sdk` |
 | All UI | Plain HTML / CSS / JS | See below |
 | Network | Preprod | Mainnet submission is gated off |
@@ -252,6 +252,24 @@ rather than the beachhead, and is still someone the console has to suit.
 position when you are not the author. `@midnight-ntwrk/compact-runtime` is pinned to **0.16.0**
 because it has to equal the `runtime-version` the compiler stamps into the contract, and a caret range
 would silently allow a mismatch.
+
+**On being deliberately behind.** Checked 14 Oct 2026: the current Compact toolchain is **0.35.0**
+(language 0.27.0, released 29 Sep 2026) and the current `compact-runtime` is **0.20.0**. We build with
+**0.31.1 / 0.23.0 / 0.16.0** and intend to keep doing so.
+
+That is not drift. Both 0.34.0 and 0.35.0 **target ledger 9, which is not deployed on mainnet**, and
+the 0.35.0 release notes say in as many words that mainnet users should stay on 0.31.x. The
+[release notes](https://github.com/midnightntwrk/compact/releases) also list breaking changes across
+that gap: `add` and `mul` removed, point and scalar types renamed, stricter runtime checks on opaque
+types and curve points, stricter ledger encodings.
+
+Meanwhile [ledger 8.1.2 is what Preview, Preprod and Mainnet all run](https://docs.midnight.network/relnotes/overview),
+so the toolchain that produced the deployed contract is the toolchain mainnet wants. Upgrading the
+compiler would mean recompiling against a ledger no public network accepts, and upgrading
+`compact-runtime` alone would fail the `checkRuntimeVersion('0.16.0')` call the compiler stamped into
+the build.
+
+The pin is reviewed when ledger 9 reaches mainnet, and not before.
 
 **On two test runners:** contract tests and application tests exercise different things and follow
 different conventions. See [DECISIONS.md](DECISIONS.md) D17.

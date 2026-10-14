@@ -135,7 +135,7 @@ function startTicker() { if (!ticker) ticker = setInterval(tick, 1000); }
  * working run and a dead page look identical.
  */
 const MARK = {
-    pending: { glyph: '·', color: 'rgba(14,23,38,.35)', border: '1px dashed rgba(14,23,38,.3)', bg: 'transparent' },
+    pending: { glyph: '·', color: 'rgba(14,23,38,.62)', border: '1px dashed rgba(14,23,38,.62)', bg: 'transparent' },
     running: { glyph: '»', color: '#EDE4D8', border: '1px solid #004AAD', bg: '#004AAD' },
     done: { glyph: '✓', color: '#EDE4D8', border: '1px solid #004AAD', bg: '#004AAD' },
     failed: { glyph: '×', color: '#0E1726', border: '1px solid #8B95FF', bg: '#8B95FF' }
@@ -154,7 +154,7 @@ function stepRow(step) {
         .replace(/\bblock (\d+)\b/g,
             (_, n) => `block <a href="${EXPLORER}/blocks/${n}" target="_blank" rel="noopener noreferrer" style="color:#004AAD">${n}</a>`);
     const detail = step.detail
-        ? `<div class="mono" style="margin-top:3px;font-size:10.5px;line-height:1.5;color:rgba(14,23,38,.55);overflow-wrap:anywhere">${linkify(step.detail)}</div>`
+        ? `<div class="mono" style="margin-top:3px;font-size:10.5px;line-height:1.5;color:rgba(14,23,38,.62);overflow-wrap:anywhere">${linkify(step.detail)}</div>`
         : '';
     // A finished step reports what it took; the running one counts up. Only
     // the running clock carries data-vp-since, so the ticker stops on its own
@@ -163,7 +163,7 @@ function stepRow(step) {
         ? `<span class="mono vp-clock" data-vp-since="${Date.parse(step.startedAt)}"
              style="flex:none;font-size:11px;color:#004AAD">${esc(fmtDuration(since(step.startedAt)) || '0s')}</span>`
         : step.ms != null
-            ? `<span class="mono vp-clock" style="flex:none;font-size:11px;color:rgba(14,23,38,.42)">${esc(fmtDuration(step.ms))}</span>`
+            ? `<span class="mono vp-clock" style="flex:none;font-size:11px;color:rgba(14,23,38,.62)">${esc(fmtDuration(step.ms))}</span>`
             : '';
     return `<div class="${running ? 'vp-run' : ''}" style="display:flex;gap:12px;padding:11px 15px;border-top:1px solid rgba(0,74,173,.12);align-items:flex-start">
       <span class="${running ? 'vp-mark-run' : ''}" style="flex:none;width:22px;height:22px;display:grid;place-items:center;font-size:12px;line-height:1;
@@ -196,7 +196,7 @@ function receiptPanel(job, base) {
            style="flex:none;font-size:10.5px;color:#004AAD;text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px"
            title="View ${esc(t.txHash)} on the preprod explorer">${esc(short(t.txHash))}&#8239;<span aria-hidden="true">&#8599;</span></a>
         <a class="mono" href="${EXPLORER}/blocks/${encodeURIComponent(t.blockHeight)}" target="_blank" rel="noopener noreferrer"
-           style="flex:none;font-size:10.5px;color:rgba(14,23,38,.5);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px"
+           style="flex:none;font-size:10.5px;color:rgba(14,23,38,.62);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px"
            title="View block ${esc(t.blockHeight)} on the preprod explorer">block ${esc(t.blockHeight)}</a>
       </div>`).join('');
 
@@ -223,7 +223,7 @@ function receiptPanel(job, base) {
     return `<section style="border:1px solid rgba(0,74,173,.26);margin-top:26px">
       <div style="padding:12px 15px;border-bottom:1px solid rgba(0,74,173,.26);display:flex;flex-wrap:wrap;align-items:baseline;gap:8px">
         <h3 style="margin:0;font-size:19px;letter-spacing:.02em;text-transform:uppercase">On the chain</h3>
-        <span class="mono" style="margin-left:auto;font-size:11px;color:rgba(14,23,38,.55)">${(r.onChain ?? []).length} transaction${(r.onChain ?? []).length === 1 ? '' : 's'} · preprod</span>
+        <span class="mono" style="margin-left:auto;font-size:11px;color:rgba(14,23,38,.62)">${(r.onChain ?? []).length} transaction${(r.onChain ?? []).length === 1 ? '' : 's'} · preprod</span>
       </div>
       ${txRows}
       ${refusals}
@@ -238,7 +238,7 @@ function receiptPanel(job, base) {
           <a href="${base}/api/demo/report?id=${encodeURIComponent(job.id)}" download style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;background:#004AAD;color:#EDE4D8;padding:11px 22px">DOWNLOAD THE RECEIPT</a>
           <a href="../verify/?v=${encodeURIComponent(r.vinHash)}" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;color:#0E1726;border:1px solid rgba(0,74,173,.28);padding:11px 20px">VERIFY THIS PASSPORT</a>
         </div>
-        <div class="mono" style="margin-top:11px;font-size:10.5px;line-height:1.6;color:rgba(14,23,38,.5);overflow-wrap:anywhere">VIN ${esc(r.vin)} · vinHash ${esc(short(r.vinHash))} · contentRoot ${esc(short(r.contentRoot))}</div>
+        <div class="mono" style="margin-top:11px;font-size:10.5px;line-height:1.6;color:rgba(14,23,38,.62);overflow-wrap:anywhere">VIN ${esc(r.vin)} · vinHash ${esc(short(r.vinHash))} · contentRoot ${esc(short(r.contentRoot))}</div>
       </div>
     </section>`;
 }
@@ -270,14 +270,14 @@ export function renderJob(host, job, base) {
     const total = live && job.startedAt
         ? `<span class="mono vp-clock" data-vp-since="${Date.parse(job.startedAt)}" style="font-size:11px;color:#004AAD">${esc(fmtDuration(since(job.startedAt)) || '0s')}</span>`
         : job.ms != null
-            ? `<span class="mono vp-clock" style="font-size:11px;color:rgba(14,23,38,.55)">took ${esc(fmtDuration(job.ms))}</span>`
+            ? `<span class="mono vp-clock" style="font-size:11px;color:rgba(14,23,38,.62)">took ${esc(fmtDuration(job.ms))}</span>`
             : '';
 
     host.innerHTML = `<section style="border:1px solid rgba(0,74,173,.26)">
       <div style="padding:12px 15px;border-bottom:1px solid rgba(0,74,173,.26);display:flex;flex-wrap:wrap;align-items:baseline;gap:8px">
         <h3 style="margin:0;font-size:19px;letter-spacing:.02em;text-transform:uppercase">${esc(headline)}</h3>
         ${total}
-        <span class="mono" style="margin-left:auto;font-size:11px;color:rgba(14,23,38,.55)">${esc(job.kind)} run · ${esc(job.id.slice(0, 8))}</span>
+        <span class="mono" style="margin-left:auto;font-size:11px;color:rgba(14,23,38,.62)">${esc(job.kind)} run · ${esc(job.id.slice(0, 8))}</span>
       </div>
       <p style="margin:0;padding:11px 15px;font-size:13px;line-height:1.55;color:rgba(14,23,38,.72);border-bottom:1px solid rgba(0,74,173,.12)">${sub}</p>
       ${(job.steps ?? []).map(stepRow).join('')}

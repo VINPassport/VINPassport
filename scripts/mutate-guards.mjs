@@ -35,7 +35,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-import { readFileSync, writeFileSync, cpSync, rmSync, existsSync, mkdtempSync } from 'node:fs';
+import { readFileSync, writeFileSync, cpSync, rmSync, existsSync, mkdtempSync, statSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -103,6 +103,51 @@ function compile() {
     execFileSync('sh', ['-c', cmd], { cwd: ROOT, stdio: 'pipe' });
 }
 
+const BUILT = join(MANAGED, 'contract', 'index.js');
+const builtAt = () => (existsSync(BUILT) ? statSync(BUILT).mtimeMs : 0);
+
+/**
+ * Prove the configured command is a compiler before trusting a single result.
+ *
+ * On Windows, `compact` is a built-in NTFS compression tool. It accepts these
+ * arguments, prints a note about compressing files, and EXITS ZERO. Nothing
+ * is compiled, every mutation then runs against the committed build, no test
+ * fails, and the harness reports that none of the guards are load-bearing:
+ * the exact opposite of the truth, stated confidently. Any environment
+ * without the real compiler fails the same way.
+ *
+ * The check does not compare file contents, because this build is
+ * deliberately reproducible and a real compile reproduces the same bytes.
+ * It compares the modification time, which a real compile always moves.
+ */
+function assertCompilerWorks() {
+    const before = builtAt();
+    try {
+        compile();
+    } catch (e) {
+        console.error('the compile command failed:\n   ' + String(e.stderr ?? e.message).trim());
+        process.exit(1);
+    }
+    if (builtAt() !== before) return;
+
+    console.error('the compile command exited cleanly but compiled nothing.\n');
+    console.error(`   command: ${COMPILE}`);
+    if (process.platform === 'win32' || /^\/c\/WINDOWS/i.test(whichCompact())) {
+        console.error('   `compact` here is the Windows NTFS compression tool, not the Compact\n'
+            + '   compiler. It takes these arguments and succeeds without doing anything.\n');
+    }
+    console.error('   Point the harness at a real compiler and run it again, for example:\n');
+    console.error("     VINPASSPORT_COMPACT_COMPILE='wsl bash -lc \"cd \\\"$PWD\\\" && "
+        + "compact compile --skip-zk {src} {out}\"' node scripts/mutate-guards.mjs\n");
+    console.error('   Refusing to print a kill table that would be wrong.');
+    process.exit(1);
+}
+
+function whichCompact() {
+    try { return execFileSync('sh', ['-c', 'command -v compact'], { encoding: 'utf8' }).trim(); }
+    catch { return ''; }
+}
+
 /** The failing tests, by full name. */
 function runSuite(reportPath) {
     try {
@@ -147,8 +192,11 @@ process.on('SIGINT', () => { restore(); console.log('\nrestored; stopping.'); pr
 
 const results = [];
 try {
+    // Before anything else: is the thing we are calling actually a compiler?
+    // Every number below is meaningless if it is not.
+    assertCompilerWorks();
+
     // The baseline matters: a suite that is already red cannot report a kill.
-    compile();
     const base = runSuite(join(work, 'base.json'));
     if (!base) throw new Error('could not read a baseline test report');
     if (base.failed.length) {

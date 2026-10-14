@@ -51,7 +51,7 @@ export function qrPanel(vinHash, { role = 'verify', origin = location.origin } =
       <div style="flex:1 1 260px;min-width:0">
         <b style="display:block;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;color:#0E1726">${heading}</b>
         <p style="margin:8px 0 0;font-size:13.5px;line-height:1.6;color:rgba(14,23,38,.78)">${lead}</p>
-        <p class="mono qr-url" style="margin:11px 0 0;font-size:10.5px;line-height:1.6;color:rgba(14,23,38,.6);word-break:break-all">${url}</p>
+        <p class="mono qr-url" style="margin:11px 0 0;font-size:10.5px;line-height:1.6;color:rgba(14,23,38,.62);word-break:break-all">${url}</p>
         <div style="display:flex;flex-wrap:wrap;gap:9px;margin-top:11px">
           <button type="button" class="qr-copy" style="${BTN};background:#004AAD;color:#EDE4D8;border:1px solid #004AAD">COPY LINK</button>
           <a class="qr-save" download="vinpassport-${vinHash.slice(0, 10)}.svg" style="${BTN};background:transparent;color:#0E1726;border:1px solid rgba(0,74,173,.28);text-decoration:none">DOWNLOAD THE CODE</a>

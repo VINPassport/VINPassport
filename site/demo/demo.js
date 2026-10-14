@@ -192,10 +192,10 @@ async function showRecordedRun() {
 
     const stages = run.stages.map((s) => `
       <div style="display:grid;grid-template-columns:28px 1fr;gap:10px;padding:11px 0;border-top:1px solid rgba(0,74,173,.16)">
-        <span class="mono" style="font-size:11px;color:rgba(14,23,38,.45);padding-top:2px">0${s.stage}</span>
+        <span class="mono" style="font-size:11px;color:rgba(14,23,38,.62);padding-top:2px">0${s.stage}</span>
         <div>
           <b style="display:block;font-size:13px;color:#0E1726">${esc(s.label)}</b>
-          <span class="mono" style="display:block;margin-top:4px;font-size:10.5px;color:rgba(14,23,38,.55)">block ${s.blockHeight} &middot; tx ${short(s.txHash)}</span>
+          <span class="mono" style="display:block;margin-top:4px;font-size:10.5px;color:rgba(14,23,38,.62)">block ${s.blockHeight} &middot; tx ${short(s.txHash)}</span>
           <a href="${esc(s.explorer)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:5px;font-size:12px;color:#004AAD">open in the preprod explorer &rarr;</a>
         </div>
       </div>`).join('');
@@ -210,7 +210,7 @@ async function showRecordedRun() {
     <section style="margin:26px 0 0;border:1px solid rgba(0,74,173,.3);background:#EDE4D8;padding:17px 19px">
       <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;justify-content:space-between">
         <b style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.06em;font-size:15px;color:#0E1726">A RUN THAT ALREADY HAPPENED</b>
-        <span style="font-size:12px;color:rgba(14,23,38,.55)">recorded ${esc(when)}, not live</span>
+        <span style="font-size:12px;color:rgba(14,23,38,.62)">recorded ${esc(when)}, not live</span>
       </div>
       <p style="margin:9px 0 0;font-size:13px;line-height:1.55;color:rgba(14,23,38,.78)">
         No circuit server is answering, so you cannot start a run from this page today. This one
@@ -222,13 +222,13 @@ async function showRecordedRun() {
       <div style="margin:15px 0 0;padding-top:13px;border-top:1px solid rgba(0,74,173,.16)">
         <b style="display:block;font-size:13px;color:#0E1726;margin-bottom:6px">What the run claimed</b>
         <ul style="margin:0;padding-left:17px">${claims}</ul>
-        ${run.refused.length ? `<p style="margin:9px 0 0;font-size:12.5px;line-height:1.5;color:rgba(14,23,38,.6)">
+        ${run.refused.length ? `<p style="margin:9px 0 0;font-size:12.5px;line-height:1.5;color:rgba(14,23,38,.62)">
           The refusal is the part worth watching, and the one part you cannot look up: the
           circuit would not produce the claim &quot;${esc(refusedLabel(run))}&quot;, because the
           record did not support it. A refused claim writes nothing, which is why there are five
           transactions above and not six. No server decided that; the arithmetic did.</p>` : ''}
       </div>
-      <p class="mono" style="margin:14px 0 0;font-size:10.5px;line-height:1.6;color:rgba(14,23,38,.5);word-break:break-all">
+      <p class="mono" style="margin:14px 0 0;font-size:10.5px;line-height:1.6;color:rgba(14,23,38,.62);word-break:break-all">
         contract ${esc(run.contractAddress)}<br>vin hash ${esc(run.vinHash)}
       </p>
     </section>`;

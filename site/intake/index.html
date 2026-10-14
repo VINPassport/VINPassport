@@ -51,7 +51,7 @@
     </div>
     <div style="flex:0 1 240px;min-width:0;padding:12px 14px;border:1px solid rgba(0,74,173,.28)">
       <div style="display:flex;align-items:center;gap:8px;font-size:13px"><span style="width:7px;height:7px;background:#004AAD;flex:none"></span>Local circuit server found</div>
-      <div class="mono" style="margin-top:6px;font-size:10.5px;color:rgba(14,23,38,.5)">attestation-vault-32 · depth 5</div>
+      <div class="mono" style="margin-top:6px;font-size:10.5px;color:rgba(14,23,38,.62)">attestation-vault-32 · depth 5</div>
     </div>
   </div>
 
@@ -71,7 +71,7 @@
       <label style="display:flex;flex-direction:column;gap:6px;padding:14px 15px;border:1px solid rgba(0,74,173,.28);cursor:pointer">
         <span style="display:flex;align-items:center;gap:9px"><span style="flex:none;width:14px;height:14px;border:1.5px solid rgba(0,74,173,.45);border-radius:50%"></span><b style="font-family:'Barlow Condensed',sans-serif;font-size:18px;letter-spacing:.03em;color:#004AAD">EXISTING VEHICLE, RETROFIT</b></span>
         <span style="font-size:12px;line-height:1.5;color:rgba(14,23,38,.68)">Produced before the regulation applies. The passport is added to the fleet that already exists, history and all.</span>
-        <span class="mono" style="font-size:10.5px;color:rgba(14,23,38,.45)">5 demo vehicles</span>
+        <span class="mono" style="font-size:10.5px;color:rgba(14,23,38,.62)">5 demo vehicles</span>
       </label>
     </div>
   </section>
@@ -123,9 +123,9 @@
   <section style="margin-bottom:30px">
     <div class="sect"><span class="snum">03</span><h2 class="stitle">VEHICLE &amp; IDENTITY</h2><span class="smeta">slots 5 · 22 to 26 · 28</span></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px 18px">
-      <div><label class="lbl" for="vin">VIN</label><input id="vin" class="inp mono" value="5YJYGDEF3SF208934"><small style="display:block;margin-top:5px;font-size:11.5px;color:rgba(14,23,38,.58)">Hashed before registration. Never published.</small></div>
-      <div><label class="lbl" for="reg">Registering authority</label><input id="reg" class="inp" value="rdw-veendam"><small style="display:block;margin-top:5px;font-size:11.5px;color:rgba(14,23,38,.58)">Becomes the registrar id, so every claim is attributable.</small></div>
-      <div><label class="lbl" for="dl">Display label <span style="text-transform:none;letter-spacing:0;color:rgba(14,23,38,.45)">optional</span></label><input id="dl" class="inp" value="Model Y, midnight silver"><small style="display:block;margin-top:5px;font-size:11.5px;color:rgba(14,23,38,.58)">This instance's landing list only.</small></div>
+      <div><label class="lbl" for="vin">VIN</label><input id="vin" class="inp mono" value="5YJYGDEF3SF208934"><small style="display:block;margin-top:5px;font-size:11.5px;color:rgba(14,23,38,.62)">Hashed before registration. Never published.</small></div>
+      <div><label class="lbl" for="reg">Registering authority</label><input id="reg" class="inp" value="rdw-veendam"><small style="display:block;margin-top:5px;font-size:11.5px;color:rgba(14,23,38,.62)">Becomes the registrar id, so every claim is attributable.</small></div>
+      <div><label class="lbl" for="dl">Display label <span style="text-transform:none;letter-spacing:0;color:rgba(14,23,38,.62)">optional</span></label><input id="dl" class="inp" value="Model Y, midnight silver"><small style="display:block;margin-top:5px;font-size:11.5px;color:rgba(14,23,38,.62)">This instance's landing list only.</small></div>
       <div><label class="lbl" for="cat">Vehicle category</label><select id="cat" class="inp"><option>M1, passenger car</option><option>N1, van up to 3.5t</option></select></div>
       <div><label class="lbl" for="fuel">Powertrain / fuel</label><select id="fuel" class="inp"><option>Battery electric (BEV)</option></select></div>
       <div><label class="lbl" for="em">Emissions class</label><select id="em" class="inp"><option>n/a (zero-emission)</option></select></div>
@@ -146,18 +146,18 @@
       <div><label class="lbl" for="wo">Write-off category</label><select id="wo" class="inp"><option>0, none</option></select></div>
       <div><label class="lbl" for="sv">Services</label><input id="sv" class="inp mono" value="0"></div>
     </div>
-    <p style="margin:10px 0 0;font-size:12px;color:rgba(14,23,38,.58)">Each field is created under its integrity rule, fixed on the ledger at creation. None of these five may ever fall. Keepers 0 is what says new, never registered.</p>
+    <p style="margin:10px 0 0;font-size:12px;color:rgba(14,23,38,.62)">Each field is created under its integrity rule, fixed on the ledger at creation. None of these five may ever fall. Keepers 0 is what says new, never registered.</p>
   </section>
 
   <section style="margin-bottom:30px">
     <div class="sect"><span class="snum">05</span><h2 class="stitle">CLAIMS TO PROVE</h2><span class="smeta">proveFieldAtMost × 4</span></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px 16px">
-      <label style="display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border:1px solid #004AAD;background:rgba(0,74,173,.07);cursor:pointer"><span style="flex:none;width:16px;height:16px;background:#004AAD;color:#EDE4D8;display:grid;place-items:center;margin-top:1px"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"></path></svg></span><span><b style="font-size:14px">Never written off</b><small style="display:block;font-size:11.5px;color:rgba(14,23,38,.6)">writeOffCategory ≤ 0</small></span></label>
-      <label style="display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border:1px solid #004AAD;background:rgba(0,74,173,.07);cursor:pointer"><span style="flex:none;width:16px;height:16px;background:#004AAD;color:#EDE4D8;display:grid;place-items:center;margin-top:1px"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"></path></svg></span><span><b style="font-size:14px">No reported accidents</b><small style="display:block;font-size:11.5px;color:rgba(14,23,38,.6)">accidentCount ≤ 0</small></span></label>
-      <label style="display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border:1px solid #004AAD;background:rgba(0,74,173,.07);cursor:pointer"><span style="flex:none;width:16px;height:16px;background:#004AAD;color:#EDE4D8;display:grid;place-items:center;margin-top:1px"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"></path></svg></span><span><b style="font-size:14px">One keeper from new</b><small style="display:block;font-size:11.5px;color:rgba(14,23,38,.6)">ownerCount ≤ 1</small></span></label>
+      <label style="display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border:1px solid #004AAD;background:rgba(0,74,173,.07);cursor:pointer"><span style="flex:none;width:16px;height:16px;background:#004AAD;color:#EDE4D8;display:grid;place-items:center;margin-top:1px"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"></path></svg></span><span><b style="font-size:14px">Never written off</b><small style="display:block;font-size:11.5px;color:rgba(14,23,38,.62)">writeOffCategory ≤ 0</small></span></label>
+      <label style="display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border:1px solid #004AAD;background:rgba(0,74,173,.07);cursor:pointer"><span style="flex:none;width:16px;height:16px;background:#004AAD;color:#EDE4D8;display:grid;place-items:center;margin-top:1px"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"></path></svg></span><span><b style="font-size:14px">No reported accidents</b><small style="display:block;font-size:11.5px;color:rgba(14,23,38,.62)">accidentCount ≤ 0</small></span></label>
+      <label style="display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border:1px solid #004AAD;background:rgba(0,74,173,.07);cursor:pointer"><span style="flex:none;width:16px;height:16px;background:#004AAD;color:#EDE4D8;display:grid;place-items:center;margin-top:1px"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"></path></svg></span><span><b style="font-size:14px">One keeper from new</b><small style="display:block;font-size:11.5px;color:rgba(14,23,38,.62)">ownerCount ≤ 1</small></span></label>
       <label style="display:flex;gap:10px;align-items:center;padding:11px 13px;border:1px solid #004AAD;background:rgba(0,74,173,.07);cursor:pointer"><span style="flex:none;width:16px;height:16px;background:#004AAD;color:#EDE4D8;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"></path></svg></span><span style="display:flex;align-items:center;gap:7px;font-size:14px;flex-wrap:wrap"><b>Mileage under</b><input value="500" class="mono" style="width:82px;min-height:34px;padding:4px 8px;font-size:13px;background:#EDE4D8;border:1px solid rgba(0,74,173,.28);color:#0E1726">km</span></label>
     </div>
-    <p style="margin:11px 0 0;font-size:12px;color:rgba(14,23,38,.58)">A claim the record cannot support <b>aborts during proving and writes nothing</b>. Verification then shows not proven, never a false tick.</p>
+    <p style="margin:11px 0 0;font-size:12px;color:rgba(14,23,38,.62)">A claim the record cannot support <b>aborts during proving and writes nothing</b>. Verification then shows not proven, never a false tick.</p>
   </section>
 
   <section style="margin-bottom:30px">
@@ -171,13 +171,13 @@
   <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:30px">
     <button style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;min-height:48px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:17px;letter-spacing:.06em;cursor:pointer;background:#004AAD;color:#EDE4D8;border:1px solid #004AAD;padding:12px 28px">REGISTER &amp; PROVE</button>
     <button style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;min-height:48px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:17px;letter-spacing:.06em;cursor:pointer;background:transparent;color:#0E1726;border:1px solid rgba(0,74,173,.28);padding:12px 22px">DOWNLOAD INTAKE FILE</button>
-    <span style="font-size:12px;color:rgba(14,23,38,.5)">counting the circuits&hellip;</span>
+    <span style="font-size:12px;color:rgba(14,23,38,.62)">counting the circuits&hellip;</span>
   </div>
 
   <div id="pprun" style="margin-bottom:30px"></div>
 
   <section style="border:1px solid rgba(0,74,173,.26);margin-bottom:40px">
-    <div style="padding:12px 15px;border-bottom:1px solid rgba(0,74,173,.26);display:flex;flex-wrap:wrap;align-items:baseline;gap:8px"><h3 style="margin:0;font-size:19px;letter-spacing:.02em;text-transform:uppercase">What the circuits did</h3><span class="mono" style="margin-left:auto;font-size:11px;color:rgba(14,23,38,.55)">5 accepted · 1 refused</span></div>
+    <div style="padding:12px 15px;border-bottom:1px solid rgba(0,74,173,.26);display:flex;flex-wrap:wrap;align-items:baseline;gap:8px"><h3 style="margin:0;font-size:19px;letter-spacing:.02em;text-transform:uppercase">What the circuits did</h3><span class="mono" style="margin-left:auto;font-size:11px;color:rgba(14,23,38,.62)">5 accepted · 1 refused</span></div>
     <div style="display:flex;flex-wrap:wrap;gap:4px 0;padding:10px 15px;border-bottom:1px solid rgba(0,74,173,.12)"><span class="mono" style="flex:none;width:9ch;font-size:10.5px;letter-spacing:.06em;color:#004AAD">OK</span><span class="mono" style="flex:none;width:17ch;font-size:12px">registerPassport</span><span style="flex:1 1 220px;min-width:0;font-size:13px;color:rgba(14,23,38,.78)">passport anchored, registrar rdw-veendam</span></div>
     <div style="display:flex;flex-wrap:wrap;gap:4px 0;padding:10px 15px;border-bottom:1px solid rgba(0,74,173,.12)"><span class="mono" style="flex:none;width:9ch;font-size:10.5px;letter-spacing:.06em;color:#004AAD">OK</span><span class="mono" style="flex:none;width:17ch;font-size:12px">initialiseField ×5</span><span style="flex:1 1 220px;min-width:0;font-size:13px;color:rgba(14,23,38,.78)">slots 0 to 4 created under rule neverFalls</span></div>
     <div style="display:flex;flex-wrap:wrap;gap:4px 0;padding:10px 15px;border-bottom:1px solid rgba(0,74,173,.12)"><span class="mono" style="flex:none;width:9ch;font-size:10.5px;letter-spacing:.06em;color:#004AAD">OK</span><span class="mono" style="flex:none;width:17ch;font-size:12px">proveFieldAtMost</span><span style="flex:1 1 220px;min-width:0;font-size:13px;color:rgba(14,23,38,.78)">writeOffCategory ≤ 0 · accidentCount ≤ 0 · ownerCount ≤ 1 · odometerKm ≤ 500</span></div>

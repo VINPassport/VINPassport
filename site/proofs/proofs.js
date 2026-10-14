@@ -29,7 +29,7 @@ const claimTitle = (meta, c) => {
 
 function claimRow(meta, c, current, last) {
     return `<div class="claim"${last ? ' style="border-bottom:none"' : ''}>
-      <div style="flex:1 1 240px;min-width:0"><b style="display:block;font-size:14.5px">${esc(claimTitle(meta, c))}</b><span class="mono" style="font-size:10.5px;color:rgba(14,23,38,.55)">${esc(meta?.name ?? short(c.fieldKey))} · slot ${short(c.slot)} · proven against ${short(c.commitment)}</span></div>
+      <div style="flex:1 1 240px;min-width:0"><b style="display:block;font-size:14.5px">${esc(claimTitle(meta, c))}</b><span class="mono" style="font-size:10.5px;color:rgba(14,23,38,.62)">${esc(meta?.name ?? short(c.fieldKey))} · slot ${short(c.slot)} · proven against ${short(c.commitment)}</span></div>
       <span class="chip ${current ? 'chip-cur' : 'chip-sup'}">${current ? 'current' : 'superseded'}</span>
     </div>`;
 }
@@ -52,10 +52,10 @@ function vehicleSection(vin, claims, ledger, vinfo, fields) {
     return `<section style="border:1px solid rgba(0,74,173,.26);margin-bottom:22px">
     <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 12px;padding:13px 15px;border-bottom:1px solid rgba(0,74,173,.26)">
       <b style="font-family:'Barlow Condensed',sans-serif;font-size:21px;letter-spacing:.02em">${esc((vinfo?.title ?? 'UNLABELLED VEHICLE').toUpperCase())}</b>
-      <span style="font-size:12px;color:rgba(14,23,38,.55)">${esc(sub)}</span>
+      <span style="font-size:12px;color:rgba(14,23,38,.62)">${esc(sub)}</span>
       <a href="../verify/?v=${vin}" style="margin-left:auto;font-size:13px;text-decoration:none;white-space:nowrap">Verdict view →</a>
     </div>
-    <div class="mono" style="padding:9px 15px;font-size:10.5px;color:rgba(14,23,38,.5);word-break:break-all;border-bottom:1px solid rgba(0,74,173,.18)">VIN HASH ${vin}</div>
+    <div class="mono" style="padding:9px 15px;font-size:10.5px;color:rgba(14,23,38,.62);word-break:break-all;border-bottom:1px solid rgba(0,74,173,.18)">VIN HASH ${vin}</div>
     ${body}
     ${note}
   </section>`;
@@ -100,7 +100,7 @@ function vehicleSection(vin, claims, ledger, vinfo, fields) {
     const header = document.querySelector('body > div > header p');
     const src = document.createElement('span');
     src.className = 'mono';
-    src.style.cssText = 'display:block;margin-top:8px;font-size:10.5px;color:rgba(14,23,38,.5)';
+    src.style.cssText = 'display:block;margin-top:8px;font-size:10.5px;color:rgba(14,23,38,.62)';
     src.textContent = state.badge;
     header.after(src);
 })();

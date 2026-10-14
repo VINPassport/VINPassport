@@ -41,7 +41,7 @@ function detailBlock(a, ctx) {
         data-vehicle="${esc(ctx?.title ?? 'this vehicle')}" data-vin="${esc(ctx?.vin ?? '')}"
         data-claim="${esc(qLabel(a, a.claim))}"
         style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;min-height:44px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;background:#004AAD;color:#EDE4D8;border:1px solid #004AAD;padding:10px 18px;cursor:pointer">COPY THE REQUEST</button>
-      <span style="display:block;margin-top:9px;font-size:12px;color:rgba(14,23,38,.55)">Copies the vehicle and the claim as text you can send to the seller. Nothing leaves this page: there is no request inbox behind it.</span>
+      <span style="display:block;margin-top:9px;font-size:12px;color:rgba(14,23,38,.62)">Copies the vehicle and the claim as text you can send to the seller. Nothing leaves this page: there is no request inbox behind it.</span>
     </div>`;
     }
     const c = a.claim;
@@ -49,10 +49,10 @@ function detailBlock(a, ctx) {
     return `<div class="vp-detail vfy-measure" style="margin:0 0 16px;padding:13px 15px;border:1px solid rgba(0,74,173,.3);background:#EDE4D8">
       <p style="margin:0 0 11px;font-size:13px;line-height:1.55;color:rgba(14,23,38,.78)">A zero-knowledge proof was accepted on the ledger. It could not have been produced unless the hidden value satisfied the bound, and the value itself was never published.</p>
       <div class="mono" style="display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:10.5px">
-        <span style="color:rgba(14,23,38,.45)">claim</span><span>${esc(cname)} ${a.atMost ? '≤' : '≥'} ${fmt(c.bound)}</span>
-        <span style="color:rgba(14,23,38,.45)">field key</span><span style="word-break:break-all">${short(c.fieldKey)}</span>
-        <span style="color:rgba(14,23,38,.45)">proven against</span><span style="word-break:break-all">${short(c.commitment)}</span>
-        <span style="color:rgba(14,23,38,.45)">ledger slot</span><span style="word-break:break-all">${short(c.slot)}</span>
+        <span style="color:rgba(14,23,38,.62)">claim</span><span>${esc(cname)} ${a.atMost ? '≤' : '≥'} ${fmt(c.bound)}</span>
+        <span style="color:rgba(14,23,38,.62)">field key</span><span style="word-break:break-all">${short(c.fieldKey)}</span>
+        <span style="color:rgba(14,23,38,.62)">proven against</span><span style="word-break:break-all">${short(c.commitment)}</span>
+        <span style="color:rgba(14,23,38,.62)">ledger slot</span><span style="word-break:break-all">${short(c.slot)}</span>
       </div>
     </div>`;
 }
@@ -90,8 +90,8 @@ function rowsFor(view, secondary = false, ctx = null) {
         return `<details class="vp-claim"${open ? ' open' : ''}><summary>
       <div class="row">
         ${mark}
-        <div style="flex:1;min-width:0">${name}<span style="font-size:12px;color:rgba(14,23,38,.58)">${esc(qSub(a))}</span></div>
-        <span class="mono vp-toggle" aria-hidden="true" style="flex:none;font-size:12px;color:rgba(14,23,38,.42)"></span>
+        <div style="flex:1;min-width:0">${name}<span style="font-size:12px;color:rgba(14,23,38,.62)">${esc(qSub(a))}</span></div>
+        <span class="mono vp-toggle" aria-hidden="true" style="flex:none;font-size:12px;color:rgba(14,23,38,.62)"></span>
       </div></summary>${detailBlock(a, ctx)}</details>`;
     }).join('\n');
 }
@@ -159,7 +159,7 @@ function mainSection(vin, view, vinfo, badge, ledger) {
     return `<section class="vfy-card"><header style="padding:20px 0 14px;border-bottom:1px solid rgba(0,74,173,.16)">
     <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E">Vehicle passport · Reg (EU) 2026/1738</span>
     <h1 style="margin:5px 0 4px;font-size:clamp(28px,7vw,38px);line-height:1;letter-spacing:.01em;text-transform:uppercase">${esc(vinfo?.title ?? 'Vehicle passport')}</h1>
-    <span class="mono" style="font-size:10.5px;color:rgba(14,23,38,.5);word-break:break-all">VIN HASH ${vin}</span>
+    <span class="mono" style="font-size:10.5px;color:rgba(14,23,38,.62);word-break:break-all">VIN HASH ${vin}</span>
   </header>
   ${scoreBand(view, false)}
   ${rowsFor(view, false, { vin, title: vinfo?.title })}
@@ -173,12 +173,12 @@ function secondarySection(vin, view, vinfo, index) {
       <span class="vfy-chip"${proven === total ? ' data-all' : ''}>${proven}/${total}</span>
       <span style="flex:1 1 240px;min-width:0">
         <b style="display:block;font-family:'Barlow Condensed',sans-serif;font-size:20px;letter-spacing:.02em;text-transform:uppercase">${esc(vinfo?.title ?? 'Vehicle passport')}</b>
-        <span style="font-size:12.5px;color:rgba(14,23,38,.6)">Another passport on the same ledger &middot; ${esc(vinfo?.blurb ?? 'for comparison')}</span>
+        <span style="font-size:12.5px;color:rgba(14,23,38,.62)">Another passport on the same ledger &middot; ${esc(vinfo?.blurb ?? 'for comparison')}</span>
       </span>
       <span class="vfy-open" style="flex:none;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#004AAD"></span>
     </summary>
     <div class="vfy-more-body">
-      <span class="mono" style="display:block;margin-bottom:4px;font-size:10.5px;color:rgba(14,23,38,.5);word-break:break-all">VIN HASH ${vin}</span>
+      <span class="mono" style="display:block;margin-bottom:4px;font-size:10.5px;color:rgba(14,23,38,.62);word-break:break-all">VIN HASH ${vin}</span>
       ${scoreBand(view, true)}
       ${rowsFor(view, true, { vin, title: vinfo?.title })}
       <p style="margin:16px 0 0;font-size:13px"><a href="../proofs/">See every claim in the proof explorer &rarr;</a></p>

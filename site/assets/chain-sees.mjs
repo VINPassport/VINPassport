@@ -23,7 +23,7 @@ export const seeRow = (label, value, note) =>
       <span style="font-size:12.5px;color:rgba(14,23,38,.72)">${esc(label)}</span>
       <span class="mono" style="font-size:11px;text-align:right;word-break:break-all;max-width:62%">${esc(value)}</span>
     </div>
-    <div style="margin-top:3px;font-size:11.5px;line-height:1.5;color:rgba(14,23,38,.55)">${note}</div>
+    <div style="margin-top:3px;font-size:11.5px;line-height:1.5;color:rgba(14,23,38,.62)">${note}</div>
   </div>`;
 
 /**
@@ -80,7 +80,7 @@ export function chainSeesBlock(vin, view, ledger) {
             `Claim · ${c.atMost ? '≤' : '≥'} ${fmt(c.bound)}`,
             short(c.commitment),
             `Proven against that commitment, at slot ${esc(short(c.slot))}. The bound is public because it is the question asked; the value that satisfied it is not here.`)).join('')
-        : `<div style="padding:9px 0;font-size:12.5px;color:rgba(14,23,38,.6)">No claims proven yet. Registration publishes a root and a registrar and nothing else.</div>`;
+        : `<div style="padding:9px 0;font-size:12.5px;color:rgba(14,23,38,.62)">No claims proven yet. Registration publishes a root and a registrar and nothing else.</div>`;
 
     const absent = [
         absentRow('The VIN', 'only its hash is published, and the hash is what every slot is derived from'),
