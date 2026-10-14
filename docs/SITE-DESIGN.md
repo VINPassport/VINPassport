@@ -9,10 +9,9 @@ future edit. Status of the handoff's open items, as integrated:
   point at VINPassport/VINPassport. Still pending: the 90-second walkthrough
   link (waits for the video).
 - Repo links: updated for the VINPassport rename.
-- Em dashes in the mockups page prose were converted to the project's
-  no-em-dash convention, and the mockup vehicle dropdowns were aligned to the
-  exact names in `site/assets/demo-vehicles.mjs`. The not-proven badge glyph
-  stays: it is an icon, not wording.
+- Prose was converted to the project's no-em-dash convention and vehicle
+  dropdowns were aligned to the exact names in `site/assets/demo-vehicles.mjs`.
+  The not-proven badge glyph stays: it is an icon, not wording.
 - The published layout: `site/` IS the app. The designed `/verify/`, `/intake/`
   and `/proofs/` pages are wired to the real logic by `verify.js`, `intake.js`
   and `proofs.js` (each added as a separate module script, markup untouched, per
@@ -38,7 +37,6 @@ draft, and not generated output. Three pages:
 | --- | --- | --- |
 | `/` | `site/index.html` | Overview: what VINPassport is, how privacy works, the three surfaces |
 | `/regulation/` | `site/regulation/index.html` | Reader's summary of Reg (EU) 2026/1738 and the 32-slot field registry |
-| `/mockups/` | `site/mockups/index.html` | Interface mockups: intake console, proof explorer, buyer verification |
 
 ## The one rule
 
@@ -119,26 +117,15 @@ reflows intrinsically:
   linearised into wrap-flex rows instead. Verify at 320px, 390px, 768px and
   1440px after any change.
 
-The phone artboards on `/mockups/` are fixed at 393 × 852 by design and scroll
-internally with the scrollbar hidden via `.noscroll`. Leave them fixed.
+## Placeholder links: all wired up
 
-## Placeholder links to wire up
-
-These currently point at the mockups or at the repo. Repoint them when the real
-destinations exist, and change nothing else about the elements:
-
-- `SCAN A VEHICLE` (nav, both pages) and `SEE A LIVE PASSPORT` (hero) →
-  currently `/mockups/#1c`. Should become the real verification app.
-- The three surface cards on `/` → currently `/mockups/#1a`, `#1b`, `#1c`.
-  Should become the real console, proof explorer and verification routes.
-- `READ THE CONTRACT` → `github.com/VINPassport/VINPassport/tree/main/contracts`.
-  Confirm that path is right, and update if the repo is renamed.
-- `THE 90-SECOND WALKTHROUGH` → currently `#surfaces`. Should become the video.
-- `Source` and `Midnight Network` in the verification mockup footer.
-- The turn-1 intro on `/mockups/` used to link to a recreation of the previous
-  app for comparison. That page is not shipped, so the link was removed rather
-  than left pointing at itself. The original is in `design-source/` if you ever
-  want it published, for example at `/mockups/baseline/`.
+This section used to list links pointing at the interface mockups. Every one of
+them now points at a real surface: `SEE A LIVE PASSPORT` and `SCAN A VEHICLE` at
+`/verify/`, the three surface cards at `/intake/`, `/proofs/` and `/verify/`,
+and the explainer button at the video on the page rather than at a section
+heading. The mockups themselves were deleted on 14 October 2026: they were
+unlinked, noindexed, and still described a six-circuit contract that has not
+existed since Wave 1. They are in the history if anyone wants them back.
 
 EUR-Lex links on `/regulation/` are real and correct. Do not change them.
 
@@ -180,7 +167,7 @@ Option A, the simplest, serves from a folder on the default branch:
    `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
    (and the matching `AAAA` records if you want IPv6). Add a `CNAME` for `www`
    pointing at `<owner>.github.io`.
-5. Verify: `https://passport.vin/`, `/regulation/`, `/mockups/` all load and the
+5. Verify: `https://passport.vin/`, `/regulation/`, `/verify/` all load and the
    pages look identical to the files in this bundle.
 
 Option B, GitHub Actions, if you want `site/` to stay a subfolder:
@@ -257,23 +244,39 @@ git rm --cached site/assets/vinpassport-explainer-vertical.mp4
 `.gitignore` carries `site/assets/*.mp4` so a later `git add -A` cannot put
 them back.
 
-**Check two things before removing the local files.** A release asset is served
-from a different host than the page, as a 302 to
-`release-assets.githubusercontent.com`:
+**Play it before removing the local files.** A release asset is served from
+another host, as a 302 to `release-assets.githubusercontent.com`, and two of
+its headers look wrong at a glance:
 
 ```sh
 curl -sIL "https://github.com/VINPassport/VINPassport/releases/download/\
 site-media-2026-10/vinpassport-explainer.mp4" | grep -iE "content-type|accept-ranges"
 ```
 
-1. `Content-Type: video/mp4`. `gh` sets it from the extension. If it comes back
-   `application/octet-stream`, the browser may refuse to decode it; re-upload
-   with `--clobber` or host the file elsewhere.
-2. `Accept-Ranges: bytes`, or the viewer cannot seek.
+- `Content-Type: application/octet-stream`, **even though the asset is stored
+  as `video/mp4`**: the signed URL forces the response type. Measured 14 October
+  2026 on both cuts. It plays anyway, because the final response carries no
+  `X-Content-Type-Options: nosniff`, so the browser sniffs the container. If
+  GitHub ever adds that header this breaks, and the symptom will be a video
+  element that loads nothing with no console error worth reading.
+- `Content-Disposition: attachment`, which applies to navigation and not to a
+  media subresource.
 
-Then open the page and actually play it, including a drag of the scrubber.
-`Content-Disposition: attachment` on the asset is expected and does not stop a
-`<video>` element: it applies to navigation, not to a media subresource.
+What does have to hold is `Accept-Ranges: bytes`, or the viewer cannot seek.
+
+Then play it, which is one command:
+
+```sh
+npm run check:video                               # against passport.vin
+npm run check:video -- http://127.0.0.1:5178      # against a local copy
+```
+
+It loads the page in Brave, waits for metadata, decodes a frame and seeks to
+the middle, for both the desktop and the vertical cut. Measured 14 October
+2026 from the release: 1920x1080 and 1080x1920, 60s each, seek to 30s landed
+at 30s. Pointed at a filename that does not exist it reports *no metadata
+after timeout, readyState 0, and the element reported no error*, which is
+exactly how this fails in the wild and why reading the markup is not enough.
 
 This does not shrink the existing history. Removing what is already in there
 means rewriting every commit that touched it, which breaks every clone and

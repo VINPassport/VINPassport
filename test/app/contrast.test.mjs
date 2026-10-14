@@ -42,8 +42,9 @@ const contrast = (a, b) => {
 function sources(dir) {
     return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
         const p = join(dir, e.name);
-        // Screenshots are pictures; the mockups are Wave 1 and noindexed.
-        if (e.isDirectory()) return ['shots', 'mockups'].includes(e.name) ? [] : sources(p);
+        // Screenshots are pictures. Nothing else is exempt: the Wave 1 mockups
+        // were the only other exclusion and they were deleted.
+        if (e.isDirectory()) return e.name === 'shots' ? [] : sources(p);
         return /\.(html|css|js|mjs)$/.test(e.name) ? [p] : [];
     });
 }

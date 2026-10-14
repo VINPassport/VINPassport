@@ -17,7 +17,7 @@ import { dirname, join } from 'node:path';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SITE = join(HERE, '..', '..', 'site');
 
-/** Every page that carries the shared bar. Mockups are Wave 1 and excluded. */
+/** Every page that carries the shared bar. */
 const PAGES = ['index.html', 'verify/index.html', 'intake/index.html', 'proofs/index.html',
                'demo/index.html', 'regulation/index.html', 'guide/index.html'];
 

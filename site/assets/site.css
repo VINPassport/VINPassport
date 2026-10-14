@@ -43,8 +43,6 @@ a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{
 .blueprint>.corner.br{bottom:-6px;right:-6px}
 
 /* Phone artboards scroll internally without painting a scrollbar. */
-.noscroll{scrollbar-width:none;-ms-overflow-style:none}
-.noscroll::-webkit-scrollbar{width:0;height:0;display:none}
 
 /* Mockup gallery page only. */
 .mockup-board{background:#e4dccf;min-height:100vh}

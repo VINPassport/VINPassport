@@ -39,7 +39,8 @@
     "disclose": "node scripts/disclose.mjs",
     "check:disclosure": "node scripts/check-disclosure.mjs --staged",
     "hooks:install": "node scripts/check-disclosure.mjs --install",
-    "build:guide": "node scripts/build-guide.mjs"
+    "build:guide": "node scripts/build-guide.mjs",
+    "check:video": "node scripts/check-video.mjs"
   },
   "overrides": {
     "@midnight-ntwrk/ledger-v8": "8.1.3",
