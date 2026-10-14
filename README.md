@@ -100,14 +100,14 @@ npm install
 npm test
 ```
 
-Expected: **99 contract tests, 91 app tests and 24 SDK assertions, all passing**, in a couple of
+Expected: **99 contract tests, 95 app tests and 24 SDK assertions, all passing**, in a couple of
 seconds.
 
 ```
  Test Files  1 passed (1)
       Tests  99 passed (99)
 
-# pass 91
+# pass 95
 
 ================ 24 passed, 0 failed ================
 ```
@@ -117,7 +117,7 @@ seconds.
 | `npm test` | Everything below, in one run |
 | `npm run test:contract` | The 99 contract tests, against the compiled circuits |
 | `npm run test:watch` | The same, re-running on change |
-| `npm run test:app` | 91 tests on the application paths: verdicts, the deploy's registrar list, the submission path and the chain-sees panel, via `node --test` |
+| `npm run test:app` | 95 tests on the application paths: verdicts, the deploy's registrar list, the submission path and the chain-sees panel, via `node --test` |
 | `npm run test:sdk` | 24 assertions pinning our assumptions about `@odatano/dpp-sdk` |
 | `npm run app` | All three surfaces + the circuits, one dependency-free server |
 | `npm run serve:site` | The site statically, as GitHub Pages serves it: no circuits, demo state only |
@@ -450,7 +450,7 @@ tree at each wave's close, not from memory.
 | Integrity rules | 2 | **3** |
 | Fields wired end to end | 5 | **17** |
 | Contract tests | 67 | **99** |
-| Application tests | 50 | **91** |
+| Application tests | 50 | **95** |
 | SDK assumption assertions | 24 | 24 |
 | Guards checked by mutation | the two integrity rules | **20 of 20** |
 
@@ -500,7 +500,7 @@ scripts/
 test/
   passport-simulator.mjs             harness: compiled circuits + a local ledger
   passport.test.mjs                  99 contract tests
-  app/                               91 tests on the paths around the circuits
+  app/                               95 tests on the paths around the circuits
   sdk-assumptions.mjs                24 assertions pinning @odatano/dpp-sdk behaviour
 ```
 

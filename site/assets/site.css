@@ -106,6 +106,16 @@ a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{
    free space, and a second auto would split it and drag the row to the middle. */
 .nav-links{display:flex;align-items:center;flex-wrap:wrap;gap:14px 26px}
 .nav-burger{display:none}
+/* The bar follows the reader down the page. It carries the page's own
+   background because the content scrolls beneath it, and sits above that
+   content in the stacking order. On a narrow screen the opened burger menu
+   is part of the bar, so the bar is allowed to scroll internally rather than
+   push its last item off the bottom of a short screen. */
+.nav-bar{position:sticky;top:0;z-index:50;background:var(--color-bg);
+  max-height:100dvh;overflow-y:auto;overscroll-behavior:contain}
+/* An anchored jump must not land under the bar. */
+:target{scroll-margin-top:90px}
+
 /* The hero headline, sized in the sheet rather than inline so a media query
    can reach it. On a short viewport it comes down enough that the call to
    action clears the fold: measured at 1280x720, the verify link moves from
