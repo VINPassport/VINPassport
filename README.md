@@ -2,6 +2,7 @@
   <img src="site/assets/vinpassport-banner.png" alt="VINPassport, proving a vehicle identity" width="700"/>
   <p><strong>A Digital Circularity Vehicle Passport built on Midnight's zero-knowledge blockchain.</strong></p>
   <p>Prove what a vehicle is. Reveal only what the asker is entitled to see.</p>
+  <p><em>Euro 7 binds new M1 and N1 types on <strong>29 November 2026</strong>. The circularity passport follows in 2032.</em></p>
   <p>
     <a href="https://passport.vin/"><b>Website (Live Demo)</b></a> ·
     <a href="https://passport.vin/#video"><b>Explainer video</b></a> ·
@@ -37,12 +38,27 @@
 
 ## The problem
 
-From **1 September 2032**, every vehicle placed on the EU market must carry a **Digital Circularity
-Vehicle Passport** under [Regulation (EU) 2026/1738](https://eur-lex.europa.eu/eli/reg/2026/1738/oj),
-which entered into force on 13 August 2026. The regulation requires that passport to be *"aligned,
-interoperable and, where possible, integrated with other vehicle related environmental passports
-established under Union law"*: most obviously the EV battery passport that becomes mandatory in
-February 2027 under [Regulation (EU) 2023/1542](https://eur-lex.europa.eu/eli/reg/2023/1542/oj).
+Two EU instruments ask for a vehicle passport, and the one that binds first is not the one usually
+quoted.
+
+**Euro 7** ([Regulation (EU) 2024/1257](https://eur-lex.europa.eu/eli/reg/2024/1257/oj)) obliges
+manufacturers to issue an **Environmental Vehicle Passport** with every new M1 and N1 type from
+**29 November 2026**, delivered to the purchaser with the vehicle and made available *"through a
+QR code"* or a similar method (Art. 7(4)). The same regulation obliges them to design the vehicle
+so as to minimise tampering with, among nine listed systems, the **odometer** and the **passport
+itself** (Art. 4(7)(d) and (j)). Every provision in that paragraph was read from the Official
+Journal on 14 October 2026 and is quoted in [REGULATION.md](docs/REGULATION.md).
+
+The **Digital Circularity Vehicle Passport** follows from **1 September 2032** under
+[Regulation (EU) 2026/1738](https://eur-lex.europa.eu/eli/reg/2026/1738/oj), which entered into
+force on 13 August 2026 and requires that passport to be *"aligned, interoperable and, where
+possible, integrated with other vehicle related environmental passports established under Union
+law"*: most obviously the EV battery passport that becomes mandatory in February 2027 under
+[Regulation (EU) 2023/1542](https://eur-lex.europa.eu/eli/reg/2023/1542/oj).
+
+So the legal destination is 2032 and the first party under an obligation is a manufacturer on
+29 November 2026. That ordering is why this repository is built the way it is: a passport opened
+on the production line, carrying a QR code, that refuses a later edit to the odometer.
 
 That mandate creates a conflict. A vehicle passport has to be **verifiable by strangers**: a buyer,
 a recycler, a border authority, and simultaneously **confidential**, because a full vehicle history
@@ -117,7 +133,7 @@ seconds.
 | `npm test` | Everything below, in one run |
 | `npm run test:contract` | The 99 contract tests, against the compiled circuits |
 | `npm run test:watch` | The same, re-running on change |
-| `npm run test:app` | 104 tests on the application paths: verdicts, the deploy's registrar list, the submission path, the chain-sees panel and the QR encoder, via `node --test`. **83 of these import and run product code; 21 assert on what is written in the repository** (that every screenshot the guide names exists, that each page's bar carries the same links, that no text colour drops below the contrast floor). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
+| `npm run test:app` | 109 tests on the application paths: verdicts, the deploy's registrar list, the submission path, the chain-sees panel and the QR encoder, via `node --test`. **83 of these import and run product code; 26 assert on what is written in the repository** (that every screenshot the guide names exists, that each page's bar carries the same links, that every page names its content with one `<main>` and offers a way past the bar, that no text colour drops below the contrast floor). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
 | `npm run test:sdk` | 24 assertions pinning our assumptions about `@odatano/dpp-sdk` |
 | `npm run app` | All three surfaces + the circuits, one dependency-free server |
 | `npm run serve:site` | The site statically, as GitHub Pages serves it: no circuits, demo state only |
@@ -412,11 +428,26 @@ It proves a reading is **the one that was committed**, and that it satisfies a b
 prove the reading matches physical reality. A producer who commits a false value produces a
 cryptographically valid proof of a false fact.
 
-Closing that gap means the value is written by a party already accountable for it. The open
-problem is **provenance of the writer**, not tamper resistance. That is a data-relationship
-problem before it is a cryptographic one, and nothing in this build solves it. **No date is
-claimed for it.** The limit is stated in full in
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+It is the first question a serious reader asks, so this section says where the Wave 2 contract
+leaves it rather than deferring the whole thing. Three properties narrow the gap to the **first**
+write of a field, and all three are in the deployed circuits:
+
+1. **The write is attributable.** `registerPassport` derives the caller's identity in-circuit from
+   a witness secret, never from `ownPublicKey()`, and refuses any identity outside
+   `allowedRegistrars`, a set fixed in the constructor with no circuit that adds to it.
+   `initialiseField` and `recordField` then refuse anyone but the identity that registered that
+   vehicle. Which identity wrote a passport is on the ledger and stays there.
+2. **The rule precedes the value.** A field's integrity rule is written when the field is created
+   and cannot be rewritten, so a flattering rule cannot be chosen later ([D18](docs/DECISIONS.md#settled)).
+3. **The correction is refused.** Under `neverFalls` a later, lower value fails in-circuit. The
+   rollback is not a policy we decline to apply; it is a transaction that does not complete.
+
+What is left is real. Tying one of those on-chain identities to a legal person is an off-chain
+admission step, not a cryptographic one, and the first value for a vehicle that joins mid-life is
+only as good as the party that entered it. That is why the first customer is the manufacturer:
+Euro 7 obliges them from 29 November 2026, and a passport opened on the production line has no
+earlier history to misstate. A reading signed at the sensor is Phase 2 and **no date is claimed
+for it**. The limit is stated in full in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Built during Wave 1
 
@@ -427,7 +458,7 @@ repository begins with no contract at all.
 |---|---|
 | **The contract** - seven circuits, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
 | **Deployed to Midnight preprod**, 28 August, built and signed locally | [`deploy/preprod.json`](deploy/preprod.json) |
-| **227 tests** - 99 contract, 104 application, 24 SDK assumption assertions; all twenty guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
+| **232 tests** - 99 contract, 109 application, 24 SDK assumption assertions; all twenty guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
 | **Three surfaces** - verification, intake console, proof explorer - all running the compiled circuits, not a mock | [passport.vin](https://passport.vin/) |
 | **On-chain runs from the browser, self-funded**, after a hosted sponsor turned out to be a single point of failure in a demo a judge runs unattended | [D24](docs/DECISIONS.md#settled) |
 | **The regulatory basis read from the Official Journal** rather than secondary analysis - which caught two wrong article citations that had survived months of work | [REGULATION.md](docs/REGULATION.md) |
@@ -500,7 +531,7 @@ scripts/
 test/
   passport-simulator.mjs             harness: compiled circuits + a local ledger
   passport.test.mjs                  99 contract tests
-  app/                               104 tests on the paths around the circuits
+  app/                               109 tests on the paths around the circuits
   sdk-assumptions.mjs                24 assertions pinning @odatano/dpp-sdk behaviour
 ```
 

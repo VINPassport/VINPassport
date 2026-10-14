@@ -22,12 +22,13 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://passport.vin/assets/vinpassport-banner.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700&family=Barlow+Condensed:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="assets/site.css?v=9">
+<link rel="stylesheet" href="assets/site.css?v=10">
 </head>
 <body>
 <div style="max-width:1200px;margin:0 auto;padding:0 var(--edge)">
 
   <nav class="nav-bar" style="display:flex;align-items:center;flex-wrap:wrap;gap:14px 26px;padding:18px 0;min-height:75px;border-bottom:1px solid rgba(0,74,173,.26)">
+    <a class="nav-skip" href="#main">Skip to content</a>
     <span style="display:flex;align-items:center;margin-right:auto;flex:none">
       <img src="assets/vinpassport-logo.png" alt="VINPassport" width="546" height="102" style="height:32px;width:auto">
     </span>
@@ -42,14 +43,18 @@
     <button class="nav-burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="navmenu"><i></i><i></i><i></i></button>
   </nav>
 
+  <main id="main">
   <section style="padding:clamp(48px,8vw,96px) 0 72px;display:flex;flex-wrap:wrap;gap:clamp(32px,4vw,56px);align-items:flex-start">
     <div style="flex:1 1 460px;min-width:0">
+      <a href="regulation/#euro7" style="display:inline-flex;align-items:center;gap:10px;text-decoration:none;font:600 12px Barlow,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#002E6E;border:1px solid rgba(0,74,173,.3);padding:7px 12px;margin-bottom:18px">
+        <span style="width:7px;height:7px;background:#004AAD;flex:none"></span>Euro 7 binds 29 Nov 2026 &middot; circularity passport 2032
+      </a>
       <h1 class="hero-head" style="margin:0;letter-spacing:.01em;text-transform:uppercase;margin-left:-.052em">
         <span style="display:block">Prove what a vehicle is.</span>
         <span style="display:block;color:#004AAD">Reveal only what the</span>
         <span style="display:block;color:#004AAD">asker is entitled to see.</span>
       </h1>
-      <p style="font-size:17px;line-height:1.55;max-width:58ch;margin:28px 0 0;color:rgba(14,23,38,.82)">A Digital Circularity Vehicle Passport built on Midnight's zero-knowledge blockchain. One canonical vehicle record, anchored once. From then on each party, whether buyer, recycler or border authority, is shown exactly what they are entitled to and provably nothing more.</p>
+      <p style="font-size:17px;line-height:1.55;max-width:58ch;margin:28px 0 0;color:rgba(14,23,38,.82)">From <b>29 November 2026</b>, Euro 7 obliges manufacturers to issue a tamper resistant digital passport with every new M1 and N1 type, readable by QR code. VINPassport is that record, built on Midnight's zero-knowledge blockchain: anchored once, then shown to each party, whether buyer, recycler or border authority, exactly as far as they are entitled and provably no further.</p>
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:28px">
         <a href="verify/" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.06em;background:#004AAD;color:#EDE4D8;border:1px solid #004AAD;padding:12px 26px">SEE A LIVE PASSPORT</a>
         <a href="https://github.com/VINPassport/VINPassport/tree/main/contracts" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.06em;color:#0E1726;border:1px solid rgba(0,74,173,.28);padding:12px 22px">READ THE CONTRACT</a>
@@ -215,7 +220,13 @@
         <span style="display:block;font:600 12px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;opacity:.7;margin-bottom:14px">05 · What this does not prove</span>
         <p style="margin:0;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:clamp(24px,2.6vw,34px);line-height:1.15;letter-spacing:.01em;max-width:38ch">A producer who commits a false value produces a cryptographically valid proof of a false fact.</p>
       </div>
-      <p style="flex:1 1 280px;min-width:0;margin:0;font-size:15px;line-height:1.6;opacity:.85">VINPassport proves a reading is the one that was committed, and that it satisfies a bound. It does not prove the reading matched physical reality. Closing that gap needs hardware attestation at the source. That is scoped as Phase 2 rather than pretended away, and stated in full in <span class="mono" style="font-size:13px">docs/ARCHITECTURE.md</span>.</p>
+      <div style="flex:1 1 320px;min-width:0;display:flex;flex-direction:column;gap:15px">
+        <p style="margin:0;font-size:15px;line-height:1.6;opacity:.85">It is the first question a serious buyer asks, so the answer belongs beside the admission. VINPassport proves a reading is the one that was committed and that it satisfies a bound. It does not prove the reading matched the world. Three things in the deployed contract narrow that to the <b>first</b> write, and none of them are roadmap.</p>
+        <div style="display:flex;gap:12px;align-items:baseline"><span class="mono" style="font-size:11px;opacity:.7;flex:none">01</span><span style="font-size:14.5px;line-height:1.55;opacity:.9"><b>The writer is named.</b> A value is bound in-circuit to one identity out of a set fixed when the contract was deployed, and no circuit adds to that set. A false value is never anonymous: it carries the registrar that wrote it for as long as the ledger exists.</span></div>
+        <div style="display:flex;gap:12px;align-items:baseline"><span class="mono" style="font-size:11px;opacity:.7;flex:none">02</span><span style="font-size:14.5px;line-height:1.55;opacity:.9"><b>The rule comes before the value.</b> A field's integrity rule is written when the field is created and cannot be rewritten afterwards, so nobody picks the flattering rule on the day they need it.</span></div>
+        <div style="display:flex;gap:12px;align-items:baseline"><span class="mono" style="font-size:11px;opacity:.7;flex:none">03</span><span style="font-size:14.5px;line-height:1.55;opacity:.9"><b>The second version is refused.</b> Under <span class="mono" style="font-size:12.5px">neverFalls</span> a later, lower reading fails in-circuit. Rolling a number back is not something we decline to do; it is a transaction that does not complete.</span></div>
+        <p style="margin:2px 0 0;font-size:14px;line-height:1.6;opacity:.78">What stays open is the first write for a vehicle that joins mid-life, and that is why the first customer is the manufacturer: Euro 7 obliges them from <a href="regulation/#euro7" style="color:#EDE4D8">29 November 2026</a>, and a passport opened on the production line has no earlier history to misstate. A reading signed at the sensor is Phase 2, scoped in <span class="mono" style="font-size:13px">docs/ARCHITECTURE.md</span> rather than pretended away.</p>
+      </div>
     </div>
   </section>
 
@@ -252,6 +263,7 @@
       <a href="#surfaces" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.06em;color:#0E1726;border:1px solid rgba(0,74,173,.28);padding:12px 22px">THE 90-SECOND WALKTHROUGH</a>
     </div>
   </section>
+  </main>
 
   <footer style="padding:26px 0 48px;border-top:1px solid rgba(0,74,173,.26);display:flex;flex-wrap:wrap;gap:16px 32px;align-items:center;font-size:13px;color:rgba(14,23,38,.7)">
     <img src="assets/vinpassport-logo.png" alt="VINPassport" width="546" height="102" style="height:24px;width:auto">

@@ -116,12 +116,23 @@ a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{
 /* An anchored jump must not land under the bar. */
 :target{scroll-margin-top:90px}
 
+/* First focusable thing on every page. Clipped rather than moved off-canvas:
+   the bar scrolls its own overflow, so a -9999px offset would give it a
+   horizontal scrollbar. Absolute in both states, so it never joins the
+   flex row and nothing shifts when it appears. */
+.nav-skip{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;
+  clip-path:inset(50%);white-space:nowrap;text-decoration:none}
+.nav-skip:focus{left:0;top:0;width:auto;height:auto;clip-path:none;
+  padding:10px 16px;background:var(--color-accent);color:var(--color-bg);
+  font:600 13px Barlow,sans-serif;letter-spacing:.06em;text-transform:uppercase;
+  z-index:60}
+
 /* The hero headline, sized in the sheet rather than inline so a media query
    can reach it. On a short viewport it comes down enough that the call to
    action clears the fold: measured at 1280x720, the verify link moves from
    y=844 to y=508. Tall screens keep the large setting. */
 .hero-head{font-size:clamp(38px,6.4vw,88px);line-height:1.04}
-@media (max-height:860px){.hero-head{font-size:clamp(34px,4.4vw,62px)}}
+@media (max-height:1040px){.hero-head{font-size:clamp(34px,4.4vw,62px)}}
 
 /* 980px, not the 700px the section links used to hide at, and not the 950
    this was before the video link became the home bar's seventh item: that

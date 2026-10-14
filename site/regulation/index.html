@@ -22,12 +22,13 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://passport.vin/assets/vinpassport-banner.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700&family=Barlow+Condensed:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="../assets/site.css?v=9">
+<link rel="stylesheet" href="../assets/site.css?v=10">
 </head>
 <body>
 <div style="max-width:1200px;margin:0 auto;padding:0 var(--edge)">
 
   <nav class="nav-bar" style="display:flex;align-items:center;flex-wrap:wrap;gap:14px 26px;padding:18px 0;min-height:75px;border-bottom:1px solid rgba(0,74,173,.26)">
+    <a class="nav-skip" href="#main">Skip to content</a>
     <a href="../" style="display:flex;align-items:center;margin-right:auto;flex:none;text-decoration:none">
       <img src="../assets/vinpassport-logo.png" alt="VINPassport" width="546" height="102" style="height:32px;width:auto">
     </a>
@@ -41,6 +42,7 @@
     <button class="nav-burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="navmenu"><i></i><i></i><i></i></button>
   </nav>
 
+  <main id="main">
   <section style="padding:clamp(40px,7vw,76px) 0 40px">
     <span style="display:block;font:600 12px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:14px">The regulatory basis</span>
     <h1 style="margin:0;font-size:clamp(34px,5.4vw,68px);line-height:1.05;letter-spacing:.01em;text-transform:uppercase;max-width:24ch">Regulation (EU) 2026/1738</h1>
@@ -161,7 +163,20 @@
 
       <p style="margin:16px 0 0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.82)">That is the provision this project answers directly. A ledger that <b>refuses the write</b> when an odometer falls is not a policy choice in a server somewhere; it is the design the article asks for, enforced where it cannot be argued with. Article 3(68) defines the EVP as a record of a vehicle's environmental performance, and Article 4(10) extends it to <b>lifetime values</b> and the <b>state of health of the traction battery</b>, which is to say values that accumulate and must not be allowed to run backwards.</p>
 
-      <p style="margin:14px 0 0;font-size:13px;line-height:1.6;color:rgba(14,23,38,.68)">Read from the Official Journal on 14 October 2026. Dates from Article 21, the obligation from Article 7(4), the tampering list from Article 4(7), the definition from Article 3(68) and the lifetime data from Article 4(10). <a href="https://eur-lex.europa.eu/eli/reg/2024/1257/oj" target="_blank" rel="noopener" style="color:#004AAD">Check it on EUR-Lex</a> before relying on any of it.</p>
+      <div style="margin:18px 0 0;padding:14px 16px;border-left:3px solid #004AAD;background:rgba(0,74,173,.05)">
+        <span class="mono" style="display:block;font-size:11.5px;letter-spacing:.06em;color:#004AAD;margin-bottom:7px">IMPLEMENTING REG (EU) 2025/1707 &middot; WHAT THE CODE MUST DO</span>
+        <p style="margin:0 0 10px;font-size:14px;line-height:1.6;color:rgba(14,23,38,.86)">Article 7(4) says there must be a QR code. This act, in force since September 2025, says what it has to be. Annex V, with recital (14) for the standard:</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <p style="margin:0;font-size:13.5px;line-height:1.55;color:rgba(14,23,38,.82)"><b>Recital (14)</b> &middot; the code <i>"should respect the guidelines of ISO/IEC Standard 18004:2024"</i>.</p>
+          <p style="margin:0;font-size:13.5px;line-height:1.55;color:rgba(14,23,38,.82)"><b>4.2.2</b> &middot; it leads to a unique, vehicle-specific page over a secure link, or to a landing page that then asks for the VIN.</p>
+          <p style="margin:0;font-size:13.5px;line-height:1.55;color:rgba(14,23,38,.82)"><b>4.2.3</b> &middot; <i>"Access to EVP data shall not require additional software, user registration or the provision of any other data besides the vehicle's VIN."</i></p>
+          <p style="margin:0;font-size:13.5px;line-height:1.55;color:rgba(14,23,38,.82)"><b>4.2.1</b> &middot; the page must be accessible to persons with disabilities, under Directive (EU) 2019/882.</p>
+          <p style="margin:0;font-size:13.5px;line-height:1.55;color:rgba(14,23,38,.82)"><b>Article 17(4)</b> &middot; the data stays reachable for <b>at least 20 years</b> after the vehicle is built.</p>
+        </div>
+        <p style="margin:12px 0 0;font-size:14px;line-height:1.6;color:rgba(14,23,38,.86)">Our encoder follows ISO/IEC 18004 where a popular library diverges from it, the code opens the vehicle's own verdict with nothing to type, and the page asks for no wallet, account or login. The twenty year duty is the part a manufacturer's own web server has to answer for; a public ledger is a reasonable thing to anchor it to.</p>
+      </div>
+
+      <p style="margin:14px 0 0;font-size:13px;line-height:1.6;color:rgba(14,23,38,.68)">Read from the Official Journal on 14 October 2026. Dates from Article 21, the obligation from Article 7(4), the tampering list from Article 4(7), the definition from Article 3(68) and the lifetime data from Article 4(10), with the QR requirements from Annex V of <a href="https://eur-lex.europa.eu/eli/reg_impl/2025/1707/oj/eng" target="_blank" rel="noopener" style="color:#004AAD">Implementing Regulation (EU) 2025/1707</a>. <a href="https://eur-lex.europa.eu/eli/reg/2024/1257/oj" target="_blank" rel="noopener" style="color:#004AAD">Check it on EUR-Lex</a> before relying on any of it.</p>
     </div>
   </section>
 
@@ -293,6 +308,7 @@
       <a href="../intake/" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.06em;color:#0E1726;border:1px solid rgba(0,74,173,.28);padding:12px 22px">SEE THE INTAKE CONSOLE</a>
     </div>
   </section>
+  </main>
 
   <footer style="padding:26px 0 48px;border-top:1px solid rgba(0,74,173,.26);display:flex;flex-wrap:wrap;gap:16px 32px;align-items:center;font-size:13px;color:rgba(14,23,38,.7)">
     <img src="../assets/vinpassport-logo.png" alt="VINPassport" width="546" height="102" style="height:24px;width:auto">

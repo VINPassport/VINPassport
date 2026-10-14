@@ -127,6 +127,24 @@ So:
 > two is the producer's responsibility in Wave 1, not a property the contract enforces (see
 > [D23](DECISIONS.md#settled)).
 
+> **What Wave 2 changed, 14 October 2026.** The quote above is the Wave 1 statement. Two halves of
+> it are no longer open, and leaving it unqualified would understate the contract that is deployed.
+>
+> *Binding.* A field's slot is derived from the vehicle's content root, which every circuit reads
+> from `passports` and no caller may pass in (`slotOf`, domain tag `vinpassport:field:v2`). A claim
+> about a different document lands on a different slot, so a proof no longer floats free of the
+> payload the verifier is holding. Anyone handed the document can recompute the slot and check it.
+>
+> *Attribution.* Every write is gated on an identity derived in-circuit from a registrar secret and
+> checked against `allowedRegistrars`, a set fixed in the constructor with no circuit that adds to
+> it. The ledger records which identity registered a vehicle, and only that identity may initialise
+> or update its fields.
+>
+> Neither makes a value true. Mapping one of those on-chain identities to a legal person is an
+> off-chain admission step, and the first value written for a vehicle that joins the system
+> mid-life is only as good as the party that entered it. Response 3 below is therefore half
+> delivered in-circuit and half still a relationship problem.
+
 For batteries this is tolerable: a manufacturer declaring its own carbon footprint is the assumed
 model, and the regulation is built around accountable self-declaration.
 

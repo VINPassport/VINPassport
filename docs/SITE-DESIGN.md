@@ -219,6 +219,51 @@ domain configured as in step 3 above.
 Notes: there is no build step, so nothing to install and nothing to compile.
 `CNAME` must end up at the root of whatever is published. Keep `.nojekyll`.
 
+## Large media does not go in git
+
+The explainer cuts are 28 MB and 27 MB. A git repository keeps every version of
+a binary for ever, so each new cut adds its full size to every clone of this
+repository permanently, and the files are already 95% of what anyone downloads.
+Serving them from Pages also puts that bandwidth on the Pages allowance, which
+is the same shape of problem that took the demo host down on 10 October 2026.
+
+So media lives in a GitHub release and the pages reference it by URL.
+
+To publish or replace a cut:
+
+```sh
+# once, to create the holder
+gh release create site-media-2026-10 --title "Site media" \
+  --notes "Large media for passport.vin, kept out of the git history."
+
+# every time, from wherever the file is
+gh release upload site-media-2026-10 vinpassport-explainer.mp4 --clobber
+gh release upload site-media-2026-10 vinpassport-explainer-vertical.mp4 --clobber
+```
+
+The URL is stable, so replacing a cut needs no page edit:
+
+```
+https://github.com/VINPassport/VINPassport/releases/download/site-media-2026-10/vinpassport-explainer.mp4
+```
+
+Then the file leaves the repository without leaving the machine:
+
+```sh
+git rm --cached site/assets/vinpassport-explainer.mp4
+git rm --cached site/assets/vinpassport-explainer-vertical.mp4
+```
+
+`.gitignore` carries `site/assets/*.mp4` so a later `git add -A` cannot put
+them back. **Check the page plays from the release URL before removing the
+files**, including seeking, because a release asset is served from a different
+host than the page.
+
+This does not shrink the existing history. Removing what is already in there
+means rewriting every commit that touched it, which breaks every clone and
+every commit link a judge might hold, so it is not done during a submission
+window. The point of the rule is that the next cut does not add to the pile.
+
 ## Before you commit
 
 Check all four, every time:

@@ -92,7 +92,7 @@ be measured in Phase 0. It was measured on 2026-10-14, and the claim was wrong.*
 work a transaction does, not the number of transactions it arrives in, so there is no "one fee"
 saving to collect:
 
-| batched as one transaction | batched | as separate transactions | difference |
+| Calls | Batched as one transaction | As separate transactions | Difference |
 |---|---:|---:|---|
 | `registerPassport` + `initialiseField` | 0.8102 | 0.8125 | saves 0.3% |
 | two proof calls | 0.8563 | 0.7445 | **costs 15.0% more** |

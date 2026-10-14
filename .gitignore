@@ -59,6 +59,14 @@ SECURITY-BACKLOG.md
 # on remembering to list paths on every commit.
 scripts/spike-*.mjs
 
+# ── Large media: a release asset, never a blob in history ────────────────────
+# A repository keeps every version of a binary for ever, so each new cut of the
+# explainer would add its full size to every clone, permanently. The cuts live
+# on a GitHub release and the pages reference them by URL. Runbook in
+# docs/SITE-DESIGN.md. This rule has no effect on a file that is still tracked,
+# so it is the second line of defence, not the first.
+site/assets/*.mp4
+
 # ── Editor / OS ───────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db

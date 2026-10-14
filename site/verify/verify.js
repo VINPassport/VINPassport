@@ -194,7 +194,8 @@ function secondarySection(vin, view, vinfo, index) {
     try {
         state = await loadState('', new URLSearchParams(location.search));
     } catch (e) {
-        const p = document.createElement('p');
+        const p = document.createElement('main');
+        p.id = 'main';
         p.style.cssText = 'padding:30px 0;font-size:14px';
         p.textContent = `Could not read the ledger: ${e.message}`;
         root.replaceChildren(nav, p, footer);
@@ -220,7 +221,10 @@ function secondarySection(vin, view, vinfo, index) {
         rest.map((v, i) =>
             secondarySection(v, passportView(ledger, v, vocabulary), byVin[v], i)).join('\n');
 
-    const stack = document.createElement('div');
+    // A landmark, not a wrapper: this script replaces the whole body, so if it
+    // builds a plain div the page loses the only <main> a screen reader has.
+    const stack = document.createElement('main');
+    stack.id = 'main';
     stack.className = 'vfy-stack';
     stack.replaceChildren(...holder.children);
 

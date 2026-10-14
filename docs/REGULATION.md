@@ -137,14 +137,63 @@ Circularity Vehicle Passport does.
 
 **Article 14(4)(t)** empowers the Commission to specify *"the format and data and off-board
 communication methods for the EVP"*. For M1 and N1 that act is **Commission Implementing Regulation
-(EU) 2025/1707** of 25 July 2025.
+(EU) 2025/1707** of 25 July 2025,
+[OJ L, 5.9.2025](https://eur-lex.europa.eu/eli/reg_impl/2025/1707/oj/eng), in force on the
+twentieth day after publication (Art. 20).
 
-> **Unread, and it is the gap in this section.** EUR-Lex would not serve the text of 2025/1707 on
-> 2026-10-14, across four URL forms. Secondary sources report that its EVP annex requires access
-> through a secure web link, that the QR code resolves to a vehicle-specific or generic landing
-> page, and that access must need no additional software, registration or data beyond the **VIN**.
-> If accurate that is close to what `/verify/` already does, but **it is not verified and must not
-> be repeated as fact.** Read the annex before any claim rests on it.
+> **Read from the Official Journal on 2026-10-14.** This section recorded the act as unread,
+> because EUR-Lex answers an automated request for it with `202` and an empty body. It serves the
+> text normally to a browser, and the ELI path for an implementing act is `/eli/reg_impl/`, not
+> `/eli/reg/`. The secondary sources summarised here before turned out to be accurate, which is
+> worth recording as calibration and is still not a reason to have relied on them.
+
+**Article 17** carries the obligation: the manufacturer issues an EVP for each vehicle (17(1)),
+with the data and format of Annex V (17(2)), reachable off board by digital means (17(3)), and
+
+> 4. The manufacturer shall ensure that EVP data are **accessible for at least 20 years** after the
+> date of manufacture of the vehicle.
+
+**Annex V** is the specification. The points that decide an implementation:
+
+| Point | What it requires |
+|---|---|
+| 3.1.1 | The EVP is issued per vehicle and delivered to the purchaser with it, by digital means |
+| 3.2.1 | Manufacturers keep EVP data reflecting updates in the relevant CoC fields |
+| 4.1.1 | EVP data available for display **through a QR code** |
+| 4.1.2 | Printed or engraved on the vehicle, visibly, legibly and indelibly, reachable without disassembly, its location named in the owner's manual |
+| 4.1.3 | Or shown on an in-vehicle display, within five screens of the default one |
+| 4.1.4 | High contrast, and a size a commonly available reader can read |
+| 4.2.1 | The website must be **accessible to persons with disabilities**, per [Directive (EU) 2019/882](https://eur-lex.europa.eu/eli/dir/2019/882/oj) |
+| 4.2.2 | Reached over a **secure web link**; the code goes to a unique vehicle-specific page, or to a generic landing page where onward navigation may ask for the **VIN** |
+| 4.2.3 | *"Access to EVP data shall not require additional software, user registration or the provision of any other data besides the vehicle's VIN."* |
+| 4.2.4 | Available in the official languages of the Union institutions |
+
+Recital (14) names the standard: the QR code *"should respect the guidelines of ISO/IEC Standard
+18004:2024"*. Article 2(9) defines it as *"a machine-readable matrix code that links to
+information"*.
+
+#### What the implementing act settles, and what it does not
+
+Four choices here were made on other grounds and turn out to be the ones the act names:
+
+- the QR encoder follows **ISO/IEC 18004** rather than the convenient library behaviour where the
+  two disagree, which is recital (14) ([`site/assets/qr.mjs`](../site/assets/qr.mjs));
+- the code resolves straight to a **vehicle-specific page**, so nothing has to be typed: the first
+  limb of 4.2.2 rather than the landing-page fallback;
+- `/verify/` needs **no wallet, no account, no login and no software**, which is 4.2.3;
+- every page carries a `<main>` landmark, a way past the bar and a WCAG AA contrast floor, which is
+  what 4.2.1 asks for through Directive (EU) 2019/882.
+
+What it does not settle:
+
+- **Appendix 1 to Annex V lists the EVP parameters against CoC field identifiers** from Annex VIII
+  of Implementing Regulation (EU) 2020/683. Our 32-slot panel was built from the circularity
+  passport and from what a buyer asks, not from that table. Whether the two align is an open
+  question and a deliverable, not a claim.
+- The EVP holds environmental performance **at the moment of registration**, updated when the CoC
+  fields change (3.2.1). A service history is not within its scope. Euro 7 is what puts a QR code,
+  a 20 year data duty and a tampering duty on the manufacturer; the rest of what VINPassport records
+  sits beside it under the circularity passport.
 
 #### What this changes
 
@@ -224,9 +273,13 @@ of 2026/1738 directly.
 
 **Euro 7 was read from the Official Journal on 2026-10-14.** Articles 3(68), 4(7), 4(10), 7(4),
 14(4)(t), 14(8)(a), 14(9)(a) and 21 are quoted from the EUR-Lex HTML of 2024/1257, not from
-summaries. The one gap is **Commission Implementing Regulation (EU) 2025/1707**, which carries the
-EVP format and data for M1 and N1: EUR-Lex would not serve its text across four URL forms that day,
-so its annex is unread and nothing in this repository may rest on what it contains.
+summaries.
+
+**Commission Implementing Regulation (EU) 2025/1707 was read the same day**, after an automated
+fetch was refused: EUR-Lex returns `202` with an empty body to a script and the full text to a
+browser. Recital (14), Article 2(9), Article 17 and Annex V points 2.1 to 4.2.5 are quoted from the
+EUR-Lex HTML at `/eli/reg_impl/2025/1707/oj/eng`. **Appendix 1 to Annex V, the parameter table, has
+been seen but not worked through**, so no claim may rest on which of our 32 slots it covers.
 
 Dates for entry into force, general application, and the 2032 passport deadline come from secondary
 legal analysis rather than the operative articles. They are consistent across multiple independent
