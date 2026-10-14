@@ -738,6 +738,61 @@ describe('claims: what a verifier can read afterwards', () => {
         expect(sim.ledger.claims.size()).toBe(2n);
     });
 
+    it('published claims narrow the value, which is the cost of recording them', () => {
+        // Read from the observer's side, because that is the only side that
+        // matters here, and reading public ledger state is not an attack:
+        // anyone may do it. Every claim publishes its bound, claims
+        // accumulate rather than replace, and nothing limits how many a slot
+        // may carry. A reader holding no witness and no salt can therefore
+        // intersect the bounds and squeeze the value towards a point.
+        //
+        // This is not a defect in the circuits: they disclose exactly what
+        // they were asked to. It is the price of recording a verdict instead
+        // of re-proving it on demand (D19), and the README states it under
+        // "What a published claim gives away". The test exists so that
+        // statement cannot quietly stop being true, in either direction.
+        registered();
+        sim.recordField(VIN_A, ODO, 91_500n, S2);
+
+        sim.proveFieldAtLeast(VIN_A, ODO, 90_000n);
+        sim.proveFieldAtMost(VIN_A, ODO, 100_000n);
+
+        // Nothing below touches a witness. This is ledger state only.
+        let lo = 0n;
+        let hi = (1n << 64n) - 1n;
+        for (const [, c] of sim.ledger.claims) {
+            if (hex(c.fieldKey) !== hex(ODO)) continue;
+            if (c.atMost) { if (c.bound < hi) hi = c.bound; }
+            else if (c.bound > lo) lo = c.bound;
+        }
+
+        expect(lo).toBe(90_000n);
+        expect(hi).toBe(100_000n);
+        expect(hi - lo).toBe(10_000n);     // a 10,000 wide window, from public data alone
+        expect(lo <= 91_500n && 91_500n <= hi).toBe(true);   // and it does contain the reading
+
+        // The reading itself is still absent: narrowed is not the same as
+        // disclosed, and the distinction is the whole point of the paragraph.
+        const { words } = sim.ledgerValues();
+        expect(words).not.toContain(91_500n);
+    });
+
+    it('a bound of zero fixes the value exactly, and that is a disclosure', () => {
+        // "Never written off" is proveFieldAtMost(.., 0). The field is a
+        // Uint<64>, so value <= 0 and value >= 0 leave exactly one
+        // possibility. The holder chose to reveal it; the claim did not keep
+        // it hidden. Said here because the README used to say the value stays
+        // private in every case, and for this shape it does not.
+        registered();
+        sim.proveFieldAtMost(VIN_A, WRITE_OFF, 0n);
+
+        let fixed = null;
+        for (const [, c] of sim.ledger.claims) {
+            if (c.atMost && c.bound === 0n) fixed = 0n;   // unsigned: nothing below it
+        }
+        expect(fixed).toBe(0n);
+    });
+
     it('separates the same claim about two different vehicles', () => {
         registered(VIN_A, ROOT);
         registered(VIN_B, ROOT_B);

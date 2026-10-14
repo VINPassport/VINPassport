@@ -108,8 +108,27 @@ const utf8 = (s) => new TextEncoder().encode(s);
 // from a public formula: the seed is the secret, the formula is not.
 // (Old behaviour derived salts from a counter mod 251 and from the VIN, both
 // public - which made the demo commitments brute-force invertible. See D23.)
-const SALT_SEED = process.env.VINPASSPORT_SALT_SEED
-    ? Uint8Array.from(Buffer.from(process.env.VINPASSPORT_SALT_SEED, 'hex'))
+//
+// The override is VALIDATED, and the reason is not pedantry. `Buffer.from(s,
+// 'hex')` does not reject a malformed string, it truncates at the first
+// invalid pair and returns what it got: "not-a-seed" yields ZERO bytes, "abc"
+// yields one. A zero-byte seed makes `saltFrom(label)` equal to
+// `blake2b(label)`, and the labels are public and predictable, so every
+// commitment becomes openable by anyone who guesses the value. That is
+// precisely the D23 weakness this seed exists to close, reachable by a typo
+// in an environment variable and silent when it happened. Every other piece
+// of key material here is already checked this way; this one was the
+// exception.
+const SEED_OVERRIDE = process.env.VINPASSPORT_SALT_SEED?.trim();
+if (SEED_OVERRIDE !== undefined && SEED_OVERRIDE !== '' && !/^[0-9a-fA-F]{64}$/.test(SEED_OVERRIDE)) {
+    throw new Error(
+        'VINPASSPORT_SALT_SEED must be exactly 64 hex characters (32 bytes). '
+        + `Got ${SEED_OVERRIDE.length} character(s). Unset it to generate a fresh random seed; `
+        + 'a malformed value would silently weaken every commitment rather than fail.'
+    );
+}
+const SALT_SEED = SEED_OVERRIDE
+    ? Uint8Array.from(Buffer.from(SEED_OVERRIDE, 'hex'))
     : randomBytes(32);
 const saltFrom = (label) => b2b(Uint8Array.from([...SALT_SEED, ...utf8(label)]));
 const nodeHash = (l, r) => b2b(Uint8Array.from([...l, ...r]));

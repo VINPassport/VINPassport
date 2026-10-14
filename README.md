@@ -360,9 +360,39 @@ rather than a promise.
 
 A recorded claim **names the field it is about**, which the slot hash alone would not reveal. That
 is deliberate: a verdict a verifier cannot read is not a verdict, and the VIN hash is already public
-because `passports` is keyed by it. Fields nobody has claimed about stay unnamed, and **the value
-stays private in every case**: two adjacent tests pin both halves rather than leaving it to this
+because `passports` is keyed by it. Fields nobody has claimed about stay unnamed, and the value
+itself is never written: two adjacent tests pin both halves rather than leaving it to this
 paragraph.
+
+### What a published claim gives away
+
+The value is never *written* to the ledger. That is not the same as the value being unknowable, and
+the difference is worth stating plainly rather than being discovered by whoever checks.
+
+**A bound of zero is a full disclosure.** `proveFieldAtMost(writeOffCategory, 0)` publishes the
+bound, and the field is a `Uint<64>`, so `value <= 0` and `value >= 0` together fix the value at
+exactly 0. "Never written off" and "no reported accidents" are claims of this shape. They are
+meant to be: the honest reading is that the holder chose to reveal that fact, not that the fact
+stayed hidden. The contract test group says the same thing in the one place it matters, that *"0 is
+both the bound and the value here, so it cannot be used to separate them"*.
+
+**Claims accumulate, and they are permanent.** Each claim writes its bound under a key that
+includes that bound, so a second claim with a different bound does not replace the first, it joins
+it. A field with `atLeast 80000` and `atMost 100000` against it has its value pinned to a 20,000
+wide window by two readable facts. Nothing in the contract limits how many claims a slot may carry,
+so a holder who answers enough differently-phrased questions narrows their own value towards a
+point. A verifier only ever needs one claim; issuing a new bound for each asker is what costs
+privacy.
+
+**Two rules interact with this.** For a `neverChanges` field the commitment never rotates, so the
+window only ever narrows and nothing resets it. For a `neverFalls` field an old `atLeast X` claim
+still implies the *current* value is at least X, because the rule says so, even after an update has
+moved the commitment and made that claim formally stale.
+
+None of this is a defect in the circuits, which disclose exactly what they are asked to. It is the
+cost of recording a verdict instead of re-proving it on demand ([D19](docs/DECISIONS.md#settled)),
+and the mitigation is operational: reuse a standard bound rather than minting a bespoke one per
+enquiry.
 
 This is tested rather than claimed. `test/passport.test.mjs` includes a group named
 *what the public ledger never learns*, which walks every value on the ledger after a full service

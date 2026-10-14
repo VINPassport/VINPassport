@@ -224,6 +224,12 @@ if (mode === '--msg') {
         // fair game.
         if (/\.local\.md$/.test(file)) continue;
         if (/check-disclosure\.mjs$/.test(file)) continue;
+        // Its test, for the same reason this file is excluded: proving the
+        // guard catches a finding means holding specimen findings, and a
+        // detector cannot be tested without the thing it detects. Narrow on
+        // purpose, one named file, not a pattern that would cover test/ at
+        // large.
+        if (/test[\\/]app[\\/]disclosure-guard\.test\.mjs$/.test(file)) continue;
         if (isExempt(file, line)) continue;
         hits.push(...scan(text, file).map((h) => ({ ...h, line })));
     }
