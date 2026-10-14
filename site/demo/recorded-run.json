@@ -1,0 +1,86 @@
+{
+  "note": "A recording of the guided run of 13 October 2026, kept so the page can still show a real run while no circuit server is answering. Every field below is already public on the preprod chain: the claims and their bounds are on the ledger, and no field reading appears here, because none was published.",
+  "network": "preprod",
+  "contractAddress": "c8dc0aa462cc5058e68b0239e89d65b1562520db3ba9eb79daa15685e04f7957",
+  "vinHash": "e838bfc057cb38e390c3120c81c4a941c3dad5c0634d2d04d71b0fc3852486a0",
+  "registrarId": "9ecd472baaaa93fe3f1dd92b610c7ae4fff14bed398f3e48530402812a2938be",
+  "contentRoot": "89cbe1fb7a62e10b7f7b01bef63c824648a055d5c00c5751fa9c71e3a5e9df41",
+  "finishedAt": "2026-10-13T13:34:17.781Z",
+  "stages": [
+    {
+      "stage": 1,
+      "label": "2 calls: registerPassport + initialiseField odometerKm",
+      "calls": [
+        "registerPassport",
+        "initialiseField odometerKm"
+      ],
+      "txHash": "dfb9ef19f3b791b211bf0eb5f035611418f167406c3c3bb2683d8a35b3ff578b",
+      "blockHeight": 2963321,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/dfb9ef19f3b791b211bf0eb5f035611418f167406c3c3bb2683d8a35b3ff578b"
+    },
+    {
+      "stage": 2,
+      "label": "initialiseField accidentCount",
+      "calls": [
+        "initialiseField accidentCount"
+      ],
+      "txHash": "6dc50ddd55ced14190e7fe620fe097595219d7c8b8f83eb74843fcefa863aa34",
+      "blockHeight": 2963336,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/6dc50ddd55ced14190e7fe620fe097595219d7c8b8f83eb74843fcefa863aa34"
+    },
+    {
+      "stage": 3,
+      "label": "initialiseField ownerCount",
+      "calls": [
+        "initialiseField ownerCount"
+      ],
+      "txHash": "153ea956679f05f3b53e4d74b49f7863c0e9fb39277644de1390d74970e10489",
+      "blockHeight": 2963348,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/153ea956679f05f3b53e4d74b49f7863c0e9fb39277644de1390d74970e10489"
+    },
+    {
+      "stage": 4,
+      "label": "update 1: odometerKm, new value committed",
+      "calls": [
+        "update 1: odometerKm, new value committed"
+      ],
+      "txHash": "45680371483a044f5a3b73d5a9f9641ded024dcf194d1d2aca254dffea2b18e7",
+      "blockHeight": 2963364,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/45680371483a044f5a3b73d5a9f9641ded024dcf194d1d2aca254dffea2b18e7"
+    },
+    {
+      "stage": 5,
+      "label": "2 calls: prove noAccidents + prove mileageUnder 150000",
+      "calls": [
+        "prove noAccidents",
+        "prove mileageUnder 150000"
+      ],
+      "txHash": "b62e2d207808737bc05d49312dd7591348bfefe68eb855cd5c53539aac8aa47f",
+      "blockHeight": 2963430,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/b62e2d207808737bc05d49312dd7591348bfefe68eb855cd5c53539aac8aa47f"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "noAccidents",
+      "label": "No reported accidents",
+      "outcome": "proven on-chain"
+    },
+    {
+      "claim": "oneKeeper",
+      "label": "One keeper",
+      "outcome": "refused in-circuit - nothing written"
+    },
+    {
+      "claim": "mileageUnder",
+      "label": "Mileage under 150000 km",
+      "outcome": "proven on-chain"
+    }
+  ],
+  "refused": [
+    {
+      "step": "prove oneKeeper",
+      "reason": "value above the claimed bound"
+    }
+  ]
+}

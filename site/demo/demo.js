@@ -162,6 +162,78 @@ goBtn.addEventListener('click', async () => {
     await follow(started.jobId);
 });
 
+/**
+ * No server answering does not have to mean nothing to show. A guided run
+ * really happened on preprod; render it from its public half, labelled as a
+ * recording so nobody mistakes it for a live one. Everything in the file is
+ * already on the chain, which is also the point: it is all a stranger can see.
+ */
+/** The refused step's own label, falling back to its identifier. */
+function refusedLabel(run) {
+    const step = run.refused[0].step.replace(/^prove /, '');
+    const match = run.claims.find((c) => c.claim === step);
+    return match?.label ?? step;
+}
+
+async function showRecordedRun() {
+    if (!runHost || runHost.childElementCount) return;
+    let run;
+    try {
+        const r = await fetch('recorded-run.json', { cache: 'no-store' });
+        if (!r.ok) return;
+        run = await r.json();
+    } catch { return; }
+
+    const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const when = new Date(run.finishedAt).toLocaleDateString('en-GB',
+        { day: 'numeric', month: 'long', year: 'numeric' });
+    const short = (h) => esc(h.slice(0, 10)) + '…' + esc(h.slice(-6));
+
+    const stages = run.stages.map((s) => `
+      <div style="display:grid;grid-template-columns:28px 1fr;gap:10px;padding:11px 0;border-top:1px solid rgba(0,74,173,.16)">
+        <span class="mono" style="font-size:11px;color:rgba(14,23,38,.45);padding-top:2px">0${s.stage}</span>
+        <div>
+          <b style="display:block;font-size:13px;color:#0E1726">${esc(s.label)}</b>
+          <span class="mono" style="display:block;margin-top:4px;font-size:10.5px;color:rgba(14,23,38,.55)">block ${s.blockHeight} &middot; tx ${short(s.txHash)}</span>
+          <a href="${esc(s.explorer)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:5px;font-size:12px;color:#004AAD">open in the preprod explorer &rarr;</a>
+        </div>
+      </div>`).join('');
+
+    const claims = run.claims.map((c) => {
+        const refused = /refused/i.test(c.outcome);
+        return `<li style="margin:0 0 5px;font-size:13px;color:rgba(14,23,38,.78)">
+          <b style="color:#0E1726">${esc(c.label)}</b>: ${refused ? '<span style="color:#8B4A2B">' : '<span>'}${esc(c.outcome)}</span></li>`;
+    }).join('');
+
+    runHost.innerHTML = `
+    <section style="margin:26px 0 0;border:1px solid rgba(0,74,173,.3);background:#EDE4D8;padding:17px 19px">
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;justify-content:space-between">
+        <b style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.06em;font-size:15px;color:#0E1726">A RUN THAT ALREADY HAPPENED</b>
+        <span style="font-size:12px;color:rgba(14,23,38,.55)">recorded ${esc(when)}, not live</span>
+      </div>
+      <p style="margin:9px 0 0;font-size:13px;line-height:1.55;color:rgba(14,23,38,.78)">
+        No circuit server is answering, so you cannot start a run from this page today. This one
+        was real: five transactions, proven and submitted to preprod, in blocks
+        ${run.stages[0].blockHeight} to ${run.stages[run.stages.length - 1].blockHeight}. Every hash below is
+        on the public chain and you can check any of them without us.
+      </p>
+      <div style="margin:13px 0 0">${stages}</div>
+      <div style="margin:15px 0 0;padding-top:13px;border-top:1px solid rgba(0,74,173,.16)">
+        <b style="display:block;font-size:13px;color:#0E1726;margin-bottom:6px">What the run claimed</b>
+        <ul style="margin:0;padding-left:17px">${claims}</ul>
+        ${run.refused.length ? `<p style="margin:9px 0 0;font-size:12.5px;line-height:1.5;color:rgba(14,23,38,.6)">
+          The refusal is the part worth watching, and the one part you cannot look up: the
+          circuit would not produce the claim &quot;${esc(refusedLabel(run))}&quot;, because the
+          record did not support it. A refused claim writes nothing, which is why there are five
+          transactions above and not six. No server decided that; the arithmetic did.</p>` : ''}
+      </div>
+      <p class="mono" style="margin:14px 0 0;font-size:10.5px;line-height:1.6;color:rgba(14,23,38,.5);word-break:break-all">
+        contract ${esc(run.contractAddress)}<br>vin hash ${esc(run.vinHash)}
+      </p>
+    </section>`;
+}
+
 (async () => {
     try { base = await apiBase(); }
     catch {
@@ -170,9 +242,11 @@ goBtn.addEventListener('click', async () => {
         // visitor can still see the circuits run.
         capLine.textContent = 'No circuit server is answering, so the guided run is unavailable. '
             + 'The manual console still runs the real circuits.';
+        await showRecordedRun();
         return;
     }
-    await refreshStatus();
+    const status = await refreshStatus();
+    if (!status?.enabled || status.error) await showRecordedRun();
     watchUntilReady();
     const existing = new URLSearchParams(location.search).get('job');
     if (existing) await follow(existing);
