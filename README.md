@@ -117,7 +117,7 @@ seconds.
 | `npm test` | Everything below, in one run |
 | `npm run test:contract` | The 99 contract tests, against the compiled circuits |
 | `npm run test:watch` | The same, re-running on change |
-| `npm run test:app` | 104 tests on the application paths: verdicts, the deploy's registrar list, the submission path and the chain-sees panel, via `node --test` |
+| `npm run test:app` | 104 tests on the application paths: verdicts, the deploy's registrar list, the submission path, the chain-sees panel and the QR encoder, via `node --test`. **83 of these import and run product code; 21 assert on what is written in the repository** (that every screenshot the guide names exists, that each page's bar carries the same links, that no text colour drops below the contrast floor). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
 | `npm run test:sdk` | 24 assertions pinning our assumptions about `@odatano/dpp-sdk` |
 | `npm run app` | All three surfaces + the circuits, one dependency-free server |
 | `npm run serve:site` | The site statically, as GitHub Pages serves it: no circuits, demo state only |
