@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guide &middot; VINPassport</title>
+<meta name="description" content="Step by step through both sides of a vehicle passport: creating a record, and verifying one. Every step shows the real screen and says why it works that way.">
+<link rel="icon" href="../favicon.ico" sizes="32x32">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="VINPassport">
+<meta property="og:title" content="VINPassport &middot; The guide">
+<meta property="og:description" content="Creating a record, and verifying one. Both journeys, screen by screen.">
+<meta property="og:url" content="https://passport.vin/guide/">
+<meta property="og:image" content="https://passport.vin/assets/vinpassport-banner.png">
+<meta property="og:image:width" content="1500">
+<meta property="og:image:height" content="500">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://passport.vin/assets/vinpassport-banner.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700&family=Barlow+Condensed:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../assets/site.css?v=8">
+</head>
+<body>
+<div style="max-width:1200px;margin:0 auto;padding:0 var(--edge)">
+
+  <nav style="display:flex;align-items:center;flex-wrap:wrap;gap:14px 26px;padding:18px 0;min-height:75px;border-bottom:1px solid rgba(0,74,173,.26)">
+    <a href="../" style="display:flex;align-items:center;margin-right:auto;flex:none;text-decoration:none">
+      <img src="../assets/vinpassport-logo.png" alt="VINPassport" width="546" height="102" style="height:32px;width:auto">
+    </a>
+    <div class="nav-links" id="navmenu">
+      <span style="font-size:14px;color:#004AAD;white-space:nowrap;border-bottom:2px solid #004AAD;padding-bottom:2px">Guide</span>
+      <a href="../#how" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">How it works</a>
+      <a href="../regulation/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Regulation</a>
+      <a href="../#limits" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Honest limits</a>
+      <a href="../demo/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Live demo</a>
+      <a href="../verify/" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;background:#004AAD;color:#EDE4D8;border:1px solid #004AAD;padding:9px 20px;white-space:nowrap;flex:none">SCAN A VEHICLE</a>
+    </div>
+    <button class="nav-burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="navmenu"><i></i><i></i><i></i></button>
+  </nav>
+
+  <section style="padding:clamp(40px,7vw,76px) 0 34px">
+    <span style="display:block;font:600 13px Barlow,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#002E6E;margin-bottom:12px">The guide</span>
+    <h1 class="hero-head" style="margin:0;letter-spacing:.01em;text-transform:uppercase;max-width:17ch">Both sides of a passport</h1>
+    <p style="font-size:17px;line-height:1.55;max-width:62ch;margin:24px 0 0;color:rgba(14,23,38,.82)">A vehicle passport has two users who never meet. One <b>creates the record</b>, usually at registration or at a service. The other <b>checks it</b>, usually minutes before handing over money. This page walks both journeys, screen by screen, and says why each step works the way it does.</p>
+    <p style="font-size:15px;line-height:1.55;max-width:62ch;margin:16px 0 0;color:rgba(14,23,38,.68)">Every screenshot below is the real interface, captured from the running product against the compiled circuits. None of it is a drawing of something we intend to build.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:26px">
+      <a href="#create" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.06em;background:#004AAD;color:#EDE4D8;border:1px solid #004AAD;padding:12px 22px">CREATING A RECORD</a>
+      <a href="#verify" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.06em;color:#0E1726;border:1px solid rgba(0,74,173,.28);padding:12px 22px">VERIFYING A RECORD</a>
+    </div>
+  </section>
+
+  <section id="create" style="padding:14px 0 50px">
+    <span style="display:block;font:600 13px Barlow,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#002E6E;margin-bottom:12px">Part one &middot; Creating a record</span>
+    <div style="height:1px;background:rgba(0,74,173,.26);margin-bottom:22px"></div>
+    <p style="font-size:16px;line-height:1.6;max-width:64ch;margin:0 0 34px;color:rgba(14,23,38,.82)">This is the registrar's path: a manufacturer, a registration authority, a tester or a workshop putting a vehicle on the register. Open <a href="../intake/" style="color:#004AAD">the intake console</a> in another tab and follow along. Seven steps, and the last one runs real circuits.</p>
+
+      <article style="margin:0 0 44px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">C01</span>
+          <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Say what kind of passport this is</h3>
+        </div>
+        <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
+          <img src="shots/c1-passport-type.png" alt="Say what kind of passport this is" loading="lazy" decoding="async" width="2200" height="380" style="display:block;width:100%;height:auto;aspect-ratio:2200/380;max-width:1100px">
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:18px 30px;margin-top:16px">
+          <div style="flex:1 1 290px;min-width:0">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">What to do</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">Pick <b>new vehicle</b> if the record starts at the factory, or <b>existing vehicle</b> if you are bringing a car that already has a history onto the register.</p>
+          </div>
+          <div style="flex:1 1 290px;min-width:0;padding-left:18px;border-left:3px solid rgba(0,74,173,.3)">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">Why it works that way</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">The answer is itself a field on the chain, at slot 30. A record that begins at zero kilometres is a much stronger statement than one that begins mid-life, and a verifier is entitled to know which they are reading. Hiding that distinction would make every later claim harder to trust, so the passport carries it in the open.</p>
+          </div>
+        </div>
+      </article>
+
+      <article style="margin:0 0 44px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">C02</span>
+          <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Choose a demonstration vehicle, or fill the form yourself</h3>
+        </div>
+        <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
+          <img src="shots/c2-vehicle.png" alt="Choose a demonstration vehicle, or fill the form yourself" loading="lazy" decoding="async" width="2200" height="368" style="display:block;width:100%;height:auto;aspect-ratio:2200/368;max-width:1100px">
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:18px 30px;margin-top:16px">
+          <div style="flex:1 1 290px;min-width:0">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">What to do</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">The list is filtered by the passport type you just chose. Pick one and the fields below fill in, or ignore it and type your own.</p>
+          </div>
+          <div style="flex:1 1 290px;min-width:0;padding-left:18px;border-left:3px solid rgba(0,74,173,.3)">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">Why it works that way</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">The demo fleet exists so you can walk the whole path without inventing plausible data, and every vehicle in it is fictional. If you are trying this with a real car, fill the form yourself. Nothing you type is sent anywhere until you press the button at the end.</p>
+          </div>
+        </div>
+      </article>
+
+      <article style="margin:0 0 44px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">C03</span>
+          <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Enter the VIN and the identity fields</h3>
+        </div>
+        <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
+          <img src="shots/c3-identity.png" alt="Enter the VIN and the identity fields" loading="lazy" decoding="async" width="2200" height="758" style="display:block;width:100%;height:auto;aspect-ratio:2200/758;max-width:1100px">
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:18px 30px;margin-top:16px">
+          <div style="flex:1 1 290px;min-width:0">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">What to do</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">The VIN, the registrar, a short description, the vehicle category and fuel type, and the battery passport identifier if the vehicle has one.</p>
+          </div>
+          <div style="flex:1 1 290px;min-width:0;padding-left:18px;border-left:3px solid rgba(0,74,173,.3)">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">Why it works that way</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">The VIN is <b>hashed in your browser before anything leaves it</b>. That hash is the only vehicle identifier that ever reaches the chain, and every field slot is derived from it, which is why two vehicles can never collide and why reading the chain gives nobody a list of VINs. The battery identifier is the join to the battery passport, which becomes mandatory in February 2027, five years before this one does.</p>
+          </div>
+        </div>
+      </article>
+
+      <article style="margin:0 0 44px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">C04</span>
+          <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Record the values as they stand at registration</h3>
+        </div>
+        <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
+          <img src="shots/c4-record.png" alt="Record the values as they stand at registration" loading="lazy" decoding="async" width="2200" height="324" style="display:block;width:100%;height:auto;aspect-ratio:2200/324;max-width:1100px">
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:18px 30px;margin-top:16px">
+          <div style="flex:1 1 290px;min-width:0">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">What to do</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">Mileage, accident count, keepers, write-off category, service count. Enter what is true at the moment the record is created.</p>
+          </div>
+          <div style="flex:1 1 290px;min-width:0;padding-left:18px;border-left:3px solid rgba(0,74,173,.3)">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">Why it works that way</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">These five go in under an <b>integrity rule that is fixed at creation and cannot be changed afterwards</b>: none of them may ever fall. That is the heart of the thing. A later write that would make the odometer smaller is not rejected by a server choosing to be strict. The circuit cannot produce a proof for it, so there is nothing to submit.</p>
+          </div>
+        </div>
+      </article>
+
+      <article style="margin:0 0 44px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">C05</span>
+          <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Choose the claims to prove</h3>
+        </div>
+        <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
+          <img src="shots/c5-claims.png" alt="Choose the claims to prove" loading="lazy" decoding="async" width="2200" height="456" style="display:block;width:100%;height:auto;aspect-ratio:2200/456;max-width:1100px">
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:18px 30px;margin-top:16px">
+          <div style="flex:1 1 290px;min-width:0">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">What to do</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">Tick the questions you want this passport to be able to answer. Each one becomes a separate proof.</p>
+          </div>
+          <div style="flex:1 1 290px;min-width:0;padding-left:18px;border-left:3px solid rgba(0,74,173,.3)">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">Why it works that way</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">A claim is <b>a question with a bound, not a value</b>. Proving "no reported accidents" publishes the bound and a commitment; it never publishes the count. Tick only what a buyer will actually ask, because each claim is a real proof with a real cost, and an unasked question is better left unanswered than answered expensively.</p>
+          </div>
+        </div>
+      </article>
+
+      <article style="margin:0 0 44px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">C06</span>
+          <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Choose where it runs, then register and prove</h3>
+        </div>
+        <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
+          <img src="shots/c6-where-and-run.png" alt="Choose where it runs, then register and prove" loading="lazy" decoding="async" width="2200" height="506" style="display:block;width:100%;height:auto;aspect-ratio:2200/506;max-width:1100px">
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:18px 30px;margin-top:16px">
+          <div style="flex:1 1 290px;min-width:0">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">What to do</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">Local circuits run the real compiled contract on this machine, with no fees and no network. Preprod submits to the Midnight test network. Then press <b>REGISTER &amp; PROVE</b>.</p>
+          </div>
+          <div style="flex:1 1 290px;min-width:0;padding-left:18px;border-left:3px solid rgba(0,74,173,.3)">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">Why it works that way</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">Both options run the same circuits, so a local run proves exactly the same things about the record. What it does not do is leave a public trace. Choose preprod only when you want that trace, because <b>those writes are permanent</b>: a VIN can never be registered twice, and a field is initialised once with its rule fixed at that moment.</p>
+          </div>
+        </div>
+      </article>
+
+      <article style="margin:0 0 44px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">C07</span>
+          <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Read what the circuits did</h3>
+        </div>
+        <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
+          <img src="shots/c7-result.png" alt="Read what the circuits did" loading="lazy" decoding="async" width="2200" height="1268" style="display:block;width:100%;height:auto;aspect-ratio:2200/1268;max-width:1100px">
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:18px 30px;margin-top:16px">
+          <div style="flex:1 1 290px;min-width:0">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">What to do</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">Each row is one circuit call and whether the contract accepted it. The counter at the top right gives the totals.</p>
+          </div>
+          <div style="flex:1 1 290px;min-width:0;padding-left:18px;border-left:3px solid rgba(0,74,173,.3)">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">Why it works that way</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">This is the record of the run, not a success banner. Had a claim been refused it would say so here, and <b>nothing would have been written for it</b>. That is the behaviour worth watching: a refusal leaves no transaction behind, because a proof that cannot be produced is never submitted. From here, <b>VIEW THIS PASSPORT</b> shows what a buyer would see.</p>
+          </div>
+        </div>
+      </article>
+    <div style="border:1px solid rgba(0,74,173,.26);background:rgba(0,74,173,.05);padding:18px 20px">
+      <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">Before you do this for real</span>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">On a public network these writes cannot be undone. A VIN cannot be registered a second time, and a field is initialised once with its integrity rule fixed at that moment. Run it locally until the record you are entering is the record you mean.</p>
+    </div>
+  </section>
+
+  <section id="verify" style="padding:14px 0 50px">
+    <span style="display:block;font:600 13px Barlow,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#002E6E;margin-bottom:12px">Part two &middot; Verifying a record</span>
+    <div style="height:1px;background:rgba(0,74,173,.26);margin-bottom:22px"></div>
+    <p style="font-size:16px;line-height:1.6;max-width:64ch;margin:0 0 34px;color:rgba(14,23,38,.82)">This is the buyer's path, and it needs <b>no wallet, no account and no login</b>. Scan a code, or open <a href="../verify/" style="color:#004AAD">the verify page</a>. Nine steps, and the last one is checking the answer without us.</p>
+
+      <article style="margin:0 0 44px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V01</span>
+          <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Read what the page is before you read the answer</h3>
+        </div>
+        <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
+          <img src="shots/v1-how-to-read.png" alt="Read what the page is before you read the answer" loading="lazy" decoding="async" width="2200" height="436" style="display:block;width:100%;height:auto;aspect-ratio:2200/436;max-width:1100px">
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:18px 30px;margin-top:16px">
+          <div style="flex:1 1 290px;min-width:0">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">What to do</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">The block at the top says what this page is, who it is for, and what it does not do.</p>
+          </div>
+          <div style="flex:1 1 290px;min-width:0;padding-left:18px;border-left:3px solid rgba(0,74,173,.3)">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">Why it works that way</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">A verdict with no stated scope is worth very little. This page is one buyer’s view of one vehicle, and saying so first is what lets the rest of it be read plainly.</p>
+          </div>
+        </div>
+      </article>
+
+      <article style="margin:0 0 44px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V02</span>
+          <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Look at what identifies the vehicle</h3>
+        </div>
+        <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
+          <img src="shots/v2-verdict-head.png" alt="Look at what identifies the vehicle" loading="lazy" decoding="async" width="2232" height="344" style="display:block;width:100%;height:auto;aspect-ratio:2232/344;max-width:1116px">
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:18px 30px;margin-top:16px">
+          <div style="flex:1 1 290px;min-width:0">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">What to do</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">The heading names the vehicle in human terms. Underneath it is the VIN hash.</p>
+          </div>
+          <div style="flex:1 1 290px;min-width:0;padding-left:18px;border-left:3px solid rgba(0,74,173,.3)">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">Why it works that way</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">You are being shown <b>a hash, not a VIN</b>, and that is deliberate. The hash is what the chain holds. Hashing runs one way, so publishing it hands nobody the VIN, while still letting you confirm you are reading the record for the car in front of you.</p>
+          </div>
+        </div>
+      </article>
+
+      <article style="margin:0 0 44px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V03</span>
+          <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Read the four questions</h3>
+        </div>
+        <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
+          <img src="shots/v3-claims.png" alt="Read the four questions" loading="lazy" decoding="async" width="2200" height="620" style="display:block;width:100%;height:auto;aspect-ratio:2200/620;max-width:1100px">
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:18px 30px;margin-top:16px">
+          <div style="flex:1 1 290px;min-width:0">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">What to do</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">Each row is one question, with a tick where the record answers it and a dash where it does not.</p>
+          </div>
+          <div style="flex:1 1 290px;min-width:0;padding-left:18px;border-left:3px solid rgba(0,74,173,.3)">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">Why it works that way</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">These are the questions a used-car buyer actually asks. The page puts the answer and the bound on the same line, so you see not only that the record answered but <b>exactly what it answered</b>. "Under 150,000 km" is a different statement from "under 10,000 km", and the row says which one was proven.</p>
+          </div>
+        </div>
+      </article>
+
+      <article style="margin:0 0 44px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V04</span>
+          <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Open one claim and read the proof</h3>
+        </div>
+        <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
+          <img src="shots/v4-claim-open.png" alt="Open one claim and read the proof" loading="lazy" decoding="async" width="2200" height="482" style="display:block;width:100%;height:auto;aspect-ratio:2200/482;max-width:1100px">
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:18px 30px;margin-top:16px">
+          <div style="flex:1 1 290px;min-width:0">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">What to do</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">Expand any row. You get the claim, the field key, the commitment it was proven against, and the ledger slot.</p>
+          </div>
+          <div style="flex:1 1 290px;min-width:0;padding-left:18px;border-left:3px solid rgba(0,74,173,.3)">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">Why it works that way</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">This is the whole product in one box. A zero-knowledge proof was accepted on the ledger, and it could not have been produced unless the hidden value satisfied the bound. <b>The value is not here because it was never published.</b> You are not being asked to trust that we hide it carefully; it was never on the chain to hide.</p>
+          </div>
+        </div>
+      </article>
+
+      <article style="margin:0 0 44px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V05</span>
+          <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Read what a tick does not mean</h3>
+        </div>
+        <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
+          <img src="shots/v8-caveat.png" alt="Read what a tick does not mean" loading="lazy" decoding="async" width="1028" height="296" style="display:block;width:100%;height:auto;aspect-ratio:1028/296;max-width:514px">
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:18px 30px;margin-top:16px">
+          <div style="flex:1 1 290px;min-width:0">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">What to do</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">The caveat sits on the page by default, not behind a link.</p>
+          </div>
+          <div style="flex:1 1 290px;min-width:0;padding-left:18px;border-left:3px solid rgba(0,74,173,.3)">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">Why it works that way</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">A proof shows that the record says so, and that the record has not been changed since. It does not show that the record matched the physical car when it was written. <b>That is the registrar’s word</b>, which is why every passport names one, and why this page says so out loud rather than letting a tick imply more than it carries.</p>
+          </div>
+        </div>
+      </article>
+
+      <article style="margin:0 0 44px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V06</span>
+          <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Understand that not proven is not a no</h3>
+        </div>
+        <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
+          <img src="shots/v9-not-proven.png" alt="Understand that not proven is not a no" loading="lazy" decoding="async" width="2200" height="1090" style="display:block;width:100%;height:auto;aspect-ratio:2200/1090;max-width:1100px">
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:18px 30px;margin-top:16px">
+          <div style="flex:1 1 290px;min-width:0">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">What to do</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">Open the second vehicle. Most of its rows say <b>not proven</b>.</p>
+          </div>
+          <div style="flex:1 1 290px;min-width:0;padding-left:18px;border-left:3px solid rgba(0,74,173,.3)">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">Why it works that way</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">A failed proof writes nothing at all, so from outside, a claim nobody tried and a claim the record could not support look identical. The page therefore refuses to render silence as a denial. <b>Not proven is a question the seller has declined to answer</b>, and if the claim were true of the record, producing it would cost one transaction. Asking for it is reasonable.</p>
+          </div>
+        </div>
+      </article>
+
+      <article style="margin:0 0 44px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V07</span>
+          <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Check what the chain actually holds</h3>
+        </div>
+        <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
+          <img src="shots/v5-chain-sees.png" alt="Check what the chain actually holds" loading="lazy" decoding="async" width="1174" height="2376" style="display:block;width:100%;height:auto;aspect-ratio:1174/2376;max-width:587px">
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:18px 30px;margin-top:16px">
+          <div style="flex:1 1 290px;min-width:0">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">What to do</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">Open <b>WHAT THE CHAIN SEES</b>. It lists every public value for this vehicle, and then everything that stays off the ledger.</p>
+          </div>
+          <div style="flex:1 1 290px;min-width:0;padding-left:18px;border-left:3px solid rgba(0,74,173,.3)">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">Why it works that way</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">Most systems tell you what they protect. This one lists <b>what it publishes and what it does not</b>, in the same panel, because a verifier who reads silence as a denial is the exact failure this project exists to prevent. The VIN, every field value, the salts and the registrar’s secret are each named as absent rather than left to be worked out.</p>
+          </div>
+        </div>
+      </article>
+
+      <article style="margin:0 0 44px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V08</span>
+          <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">See who stands behind the record</h3>
+        </div>
+        <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
+          <img src="shots/v6-summary.png" alt="See who stands behind the record" loading="lazy" decoding="async" width="1176" height="272" style="display:block;width:100%;height:auto;aspect-ratio:1176/272;max-width:588px">
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:18px 30px;margin-top:16px">
+          <div style="flex:1 1 290px;min-width:0">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">What to do</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">The summary names the registrar identity, counts the claims on the ledger, and says where the data came from.</p>
+          </div>
+          <div style="flex:1 1 290px;min-width:0;padding-left:18px;border-left:3px solid rgba(0,74,173,.3)">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">Why it works that way</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">A passport that cannot say who wrote it is not worth checking. The registrar identity is <b>derived inside the circuit from a secret the registrar holds</b>, so the chain records who wrote the record without ever seeing how they proved it, and without anyone being able to write under an identity they do not hold.</p>
+          </div>
+        </div>
+      </article>
+
+      <article style="margin:0 0 44px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V09</span>
+          <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Check it yourself, without us</h3>
+        </div>
+        <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
+          <img src="shots/v7-proofs.png" alt="Check it yourself, without us" loading="lazy" decoding="async" width="2200" height="738" style="display:block;width:100%;height:auto;aspect-ratio:2200/738;max-width:1100px">
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:18px 30px;margin-top:16px">
+          <div style="flex:1 1 290px;min-width:0">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">What to do</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">Open the proofs page for every claim on the ledger, or query the public indexer directly with the command the demo page gives you.</p>
+          </div>
+          <div style="flex:1 1 290px;min-width:0;padding-left:18px;border-left:3px solid rgba(0,74,173,.3)">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">Why it works that way</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">Nothing above has to be taken on trust, which is the point of putting it on a chain at all. The contract is public, every transaction is public, and you can confirm that the claims resolve without asking us for permission and without an account.</p>
+          </div>
+        </div>
+      </article>
+  </section>
+
+  <section style="padding:0 0 70px">
+    <div style="border:1px solid rgba(0,74,173,.26);padding:clamp(20px,3vw,28px)">
+      <h2 style="margin:0;font-size:22px;line-height:1.1;letter-spacing:.02em;text-transform:uppercase">Where to go next</h2>
+      <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:18px">
+        <a href="../intake/" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.06em;background:#004AAD;color:#EDE4D8;border:1px solid #004AAD;padding:12px 22px">CREATE A RECORD</a>
+        <a href="../verify/" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.06em;color:#0E1726;border:1px solid rgba(0,74,173,.28);padding:12px 22px">SEE A VERDICT</a>
+        <a href="../regulation/" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.06em;color:#0E1726;border:1px solid rgba(0,74,173,.28);padding:12px 22px">THE REGULATION</a>
+        <a href="../demo/" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.06em;color:#0E1726;border:1px solid rgba(0,74,173,.28);padding:12px 22px">A RUN ON PREPROD</a>
+      </div>
+    </div>
+  </section>
+
+  <footer style="padding:26px 0 48px;border-top:1px solid rgba(0,74,173,.26);display:flex;flex-wrap:wrap;gap:16px 32px;align-items:center;font-size:13px;color:rgba(14,23,38,.7)">
+    <img src="../assets/vinpassport-logo.png" alt="VINPassport" width="546" height="102" style="height:24px;width:auto">
+    <span>Proving a vehicle identity.</span>
+    <span class="ft-meta" style="margin-left:auto;min-width:0">Apache-2.0 &middot; Reg (EU) 2026/1738 &middot; Midnight Network</span>
+  </footer>
+
+</div>
+<script type="module" src="../assets/nav.mjs?v=1"></script>
+</body>
+</html>
