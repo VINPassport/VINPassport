@@ -36,7 +36,7 @@
       <a href="../#how" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">How it works</a>
       <a href="../regulation/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Regulation</a>
       <a href="../demo/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Live demo</a>
-      <a href="../verify/" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;background:#004AAD;color:#EDE4D8;border:1px solid #004AAD;padding:9px 20px;white-space:nowrap;flex:none">SCAN A VEHICLE</a>
+      <a href="../verify/" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;background:transparent;color:#0E1726;border:1px solid rgba(0,74,173,.28);padding:9px 20px;white-space:nowrap;flex:none">SCAN A VEHICLE</a>
       <a href="../intake/" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;background:#004AAD;color:#EDE4D8;border:1px solid #004AAD;padding:9px 20px;white-space:nowrap;flex:none">ADD PASSPORT</a>
     </div>
     <button class="nav-burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="navmenu"><i></i><i></i><i></i></button>
@@ -56,7 +56,7 @@
   <section id="create" style="padding:14px 0 50px">
     <span style="display:block;font:600 13px Barlow,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#002E6E;margin-bottom:12px">Part one &middot; Creating a record</span>
     <div style="height:1px;background:rgba(0,74,173,.26);margin-bottom:22px"></div>
-    <p style="font-size:16px;line-height:1.6;max-width:64ch;margin:0 0 34px;color:rgba(14,23,38,.82)">This is the registrar's path: a manufacturer, a registration authority, a tester or a workshop putting a vehicle on the register. Open <a href="../intake/" style="color:#004AAD">the intake console</a> in another tab and follow along. Seven steps, and the last one runs real circuits.</p>
+    <p style="font-size:16px;line-height:1.6;max-width:64ch;margin:0 0 34px;color:rgba(14,23,38,.82)">This is the registrar's path: a manufacturer, a registration authority, a tester or a workshop putting a vehicle on the register. Open <a href="../intake/" style="color:#004AAD">the intake console</a> in another tab and follow along. Eight steps, and the last two produce something you can put on the car.</p>
 
       <article style="margin:0 0 44px">
         <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
@@ -197,6 +197,26 @@
           </div>
         </div>
       </article>
+
+      <article style="margin:0 0 44px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">C08</span>
+          <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Take the code and put it on the car</h3>
+        </div>
+        <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
+          <img src="shots/c8-code.png" alt="Take the code and put it on the car" loading="lazy" decoding="async" width="2002" height="552" style="display:block;width:100%;height:auto;aspect-ratio:2002/552;max-width:1001px">
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:18px 30px;margin-top:16px">
+          <div style="flex:1 1 290px;min-width:0">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">What to do</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">The run produces a QR code for this vehicle. <b>COPY LINK</b> gives you the address; <b>DOWNLOAD THE CODE</b> gives you an SVG to print at any size. Put it on the windscreen, the service book, or the listing.</p>
+          </div>
+          <div style="flex:1 1 290px;min-width:0;padding-left:18px;border-left:3px solid rgba(0,74,173,.3)">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">Why it works that way</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">This is the step that makes the record reachable by someone who is not sitting at your computer, and it is the mechanism the law names: Euro 7 <b>Article 7(4)</b> requires passport data to be available <b>through a QR code</b>, or a similar method. The code carries a link and the vehicle hash, nothing else. Anyone who photographs the sticker learns exactly what anyone reading the public ledger already knows, which is why it is safe to leave on a windscreen.</p>
+          </div>
+        </div>
+      </article>
     <div style="border:1px solid rgba(0,74,173,.26);background:rgba(0,74,173,.05);padding:18px 20px">
       <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">Before you do this for real</span>
       <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">On a public network these writes cannot be undone. A VIN cannot be registered a second time, and a field is initialised once with its integrity rule fixed at that moment. Run it locally until the record you are entering is the record you mean.</p>
@@ -206,11 +226,31 @@
   <section id="verify" style="padding:14px 0 50px">
     <span style="display:block;font:600 13px Barlow,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#002E6E;margin-bottom:12px">Part two &middot; Verifying a record</span>
     <div style="height:1px;background:rgba(0,74,173,.26);margin-bottom:22px"></div>
-    <p style="font-size:16px;line-height:1.6;max-width:64ch;margin:0 0 34px;color:rgba(14,23,38,.82)">This is the buyer's path, and it needs <b>no wallet, no account and no login</b>. Scan a code, or open <a href="../verify/" style="color:#004AAD">the verify page</a>. Nine steps, and the last one is checking the answer without us.</p>
+    <p style="font-size:16px;line-height:1.6;max-width:64ch;margin:0 0 34px;color:rgba(14,23,38,.82)">This is the buyer's path, and it needs <b>no wallet, no account and no login</b>. Scan a code, or open <a href="../verify/" style="color:#004AAD">the verify page</a>. Ten steps, and the last one is checking the answer without us.</p>
 
       <article style="margin:0 0 44px">
         <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
           <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V01</span>
+          <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Arrive by scanning the code on the car</h3>
+        </div>
+        <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
+          <img src="shots/v10-code.png" alt="Arrive by scanning the code on the car" loading="lazy" decoding="async" width="2006" height="552" style="display:block;width:100%;height:auto;aspect-ratio:2006/552;max-width:1003px">
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:18px 30px;margin-top:16px">
+          <div style="flex:1 1 290px;min-width:0">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">What to do</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">Point a phone camera at the code on the windscreen or the listing. The passport opens. There is nothing to install and nothing to sign up for.</p>
+          </div>
+          <div style="flex:1 1 290px;min-width:0;padding-left:18px;border-left:3px solid rgba(0,74,173,.3)">
+            <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:6px">Why it works that way</span>
+            <p style="margin:0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.84)">This is the normal way in, and the one the regulation has in mind: Euro 7 <b>Article 7(4)</b> requires the data to be reachable <b>through a QR code</b>, or a similar method. The same panel is on this page, so once you are here you can save the code, send it to a mechanic, or hand it to the next buyer. <b>The link carries only the vehicle hash</b>, which the ledger already publishes, so passing it on gives nothing away that was private.</p>
+          </div>
+        </div>
+      </article>
+
+      <article style="margin:0 0 44px">
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V02</span>
           <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Read what the page is before you read the answer</h3>
         </div>
         <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
@@ -230,7 +270,7 @@
 
       <article style="margin:0 0 44px">
         <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
-          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V02</span>
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V03</span>
           <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Look at what identifies the vehicle</h3>
         </div>
         <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
@@ -250,7 +290,7 @@
 
       <article style="margin:0 0 44px">
         <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
-          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V03</span>
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V04</span>
           <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Read the four questions</h3>
         </div>
         <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
@@ -270,7 +310,7 @@
 
       <article style="margin:0 0 44px">
         <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
-          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V04</span>
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V05</span>
           <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Open one claim and read the proof</h3>
         </div>
         <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
@@ -290,7 +330,7 @@
 
       <article style="margin:0 0 44px">
         <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
-          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V05</span>
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V06</span>
           <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Read what a tick does not mean</h3>
         </div>
         <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
@@ -310,7 +350,7 @@
 
       <article style="margin:0 0 44px">
         <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
-          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V06</span>
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V07</span>
           <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Understand that not proven is not a no</h3>
         </div>
         <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
@@ -330,7 +370,7 @@
 
       <article style="margin:0 0 44px">
         <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
-          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V07</span>
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V08</span>
           <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Check what the chain actually holds</h3>
         </div>
         <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
@@ -350,7 +390,7 @@
 
       <article style="margin:0 0 44px">
         <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
-          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V08</span>
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V09</span>
           <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">See who stands behind the record</h3>
         </div>
         <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">
@@ -370,7 +410,7 @@
 
       <article style="margin:0 0 44px">
         <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:12px">
-          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V09</span>
+          <span class="mono" style="flex:none;font-size:13px;color:#004AAD">V10</span>
           <h3 style="margin:0;font-size:21px;line-height:1.2;letter-spacing:.01em">Check it yourself, without us</h3>
         </div>
         <div style="border:1px solid rgba(0,74,173,.26);background:#fff;padding:8px">

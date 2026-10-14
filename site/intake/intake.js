@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import { DEMO_VEHICLES } from '../assets/demo-vehicles.mjs';
+import { qrPanel } from '../assets/passport-qr.mjs?v=1';
 
 const $ = (id) => document.getElementById(id);
 const sections = [...document.querySelectorAll('section')];
@@ -312,6 +313,10 @@ function renderResult(result) {
         `${result.applied.length} accepted · ${result.refused.length} refused`;
     const view = linksBar.querySelector('a[href*="verify"]');
     view.href = `../verify/?v=${result.vinHex}`;
+    // The run is finished, so the vehicle now has somewhere to point at.
+    // This is the artefact that leaves the screen: it goes on the car.
+    resultSection.querySelector('.qr-panel')?.remove();
+    linksBar.after(qrPanel(result.vinHex, { role: 'intake' }));
     resultSection.hidden = false;
     resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }

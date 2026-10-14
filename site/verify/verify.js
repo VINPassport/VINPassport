@@ -12,6 +12,7 @@
 import { passportView, QUESTIONS } from '../assets/verdict.mjs';
 import { loadState } from '../assets/sources.mjs?v=4';
 import { chainSeesBlock, fmt, short, esc } from '../assets/chain-sees.mjs?v=2';
+import { qrPanel } from '../assets/passport-qr.mjs?v=1';
 
 
 const TICK =
@@ -222,6 +223,19 @@ function secondarySection(vin, view, vinfo, index) {
     const stack = document.createElement('div');
     stack.className = 'vfy-stack';
     stack.replaceChildren(...holder.children);
+
+    // The code for the vehicle being read, under its verdict and above the
+    // other passports, so it belongs to this one and not to the page.
+    // The demo ledger's vehicle identifiers are real 32-byte hashes; a state
+    // that ever carried something else should not take the page down with it.
+    try {
+        const panel = qrPanel(main, { role: 'verify' });
+        const others = stack.querySelector('h2');
+        if (others) stack.insertBefore(panel, others); else stack.append(panel);
+    } catch (e) {
+        console.warn('no code for this passport:', e.message);
+    }
+
     root.replaceChildren(nav, stack, footer);
 
     // Claim rows are <details>, so opening one needs no script.

@@ -1,0 +1,589 @@
+{
+ "note": "Reference QR output, level M, byte mode. Generated once from the qrcode package so this repository can verify its own encoder without depending on it. Regenerate only if the encoder legitimately changes shape.",
+ "generated": "2026-10-14",
+ "forced": [
+  {
+   "text": "vinpassport/q7",
+   "version": 1,
+   "mask": 0,
+   "size": 21,
+   "bits": "/nP8FFBulrt0pduorsE5B/qv4AUAqhiWBWf68v/rwT9+iYBVV/l2cEkTupTV0OauumsEIC/tyYA="
+  },
+  {
+   "text": "vinpassport/q7",
+   "version": 1,
+   "mask": 1,
+   "size": 21,
+   "bits": "/qP8EtBuort0BdulrsFRB/qv4A8Ao0ksr81vp6tBa5or3IB///ojMEO5ukGF0kwurz8Eio/onIA="
+  },
+  {
+   "text": "vinpassport/q7",
+   "version": 1,
+   "mask": 2,
+   "size": 21,
+   "bits": "/hP8EJBurrt1lduursF1B/qv4BYAvnvgLYR0yhxh+dzwsQBbb/j4UFqduvdd1AUuookEGM/r8QA="
+  },
+  {
+   "text": "vinpassport/q7",
+   "version": 1,
+   "mask": 3,
+   "size": 21,
+   "bits": "/pP8FlBulLt1ldujLsEBB/qv4B0AtxJYLYRZ/MfTIrzwsQB22/tOkFqduiw112iuookErh/tKgA="
+  },
+  {
+   "text": "vinpassport/q7",
+   "version": 1,
+   "mask": 4,
+   "size": 21,
+   "bits": "/tP8EpBugLt15duqrsFVB/qv4BEAi7/Lo7yXxCV5iBvswIB44/ob0E2BurBF0j3ujLEEaQ/vgIA="
+  },
+  {
+   "text": "vinpassport/q7",
+   "version": 1,
+   "mask": 5,
+   "size": 21,
+   "bits": "/iP8FpBurrt1VdumrsEVB/qv4B4Agv5x6pg0yhxBe9or3IB77/j4UEbsundd0g0ujz8Ems/r8QA="
+  },
+  {
+   "text": "vinpassport/q7",
+   "version": 1,
+   "mask": 6,
+   "size": 21,
+   "bits": "/qP8FpBuprt0VduvrsENB/qv4A4An9y56pg97o5ZGlor3IB44/pqEFbsuuUV14sujz8Elv/puAA="
+  },
+  {
+   "text": "vinpassport/q7",
+   "version": 1,
+   "mask": 7,
+   "size": 21,
+   "bits": "/nP8EVBukrt0pduirsFxB/qv4AEAlo0GBWfou9ui5a9+iYBHH/k/UFkTujBF1HTummsEaQ/s7QA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7",
+   "version": 2,
+   "mask": 0,
+   "size": 25,
+   "bits": "/im/wUXQbpwrt0P1267S7BDJB/qq/gDKAKo9CXLZUfSErHwmjQAg1kJAvS4eia7Z3aOnxvmAU0Z/gWvwTvE7rA/F01Ji6rpzBClS/vXNgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7",
+   "version": 2,
+   "mask": 1,
+   "size": 25,
+   "bits": "/vy/wS9Qbqlrt0lV26OC7BZhB/qq/gBgAKNoEthz+2HR+TaMJ6V1gxDqF4dL3Ppzdwnyk/yAecT/tCqwRFGboV+V0fjK6+8nBIP4/qCYgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7",
+   "version": 2,
+   "mask": 2,
+   "size": 25,
+   "bits": "/ko/wQvQbqTLt1B126jq7BQpB/qq/gHyAL5evhBXaTq8T+SFAzOu7qRoXqL9B5dT5UCfJf+AXUa/mapwXXELqj+l17Hu6zRLBBGx/pZDgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7",
+   "version": 2,
+   "mask": 3,
+   "size": 25,
+   "bits": "/so/wWZQbp+rt1B126Va7BNFB/qq/gFEALczJZBXaReKlJ+oteOu7qHOhc2YsU1T5UAr/voAa8X/uapwVhG7pO/N17Hu6ln9BMrc/pZDgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7",
+   "version": 2,
+   "mask": 4,
+   "size": 25,
+   "bits": "/o0/wShQborrt1dl26ya7BYRB/qq/gGDAIuZ/Ki05xmydxUCH0Syn2fmZkDN5BhLlIfu4vuAfsS/t6qQSnF7rk/l0YkO6dfFBGB2/tFfgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7",
+   "version": 2,
+   "mask": 5,
+   "size": 25,
+   "bits": "/ny/wWtQbqTLt1wF26Dq7BIhB/qq/gFwAILe5wwmrjq8T+aNI7V1gxTqVoL9B5ciIlyfJf+AfcS/lCqwRVGLoj+l0K2e6TRLBJO5/qCYgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7",
+   "version": 2,
+   "mask": 6,
+   "size": 25,
+   "bits": "/vy/wWhQbq3rt0wF26nK7BOlB/qq/gB8AJ/6S4wmrjOY3acLO9V1gxfmZkPZld8iIly7t/6AZcU/tCqwVZGLqH+F1K2e6X1vBPI//qCYgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7",
+   "version": 2,
+   "mask": 7,
+   "size": 25,
+   "bits": "/im/wReQbpirt0P126Sa7BRZB/qq/gCDAJavUHLZUebNiPi0xCAg1kAJmb6MwIrZ3aPu4vuAWkb/gWvwWnF7pS/V11Ji6Cg7BA3A/vXNgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 3,
+   "mask": 0,
+   "size": 29,
+   "bits": "/jlD/BWo0G6aLLt0wXXbrpWuwSWtB/qqr+AMygCqSUCTYF9SYrGKz+AJ4TozRyFiSTWvbIk75xGsQIpUF0JstcLrzLgW4x6eOjl0/YBrVGf4UutwSssTupNPxdGvBu64i2sEXd0v76exgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 3,
+   "mask": 1,
+   "size": 29,
+   "bits": "/uwT/BMCUG6veLt0a9Xbo8CuwU8FB/qqr+AGYACjHBEpyvX49+Tfm0qjS59mEnRI458GOdxurbsG6t8BQhDGH2h+me1CSbQ0n2wh+IBB/E/7B6owQGEZukYfldMFrG6t3j8E93eP6vLkgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 3,
+   "mask": 2,
+   "size": 29,
+   "bits": "/lrL/BFLUG6izrt1+ZXbqK0uwWuVB/qqr+AfRAC+KsvlSLzcbIlpQGoxArm9f8KAxw1PjwcDH7IieLK3mXxEVkzl9FuZaSZ9ubdM/gBlbEf53OuQWUUbuvDP/dVMiO6gaOUEZT6v6Z9SAA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 3,
+   "mask": 3,
+   "size": 29,
+   "bits": "/trL/BeQEG6Zort1+ZXbpRuuwR1NB/qqr+AUKQC3R3pdSLzcQb+yLdjqbwm9f8LaqruU6rHYf7IieAZs9MqPO/ol9FuYAJCm1CGX+4BlbEf6sWtQVPMQunDP/deX5W67BVMEZT6v7CmJAA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 3,
+   "mask": 4,
+   "size": 29,
+   "bits": "/p3T/BNzkG6M9rt1iFXbrNyuwUgZB/qqr+AYWACL7dfOxoQ/z4dRo3JAxa6hDgW4JIN1v+SNLjU+CcNwhQ/Kbq9G+mN6cVe6rqs9+QBG5H/7P2uwTlkaurffjdN0a26OUAcEFPm/7e6VAA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 3,
+   "mask": 5,
+   "size": 29,
+   "bits": "/mwT/BdDUG6izrt1PoXboK0uwQsVB/qqr+AXZACCqs50j6CtrIlpQEqzCp9mEnQI549HjwcDGK5Tv7K3mXzGXmx+me1DSaR1mbdM/gBUrFv53OuQQWUZukYfldNEqG6AaOUEoiLf6Z9SAA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 3,
+   "mask": 6,
+   "size": 29,
+   "bits": "/uwT/BdzkG6r6rt0PoXbqYmuwRN1B/qqr+AHpwCfjly8j6Ctpa37CFLSjI9mEnQ4JIN2q5VKOK5Tv5Yl0Fyn2HQ+me1DiqhFXSUF+oBUrFv7lesQV30YusYfldd0a26JTHcEoiLf6LvAAA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 3,
+   "mask": 7,
+   "size": 29,
+   "bits": "/jlD/BCMUG6evrt0wXXbpNyuwWyJB/qqr+AIWACW2w0DYF9ScPiuXaktc3ozRyFG23yL/sAfZxGsQMNwhQtIJ4vrzLgWcVe6qHBQ/4BrVGf4wKpQWIMXuhNPxdSLlK6cGSMEXd0v7e6VAA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 4,
+   "mask": 0,
+   "size": 33,
+   "bits": "/jGZv8FW7tBukCIrt0szNduoERLsEBmZB/qqqv4A/u4AqlkRCVAvd1Nk0TMFs7ju3gItMReM70VVDnwbutZKAIiDKpFV94D7VTFd5rukbjvIuiZ9FUdB7Z3dtlggiWawSZljgsZE/QBE3UZ/gwjq8EnZkTurBE+F0eM8dur4i2sEPu2C/qBm7YA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 4,
+   "mask": 1,
+   "size": 33,
+   "bits": "/uTMv8E8RFBupXdrt0GZldulRELsFrMxB/qqqv4AVEQAowxEEvqF3fnxhGZQ+RJEdKd4ZELeRe//pylO74LgqiIpf8QAoqpR/5vIs+7xJJFiEIMoQBITRzd3Hw113DIa4zPJ15MR+ABud8T/tl2rsENzMZumUR/V00mW3uut3j8ElEco/vUzuIA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 4,
+   "mask": 2,
+   "size": 33,
+   "bits": "/lIXv8EY1hBuqMGrt1i9BduuKfLsFPoVB/qqqv4Bxg0AvjqfPjKhT7Dq6dCLixtg5uGjCfQCx6bbNp+VgjXAOGsNEnLbz2J1bdLT3lgqVphGgsXzLaTPxX5TjruusYU6cXrtuiXK/YBK5cX/m+tq0FpXsdutPK+N1QCyTut2s4kEBg4M/sPo1QA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 4,
+   "mask": 3,
+   "size": 33,
+   "bits": "/tIXv8F1YNBuk6wLt1i9BdujnyrsE5ehB/qqqv4BcNYAt1cppbKhT7DH3wvmMDbWPYGjCfQHYX22gfojWVnAOGsNpqm2eY7Dtr9T3lgqQAMrNBhl9sl/xX5TjGjDB16IqhdbuiXK/YBnU0a/oIbqEFpXsdugin/l1m0Elut2s4kEsNVh/q5eDgA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 4,
+   "mask": 4,
+   "size": 33,
+   "bits": "/pULv8E7WBBuhvlLt1+hdduqWDLsFsL1B/qqqv4Bt8oAi/2DfIpCwYgJ5+hoGpx8lya/eDMZSZ44uK92DAzYSawRY7XHvtqW4+ow0GDJxx9a8wLvXGPUS0awAItNP7wiAL3xy+LW/ABpa8U/tdOrUE1L0RupTW+V0zhRwumVPbEEd8kQ/oT0pIA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 4,
+   "mask": 5,
+   "size": 33,
+   "bits": "/mTMv8F4VBBuqMGrt1TMxdumKfLsEvI1B/qqqv4BRAUAgrqfZy7QiKyq6dCLiRNAZOd4ZELaRa77tp+VgjWx/3d8EnLbz2pV79rIs+7xNJBmAMXzLaTOAmIiSruusYUa83LN15MR+ABqZ8X/m+tq0EYmcculPK+N0wiSzumt3j8EhAYs/sPo1QA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 4,
+   "mask": 6,
+   "size": 33,
+   "bits": "/uTMv8F7WBBuoeUrt0TMxduvDWLsE3QtB/qqqv4ASDUAn54NS67QiKyjzULCqJVYBWd4ZELZSZ44u7sHyxGx/3d8NuCS6+xNjlzIs+7xOKClDPFhZIBeAmIiSinnlRcCkvTV15MR+ABpa8U/ss/qkFYmccusGD/F1o6Krumt3j8EiDbv/ud6nAA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 4,
+   "mask": 7,
+   "size": 33,
+   "bits": "/jGZv8EEp9BulLBrt0szNduiWDLsFIvRB/qqqv4At8oAlstYUFAvd1N2mBeX9yqn+pItMReOpmHHRu5SnkRKAIiDY7XHvpKycaMd5rukZx9a8wQ0MdUJ7Z3dt3yywEL5bQsqgsZE/QBWlEb/h5qr0FnZkTuhTW+V1XF1Uuj4i2sEd8kQ/rIvyQA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 5,
+   "mask": 0,
+   "size": 37,
+   "bits": "/hSRQ/wUuarQbpWCbLt0ENF126mR1S7BMm6JB/qqqq/gA86oAKpf5VCSYzl/EvSNOwkfod6N5464tQZkQBs3XRRNMSqCY6uuyaKjeBdHwEm101D42KmS1wMwmuw2sHRBd5zCV/ElCCuwjOYzKN4jmy1QYwKjrxVba8WIu+aqReqKKWmmVf2ASF00Y/g6mWvwT0mtEbr/RA/d0KN1Zy6jkqxvBErsgS/ugXXNgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 5,
+   "mask": 1,
+   "size": 37,
+   "bits": "/sHEE/wSEwBQbqDXOLt0unvV26TEgC7BWMQhB/qqqq/gCWQCAKMKsAEoyZPVuGHYblxLC3QnTSvt4FMxarGd970YZH/XKQEEYwj2LUISkuMfefptjfzHg6maMEaT5SEUIrZo/VuMXX7l2ayZgnSJzngFNlAJBb/x/pDd7rIA70AgjDzzAPiAYvecS/tvzCqwReMHG7oqEV+N0gnfza62x/k7BOBGK4/r1CCYgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 5,
+   "mask": 2,
+   "size": 37,
+   "bits": "/ncfe/wQWiTQbq1h4rt1KDL126+pNq7BfFZpB/qqqq/gEECQAL48a2vkS9rxKjq12IcmK+Zuab02jeXqIpUPvpiuvxJh+wgg8UGbm5l/JmFWXWg24Eoc7okIeWIFPkyi+f5MbxKp66WIb36QpubAo87eW+SLTJtjpf1rNd8gfQkEGueetvuARmXUb/m0oapwXMeVErqcyj+91ED7X+67cSJXBHIPDx/ouZZDgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 5,
+   "mask": 3,
+   "size": 37,
+   "bits": "/vcfe/wWgUlQbpYMVLt1KDL126If7a7BCo0FB/qqqq/gGy0mALdR3bJcS9rxKheDA+qRmT0D3202jeXqePi5ZffLCckMWwgg8UEvQPTJ+Ko767N24Eoc7+C+og+4qJfPT35MbxKrOMg+tAW9ED2to87eW+Etl/bVU6YGgwUgfQkEEaoobf4AcL68W/u0oapwV6ojGbpxfO/V1ED7X+6tqk/hBKliuc/ouZZDgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 5,
+   "mask": 4,
+   "size": 37,
+   "bits": "/rADC/wSYsdQboNZALt1WfXl26vY8a7BX9hRB/qqqq/gF1zhAIv7dx/PxeISpBm74GSpM5epdcoq/CL2GnaBhnqeXJxZCo88gIbqXIUO5e9uvuYV7nL/YZF5vn5yIj1l5cav4SpL20YGV48XupcH0gnCKicFdHjthvNT1lA4DM4Ybfvvcf+AZevsT/tXL6qQS9vlFbrb1k/90ngY0e6VScHZBAPIE2/syFFfgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 5,
+   "mask": 5,
+   "size": 37,
+   "bits": "/kHEE/wWUgRQbq1h4rt17y6F26epNq7BHNRhB/qqqq/gGGASAIK8a251jMaA7Tq12IcmC2RmSTvt4FMxKrWNtriuvxJh/BRRNl2bm5l/JuNefeotjfzHgqmKcUKFPkyi+eI9qA7Z66WIb3yYhmTIzngFNlQJRLvhpf1rNd9RuhV12ueetvuAZufcT/lvzCqwROcXGrocyj+901yKmO6bcSJXBPAHL5/r1CCYgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 5,
+   "mask": 6,
+   "size": 37,
+   "bits": "/sHEE/wWYsdQbqRFcLt07y6F266NpK7BBLXlB/qqqq/gCKMeAJ+Y+SS9jMaA7TORSs4CEwXgUVvt4FMxGnaBhnmKLVtFfBRRNl2/CdBbtoLYZYutjfzHgmqGQYGBrAWGa+I9qA7Zeeys/T0engVOzngFNlcFdHjtt7RPp5dRuhV12K66JPqAfoZcV/tvzCqwVCQbGrq4WH+d11yKmO6f42tzBJGBN//r1CCYgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 5,
+   "mask": 7,
+   "size": 37,
+   "bits": "/hSRQ/wRnTiQbpEQJLt0ENF126PY8a7Be0oZB/qqqq/gB1zhAJbNrHUCYzl/EubEH5tX6Pofrq64tQZkZIl+eYTfeA4QI6uuyaLqXIUO4W0nmnR42KmS15F5vn50+VDTPpzCV/EkLLn5qGKhYfqxmy1QYwDqi4cSYuEa8sKqReqKLfvvcf+AQXmka/g6mWvwW9vlFbptDS/N1KN1Zy6Ktj4nBG5+yA/ugXXNgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 6,
+   "mask": 0,
+   "size": 41,
+   "bits": "/n5dED/BVOya0G6fiqZLt07nXTXbr8xZUuwTts2ZB/qqqqr+AMua7ACqEcQViXBOV/FAXaybCKwsE3jeoAI57QZDCKX/fRUyrW0omo87as2qMc9AlkVlrkf1XxN10wq5Amk1HonqOuPnVAdAqxcVfQeYGou4Nym96onz+rJlVHZKRl03W1vciZCf8pYprcYiJIxBZ4OBrfNUJuj1kKra0lae6EiWzkB1/IBJt9FHP5EyierwRtzakRupw2RP3dIkdfh+60oqgWcESqyZsv62N071gA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 6,
+   "mask": 1,
+   "size": 41,
+   "bits": "/qsIRT/BPkYwUG6q3/MLt0RN95XbopkMAuwVHGcxB/qqqqr+AGEwRgCjRJFAktrk/VvqyPnOXflmudJ0CqdsuFMWWg9V17+b+Dh9z9uRwGcAm5oVwxAwhO1f9bnghl/sVyOftCNAn7ayAVISAb2/167NT97tY4MXQCNZr+cwASNg7Ped8c6J3MXKuDyDB2yHcdkUMtErB1n+j72gxf+OePw0QuLDmxUg+YBjHXvFv6Rn3KuwTHZwMbukljEfjdCO31LW6h9/1DME4AYzGP7jYhuggA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 6,
+   "mask": 2,
+   "size": 41,
+   "bits": "/h3TKL/BGtR5UG6naShrt11pZdXbqfS62uwXVUOhB/qqqqr+AfN5YgC+ckotPhLAbxLOU5R4hpTUsPbmQ4G31eXNNo0c8y3STuMQeQCxUi4kCfejGH2GTMnNvJ176+k3OpGWkLEJuW3ft4l+g/SbRed7lLNbuKOFCQfLwlHrbJWoyGXU1VXkah6nCjWnlSWhqrSi6b2pTn1sxgt7qElVWG59ZnCuLc5N/wBHjzLFP4nRB+oQVVLicZuv+4fP5dbH+8Ce6sQSYukEck8Xiv7VuXYWAA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 6,
+   "mask": 3,
+   "size": 41,
+   "bits": "/p3TKL/Bd2KiEG6cBJ6rt11pZdXbpEJhsuwQOPV5B/qqqqr+AUWiDwC3H/z2JZLAbxLOfqKj6yIPnUA9LjG31eXNMyvHnpsJK1XLFLaxUi4kCUN4dctdIH8W0Su76+k3OocN/QfS1PsE2j+mg/SbReWo+QWA1RFeZLEQwlHrbJXypdMPuOO/B6h8ajWnlSWq5wJ5hAtiI8u3qgt7qElUMdimC8Z3QHiW+oBHjzLFP78KamrQWOQ5ESun+4fP5dQclnZG63LJD18Eck8Xiv6O1MDNAA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 6,
+   "mask": 4,
+   "size": 41,
+   "bits": "/trPWT/BOVpBkG6JUcvrt1p1FBXbrYV9wuwVbaAtB/qqqqr+AYK+fgCLtVZc/Koj4Sot8JpAZRrlN+qXhJarpCLRRQMkEKPofgCeQeOpI+k4eIZkBAxBdCpDhH7Y5dHUtKARjMDOrnGucJUNDcx4y91Ldz1jW7v0zhu6s5b3HVKQK+vsNvbqUv0pO7K75OK2tsVl9c4ndp7i/DuYJnG2QB+6egHf6tI8+ABkAQpGv6fp5GowQk6TsYurikDfldD/GE6m6CecWgsEA4gL+/6SpQfRAA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 6,
+   "mask": 5,
+   "size": 41,
+   "bits": "/isIRT/BelZxUG6naShrt1EYosXbofS62uwRXWMhB/qqqqr+AXFxQgCC8kotZw6xqA6/k5R4hpTWuNZkS6dsuFMWXg8U06/aTuMQeQDAlTJVzvejGH2GROlPtL3ghl/sVzOesDMBmW3ft4l/ROjqgvt7lLNbuIMHASdJr+cwASMg6Ofc9dXkah6nDSnWUjnRqrSi6b0rRl3uz72gxf+PeOx1RvKuLc5N/wB2SC7E/4nRB+oQTXJgcbukljEfjdDP20KW6MQSYukEtVNmTf7VuXYWAA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 6,
+   "mask": 6,
+   "size": 41,
+   "bits": "/qsIRT/BeVpBkG6uTbort0EYosXbqNAokuwQ23tBB/qqqqr+AH1BgQCf1thkS46xqA6/mrDqz7BXPs4FzbdsuFMWXQMkEKPranFZXZLAlTJVztMxUVkUQvEuMqWghl/sVz+ucz8xXf+Wkxs3ROjqgvvp3ZfJ8Jtmhz8or+cwASMQK+vsNsetTozuLSnWUjnT45AwoJ1KwEWPS72gxf+Pu+BFhf7nCVwE+4B2SC7E/61DTuqQW2oB8ausljEfjdT/GE6m6FZbRnsEtVNmTf7H8FKEAA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 6,
+   "mask": 7,
+   "size": 41,
+   "bits": "/n5dED/BBqW+UG6bGO9rt07nXTXbpYV9wuwXJIS9B/qqqqr+AIK+fgCWg40xUHBOV/FAT+W/muUIgTH6MkI57QZDCuzb71wWPyQMCMc7as2qMYZkBAxBPA7RzVp10wq5AmARjMDOqKrDxk5gqxcVfQa8iMKcpWCZeMDX+rJlVHZu1BQTyRL4G9m7cpYprcYmtsVl9cqlP7pwtuj1kKraQB+6egGyXAlR/oBJt9FHP5gWG6vQVJX+EVuhw2RP3dcA57Fa6QMOEy8ESqyZsv6SpQfRAA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 7,
+   "mask": 0,
+   "size": 45,
+   "bits": "/iBZPwv8FGDxgJBuhlGm5Lt0nheAtdutF/83rsEr7FEBB/qqqqqv4AlTHdYAqnYvu9iWTv3EzAPO/21xFS8JeQLdzT3i8uGbLaLF3kyAN47aWxESPjcagd/Agit82IHKjvmggAQ5tWf5M3YZu8mRIRH5v/7N/8RAFGAEdyrv6zvr9xqnGIsT3+k//4+BL5JSZJJi27pXdZ9g/8jNg7aqD2O+JEZhRcTpNZ/zpXEa5TRQzd9inz22G6NDiOJcxENC26PRUKLxYGQd1wm5rf2Y/IBelEiEU/mda5FqcEDnERMRuuBPzK/d0lEIAnRupHObprcEcYGYMC/p+878T4A="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 7,
+   "mask": 1,
+   "size": 45,
+   "bits": "/vUMakv8EspbKpBuswTztLt0NL0qNdugQvpjrsFBRHuhB/qqqqqv4AP5F3wAoyN/7oks5FduZqlbqjgkQHuj06h3Z5i3p7TOeIhvdOYqntuPDkRHdJ2wK3Vq134pjdSYJFMKKq6s4DKsZiKzEWM7i7T86vuY+uxqvEqsXmu6qm6qvRANEiEZj7xvqt/ThTj4zjj3ju8CIMvKVWJnKRP/WjbrcWzL725DnMqm8CRPr576Z3XIymjjTvYRIkj2bunCjvaEBfbzys63fams+PjN+YB0PGIse/rIKsQrMEpNG7kbujUfmf+N0PuiqN7usSbO8+ME2ysymo/srpupGoA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 7,
+   "mask": 2,
+   "size": 45,
+   "bits": "/kPXB8v8EIN/uJBuvrIo1Lt1pvQOtdurL/y7rsFl1HKBB/qqqqqv4BrdFTUAvhWvgzvgZh5K9OBAx47/LcyDQeFT9d5sygIVFUBL5q8OD21UY/KcBpSUuTxOusjy4GJEphouuOe3jYR3C5WTgyofGfL/h/1D/yROLEOMT+th69hrzxkpEGkd74q/x2+PB3HcXHHs41nZTXzqxytDu1UkN4AwHKTvfSdnDXx9nZKU3Zfe9Tzsp944I0DNoAHS/KDC40BfaEDzWIeT7+m3lf4W/ABQrGsMa/gTa3LqUFNpGfEfuoPP9E/V1rKGOpfuvJAVnlUESWIWCM/vwy1ydwA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 7,
+   "mask": 3,
+   "size": 45,
+   "bits": "/sPXB8v8FlgSDpBuhd+eBLt1pvQOtdummf/XrsETDF8hB/qqqqqv4BGxE+4At3gf2FJYZh5K9OBt8VWSmxcxmozlLr5sygIVFRomUHRjuAjiuJ8qxpSUuTxODhOfVrkqbXeYY4o3jYR3C5T6NfFyry/5XPj1/CROLEOMTSoMawMqdRSfGwUb74q/x2+Koaqx6qqauDRvlhDqxytDu15pgVtdqkhZpkrR1Xx9nZKUywyzQ+eBfrOO+C19oAHS/KDC1Zsy3prxg+olNIm3lf4W/AB9HHBkX/ulqh9qkFNpGfEfulivwp+91d8w4fpuvJAVnlUE/7l7vh/pGEDErAA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 7,
+   "mask": 4,
+   "size": 45,
+   "bits": "/oTLdgv8ErucNpBukIrLVLt11zMStduvXvunrsFGXEphB/qqqqqv4B3BFPIAi9K/8v/L6CapetijybYco/WbMCZPhBlwu8UJZPioaJftgV237cp/lxOIyPtSyw/ukaVfKCLNNt9Ug7yUhayL8u0DaDX79vpf/pxtpHtsQeuCa+CqXx41Ea8Rn82vtq+UiUk/0kkP7WE6w0XytuxfypI4RkcsbRwM8x+Eg0yeE6p3TBDChPvw1hkkUofWLjkxcpgC7Xi85njzKUCPnimr5PkK/YBzJFPsZ/rw60or0ER1GDcTusTfhY/N0IpltK8ukqj2EG0EOKUKeQ/rsupuBoA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 7,
+   "mask": 5,
+   "size": 45,
+   "bits": "/nUMakv8FotfOpBuvrIo1Lt1Yeh/NdujL/y7rsEFVHqhB/qqqqqv4BL9Fz0AgpWvgz5xoQI7M/wAx47/Lcyjw+lzd9i3p7TOeMhrZKcuj21UY/KcAYjlfiA/usjy4GJEJBIOOu+s4DKsZiOzASI/m/L/h/1D/zx/7F/8S+th69hrzREJEmEdj7xvqt/XhXn83nns41nZTXybADcyfEUkN4AwHKzP/y9HjMqm8CRPv5/+dzTMp944I0DMZx2jO7yC40BfaEDz2o+zbems+PjN+YBwLGMsa/gTa3LqUE8ZHu0eugPP9E/V0LqmuJ/ukSbO8+MEy2o2is/vwy1ydwA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 7,
+   "mask": 6,
+   "size": 45,
+   "bits": "/vUMakv8FrucNpBut5a6lLt0Yeh/NduqC/7zrsEdNHyhB/qqqqqv4AI/Gw0An7E/yhy5oQI7M/wJ4xy2CV67om9rFli3p7TOePioaJftgknGKtYOQYjlfiA/nlq7xPAMRZQWW2ms4DKsZiNwDRL8l8b9zvnR/jx/7F/8S2so60oq7RcRE+cVj7xvqt/UiUk/0kk+qn1LBFibADcyfEdtExJ5OCrXnqlf7Mqm8CRPs689ewQP7vqqamRcZx2jO7yCx9IWTNLzuwmrDGms+PjN+YBzJFPsZ/qBKlZqEF8ZHu0eupGP0N+d1Ty+2RnukSbO8+MEx1r1hv/tigngPgA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7",
+   "version": 7,
+   "mask": 7,
+   "size": 45,
+   "bits": "/iBZPwv8EURjyJBugsPvxLt0nheAtdunXvunrsFizENBB/qqqqqv4A3BFPIAluRvn00GTv3EzAPctknjXAtAXZCU6a3i8uGbLYZXl2gSfxyTf4NbHjcagd/Ayw/ukaVbqmvppJZ5tWf5M3aL8u0DaDP4m/yE+0RAFGAEdip9qh9rsxjvHBka3+k//4+DZrbALbbr/ygeUQ1g/8jNg7I4RkcsbVQoYVagEZ/zpXEa7BDChPvwu6//PzELiOJcxENCkodDGYbwRPZU85m5rf2Y/IBM3GwUW/nUawMrUFDnERMRukTfhY/N1sNBJuYuhHObprcEOKUKeQ/o31y1awA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 8,
+   "mask": 0,
+   "size": 49,
+   "bits": "/g2G9vS/wV5RwcPQbpbx5cRrt07uSGgl260cvn5C7BP7kcnRB/qqqqqq/gB+/F0eAKpyF+vLCUpXK0DAClWdZvMbMe0E1hEdObKntV3L1MBC2TzAyDz81IGbHy/rgrHZ2tNKXRSvjz3eZSICwg9eijuzExHrkh+c2DE7d+HZn7WHItY8SmA1/25f8Wfv0Q5MWNkSOtGyv5+sbEvxGkpEG+DL+XF/daGn9NjSHuR1s5+LeMrXOEpAJWg1XvF0n2nRxlDRei+yE528tH6SojhIkRTJmVnx2my4G8XRdxN2BVK8w91h2LAMBCUYvOKxst7iW6dR0UvimBP8vPwAYpMcDMd/ihipsaowSHvF0fELrg1+vK/N0RSTDAPC62n+sbZxBIAlHZ0i/tWf2PnPgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 8,
+   "mask": 1,
+   "size": 49,
+   "bits": "/tjTo6C/wTT7a2nQbqOksJFrt0RE4sKl26BJ/ysC7BVRMWNxB/qqqqqq/gDUVHe0AKMnQ/6eEuD9gepqoMDIM6ZOZKeufLu3kxfy4AiegZLoc5ZqYpWpgdTOSntBKBtzcHkfCEH62mj0z4ioaKXL327mRkShOLU2cpueIrSMyuDViHyW4MqcvjsPpDP7caTkcnMYaoTmqsqpRGFbEODGj/We/CQ+PwsNXnJ4u7Eg5sreKmB9kuDqjD1gC6Qhy8N7bPp70HrnRsjp4VQ4CJLiO4GczAykjyYSsW973bYjUAfplo/Lchqmro0d6bfk54rg8Q37e+HjzUfp6fkASDkWpkX/v02s5OtwQtFHe1Gro1g/6f+d0745pqlq6jyr5OMlBCqPtzeI/oDKjayagA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 8,
+   "mask": 2,
+   "size": 49,
+   "bits": "/m4IzhS/wRBpIk3Qbq4Sa/xrt11gcIul26skf/BC7BcYEfExB/qqqqqq/gFGHFMmAL4Rm/MovijZE6NOMpulhX0j0nWnWCn+t4Epjb5F7CZqOrL4K7AfWrl4kRZhulJX4jByvpqXbLO86xrhTDeQstg9K/JzMZGkO78I+dk6EY1hCjWycoO5PuBvkuv2UTasVuERCrI+p3yqDEXJGcRE1/go/0m+7QIpzDtcLWpNUBGznuI0tnKjqYu7ZhL6puPpJd7pmRdRnaVfOhwcmtvGqdrxetfJOfQblf0y+SD4PbEy+ztJOz4056kbMtpSPObgY0Tf6ajie5/kX/oAbKsfgse/kvuviWuwW/XFMnE7qDW/Mp+t1fcdNOBO6ufGUjhJBLjGk6XB/rYR4BpBgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 8,
+   "mask": 3,
+   "size": 49,
+   "bits": "/u4IzhS/wX3f+SHQbpV/3Sdrt11gcIul26aSvp3C7BB1sSpRB/qqqqqq/gHwxH6QALd8L+hFJajZE6NOMraTXhCVCQ6K7vKTAVEpjb5F7CPM4d9O8N967GIVJ8xhulJX4jDGZfcht95QXcGM+uzQstg9K/JlqvwS4NK1bwJXp1YJCjWycoO7/43fyYfh8e3EYDscCrI+p3yqVGh/EqnGI+NF+ZL/TQIpzDtcJif7i3wFQClZAKnOHYu7ZhL6p4pf/rNfQs48K34yjJwcmtvGqffHobp/4o82IyZfT/D4PbEy+z7v4FOCPMUehAE/ijzgY0Tf6ajioPPyhP+AWnESNET/svuviWuwUJhH6RGLpu7+hE/F1fcdNOBO64pwiVX/BGOrJX6s/rYR4BpBgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 8,
+   "mask": 4,
+   "size": 49,
+   "bits": "/qkUv9C/wTPnGq/QboAqiHJrt1p8AUyl269VvuwC7BUg8X8RB/qqqqqq/gE33E9XAIvWh+Lv/JA6nZutvLirvZ6t6oQgRFg5q/Y1/HlZneXkAlF2E1IvuTdAcpl5y5VLk/cDeYbmq6+ECJTZr7mzvODepcqCto3V/KN/5aj9DfyihA1R/LtbPgPvqgv5UUdsSpEWevUitruuNGZHESfG9/YQ/Me+HIU1vfxAWnY8lw3CXWwMVfybS7tY6CoZKfuY4sKYXmaWgdSYJiT/FOMlJ/n/QjRHAQWciYz15VfkTHYuivjHA92630kb0VRq32jgEoPDmG/jvIP1mP4ATyUXYUW/vMOsB2tQTOnE9XFLrER+Lu/t08/+utiu6ARIatvHBMkBj9QG/vENkd1dgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 8,
+   "mask": 5,
+   "size": 49,
+   "bits": "/ljTo6C/wXDrKm3Qbq4Sa/xrt1ERt5el26Mkf/BC7BEQMXMxB/qqqqqq/gHEFHOkAIKRm/Mo5zSo1L8/9ZulhX0j0neveKv2lwfy4AiegZboMpJ6I5AfWrl4kRYQfU4mJSxyvpqXbLO0y5jpbLWL327mRkSxObEmM5+I+dk6EY1gzSnDtZ/JPuBvkuv2cbSkdmMZaoTmqsqpBGVLEeTG1/go/0m+6h5YCyct7WpNUBGznmA8lvCriD1gC6QhysNrLf5rkRdRnaVfOgBtXce3btrxetfJOfYTtX862aYjUAfplovLMx6274kbMtpSPObhpFiuLrTie5/kX/oATCkXokW/n02s5OtwQ9VHOlG7oDW/Mp+t0uts8/w+6OfGUjhJBDrOsyfJ/oDKjayagA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 8,
+   "mask": 6,
+   "size": 49,
+   "bits": "/tjTo6C/wXPnGq/Qbqc2+bVrt0ERt5el26oA/7lC7BCWMRKxB/qqqqqq/gDIJHCoAJ+1C/oMS7So1L8/9ZKBFzQHQDYpYMpwj2fy4AiegZXkAlF2E1E7yPBcA14QfU4mJSxWLNOz/vqy0/lvdNQL327mRkS9CXIqA1yMa5Aeg8RAzSnDtZ/JvqlPgKPycdUkbgMfaoTmqsqpNGZHESfGx/EM/QC+ah5YCyct7yNpwliXDgG6jpEtkD1gC6QhygBnHT1noV51D+x7qABtXce3btPV6J7tq7eVrR68wcYjUAfplojHA92630kfoJN2rq7hpFiuLrTi6dfgzfsAVEkRukQ/v02s5OtwUxZHCpG7qny/oN+N1uts8/w+6K7iwHFtBFtIq0ZP/oDKjayagA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 8,
+   "mask": 7,
+   "size": 49,
+   "bits": "/g2G9vS/wQwY5VHQbpJjrOBrt07uSGgl26dVvuwC7Bdp0e1RB/qqqqqq/gA33E9XAJbgX+9ZUEpXK0DACkfUQmFSFWmWnzWPcJKntV3L1MIL/a6J7KxunaUJVgvrgrHZ2tMDeYbmq6/MLAaQiyveijuzExHito3V/KN5PsVL1pEXItY8SmA0//wf1ffnkSrcUf0QOtGyv5+sTFm5HthFE+RZ+FX/NaGn9NjSGnY8lw3CWe5FcW7SbWg1XvF0n/uY4sKYXgsgWrku/X6SojhIkQaAvcu4/ugqUuFDPjN2BVK8w98o/CJFILUa9cYj+/riW6dR0UvjvIP1mP4Aa7ceRcf/ihipsaowXOnE9XFLpyn+9Y/d1RSTDAPC6fu3lSQ5BKS3VLmw/tWf2PnPgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 9,
+   "mask": 0,
+   "size": 53,
+   "bits": "/gbEtucj/BT2YB3BkG6C7apFxLt0K8l4xtXbqL3f7n4uwQ2yxdyRB/qqqqqqr+AMtTHcFgCqejr7nNCQC1ceSEACw4c23xezP+HLUKnBub6qJqx5z22I9XHmxCImPttN8XszsyW3CpwbmFtgYse898mAU55sQipL/XHfF7MfitC0qc25pHoF7HuOfAgdRObEIoS4S73xczF9ENFKnNISL77O/7nf48dtTGxIR1qiiasXHr+xNdUZ3bEi+qz/+pj4PDm0XsCJBZ5vm9ExW3oXSUQN0TIbQp9lqcp6o5lExAgQUP59vfMdtznkpECdFiSkYXZenPYKWFRMYEEGzuuD3zXbf5IfxAnRMy9w52Xrz2FsflTGCBN3lvg98x2GwMmsQJ3TMT6Uf964/ABaQURgxFf5CYa/MWpwTOKRCdMTuu9C/fuvxdHoLMaOR264sZnxB2EEPaAdnfMv7vKdj7hlgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 9,
+   "mask": 1,
+   "size": 53,
+   "bits": "/tOR47Jj/BJcyrdrkG63uP8QlLt0gWPSbFXbpeiPuyouwWcYR3YxB/qqqqqqr+AGH5F2vACjL2/+yYEqof204uqoVtJjikLma0th+gNrExv/c/ksmjiiX9tMboiPa44YpC5m+Y8doDaxMg41N5Lpopsq+TTG6IDeqCSKQuZLIHoeA2cTAS9QuS7bKSK37kxuiC3tHuikJmQ3unvgNni4f+ub+uyPsUXH5Ebixc633OpCSqsRn38TdxGH//mvr839FpMe9GojrMs6zoRkDjC94+6ne5hOF8ow/J8oCTPubqK6xaso6KZI45NODuo3vIHxNCMLyaMg8v7myuuvm77WimCONTi1bqN7mXolsjC+mjPG1P5sorn3w61opkjSwmMG6jd5kSvBL4vt+QBw68bKbH/6XNKqZCswRkgxo3kZujoX+K7/ldNChmwk7e6t5MykUjUElwq3N1mP66fI2u0wgA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 9,
+   "mask": 2,
+   "size": 53,
+   "bits": "/mVKjgSj/BAV7iUjkG66DiR9JLt1Eyr2/lXbroU/4EYuwUOKRlKxB/qqqqqqr+AfOxE/mAC+GbT7f1vmI7SQcKOMzb/VUS9QsGvzsyf5Wj0kHk/3945qe0kFShrG3VV1EvULS4Y5Mn+VoGOD7P9fefeosBBUoaRFxZJRL1CQAOhXJ/VaJ/Q9D/W2n+qTfAVKGmRbxYUS/QmFs19yf1wqH91A/1pf3ceOxFSrxVa6aisv/rAxDTcX5VGh/JQf9KD73reMvU6x5X3hozK/Y4K0x3zuXwojoRFdSkREi3rK/OueXsaeM8v+OLPcR86l9acqWZXQpBXo1myv7nnmLWW7PLvjhzGR/OpfCxeTaV0IQV9Endr+6513rhuzy/4IwvFPzqUwsTCsn9CA/4BUecfu/Hf4h768v2qQX2yx6l0buozM/Rgv/dULov5tyW6gUhfJ5O8EBUOTpRCv6Mp+AYCGAA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 9,
+   "mask": 3,
+   "size": 53,
+   "bits": "/uVKjgSj/BbOg5P5kG6BY5KmRLt1Eyr2/lXbozPvjfIuwTVRR+RxB/qqqqqqr+AUVrHk9QC3dAL4EupeI7SQcKOM4IkOPJmL3dko3pEiN40kHk/3944wFv/eJ6wduOOuf0PQK4Y5Mn+VoNdYgUmEFEFj3aaPzBKFxZJRL1CRaV6MSkOBSmLmYkNt8mqTfAVKGmaIqDPJkL9enumpEurxH91A/1pf2EVVrGJwxOKhB6v0kqYxDTcX5VGq+SLPmRb4sgFX0PhqiX3hozK/Y5Qvqso1Mrz6zKeGJ/Kci3rK/Ouec/BFXn0lVQEHKnh+mBcqWZXQpBWyu9p0g889SNNgUQ045zGR/OpfC6NIBOvTLOmP8Gwlhiu3rhuzy/4Iw0eUoxPr0SZ3/+Zb+gBUecfu/Hf76gqn0upQUtpxh+sQugzM/Rgv/dfQz0i2pO67P6ESiVkEBUOTpRCv7XylbDZdAA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 9,
+   "mask": 4,
+   "size": 53,
+   "bits": "/qJW/8Oj/BItDasbkG6UNsfzFLt1Yu3qj9XbqvT//DYuwWAERrExB/qqqqqqr+AYJ3H4hACL3qj6uEfNrYxz/ptvbrHtsqFoU3OCdDuInSo4b4jrhklSmMc9qZT87bb7KhaFegElQ7iJ0RJE8I6YZYQmiPPamUfmy6qyoWhzGJmQO4SdMOhMyOnHWNJw8j2plF5rJgsqHoe0NEMDuEBbb5pc/p1PrkW2JFqTRva0UuqhxrMxfPEblJG2+OXf6NH85lQCha0/300CLQpc7bMz2w0pQ3tSZg0sjVg3BUIpctN9/cim0EXG26utgNLUMrA2KFLM1dLQNeKXDffcHYY1BFhttraNjS1DemZUdSzPXSzKpTlw0373oCNQRcbqwoCI0tT3oSzdX8zx+IB398cNdE/6ZDKkXOqwSHDRLUEausvQ/N8/jdMzQXBVKu6OavRH3A0EdISP1Ne/7Lu5HfFBAA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 9,
+   "mask": 5,
+   "size": 53,
+   "bits": "/lOR47Jj/BYdzqcrkG66DiR9JLt11DaHOVXbpoU/4EYuwSMIRnIxB/qqqqqqr+AXG5E3uACCmbT7f1535Kjht7/9Db/VUS9QsEtxuwd7Uhv/c/ksmjjiW8sNapjO3VV1EvULTJpI9WPkZ2OD7P9fefcquDDWqYTeqCSKQuZKIGpfB3dSB/Q9D/W2n/biuxk73XhbxYUS/QmHu3/wd3yof+ub+uyPtUWG5Fajxda6aisv/rBRyisWIlHR/JQf9KD71pcOtW4z7Ms6zoRkDiC85/7mf4gjoRFdSkRFTGa7O/fvnsaeM8v+OJNeT+4n/YHxNCMLyaNg9u6nzvvuLWW7PLvjgC3gO/YuzBeTaV0IQV/Glfp84733w61opkjSwnNH7ic4kTCsn9CA/4BlvsefPGv4h768v2qQR0wx4n0ZujoX+K7/ldMDgnxl6e6AUhfJ5O8Ewl/iYgzf6Mp+AYCGAA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 9,
+   "mask": 6,
+   "size": 53,
+   "bits": "/tOR47Jj/BYtDasbkG6zKrY0BLt01DaHOVXbr6GvqWIuwTtpxGpRB/qqqqqqr+AH2JEHewCfvSb6W8y/5Kjht7/9BJtHGAvC+FMQPR8a1Av/c/ksmjjSmMc9qZT/+cc8NmdCbJpI9WPkZ0cRpdvNMNdLPii3L5yeqCSKQuZK42ZvxHtiw2Z0K2f/u3biuxk73XjJjKGAtC0GPWeR8WTJf+ub+uyPtkW2JFqTRsazTqtm2qJRyisWIlHT/bCPvYT50I9vM3ZSaMs6zoRkDiyMJPLWvIRqhYMUbtYNTGa7O/fvl+IMeu9scIs/yfZGe5HxNCMLyaNQNeKXDfffCffyGCmqoC3gO/YuzDMBIHmaCH+nE+IdZaW3w61opkjSwX93LSsIUSLlv8LJ+wBlvsefPGv6zpqu9moQUVRRZGUYuroX+K7/ldczQXBVKu6JdoWAwH0Ewl/iYgzf6e7sSKQUAA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zx",
+   "version": 9,
+   "mask": 7,
+   "size": 53,
+   "bits": "/gbEtucj/BHS8lTlkG6Gf+NhVLt0K8l4xtXbovT//DYuwUSWR5WxB/qqqqqqr+AIJ3H4hACW6HP/Dp0AC1ceSEAC0c4STV6XrajvwuDlK/6qJqx5z22sZzjCVmsCrJJpYzIXMyW3CpwbmBJE8I6YZYCkwddI0GNL/XHfF7MfGJmQO4SdNjMhfjKq7ggdRObEIoWc2fTV4XhZgphuDps2L77O/7nf4cZJ3GVsxRKmG+ozjrexNdUZ3bEm+OXf6NH8rnCQzImtlZ5vm9ExW3Mz2w0pQ3s/0NZBO4Nao5lExAgQQrdZL7o5JXDANgm5hGSkYXZenPYuyh1o8ggiXKKnTXz//5IfxAnRM2ZUdSzPXShI7B3imlp3lvg98x2GwoCI0tT3oTew75ec/gBaQURgxFf5m867oytQXquxm5sXum9C/fuvxdTMvo+q1S6cI9DVlSkEPaAdnfMv7Lu5HfFBAA=="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq",
+   "version": 10,
+   "mask": 0,
+   "size": 57,
+   "bits": "/gin9mY7P8FDpkHd2pBunu/t/EbLt0mJkESIJduuxFv271LsEFd/EN0RB/qqqqqqqv4AoEtFndcAqkwff+iNCTAOtTzgAKB8g7CpkzNzaT3tMJEA7D4x2TX93bvhbRvjaIRAZYtRSHGf9X/qqFsdmdyY8mE3Wu+ZffYRITwizA9vuzUpMxEQ+KdKMczBPzg2eJWbvcPEzZUrhESAhonhHhd3myb5i5Yd2ZrSMy2/yp/vGFQ3/QAO4g9z7cDfsRM+tx6whEHdkQyr4HK9u4rKRzyBFIiEcf56WP+RF+dwjMfl3dlxowsTuZiO9dZwQTPMApAvt8pdkTNbUj2XRFEMwyqilHN926NsastimIRIoWqyiXmfcP9yfafhmd9p9+IjOu6YPaoSzTAiDFNkxmu8szEd4BVY9FwBFDUqAVMb3cMDQd9aKERAJpsU5xl/2J/wnHp12ZNaAjUXvp/6/ABhuBEO7kd/jpNKsRBqsEtYDEzdEQupBbf7u8/N0l2JZEiHOusEL/9xHuMEdRJp3ZsS/oq/5ZjuXYA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq",
+   "version": 10,
+   "mask": 1,
+   "size": 57,
+   "bits": "/t3yozNvP8EpDOt3cJBuq7q4qRPLt0MjOu4ipdujkQ/juhLsFv3VGnexB/qqqqqqqv4ACuHHN30AoxlKPr3YEpqkH5ZKqgrp1uX8xmYmI5dHmjuqRptkjGCoiO6zx7FJwi7qzN4EHSTKoCtAAvG3M3YypzRiD7rMKNy7i5aIZqX67mB8ZkRFsg3gm2ZrlZ1jLcDO6JaWZz+BLu4qL9y0S0IiznJTITy3czB4Znjqn8q6TX6dV6qkSKXn+JWP5EZ//RQaLGt3MamutSao7tqYxZYrHiIsWL8vDfrEQ/PaJm1Pd3Pb9l5G7M3boPza65lmqDq64p8IxGYOGJc97vumaY/3wSYojvY+wGHIMi7iCD/n3CzKJavY1w1LM3XDord2b7vNaIC4Z5qIpvnxkz7p5mRIqr/yXvarvpB/VAZOiJZR63Xwgu7qjp5BskwqjcvyNtDfcznwA2BC/8qv+QBLErGkRMX/u8Ya5EUr8EHypGZ3saukUOPu7p+d0PcjzuItkupReqokS7cE37jDdzG4/t/qsM27CIA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq",
+   "version": 10,
+   "mask": 2,
+   "size": 57,
+   "bits": "/mspzoW3P8ENnqJT4pBupgxjxKXLt1oHqKcGJduo/Lv415LsFLTxGD6RB/qqqqqqqv4BmKjHpTQAvi+RfwsDPlKAjd9uOEPyu1Mnq9D9UZ5jCHKO1N2/4dZz5VhvRfhtUGfOXWjfcJIRzZxgkLiToT8WyoK5YgwXRRSfGd+s9Ozhg9anC/KewATECS9PB9u4QHYVhSBK5XalvKcOvmpvJvT5o8Vzs3WT4XlcC84x8nxhILa5xeOA2uz/9SNfifC+jx0+vGJTse+t2JKzg2rER98PHGsMST/0YPwfL+T6tCRr5Tr/m+idgXsAzTT+edBCOnOhjynTqdDVap4ZfLKC+8ksrJDz40DiQijsoGfGmYk8sZoRSBz4RURvoTznzwGtAg0WBUic9dOsNLDq/ogyi9KT2LbWzL+PLNakObCV5SCNaTzUEKfOHpia3/rx4H3ypJn74XDUAtaZvnx0/IBvgPGA1sT/lnDKifPqkFjWNG9TMeuvPVf1gy/F1r4HXKsJAuqKFxz/JgEETfHn5Xic/ukx3XtgZQA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq",
+   "version": 10,
+   "mask": 3,
+   "size": 57,
+   "bits": "/uspzoW3P8FgKHk+VJBunWHVH8jLt1oHqKcGJdulSmP1YVLsE9lHE1MxB/qqqqqqqv4BLnPGE+8At0Invma1pdKAjd9uOEPfjYhKHQuQ6rPV0x84D72/4dZz5Vhq4yMA5ryj6g1pq/+nFvBgkLiToT8WflnU1Nd68/gpwrIaL4Fhg9anC/Ke1p+pv/QisQYumxujXk365XalvKcOvLkCkC+UFR7BaBglOhTqC84x8nxhIOzUczjtbDeL7k7v0p0+Tx0+vGJTseSobkq+NbqqxLK5Fwa8UT/0YPwfL+WTAv8GU+GSQoUrWha2FjT+edBCOnOMufK+Hwu40bOvp980IKksrJDz40Dn5POBFryrLuyKavenk3D4RURvoTzne9rAtNZ7s6QqLr4a791q/ogyi9KTzi27emTimgsy4t0jPk09aTzUEKfOHpv3aSGcVqfwf/RNOh1iAtaZvnx0/IBCNjHtYEe/rR160p5qUFjWNG9TMeuii4/4Nf+t1dOxh8a/2uqKFxz/JgEE+yqKU6Px/oSHBhbWvgA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq",
+   "version": 10,
+   "mask": 4,
+   "size": 57,
+   "bits": "/qw1v0KrP8EuEJqwbJBuiDSASp3Lt10b2WAaJdusjX/kplLsFowTFgZxB/qqqqqqqv4B6W/H1PMAi+iNPswffOpjA+eNtnsRtWvEJegewBl/ebWSpRqjkBFvlJ90y8CO3l8t01g8/qryQ6V44X+P0PgKu0WlE8sLNKx8l+dPetQCje5Ehcp9UYPYeOhTdhykMbEJ9OdRa05GMp/tMFqMqMwaLfxrwrKPkL5Aegktg7t9UQ5aS9tjVNQf+xu/h8h/HxoizGVP0SipqVav8qrfxeftElPsRz8X7vz8o/3ixeN3lP3j6i+B8LwcvIwd9+ihtEtCgREwJ+g2+xkFDXWeig4w3Vfvkof5zBAPLl8lF7nfP6LyxiXgNINz0Pv7vsaxc8oKdPB/e+tPuogJ8LDRBepwSTHKvXiTXRG4SHeJlOeW5wQ3np8tkph5UcISbkXy1V7nkLfIAxGF/7to/QBMDtFjWMQ/uEgqh8srEE/KRGhPUSurTJPp8u/d0Ibk0pPqjuhpmSQcqDkEPDb7lL+A/q4trLx8FIA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq",
+   "version": 10,
+   "mask": 5,
+   "size": 57,
+   "bits": "/l3yozNvP8FtHKpzYJBupgxjxKXLt1Z2b7t3pdug/Lv415LsErzRGjaxB/qqqqqqqv4BGqDHJzwAgq+RfwsDZ07xSsMf/1+yu1Mnq9D9U5ZDinquVttkjGCoiO63x/BN0m/u3WjfcJIRzZwRV6TiZiNnyoK5YgwXRRy/m9eMduT67mB8ZkRFogzkiydvhdu4QHYVhSBLImrUe7t/empvJvT5o8VTMX2zY3F8Znjqn8q6TT6ZR+ugWOT/9SNfifC+iRFPfH4icf+t2JKzg2rExdcvHmMsSL8vDfrEQ/LaNixLZzLfm+idgXsAzSiPvswz/W/hjynTqdDVaJY5/rqiec/3wSYojvY6wCDMIm/mGYk8sZoRSByJglgeZiCWzwGtAg0WBUC8d9uMtrjxkz7p5mRIur72TrevrtakObCV5SCMriCl17u/2pia3/rx4H3yJpHbY3j0A2BC/8qv+QBPAvGgVMT/lnDKifPqkESn9HMi8funPVf1gy/F0LYn3qMpguhReqokS7cEz/nHZ3C8/ukx3XtgZQA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq",
+   "version": 10,
+   "mask": 6,
+   "size": 57,
+   "bits": "/t3yozNvP8FuEJqwbJBuryjxjYHLt0Z2b7t3pdup2Cvx8xLsEzrJG7CxB/qqqqqqqv4AFpBEKwwAn4sDPi+RS87xSsMf/1+7n8Fuj0K0chBb6/y2N1tkjGCoiO60y8CO3l8t0ExNObaDhLgRV6TiZiNn7hDwRp5eYZqn+lGUF2L67mB8ZkRFrjwnhxesie8qCVKHzATbImrUe7t/evgmAmawh1dLUPurAvdkZnjqn8q6TQ5aS9tjVNQv/AfPwNQ+yRFPfH4icf2s/AK6p/qMxFE3H+U0aL8vDfrEQ/IZOhyIawIc0swPyF+ShCiPvswz/W/oq7uajUKcSRAhnzy6GE/3wSYojvY5zBAPLl8lFK2u+L6DATiJglgeZiCW65PkJp9fIcakFl2U1z7xkz7p5mRIto41QodsouI2cJQHrAQcriCl17u/2prT+2i4xO/yRxfDAv7sA2BC/8qv+QBMDtFjWMQ/v1RawNdq0FSn9HMi8fuuGcf8p7+N1TA/vyUx4uhReqokS7cEw8kEa0B//s2jlF/yLAA="
+  },
+  {
+   "text": "vinpassport/q7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq7Zxq",
+   "version": 10,
+   "mask": 7,
+   "size": 57,
+   "bits": "/gin9mY7P8ER72VPkpBumn2k2NTLt0mJkESIJdukjX/kplLsFMU3FE9RB/qqqqqqqv4A6W/H1PMAlt5Wf3rEUDAOtTzgAKBuypQ72hfhLa+kFANJyK4x2TX93bvjJD9xIaDSLRkYbOPW0e3qqFsdmdyYu0WlE8sLNORYBa5r6J0vuzUpMxEQ8YPYeOhTdhp/XAfSmVGMzZUrhESAh61zVzPl0gKwrwRU/QibMy2/yp/vGHCltCScqyv76VKflYF/lx6whEHdkQipqVav8qrbR67JEBrMVf56WP+RF+fixeN3lP3jh5lanQrH0VZwQTPMApA9/u7P2BfJFq/eYMNF57qilHN926NuI+/w0aDa6fj7revWVG1yfafhmd9pvsaxc8oKdLhb6aJrKMEkxmu8szEd6THKvXiTXRdjJcFS+VFLQd9aKERAJp+Grj3tkbvxuOg8/QETAjUXvp/6/ABz8TGcp0f/igEKlYIrkFtYDEzdEQujTJPp8u/d1s/AQNrOHukEL/9xHuMEPDb7lL+A/pj2wQqneQA="
+  }
+ ],
+ "auto": [
+  {
+   "text": "https://passport.vin/verify/?v=391ce048e0feacde85e7978c2c8320b3763a6c5ed5b2aacc7ca524469bafe357",
+   "version": 6,
+   "mask": 2,
+   "size": 41,
+   "bits": "/lv/oT/BG6ZfEG6t+YzLt1hBm4Xbqls2OuwVG2PVB/qqqqr+AVBfdgC+IUr0vmRHXpXV4IdTpCIAMGGiOJS4jq/1cU3kIA1+mjm/+3mBpw4AYooTw/dXngLchNzR2Kqek9kucAQFD3KSaUV/JQ7IXUwuzqlLEBltGSBRSlPAbFb+576UlvvSab6kFzHT4HmY6oYX/WbKKHQJdug3wXGdKsk5c/m+JPDe/gBAL7DEf5kxHWqQVe7JUbutGMvPpdSjmBai69cI2fEEl8wz0v6fWtweAA=="
+  },
+  {
+   "text": "https://passport.vin/verify/?v=c7e89baf7818a3dc43edc3632b7f36e0df990fc9de72ede2cf80f5886c176d3b",
+   "version": 6,
+   "mask": 2,
+   "size": 41,
+   "bits": "/m39IT/BLSJvUG67G4wrt1zwndXbq0u0EuwV22PRB/qqqqr+AUJfVAC+IUr1vkoFXrf9e6dDpKRXrKWiM7I85K3UY0ZxIR32WUY+SX2isg43Y4s14fxWGhrNgdzBxuqWk8EoERI1D736cO1+JUrMCV7qiKlKAbB9KRHxzlPAfFa4pZ6UlvybeCe4ByET5Hmf7EYVXXdkiHVZdizlycGdCqF9FPm/TlB9/wBy/+HEf5jRHWqQXu75Ebuv0MtvpdRvmE6C65MK+eEElN0hGv6PS906AA=="
+  },
+  {
+   "text": "https://passport.vin/verify/?v=e838bfc057cb38e390c3120c81c4a941c3dad5c0634d2d04d71b0fc3852486a0",
+   "version": 6,
+   "mask": 2,
+   "size": 41,
+   "bits": "/g7XiT/BDmJMEG6uW8wrt1jBm8XbqPs2GuwVU2fRB/qqqqr+AVFtdAC+MUv1vjalXpXVRtbbvaRJMGHmfZqy7o9YYeB4MFv+mJqmyXngLk4QYos74VXXGgsN1ZzQwEilo9kjUhNBDny6Yfx6gJLMCc0IqIlKMQNeCyKZ00LAfALmR56UvlPbaDc2X71T5HWp/i4X3WTpKHQZdiz0WNudaox5Yvu+btpm/wBG+uTFf4ZxHmoQWP34UTuvuMPv5dS/nAqC6/Mq+ekElM8D0v6OWtxeAA=="
+  }
+ ]
+}
