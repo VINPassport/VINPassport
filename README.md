@@ -133,7 +133,7 @@ seconds.
 | `npm test` | Everything below, in one run |
 | `npm run test:contract` | The 99 contract tests, against the compiled circuits |
 | `npm run test:watch` | The same, re-running on change |
-| `npm run test:app` | 109 tests on the application paths: verdicts, the deploy's registrar list, the submission path, the chain-sees panel and the QR encoder, via `node --test`. **83 of these import and run product code; 26 assert on what is written in the repository** (that every screenshot the guide names exists, that each page's bar carries the same links, that every page names its content with one `<main>` and offers a way past the bar, that no text colour drops below the contrast floor). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
+| `npm run test:app` | 121 tests on the application paths: verdicts, the deploy's registrar list, the submission path, the chain-sees panel and the QR encoder, via `node --test`. **93 of these import and run product code; 28 assert on what is written in the repository** (that every screenshot the guide names exists, that each page's bar carries the same links, that every page names its content with one `<main>` and offers a way past the bar, that no text colour drops below the contrast floor). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
 | `npm run test:sdk` | 24 assertions pinning our assumptions about `@odatano/dpp-sdk` |
 | `npm run app` | All three surfaces + the circuits, one dependency-free server |
 | `npm run serve:site` | The site statically, as GitHub Pages serves it: no circuits, demo state only |
@@ -151,7 +151,7 @@ npm run app        # -> http://localhost:8790
 |---|---|---|
 | **Home** | `/` | The problem, the mechanism, and what the chain does and does not learn |
 | **Regulation** | `/regulation/` | What Reg (EU) 2026/1738 actually requires, article by article |
-| **Verification** | `/verify/` | A buyer: scan a QR, see what the passport has *proven* and what it has not |
+| **Verification** | `/verify/` | A buyer: scan a QR or type the VIN, see what the passport has *proven* and what it has not. The VIN is hashed in the browser, so it never reaches a server, and an identifier with no passport is told so rather than answered with another vehicle |
 | **Intake console** | `/intake/` | A registrar: fill in the fields, submit, watch the circuits accept and refuse |
 | **Proof explorer** | `/proofs/` | An auditor: every claim on the ledger, marked current or superseded |
 | **Live preprod demo** | `/demo/` | Anyone: one click writes a real passport to the deployed contract |
@@ -458,7 +458,7 @@ repository begins with no contract at all.
 |---|---|
 | **The contract** - seven circuits, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
 | **Deployed to Midnight preprod**, 28 August, built and signed locally | [`deploy/preprod.json`](deploy/preprod.json) |
-| **232 tests** - 99 contract, 109 application, 24 SDK assumption assertions; all twenty guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
+| **244 tests** - 99 contract, 121 application, 24 SDK assumption assertions; all twenty guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
 | **Three surfaces** - verification, intake console, proof explorer - all running the compiled circuits, not a mock | [passport.vin](https://passport.vin/) |
 | **On-chain runs from the browser, self-funded**, after a hosted sponsor turned out to be a single point of failure in a demo a judge runs unattended | [D24](docs/DECISIONS.md#settled) |
 | **The regulatory basis read from the Official Journal** rather than secondary analysis - which caught two wrong article citations that had survived months of work | [REGULATION.md](docs/REGULATION.md) |
@@ -531,7 +531,7 @@ scripts/
 test/
   passport-simulator.mjs             harness: compiled circuits + a local ledger
   passport.test.mjs                  99 contract tests
-  app/                               109 tests on the paths around the circuits
+  app/                               121 tests on the paths around the circuits
   sdk-assumptions.mjs                24 assertions pinning @odatano/dpp-sdk behaviour
 ```
 

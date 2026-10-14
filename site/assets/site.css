@@ -194,6 +194,30 @@ a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{
    right, so the eye has an anchor at both ends - but a paragraph may not. */
 .vfy-measure{max-width:74ch}
 
+/* The VIN box. The input is mono and uppercase because a VIN is read off a
+   windscreen one character at a time, and a 1 next to an I decides whether
+   the lookup finds anything. Both controls clear a 44px touch target. */
+.vfy-find-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.vfy-find-row input{flex:1 1 280px;min-width:0;min-height:44px;box-sizing:border-box;
+  padding:11px 13px;border:1px solid rgba(0,74,173,.32);background:#E6DCCE;
+  color:var(--color-text);font:15px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.06em;text-transform:uppercase;border-radius:0}
+.vfy-find-row input::placeholder{color:rgba(14,23,38,.62);text-transform:none;letter-spacing:0;
+  font-family:Barlow,sans-serif}
+.vfy-find-row input:focus-visible{outline:2px solid var(--color-accent);outline-offset:-2px}
+.vfy-find-row input[aria-invalid]{border-color:#8A1C1C}
+.vfy-find-row button{flex:none;min-height:44px;padding:11px 22px;border:1px solid var(--color-accent);
+  background:var(--color-accent);color:var(--color-bg);cursor:pointer;
+  font:600 15px 'Barlow Condensed',sans-serif;letter-spacing:.06em}
+.vfy-find-row button:hover{background:var(--color-accent-600);border-color:var(--color-accent-600)}
+.vfy-find-row button:focus-visible{outline:2px solid var(--color-text);outline-offset:2px}
+
+/* A demo VIN offered inside a sentence: a button, because it acts, drawn as
+   a link, because that is what it looks like it does. */
+.vfy-try{border:0;background:none;padding:0;cursor:pointer;color:var(--color-accent);
+  font-size:12.5px;text-decoration:underline;text-underline-offset:2px}
+.vfy-try:hover{color:var(--color-accent-700)}
+
 /* Metadata beside the closing note rather than stacked under it: at page
    width the two together are one screenful instead of two. */
 .vfy-foot{display:grid;gap:clamp(14px,2vw,30px);grid-template-columns:1fr;align-items:start}

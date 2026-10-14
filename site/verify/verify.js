@@ -13,6 +13,7 @@ import { passportView, QUESTIONS } from '../assets/verdict.mjs';
 import { loadState } from '../assets/sources.mjs?v=4';
 import { chainSeesBlock, fmt, short, esc } from '../assets/chain-sees.mjs?v=2';
 import { qrPanel } from '../assets/passport-qr.mjs?v=1';
+import { parseEntry } from '../assets/vin.mjs?v=1';
 
 
 const TICK =
@@ -155,6 +156,69 @@ const LEDE = `<section class="vfy-lede">
   </div>
 </section>`;
 
+/**
+ * The lookup. Annex V 4.2.2 of Implementing Reg (EU) 2025/1707 expects a code
+ * to reach a vehicle-specific page, or a landing page that then asks for the
+ * VIN; 4.2.3 forbids asking for anything else. This is the second of those,
+ * and it asks for nothing else: no account, no software, and the VIN is
+ * hashed here rather than sent anywhere.
+ */
+const FIND = `<section class="vfy-find blueprint" style="position:relative;padding:clamp(16px,3vw,22px)">
+  <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+  <form id="vin-find" novalidate autocomplete="off">
+    <label for="vin-input" style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E">Look up a vehicle by VIN</label>
+    <div class="vfy-find-row">
+      <input id="vin-input" name="vin" type="text" inputmode="latin" maxlength="64" spellcheck="false"
+             autocapitalize="characters" autocorrect="off" placeholder="The 17 characters on the windscreen"
+             aria-describedby="vin-note">
+      <button type="submit">FIND THE PASSPORT</button>
+    </div>
+    <p id="vin-note" class="vfy-measure" style="margin:10px 0 0;font-size:12.5px;line-height:1.55;color:rgba(14,23,38,.68)">
+      The VIN is hashed <b>in this browser</b> and only the hash is used to look the passport up. The VIN itself is
+      never sent anywhere, never stored, and never put in the address bar.
+    </p>
+    <p id="vin-error" role="alert" style="margin:10px 0 0;font-size:13px;line-height:1.55;color:#8A1C1C" hidden></p>
+  </form>
+</section>`;
+
+/**
+ * Nothing holds a passport for this identifier.
+ *
+ * This is the same discipline the claim rows follow, one level up: an absent
+ * passport is silence, not a verdict. A page that answered "no record" with
+ * anything resembling a clean bill of health would be worse than useless, and
+ * so would one that implied the vehicle is suspect.
+ */
+function notFoundSection(asked, typedVin) {
+    return `<section class="vfy-card">
+  <header style="padding:20px 0 14px;border-bottom:1px solid rgba(0,74,173,.16)">
+    <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E">Vehicle passport &middot; not on this ledger</span>
+    <h1 style="margin:5px 0 4px;font-size:clamp(26px,6vw,34px);line-height:1.05;letter-spacing:.01em;text-transform:uppercase">No passport for this vehicle</h1>
+    ${typedVin
+        ? `<span class="mono" style="font-size:11px;color:rgba(14,23,38,.62);word-break:break-all">VIN ${esc(typedVin)}</span><br>`
+        : ''}<span class="mono" style="font-size:10.5px;color:rgba(14,23,38,.62);word-break:break-all">VIN HASH ${esc(asked)}</span>
+  </header>
+  <div style="padding:16px 0 4px">
+    <p class="vfy-measure" style="margin:0;font-size:14.5px;line-height:1.6;color:rgba(14,23,38,.8)">
+      <b>This is not a verdict on the vehicle.</b> A passport that was never issued cannot say anything about a car,
+      good or bad, and this page will not pretend otherwise. It means only that the ledger it reads holds no record
+      under that identifier.
+    </p>
+    <p class="vfy-measure" style="margin:12px 0 0;font-size:14px;line-height:1.6;color:rgba(14,23,38,.72)">
+      The usual reasons, in the order they happen: a mistyped character, a vehicle whose passport was issued on a
+      different deployment, or a vehicle that simply has no passport yet. If a seller says there is one, ask them for
+      the link or let you scan the code on the car.
+    </p>
+    <p class="vfy-measure" style="margin:12px 0 0;font-size:13.5px;line-height:1.6;color:rgba(14,23,38,.68)">
+      This deployment is a demonstration and holds two vehicles. Their VINs are
+      <button type="button" class="vfy-try mono" data-vin="WVWZZZ1JZXW000001">WVWZZZ1JZXW000001</button> and
+      <button type="button" class="vfy-try mono" data-vin="WAUZZZ8V5KA000002">WAUZZZ8V5KA000002</button>,
+      and both are fictional.
+    </p>
+  </div>
+</section>`;
+}
+
 function mainSection(vin, view, vinfo, badge, ledger) {
     return `<section class="vfy-card"><header style="padding:20px 0 14px;border-bottom:1px solid rgba(0,74,173,.16)">
     <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E">Vehicle passport · Reg (EU) 2026/1738</span>
@@ -207,16 +271,23 @@ function secondarySection(vin, view, vinfo, index) {
 
     const vins = Object.keys(ledger.passports);
     const asked = new URLSearchParams(location.search).get('v');
-    const main = asked && ledger.passports[asked] ? asked : vins[0];
+
+    // A bare /verify/ opens on the first passport, which is the demo's front
+    // door. An identifier that was asked for and not found is a different
+    // thing entirely and must never resolve to a different vehicle's verdict.
+    const missed = asked && !ledger.passports[asked] ? asked : null;
+    const main = missed ? null : (asked && ledger.passports[asked] ? asked : vins[0]);
     const rest = vins.filter((v) => v !== main);
 
     const holder = document.createElement('div');
     holder.innerHTML =
-        LEDE +
-        mainSection(main, passportView(ledger, main, vocabulary), byVin[main], state.badge, ledger) +
+        LEDE + FIND +
+        (missed
+            ? notFoundSection(missed, null)
+            : mainSection(main, passportView(ledger, main, vocabulary), byVin[main], state.badge, ledger)) +
         (rest.length
-            ? `<h2 style="margin:8px 0 -8px;font-family:'Barlow Condensed',sans-serif;font-size:20px;letter-spacing:.03em;text-transform:uppercase;color:#002E6E">Other passports on this ledger</h2>
-               <p class="vfy-measure" style="margin:0;font-size:13.5px;line-height:1.6;color:rgba(14,23,38,.7)">Two more vehicles, kept collapsed so they do not compete with the one you came to check. They exist to show the range: a record that answers every question, and one that cannot.</p>`
+            ? `<h2 style="margin:8px 0 -8px;font-family:'Barlow Condensed',sans-serif;font-size:20px;letter-spacing:.03em;text-transform:uppercase;color:#002E6E">${missed ? 'The passports this ledger does hold' : 'Other passports on this ledger'}</h2>
+               <p class="vfy-measure" style="margin:0;font-size:13.5px;line-height:1.6;color:rgba(14,23,38,.7)">${missed ? 'Every vehicle on this deployment, so the page is not a dead end. Open either to see what a passport answers.' : 'Two more vehicles, kept collapsed so they do not compete with the one you came to check. They exist to show the range: a record that answers every question, and one that cannot.'}</p>`
             : '') +
         rest.map((v, i) =>
             secondarySection(v, passportView(ledger, v, vocabulary), byVin[v], i)).join('\n');
@@ -233,6 +304,7 @@ function secondarySection(vin, view, vinfo, index) {
     // The demo ledger's vehicle identifiers are real 32-byte hashes; a state
     // that ever carried something else should not take the page down with it.
     try {
+        if (!main) throw new Error('no passport to encode');
         const panel = qrPanel(main, { role: 'verify' });
         const others = stack.querySelector('h2');
         if (others) stack.insertBefore(panel, others); else stack.append(panel);
@@ -241,6 +313,62 @@ function secondarySection(vin, view, vinfo, index) {
     }
 
     root.replaceChildren(nav, stack, footer);
+
+
+    // The VIN box. A hit navigates, so the result is a shareable address that
+    // carries the hash and not the VIN. A miss re-renders in place, because
+    // the one useful thing to show someone who mistyped is what they typed,
+    // and that must not go in the address bar to do it.
+    const findForm = root.querySelector('#vin-find');
+    const findInput = root.querySelector('#vin-input');
+    const findError = root.querySelector('#vin-error');
+
+    const complain = (message) => {
+        findError.textContent = message;
+        findError.hidden = false;
+        findInput.setAttribute('aria-invalid', 'true');
+        findInput.focus();
+    };
+
+    const lookUp = (typed) => {
+        findError.hidden = true;
+        findInput.removeAttribute('aria-invalid');
+
+        const parsed = parseEntry(typed);
+        if (parsed.error) return complain(parsed.error);
+        const { key, vin } = parsed;
+
+        if (ledger.passports[key]) {
+            location.search = '?v=' + key;
+            return;
+        }
+
+        const section = stack.querySelector('.vfy-card, .vfy-find + *');
+        const holderEl = document.createElement('div');
+        holderEl.innerHTML = notFoundSection(key, vin);
+        const fresh = holderEl.firstElementChild;
+        if (section) section.replaceWith(fresh); else stack.append(fresh);
+
+        // Shareable without carrying the VIN, and the back button still works.
+        history.replaceState(null, '', '?v=' + key);
+        wireTryButtons();
+        fresh.scrollIntoView({ block: 'nearest' });
+    };
+
+    function wireTryButtons() {
+        for (const b of root.querySelectorAll('.vfy-try')) {
+            b.addEventListener('click', () => {
+                findInput.value = b.dataset.vin;
+                lookUp(b.dataset.vin);
+            });
+        }
+    }
+    wireTryButtons();
+
+    findForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        lookUp(findInput.value);
+    });
 
     // Claim rows are <details>, so opening one needs no script.
     //
