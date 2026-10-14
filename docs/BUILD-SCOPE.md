@@ -81,15 +81,30 @@ boundary and stays exact.
 wallets, each needing its own registered NIGHT UTxO for dust generation. Treasury sizing is a count
 of wallets, not a balance.
 
-### Batching is the primary cost lever
+### Batching is a reliability lever, not a cost one
 
-`@odatano/nightgate-tx` takes `buildSponsorable({ calls: [...] })`, carrying up to **8 circuit calls in
-one transaction, one fee, one sponsoring**, with a pre-proving causality check so a violating batch
-fails locally and spends nothing.
+`@odatano/nightgate-tx` takes `buildSponsorable({ calls: [...] })`, carrying up to **8 circuit calls
+in one transaction, one submission, one sponsoring**, with a pre-proving causality check so a
+violating batch fails locally and spends nothing.
 
-Because we pay every fee, this is not a performance optimisation but a unit-economics one. Any
-operation issuing multiple claims should batch. Measure batched versus unbatched cost as part of
-Phase 0.
+**This section used to claim batching was the primary unit-economics lever, and asked for that to
+be measured in Phase 0. It was measured on 2026-10-14, and the claim was wrong.** A fee tracks the
+work a transaction does, not the number of transactions it arrives in, so there is no "one fee"
+saving to collect:
+
+| batched as one transaction | batched | as separate transactions | difference |
+|---|---:|---:|---|
+| `registerPassport` + `initialiseField` | 0.8102 | 0.8125 | saves 0.3% |
+| two proof calls | 0.8563 | 0.7445 | **costs 15.0% more** |
+
+Figures in DUST at the protocol reference price, built against the deployed contract with real
+proofs and nothing submitted. A fee is cost multiplied by a price the ledger moves every block, and
+since the price is a scalar these ratios hold whatever it is.
+
+**Batch anyway, for the reasons that survive.** One transaction means one submission to fail, one
+confirmation to wait for, less block space, and no window in which half an anchor is on chain. For
+a flow a customer watches, that matters more than a fraction of a DUST. What it does not do is pay
+for itself, and nothing in pricing should assume it does.
 
 **Built to accept Model C.** `srv/lib/sponsor.ts` puts the signing source behind an interface with
 two implementations: custodial now, external signer later. The treasury pays either way. An
