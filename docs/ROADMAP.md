@@ -66,7 +66,9 @@ contract changes wait for the 27th. This week takes the work that is not contrac
       artifacts including all ten `zkir` files. `.gitattributes` now pins the generated output to
       LF so a Windows checkout and a Linux checkout hold the same bytes
 - [x] **Measure `proveFieldAtMost` / `proveFieldAtLeast`.** DONE 13 Oct: median 29.4s and
-      27.1s in wasm, n=3 each, against the deployed contract. The blocker had been that
+      27.1s in wasm, n=3 each, against the deployed contract. **Re-measured 14 Oct against
+      the contract deployed that day: 27.6s and 27.0s**, within noise, so the writer
+      circuits cost these two nothing. The blocker had been that
       both assert `fieldCommitment.member(slot)`, so they need a field initialised on
       chain whose opening is still held; a guided run produced one. These are the times
       to ISSUE a claim, not to read one
