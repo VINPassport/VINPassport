@@ -72,21 +72,82 @@ export function readTransaction(bytes) {
 }
 
 /**
- * Balance `finalizedTxB64` with our dust and, when `submit` is true, send it.
+ * Wait until the dust wallet has applied the chain up to the tip.
  *
- * Returns `{ contractAddress, txHash, dustBefore, dustAfter }`. With
- * `submit: false` nothing is sent and `txHash` is null, which is the mode to
- * use to prove the whole path works before spending anything.
+ * The stream is live and the tip keeps moving, so insisting on exact equality
+ * never finishes. `isCompleteWithin` is the SDK's own answer to that, and the
+ * same tolerance the sync script uses.
+ *
+ * @param {() => object | undefined} progressOf reads the current SyncProgress.
+ *   Taken as a function because the state arrives by subscription and the
+ *   object is replaced on every emission.
  */
-export async function payFromOwnDust({
-    finalizedTxB64,
+export async function waitForTip(progressOf, { log, gap, timeoutMs, reportMs = 15_000 }) {
+    const deadline = Date.now() + timeoutMs;
+    let reportedAt = 0;
+    let waited = false;
+    let everLive = false;
+    for (;;) {
+        const p = progressOf();
+
+        // A wallet that has not heard from the indexer yet reports `tip 0,
+        // connected false`, and EVERY gap check against a tip of zero passes.
+        // The first version of this guard measured exactly that and waved a
+        // stale proof straight through, half a second after start. So the
+        // stream has to be live and a tip has to have arrived before the gap
+        // is worth anything.
+        const live = Boolean(p?.isConnected) && p.highestRelevantWalletIndex > 0n;
+        if (live) everLive = true;
+
+        if (live && p.isCompleteWithin(gap)) {
+            log(`dust caught up at ${p.appliedIndex} (tip ${p.highestRelevantWalletIndex})`);
+            return p;
+        }
+        if (Date.now() > deadline) {
+            const secs = Math.round(timeoutMs / 1000);
+            if (!everLive) {
+                throw new Error(`the dust wallet never connected to the indexer within ${secs}s `
+                    + `(tip ${p?.highestRelevantWalletIndex ?? '(none)'}, connected ${p?.isConnected ?? '(none)'}). `
+                    + 'Without a live stream its state is whatever the snapshot held, and a proof built '
+                    + 'from that is rejected as stale.');
+            }
+            throw new Error(`the dust wallet did not reach the tip within ${secs}s `
+                + `(applied ${p.appliedIndex} of ${p.highestRelevantWalletIndex}). `
+                + 'Submitting now would build a dust proof the node rejects as stale. '
+                + 'Run scripts/sync-dust-until-done.sh and try again.');
+        }
+        if (!waited) {
+            waited = true;
+            log('waiting for the dust wallet to reach the tip (the proof is built against applied state)...');
+        }
+        if (Date.now() - reportedAt > reportMs) {
+            reportedAt = Date.now();
+            if (p) {
+                const behind = p.highestRelevantWalletIndex > p.appliedIndex
+                    ? p.highestRelevantWalletIndex - p.appliedIndex : 0n;
+                log(`  applied ${p.appliedIndex} / tip ${p.highestRelevantWalletIndex}, behind ${behind}`
+                    + `, connected ${p.isConnected}`);
+            }
+        }
+        await new Promise((r) => setTimeout(r, 500));
+    }
+}
+
+/**
+ * Open the wallet the fee is paid from: dust restored from the snapshot, the
+ * shielded and unshielded wallets started empty because nothing is spent from
+ * them here.
+ *
+ * Separate from `payFromOwnDust` so `scripts/check-dust.mjs` can ask whether
+ * this wallet could pay right now without building or proving anything. The
+ * dust half is the half that fails, and looking at it should not cost a
+ * proving run.
+ */
+export async function openFacade({
     seedHex,
-    submit = false,
     dustStateDir = process.env.DUST_SYNC_STATE_DIR ?? DEFAULT_DUST_STATE,
-    settleMs = Number(process.env.SELF_FUND_SETTLE_MS ?? 60_000),
     log = console.log
 } = {}) {
-    if (!finalizedTxB64) throw new Error('needs the finalized (bound) transaction as base64');
     if (!seedHex || seedHex.length !== 128) throw new Error('needs a 128-hex seed');
 
     const EP = preprodEndpoints();
@@ -143,6 +204,31 @@ export async function payFromOwnDust({
         dust: () => DustWallet(configuration).restore(dustBlob)
     });
 
+    return { facade, zswapKeys, dustKey, snapshotOffset, dustBlobPath };
+}
+
+/**
+ * Balance `finalizedTxB64` with our dust and, when `submit` is true, send it.
+ *
+ * Returns `{ contractAddress, txHash, dustBefore, dustAfter }`. With
+ * `submit: false` nothing is sent and `txHash` is null, which is the mode to
+ * use to prove the whole path works before spending anything.
+ */
+export async function payFromOwnDust({
+    finalizedTxB64,
+    seedHex,
+    submit = false,
+    dustStateDir = process.env.DUST_SYNC_STATE_DIR ?? DEFAULT_DUST_STATE,
+    settleMs = Number(process.env.SELF_FUND_SETTLE_MS ?? 60_000),
+    catchUpMs = Number(process.env.SELF_FUND_CATCHUP_MS ?? 20 * 60_000),
+    catchUpGap = BigInt(process.env.SELF_FUND_CATCHUP_GAP ?? 0),
+    log = console.log
+} = {}) {
+    if (!finalizedTxB64) throw new Error('needs the finalized (bound) transaction as base64');
+
+    const EP = preprodEndpoints();
+    const { facade, zswapKeys, dustKey } = await openFacade({ seedHex, dustStateDir, log });
+
     try {
         await facade.start(zswapKeys, dustKey);
 
@@ -160,11 +246,31 @@ export async function payFromOwnDust({
             await new Promise((r) => setTimeout(r, 500));
         }
         if (!latest) throw new Error('the wallet emitted no state, so its dust cannot be read');
+        if (!dustOf(latest)) {
+            throw new Error('the wallet reports no dust. If the snapshot is behind the tip, finish the sync first.');
+        }
+
+        // Having dust is not the same as being able to spend it.
+        //
+        // A restored snapshot reports its balance at once, which is why this
+        // used to carry straight on. But the dust proof is built against the
+        // state the wallet has APPLIED, and the node checks that proof against
+        // its own tip. Build it from a snapshot that is behind and the node
+        // answers `1010 Invalid Transaction | "Custom error: 170"`, which
+        // ODATANO's own classifyNodeReject maps to `stale-dust-proof`. Nothing
+        // is spent, because a 1010 is refused before the mempool, but nothing
+        // is deployed either, and the error names neither dust nor staleness.
+        //
+        // Re-syncing beforehand does not fix it, because the gap reopens while
+        // the deploy is being proved. The wait has to happen here, immediately
+        // before the fee is balanced. `facade.start` has already resumed the
+        // live stream from the snapshot's offset, so this only waits.
+        await waitForTip(() => latest?.dust?.progress, { log, gap: catchUpGap, timeoutMs: catchUpMs });
 
         const dustBefore = dustOf(latest);
         log(`dust available ${dustBefore}`);
         if (!dustBefore || dustBefore === 0n) {
-            throw new Error('the wallet reports no dust. If the snapshot is behind the tip, finish the sync first.');
+            throw new Error('the wallet reports no dust once caught up to the tip.');
         }
 
         const bytes = Uint8Array.from(Buffer.from(finalizedTxB64, 'base64'));

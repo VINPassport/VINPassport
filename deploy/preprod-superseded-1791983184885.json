@@ -1,0 +1,12 @@
+{
+  "network": "preprod",
+  "contractAddress": "c8dc0aa462cc5058e68b0239e89d65b1562520db3ba9eb79daa15685e04f7957",
+  "txHash": "fe633e69fa286a3502353271c4f2b6a6b5e1435f11a5ef5df565c78b01184342",
+  "blockHeight": 2962145,
+  "submitterReportedId": "00e528df9ccf6bd016b280edb8d6e735acbbc9aec4b1a044fc34e23a80d0fd489e",
+  "contract": "vinpassport",
+  "confirmedOnIndexer": true,
+  "note": "Public record of the deployment. Address and tx hash are public by definition. txHash is the hash the public indexer resolves for this deploy; submitterReportedId, when present, is the different identifier the submitter returned.",
+  "buildId": "66b5a87c0859395a",
+  "buildIdNote": "Fingerprint of the compiled artefacts this address holds: sha256 over contract/index.js and every circuit .bzkir, first 16 hex characters. Computed from commit 11a65f0, the commit that recorded this deployment. scripts/lib/build-id.mjs recomputes it, and anything about to submit compares first, because a verifier key is fixed at deployment and a node rejects a call built from a different build without saying why."
+}

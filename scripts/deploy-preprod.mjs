@@ -43,6 +43,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { connect, createTxBuilder } from '@odatano/nightgate-tx';
 import { Contract } from '../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
+import { buildId } from './lib/build-id.mjs';
 import { readRegistrarSlots, REGISTRAR_ROLES } from './lib/registrar-slots.mjs';
 import { preprodEndpoints, redacted, guardLogs } from './lib/endpoints.mjs';
 
@@ -400,9 +401,17 @@ function recordDeploy(contractAddress, txHash, confirmed = null) {
             : {}),
         contract: 'vinpassport',
         confirmedOnIndexer: Boolean(confirmed?.txHash),
+        // Which build is at this address. A verifier key is fixed at
+        // deployment, so a working tree that has moved on produces calls the
+        // node rejects without saying why. Recorded here at the moment of
+        // deployment, when it is known for certain, and compared by
+        // scripts/lib/build-id.mjs before anything spends a fee.
+        buildId: buildId(),
         note: 'Public record of the deployment. Address and tx hash are public by definition. '
             + 'txHash is the hash the public indexer resolves for this deploy; '
-            + 'submitterReportedId, when present, is the different identifier the submitter returned.'
+            + 'submitterReportedId, when present, is the different identifier the submitter returned. '
+            + 'buildId fingerprints the compiled artefacts this address holds: sha256 over '
+            + 'contract/index.js and every circuit .bzkir, first 16 hex characters.'
     }, null, 2) + '\n');
 }
 
