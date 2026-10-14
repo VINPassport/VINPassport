@@ -35,6 +35,7 @@ import {
     createTxBuilder, submitExtrinsic,
     classifyNodeReject, isPreMempoolReject, isTransportFailure, isAlreadyImported
 } from '@odatano/nightgate-tx/txbuilder';
+import { matchesDeployed } from './build-id.mjs';
 import { HDWallet, Roles } from '@midnightntwrk/wallet-sdk-hd';
 import { WalletFacade, WalletEntrySchema, mergeWalletEntries } from '@midnightntwrk/wallet-sdk-facade';
 import { InMemoryTransactionHistoryStorage } from '@midnightntwrk/wallet-sdk-abstractions';
@@ -163,7 +164,14 @@ export async function createRunner({ log = console.log } = {}) {
     const seedHex = readFileSync(seedFile, 'utf8')
         .split(/\r?\n/).find((l) => l.startsWith('VINPASSPORT_SEED_HEX='))?.slice(21).trim();
     if (!seedHex || seedHex.length !== 128) throw new Error('seed file does not hold VINPASSPORT_SEED_HEX=<128 hex>');
-    const contractAddress = JSON.parse(readFileSync(join(ROOT, 'deploy', 'preprod.json'), 'utf8')).contractAddress;
+    // The address, and a check that this working tree built the contract that
+    // is at it. A verifier key is fixed at deployment, so a call built from a
+    // different build is rejected by the node with nothing that points at the
+    // cause. Stop here instead, before a fee is spent.
+    const deployRecord = JSON.parse(readFileSync(join(ROOT, 'deploy', 'preprod.json'), 'utf8'));
+    const contractAddress = deployRecord.contractAddress;
+    const built = matchesDeployed(deployRecord);
+    if (!built.ok) throw new Error(`this build is not the deployed contract:\n   ${built.reason}`);
     const capacity = Number(process.env.VINPASSPORT_DEMO_CAP ?? 5);
 
     // ---- wallet keys -------------------------------------------------------

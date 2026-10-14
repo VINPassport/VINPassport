@@ -124,6 +124,32 @@ either way.
 
 ---
 
+## Who writes a field, over a vehicle's life
+
+The panel is designed for a car, not for a registration event. Four of its slots are life-cycle
+counters, and the rule each is created under is what makes them useful:
+
+| Slot | Field | Rule | What a real event looks like |
+|---|---|---|---|
+| 0 | `odometerKm` | neverFalls | A service reads 62,400 where the last read 44,210 |
+| 2 | `ownerCount` | neverFalls | A sale: 1 becomes 2 |
+| 3 | `serviceCount` | neverFalls | A service: 3 becomes 4 |
+| 6 | `lastInspectionDate` | neverFalls | A roadworthiness test moves the date forward |
+| 5 | `firstRegistrationDate` | neverChanges | Set once and never again |
+
+None of those events belong to the manufacturer. A dealership records the first keeper, a garage
+the manufacturer never named records a service twelve years later. Since **2026-10-14** the
+contract expresses that: the registrar for a vehicle may authorise another identity to write that
+vehicle's fields, and every field records which identity last wrote it. See
+[D25](DECISIONS.md#settled) for the shape and for what it costs in privacy.
+
+Two things that do not change when someone else writes:
+
+- **The rule still holds.** An authorised writer cannot write a lower odometer any more than the
+  registrar can. The circuit refuses it.
+- **Permission is not knowledge.** Updating a field also requires the current value and its salt.
+  Those are private state, handed over deliberately and per field, outside the contract.
+
 ## Operational requirements
 
 **Prover keys must be fetched before the first proof.** The 32-slot keys are not packed into npm:

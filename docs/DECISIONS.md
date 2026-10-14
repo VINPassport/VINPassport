@@ -429,6 +429,59 @@ holds too: no end user touches a wallet; this is our treasury paying, which is e
 **Where NIGHTGATE returns:** disclosure grants in Phase 1. Self-funding fees was a resilience
 decision for one demo, not a direction of travel.
 
+### D25: A vehicle's registrar admits other writers, per vehicle · 2026-10-14
+
+Until today one identity could write a passport for its whole life: the registrar that registered
+it. `allowedRegistrars` is fixed in the constructor with no circuit that adds to it, and
+`initialiseField` and `recordField` refused anyone but the identity in `registrar[vinHash]`.
+
+That is correct for the thing that binds first and wrong for a car. Euro 7's EVP is issued and
+maintained by the manufacturer ([REGULATION.md](REGULATION.md), Annex V 3.1.1 and 3.2.1), so a
+single writer is exactly right there. But a vehicle reaches a dealership, changes keeper, and is
+serviced for fifteen years by people the manufacturer never names at the factory. A contract that
+cannot express that is a contract where the rest of the history lives somewhere else, which is the
+problem we exist to solve.
+
+**The decision.** Two circuits, `authoriseWriter` and `withdrawWriter`, callable only by the
+registrar of that one vehicle. Membership is a flat set keyed on
+`writerKeyOf(vinHash, writerId)`, so one `writers` set holds every pair and no key can collide
+with a slot, a claim or a registrar identity. Each field now also carries `fieldWriter[slot]`, the
+identity that last wrote it.
+
+**Three links of accountability, all public:** the registrars fixed at deployment, the one that
+registered this vehicle, and the writers it admitted. **A writer cannot admit another writer.**
+The chain stops at two levels on purpose: a registrar answers for who it let in, and that
+statement stays true no matter how long the vehicle lives.
+
+**What did NOT change, and was the whole question.** The integrity rules apply to an authorised
+writer exactly as they apply to the registrar. A dealership with permission and with the current
+opening still cannot write a lower odometer: the circuit refuses it. If delegation had quietly
+traded that away it would have been the wrong feature at any price, so it is asserted directly
+(`test/passport.test.mjs`, "THE RULE SURVIVES DELEGATION").
+
+**What this costs in privacy, stated rather than discovered.** `fieldWriter` is public, and it is
+new information. Before, every field was written by the registrar already named on the ledger, so
+there was nothing to learn. Now a reader can see that the odometer was last written by a garage
+and the keeper count by a dealership. That is the point, it is what makes a service record worth
+more than a claim about one, and a registrar that does not want it can simply not admit anyone.
+The values themselves stay hidden exactly as before.
+
+**Authorising is not the whole handover.** Updating a field also needs the current value and its
+salt, which are private state the registrar holds. An authorised writer that has not been handed
+the opening can create fields that do not exist yet and cannot update one that does. Handing over
+an opening is a deliberate disclosure, made per field, outside the contract. The contract cannot
+do that part and does not pretend to; `scripts/disclose.mjs` is where that half lives.
+
+**Not transfer.** The registrar role itself does not move. Transferring it can orphan a vehicle if
+the receiving identity is wrong or its secret is lost, and nothing is recoverable afterwards. A
+per-vehicle writer list gets the life cycle without that risk, and `allowedRegistrars` remains
+fixed at deployment as [D23](#settled) describes.
+
+**Status: written, compiled and tested, not on chain.** The deployed preprod contract of
+13 October is the seven-export build without these circuits. Deploying this one means a new
+address, a new guided run, and re-measuring proving and DUST, so it is a decision taken on its own
+rather than folded into a submission week.
+
 ## Reversed
 
 Recorded so they are not accidentally reinstated.

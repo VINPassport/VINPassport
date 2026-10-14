@@ -144,6 +144,13 @@ So:
 > off-chain admission step, and the first value written for a vehicle that joins the system
 > mid-life is only as good as the party that entered it. Response 3 below is therefore half
 > delivered in-circuit and half still a relationship problem.
+>
+> **Added 14 October 2026:** attribution is now per write rather than per vehicle. A vehicle's
+> registrar may authorise other identities to write that one vehicle, each field records which
+> identity last wrote it, and the integrity rules apply to an authorised writer exactly as they
+> apply to the registrar. That is what lets a dealership and a garage write a car's history
+> without either of them being trusted with the rest of it. [D25](DECISIONS.md#settled) has the
+> design, including the privacy it spends: who wrote a field is public, deliberately.
 
 For batteries this is tolerable: a manufacturer declaring its own carbon footprint is the assumed
 model, and the regulation is built around accountable self-declaration.

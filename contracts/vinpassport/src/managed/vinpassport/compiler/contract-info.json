@@ -54,6 +54,31 @@
       }
     },
     {
+      "name": "writerKeyOf",
+      "pure": true,
+      "proof": false,
+      "arguments": [
+        {
+          "name": "vinHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "writerId",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
       "name": "registerPassport",
       "pure": false,
       "proof": true,
@@ -67,6 +92,58 @@
         },
         {
           "name": "contentRoot",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "authoriseWriter",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "vinHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "writerId",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "withdrawWriter",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "vinHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "writerId",
           "type": {
             "type-name": "Bytes",
             "length": 32
@@ -390,6 +467,30 @@
       "exported": true,
       "storage": "Set",
       "type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
+      "name": "writers",
+      "index": 7,
+      "exported": true,
+      "storage": "Set",
+      "type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
+      "name": "fieldWriter",
+      "index": 8,
+      "exported": true,
+      "storage": "Map",
+      "key": {
+        "type-name": "Bytes",
+        "length": 32
+      },
+      "value": {
         "type-name": "Bytes",
         "length": 32
       }

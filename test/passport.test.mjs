@@ -19,7 +19,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
     PassportSimulator, Rule, bytes32, hex, fieldKey, pureCircuits,
-    REGISTRAR_SECRET, REGISTRAR_ID, SECOND_SECRET, SECOND_ID, OUTSIDER_SECRET
+    REGISTRAR_SECRET, REGISTRAR_ID, SECOND_SECRET, SECOND_ID, OUTSIDER_SECRET,
+    DEALER_SECRET, DEALER_ID, GARAGE_SECRET, GARAGE_ID
 } from './passport-simulator.mjs';
 
 const VIN_A = bytes32(0x11);
@@ -1134,5 +1135,209 @@ describe('selective disclosure: one field, not the panel', () => {
         // opening that reads as a forgery.
         const stale = buildDisclosure(receipt, ['odometerKm'], { writeIndex: 0 });
         expect(verifyDisclosure(stale, onChain).ok).toBe(false);
+    });
+});
+
+/**
+ * A vehicle outlives the moment it was built.
+ *
+ * It leaves the factory, sits on a forecourt, is sold, is serviced by someone
+ * the manufacturer never named, is sold again. Until the writer work, one
+ * identity could write a passport for ever: the registrar that created it.
+ * Everything below is about the rest of a car's life, and about the two
+ * things that must NOT change when more than one party can write.
+ */
+describe('a vehicle changes hands', () => {
+    const slotOf = (vin, field, root = ROOT) => pureCircuits.slotOf(vin, field, root);
+    const wroteIt = (vin, field, root = ROOT) =>
+        hex(sim.ledger.fieldWriter.lookup(slotOf(vin, field, root)));
+
+    it('a dealership cannot touch the record until it is let in', () => {
+        registered();
+        expect(() => sim.recordField(VIN_A, OWNERS, 2n, S2, undefined, DEALER_SECRET))
+            .toThrow(rejects('not the registrar for this vehicle, and not authorised to write it'));
+        // And it cannot create a field either, which is the other half of
+        // writing and was gated by the same line.
+        expect(() => sim.initialiseField(VIN_A, DECLINING, Rule.neverRises, 1n, S2, DEALER_SECRET))
+            .toThrow(rejects('not the registrar for this vehicle, and not authorised to write it'));
+    });
+
+    it('the registrar lets it in, and then it can', () => {
+        registered();
+        sim.authoriseWriter(VIN_A, DEALER_ID, REGISTRAR);
+        expect(sim.ledger.writers.member(pureCircuits.writerKeyOf(VIN_A, DEALER_ID))).toBe(true);
+
+        sim.recordField(VIN_A, OWNERS, 2n, S2, undefined, DEALER_SECRET);
+        expect(wroteIt(VIN_A, OWNERS)).toBe(hex(DEALER_ID));
+    });
+
+    it('every field says who wrote it, including the ones the registrar wrote', () => {
+        registered();
+        sim.authoriseWriter(VIN_A, GARAGE_ID, REGISTRAR);
+        sim.recordField(VIN_A, ODO, 41_200n, S2, undefined, GARAGE_SECRET);
+
+        expect(wroteIt(VIN_A, ODO)).toBe(hex(GARAGE_ID));
+        // Untouched by the garage, so still the registrar that created it.
+        expect(wroteIt(VIN_A, ACCIDENTS)).toBe(hex(REGISTRAR_ID));
+    });
+
+    it('THE RULE SURVIVES DELEGATION, which is the whole question', () => {
+        // If authorising someone to write also let them write anything, this
+        // feature would have traded the product's only hard guarantee for
+        // convenience. The dealer has permission and the opening, and still
+        // cannot make the number smaller.
+        registered();
+        sim.recordField(VIN_A, ODO, 83_327n, S2);
+        sim.authoriseWriter(VIN_A, DEALER_ID, REGISTRAR);
+
+        expect(() => sim.recordField(VIN_A, ODO, 41_000n, S3, undefined, DEALER_SECRET))
+            .toThrow(rejects('value decreased'));
+        // The ledger did not move.
+        expect(wroteIt(VIN_A, ODO)).toBe(hex(REGISTRAR_ID));
+    });
+
+    it('permission does not come with knowledge of the value', () => {
+        // Authorising is a contract act. Handing over the current value and
+        // its salt is a disclosure the registrar makes separately, and until
+        // it does, an authorised writer cannot update an existing field.
+        registered();
+        sim.authoriseWriter(VIN_A, DEALER_ID, REGISTRAR);
+
+        expect(() => sim.recordField(
+            VIN_A, ODO, 90_000n, S3, { value: 999n, salt: WRONG_SALT }, DEALER_SECRET
+        )).toThrow(rejects('previous value does not open the stored commitment'));
+    });
+
+    it('permission is for one vehicle, not for a fleet', () => {
+        registered(VIN_A, ROOT);
+        registered(VIN_B, ROOT_B);
+        sim.authoriseWriter(VIN_A, DEALER_ID, REGISTRAR);
+
+        expect(() => sim.recordField(VIN_B, OWNERS, 2n, S2, undefined, DEALER_SECRET))
+            .toThrow(rejects('not the registrar for this vehicle, and not authorised to write it'));
+    });
+
+    it('a writer cannot let anyone else in', () => {
+        // Two links of accountability, not a chain of unknown length: the
+        // registrar answers for who it admitted, and that is the end of it.
+        registered();
+        sim.authoriseWriter(VIN_A, DEALER_ID, REGISTRAR);
+
+        expect(() => sim.authoriseWriter(VIN_A, GARAGE_ID, DEALER_SECRET))
+            .toThrow(rejects('not the registrar for this vehicle'));
+    });
+
+    it('only this vehicle\'s registrar may let anyone in', () => {
+        registered();
+        // On the deploy list, so entitled to register vehicles of its own,
+        // and still nothing to do with this one.
+        expect(() => sim.authoriseWriter(VIN_A, DEALER_ID, SECOND_SECRET))
+            .toThrow(rejects('not the registrar for this vehicle'));
+        expect(() => sim.authoriseWriter(VIN_A, DEALER_ID, OUTSIDER_SECRET))
+            .toThrow(rejects('not the registrar for this vehicle'));
+    });
+
+    it('the registrar is not added to a list it is already above', () => {
+        registered();
+        expect(() => sim.authoriseWriter(VIN_A, REGISTRAR_ID, REGISTRAR))
+            .toThrow(rejects('the registrar already writes this vehicle'));
+    });
+
+    it('permission can be taken away', () => {
+        registered();
+        sim.authoriseWriter(VIN_A, DEALER_ID, REGISTRAR);
+        sim.recordField(VIN_A, OWNERS, 2n, S2, undefined, DEALER_SECRET);
+
+        sim.withdrawWriter(VIN_A, DEALER_ID, REGISTRAR);
+        expect(sim.ledger.writers.member(pureCircuits.writerKeyOf(VIN_A, DEALER_ID))).toBe(false);
+        expect(() => sim.recordField(VIN_A, OWNERS, 3n, S3, undefined, DEALER_SECRET))
+            .toThrow(rejects('not the registrar for this vehicle, and not authorised to write it'));
+    });
+
+    it('taking it away does not unwrite what was written', () => {
+        // The record says who wrote what at the time. Withdrawing an
+        // authorisation later cannot make that untrue, and a contract that
+        // quietly reassigned the write would be falsifying history.
+        registered();
+        sim.authoriseWriter(VIN_A, DEALER_ID, REGISTRAR);
+        sim.recordField(VIN_A, OWNERS, 2n, S2, undefined, DEALER_SECRET);
+        sim.withdrawWriter(VIN_A, DEALER_ID, REGISTRAR);
+
+        expect(wroteIt(VIN_A, OWNERS)).toBe(hex(DEALER_ID));
+    });
+
+    it('withdrawing something that was never granted is refused, not ignored', () => {
+        registered();
+        expect(() => sim.withdrawWriter(VIN_A, DEALER_ID, REGISTRAR))
+            .toThrow(rejects('not a writer for this vehicle'));
+    });
+
+    it('neither act works on a vehicle that was never registered', () => {
+        // Without this the next line is `registrar.lookup` on a key that is
+        // not there, which fails for the wrong reason and says so in a
+        // language nobody reading the error is speaking.
+        expect(() => sim.authoriseWriter(VIN_B, DEALER_ID, REGISTRAR))
+            .toThrow(rejects('unknown passport'));
+        expect(() => sim.withdrawWriter(VIN_B, DEALER_ID, REGISTRAR))
+            .toThrow(rejects('unknown passport'));
+    });
+
+    it('only the registrar for this vehicle may take permission away', () => {
+        // The mirror of the grant check, and a separate guard: an authority
+        // that could withdraw someone else's writers could silently stop a
+        // competitor's service history from being written.
+        registered();
+        sim.authoriseWriter(VIN_A, DEALER_ID, REGISTRAR);
+
+        expect(() => sim.withdrawWriter(VIN_A, DEALER_ID, SECOND_SECRET))
+            .toThrow(rejects('not the registrar for this vehicle'));
+        expect(() => sim.withdrawWriter(VIN_A, DEALER_ID, DEALER_SECRET))
+            .toThrow(rejects('not the registrar for this vehicle'));
+        // Still there, so the refusals refused rather than half-applied.
+        expect(sim.ledger.writers.member(pureCircuits.writerKeyOf(VIN_A, DEALER_ID))).toBe(true);
+    });
+
+    it('neither act publishes a value', () => {
+        registered();
+        sim.authoriseWriter(VIN_A, DEALER_ID, REGISTRAR);
+        sim.recordField(VIN_A, ODO, 83_327n, S2, undefined, DEALER_SECRET);
+
+        const { words, blobs } = sim.ledgerValues();
+        expect(words).not.toContain(83_327n);
+        expect(blobs).not.toContain(hex(S2));
+        // The identity IS public, deliberately, and this records that choice
+        // rather than leaving it to be discovered.
+        expect(blobs).toContain(hex(DEALER_ID));
+    });
+
+    it('the whole life of a car, in the order it happens', () => {
+        // Factory: the manufacturer registers the vehicle and writes what it
+        // knows at the gate.
+        sim.registerPassport(VIN_A, ROOT, REGISTRAR);
+        sim.initialiseField(VIN_A, ODO, Rule.neverFalls, 12n, S1);
+        sim.initialiseField(VIN_A, OWNERS, Rule.neverFalls, 0n, S1);
+
+        // Dealership: authorised for this vehicle, records the first keeper
+        // and the mileage it arrived with.
+        sim.authoriseWriter(VIN_A, DEALER_ID, REGISTRAR);
+        sim.recordField(VIN_A, OWNERS, 1n, S2, undefined, DEALER_SECRET);
+        sim.recordField(VIN_A, ODO, 180n, S2, undefined, DEALER_SECRET);
+
+        // Four years later, a garage the manufacturer never named.
+        sim.authoriseWriter(VIN_A, GARAGE_ID, REGISTRAR);
+        sim.recordField(VIN_A, ODO, 62_400n, S3, undefined, GARAGE_SECRET);
+
+        // Second sale: the dealership again.
+        sim.recordField(VIN_A, OWNERS, 2n, S3, undefined, DEALER_SECRET);
+
+        expect(wroteIt(VIN_A, ODO)).toBe(hex(GARAGE_ID));
+        expect(wroteIt(VIN_A, OWNERS)).toBe(hex(DEALER_ID));
+        expect(sim.ledger.updateCount).toBe(6n);
+
+        // And after all of that, the buyer's question still answers from the
+        // ledger, and the odometer still cannot go backwards for anyone.
+        sim.proveFieldAtMost(VIN_A, ODO, 150_000n);
+        expect(() => sim.recordField(VIN_A, ODO, 60_000n, S1, undefined, GARAGE_SECRET))
+            .toThrow(rejects('value decreased'));
     });
 });

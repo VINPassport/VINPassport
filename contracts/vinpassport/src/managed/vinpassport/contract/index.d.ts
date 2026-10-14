@@ -22,6 +22,12 @@ export type ImpureCircuits<PS> = {
   registerPassport(context: __compactRuntime.CircuitContext<PS>,
                    vinHash_0: Uint8Array,
                    contentRoot_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  authoriseWriter(context: __compactRuntime.CircuitContext<PS>,
+                  vinHash_0: Uint8Array,
+                  writerId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  withdrawWriter(context: __compactRuntime.CircuitContext<PS>,
+                 vinHash_0: Uint8Array,
+                 writerId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   initialiseField(context: __compactRuntime.CircuitContext<PS>,
                   vinHash_0: Uint8Array,
                   fieldKey_0: Uint8Array,
@@ -43,6 +49,12 @@ export type ProvableCircuits<PS> = {
   registerPassport(context: __compactRuntime.CircuitContext<PS>,
                    vinHash_0: Uint8Array,
                    contentRoot_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  authoriseWriter(context: __compactRuntime.CircuitContext<PS>,
+                  vinHash_0: Uint8Array,
+                  writerId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  withdrawWriter(context: __compactRuntime.CircuitContext<PS>,
+                 vinHash_0: Uint8Array,
+                 writerId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   initialiseField(context: __compactRuntime.CircuitContext<PS>,
                   vinHash_0: Uint8Array,
                   fieldKey_0: Uint8Array,
@@ -65,6 +77,7 @@ export type PureCircuits = {
          fieldKey_0: Uint8Array,
          contentRoot_0: Uint8Array): Uint8Array;
   registrarIdOf(secret_0: Uint8Array): Uint8Array;
+  writerKeyOf(vinHash_0: Uint8Array, writerId_0: Uint8Array): Uint8Array;
 }
 
 export type Circuits<PS> = {
@@ -74,9 +87,18 @@ export type Circuits<PS> = {
          contentRoot_0: Uint8Array): __compactRuntime.CircuitResults<PS, Uint8Array>;
   registrarIdOf(context: __compactRuntime.CircuitContext<PS>,
                 secret_0: Uint8Array): __compactRuntime.CircuitResults<PS, Uint8Array>;
+  writerKeyOf(context: __compactRuntime.CircuitContext<PS>,
+              vinHash_0: Uint8Array,
+              writerId_0: Uint8Array): __compactRuntime.CircuitResults<PS, Uint8Array>;
   registerPassport(context: __compactRuntime.CircuitContext<PS>,
                    vinHash_0: Uint8Array,
                    contentRoot_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  authoriseWriter(context: __compactRuntime.CircuitContext<PS>,
+                  vinHash_0: Uint8Array,
+                  writerId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  withdrawWriter(context: __compactRuntime.CircuitContext<PS>,
+                 vinHash_0: Uint8Array,
+                 writerId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   initialiseField(context: __compactRuntime.CircuitContext<PS>,
                   vinHash_0: Uint8Array,
                   fieldKey_0: Uint8Array,
@@ -136,6 +158,19 @@ export type Ledger = {
     size(): bigint;
     member(elem_0: Uint8Array): boolean;
     [Symbol.iterator](): Iterator<Uint8Array>
+  };
+  writers: {
+    isEmpty(): boolean;
+    size(): bigint;
+    member(elem_0: Uint8Array): boolean;
+    [Symbol.iterator](): Iterator<Uint8Array>
+  };
+  fieldWriter: {
+    isEmpty(): boolean;
+    size(): bigint;
+    member(key_0: Uint8Array): boolean;
+    lookup(key_0: Uint8Array): Uint8Array;
+    [Symbol.iterator](): Iterator<[Uint8Array, Uint8Array]>
   };
 }
 

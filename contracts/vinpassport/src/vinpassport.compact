@@ -105,6 +105,33 @@ export ledger updateCount: Counter;
 // copy and no secret hashes to an unused value by accident.
 export ledger allowedRegistrars: Set<Bytes<32>>;
 
+// WHO MAY WRITE TO ONE PARTICULAR VEHICLE, decided after deployment by the
+// registrar that registered it. A vehicle outlives the moment it was built: it
+// reaches a dealership, changes keeper, is serviced by someone the
+// manufacturer never names at the factory. None of that can be written by a
+// set fixed at deployment, and a contract that pretends otherwise just means
+// the history is kept somewhere else.
+//
+// Flat rather than a set per vehicle: membership is keyed on
+// `writerKeyOf(vinHash, writerId)`, so one set holds every (vehicle, writer)
+// pair and no key can be confused with a slot or a claim.
+//
+// The chain of accountability is three links and all three are public: the
+// registrars fixed at deployment, the one that registered this vehicle, and
+// the writers it admitted. A writer cannot admit another writer.
+export ledger writers: Set<Bytes<32>>;
+
+// slot -> the identity that last wrote that field. A value is not just a
+// commitment any more; it carries who put it there, which is the difference
+// between a service record and a claim about one.
+//
+// THIS IS DELIBERATELY PUBLIC, and it is new information: before, every field
+// on a vehicle was written by the registrar already named in `registrar`, so
+// there was nothing to say. With more than one possible writer, which of them
+// wrote a field is exactly what a reader needs and exactly what the ledger now
+// reveals. The value stays hidden. Who stood behind it does not.
+export ledger fieldWriter: Map<Bytes<32>, Bytes<32>>;
+
 constructor(registrars: Vector<4, Bytes<32>>) {
   for (const id of registrars) {
     allowedRegistrars.insert(disclose(id));
@@ -177,6 +204,22 @@ export circuit registrarIdOf(secret: Bytes<32>): Bytes<32> {
   );
 }
 
+// Where a (vehicle, writer) pair lives in `writers`. Domain-separated on its
+// own tag, so an authorisation can never be confused with a field slot, a
+// claim key or a registrar identity.
+//
+// Exported because the party being authorised needs to compute it to check
+// they really were, and a verifier needs it to ask whether a given identity
+// may write to a given vehicle. Both are public questions about public state.
+export circuit writerKeyOf(
+  vinHash: Bytes<32>,
+  writerId: Bytes<32>
+): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>(
+    [pad(32, "vinpassport:writer:v1"), vinHash, writerId]
+  );
+}
+
 // A claim's public name. Binds the direction, the slot, the bound AND the
 // commitment, so proving "at most 0" and "at least 0" are different claims,
 // and neither survives the value being updated.
@@ -189,6 +232,25 @@ circuit claimKey(
   return persistentHash<Vector<4, Bytes<32>>>(
     [tag, slot, bound as Bytes<32>, commitment]
   );
+}
+
+// Who the caller is, checked against everyone entitled to write this vehicle,
+// and returned so the write can be stamped with it.
+//
+// Both sides of the test are evaluated every time, as a circuit must: there is
+// no short cut here and no branch for an observer to time. The registrar
+// itself is never in `writers`, so the comparison against `registrar` is not
+// redundant with the membership test.
+//
+// The identity is disclosed because the ledger records it. The secret behind
+// it is not, and never leaves the circuit.
+circuit writerFor(vinHash: Bytes<32>): Bytes<32> {
+  const id = disclose(registrarIdOf(registrarSecret()));
+  assert(
+    registrar.lookup(vinHash) == id || writers.member(writerKeyOf(vinHash, id)),
+    "not the registrar for this vehicle, and not authorised to write it"
+  );
+  return id;
 }
 
 // ---------------------------------------------------------------- circuits
@@ -211,6 +273,58 @@ export circuit registerPassport(
   registrar.insert(disclose(vinHash), id);
 }
 
+// Let another identity write this vehicle's fields. Only the registrar that
+// registered the vehicle may do this, and only for that vehicle.
+//
+// `writerId` is the identity the other party derived from their own secret and
+// handed over out of band. Nothing here can check it was derived that way, and
+// nothing needs to: an identity nobody holds the secret for is an
+// authorisation that can never be used, which costs one transaction and harms
+// no one.
+//
+// AUTHORISING IS NOT THE WHOLE HANDOVER. Updating a field also requires the
+// current value and its salt, and those are private state the registrar holds.
+// A dealership that has been authorised but not handed the opening can create
+// fields that do not exist yet; to update one it must be given the value it is
+// updating, which is a disclosure the registrar makes deliberately and
+// separately. The contract cannot do that part and does not pretend to.
+export circuit authoriseWriter(
+  vinHash: Bytes<32>,
+  writerId: Bytes<32>
+): [] {
+  assert(passports.member(disclose(vinHash)), "unknown passport");
+  assert(
+    registrar.lookup(disclose(vinHash)) == registrarIdOf(registrarSecret()),
+    "not the registrar for this vehicle"
+  );
+  assert(
+    registrar.lookup(disclose(vinHash)) != disclose(writerId),
+    "the registrar already writes this vehicle"
+  );
+  writers.insert(writerKeyOf(disclose(vinHash), disclose(writerId)));
+}
+
+// Take that permission away. A dealer relationship ends, a garage closes, a
+// secret is suspected lost.
+//
+// What this does NOT do is unwrite anything. Fields that identity already
+// wrote stay written and stay stamped with it, which is the honest behaviour:
+// the record says who wrote what at the time, and withdrawing an authorisation
+// afterwards cannot make that untrue.
+export circuit withdrawWriter(
+  vinHash: Bytes<32>,
+  writerId: Bytes<32>
+): [] {
+  assert(passports.member(disclose(vinHash)), "unknown passport");
+  assert(
+    registrar.lookup(disclose(vinHash)) == registrarIdOf(registrarSecret()),
+    "not the registrar for this vehicle"
+  );
+  const key = writerKeyOf(disclose(vinHash), disclose(writerId));
+  assert(writers.member(key), "not a writer for this vehicle");
+  writers.remove(key);
+}
+
 // Create a field and fix its integrity rule for good. The opening value is a
 // witness, so the field exists on chain without its value being published.
 export circuit initialiseField(
@@ -220,13 +334,10 @@ export circuit initialiseField(
 ): [] {
   assert(passports.member(disclose(vinHash)), "unknown passport");
 
-  // Compared, not disclosed. The chain already knows which registrar owns this
-  // vehicle, so re-deriving and comparing proves the caller holds that
-  // registrar's secret while adding nothing new to the public record.
-  assert(
-    registrar.lookup(disclose(vinHash)) == registrarIdOf(registrarSecret()),
-    "not the registrar for this vehicle"
-  );
+  // The registrar for this vehicle, or an identity it authorised. The caller
+  // proves they hold the secret behind one of those identities; the identity
+  // itself is recorded against the field below.
+  const writer = writerFor(disclose(vinHash));
 
   const slot = slotOf(
     disclose(vinHash), disclose(fieldKey), passports.lookup(disclose(vinHash))
@@ -236,6 +347,7 @@ export circuit initialiseField(
   const value = newValue();
   fieldCommitment.insert(slot, persistentCommit<Uint<64>>(value, newSalt()));
   fieldRule.insert(slot, disclose(rule));
+  fieldWriter.insert(slot, writer);
   updateCount.increment(1);
 }
 
@@ -245,13 +357,11 @@ export circuit initialiseField(
 export circuit recordField(vinHash: Bytes<32>, fieldKey: Bytes<32>): [] {
   assert(passports.member(disclose(vinHash)), "unknown passport");
 
-  // Same gate as creation: history is written by the authority that registered
-  // the vehicle. Proving a claim about a field stays open to anyone who can
-  // open its commitment, which is a separate right and deliberately ungated.
-  assert(
-    registrar.lookup(disclose(vinHash)) == registrarIdOf(registrarSecret()),
-    "not the registrar for this vehicle"
-  );
+  // Same gate as creation: history is written by the registrar for this
+  // vehicle or by someone it authorised. Proving a claim about a field stays
+  // open to anyone who can open its commitment, which is a separate right and
+  // deliberately ungated.
+  const writer = writerFor(disclose(vinHash));
 
   const slot = slotOf(
     disclose(vinHash), disclose(fieldKey), passports.lookup(disclose(vinHash))
@@ -279,6 +389,7 @@ export circuit recordField(vinHash: Bytes<32>, fieldKey: Bytes<32>): [] {
   assert(rule != Rule.neverChanges || current == prev, "value changed");
 
   fieldCommitment.insert(slot, persistentCommit<Uint<64>>(current, newSalt()));
+  fieldWriter.insert(slot, writer);
   updateCount.increment(1);
 }
 

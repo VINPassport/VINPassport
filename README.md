@@ -131,9 +131,9 @@ seconds.
 | Command | What it does |
 |---|---|
 | `npm test` | Everything below, in one run |
-| `npm run test:contract` | The 99 contract tests, against the compiled circuits |
+| `npm run test:contract` | The 115 contract tests, against the compiled circuits |
 | `npm run test:watch` | The same, re-running on change |
-| `npm run test:app` | 121 tests on the application paths: verdicts, the deploy's registrar list, the submission path, the chain-sees panel and the QR encoder, via `node --test`. **93 of these import and run product code; 28 assert on what is written in the repository** (that every screenshot the guide names exists, that each page's bar carries the same links, that every page names its content with one `<main>` and offers a way past the bar, that no text colour drops below the contrast floor). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
+| `npm run test:app` | 126 tests on the application paths: verdicts, the deploy's registrar list, the submission path, the chain-sees panel and the QR encoder, via `node --test`. **98 of these import and run product code; 28 assert on what is written in the repository** (that every screenshot the guide names exists, that each page's bar carries the same links, that every page names its content with one `<main>` and offers a way past the bar, that the verify page cannot answer with a vehicle nobody asked for, that no text colour drops below the contrast floor). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
 | `npm run test:sdk` | 24 assertions pinning our assumptions about `@odatano/dpp-sdk` |
 | `npm run app` | All three surfaces + the circuits, one dependency-free server |
 | `npm run serve:site` | The site statically, as GitHub Pages serves it: no circuits, demo state only |
@@ -221,8 +221,12 @@ cat contracts/vinpassport/src/managed/vinpassport/compiler/contract-info.json
 
 **2. The deploy is real.** The contract is live on Midnight preprod; address and transaction
 hash are committed at [`deploy/preprod.json`](deploy/preprod.json). That address holds the **Wave 2
-build**, the seven-circuit contract with the registrar authority, deployed on 2026-10-13 with the
-fee paid by ODATANO's sponsor. The Wave 1 address is kept at
+build of 13 October 2026**: seven exported circuits, five of them proved, with the registrar
+authority. The fee was paid by ODATANO's sponsor.
+
+> **The repository is ahead of that address.** The writer circuits added on 14 October
+> ([D25](docs/DECISIONS.md#settled)) are written, compiled and tested, and they are **not** at
+> this address. Nothing here claims them as deployed, and `deploy/preprod.json` records what is. The Wave 1 address is kept at
 `deploy/preprod-superseded-*.json` so the two can be compared. Ask the public indexer yourself:
 
 ```bash
@@ -435,8 +439,9 @@ write of a field, and all three are in the deployed circuits:
 1. **The write is attributable.** `registerPassport` derives the caller's identity in-circuit from
    a witness secret, never from `ownPublicKey()`, and refuses any identity outside
    `allowedRegistrars`, a set fixed in the constructor with no circuit that adds to it.
-   `initialiseField` and `recordField` then refuse anyone but the identity that registered that
-   vehicle. Which identity wrote a passport is on the ledger and stays there.
+   `initialiseField` and `recordField` then refuse anyone but that vehicle's registrar and the
+   writers it has authorised by name, and each field records which identity last wrote it
+   ([D25](docs/DECISIONS.md#settled)). Who wrote what is on the ledger and stays there.
 2. **The rule precedes the value.** A field's integrity rule is written when the field is created
    and cannot be rewritten, so a flattering rule cannot be chosen later ([D18](docs/DECISIONS.md#settled)).
 3. **The correction is refused.** Under `neverFalls` a later, lower value fails in-circuit. The
@@ -456,9 +461,9 @@ repository begins with no contract at all.
 
 | What was built | Where to look |
 |---|---|
-| **The contract** - seven circuits, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
+| **The contract** - five exported circuits at Wave 1's close, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
 | **Deployed to Midnight preprod**, 28 August, built and signed locally | [`deploy/preprod.json`](deploy/preprod.json) |
-| **244 tests** - 99 contract, 121 application, 24 SDK assumption assertions; all twenty guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
+| **265 tests today** - 115 contract, 126 application, 24 SDK assumption assertions; all twenty-five guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
 | **Three surfaces** - verification, intake console, proof explorer - all running the compiled circuits, not a mock | [passport.vin](https://passport.vin/) |
 | **On-chain runs from the browser, self-funded**, after a hosted sponsor turned out to be a single point of failure in a demo a judge runs unattended | [D24](docs/DECISIONS.md#settled) |
 | **The regulatory basis read from the Official Journal** rather than secondary analysis - which caught two wrong article citations that had survived months of work | [REGULATION.md](docs/REGULATION.md) |
@@ -477,13 +482,13 @@ tree at each wave's close, not from memory.
 
 | | Wave 1 close | Now |
 |---|---:|---:|
-| Exported circuits | 5 | **7** |
+| Exported circuits | 5 | **10**, seven of them proved |
 | Integrity rules | 2 | **3** |
 | Fields wired end to end | 5 | **17** |
-| Contract tests | 67 | **99** |
-| Application tests | 50 | **104** |
+| Contract tests | 67 | **115** |
+| Application tests | 50 | **126** |
 | SDK assumption assertions | 24 | 24 |
-| Guards checked by mutation | the two integrity rules | **20 of 20** |
+| Guards checked by mutation | the two integrity rules | **25 of 25** |
 
 | What changed | Why it matters | Where to look |
 |---|---|---|
@@ -531,7 +536,7 @@ scripts/
 test/
   passport-simulator.mjs             harness: compiled circuits + a local ledger
   passport.test.mjs                  99 contract tests
-  app/                               121 tests on the paths around the circuits
+  app/                               126 tests on the paths around the circuits
   sdk-assumptions.mjs                24 assertions pinning @odatano/dpp-sdk behaviour
 ```
 
@@ -543,8 +548,8 @@ test/
 | [`@odatano/dpp-sdk`](https://github.com/ODATANO) | Salted-Merkle field panel: key derivation, value scaling, tree construction |
 | [`@odatano/nightgate-tx`](https://github.com/ODATANO/NIGHTGATE) | Local transaction building, batch segment ordering, in-process wasm proving |
 
-**Where the line falls.** VINPassport's Compact contract is its own work: seven circuits, its own
-ledger, its own integrity rules. It is not a fork, and it does not extend NIGHTGATE's
+**Where the line falls.** VINPassport's Compact contract is its own work: ten exported circuits,
+its own ledger, its own integrity rules. It is not a fork, and it does not extend NIGHTGATE's
 `attestation-vault`. The 32-slot field panel is ours too: the slot layout is a vehicle-domain
 design, built on `@odatano/dpp-sdk` for key derivation, value scaling and Merkle construction.
 

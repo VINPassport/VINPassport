@@ -113,6 +113,19 @@ export const SECOND_ID = pureCircuits.registrarIdOf(SECOND_SECRET);
 /** Holds a secret that was never put on the deploy list. */
 export const OUTSIDER_SECRET = bytes32(0x78);
 
+/**
+ * A dealership, and a garage that services the car years later.
+ *
+ * Neither is on the deploy list, and that is the point: the list fixes who may
+ * bring a vehicle into existence, not who may write to one afterwards. A
+ * manufacturer cannot name its dealer network at deployment, so the network is
+ * named per vehicle, by the registrar, afterwards.
+ */
+export const DEALER_SECRET = bytes32(0x55);
+export const DEALER_ID = pureCircuits.registrarIdOf(DEALER_SECRET);
+export const GARAGE_SECRET = bytes32(0x44);
+export const GARAGE_ID = pureCircuits.registrarIdOf(GARAGE_SECRET);
+
 export class PassportSimulator {
     /**
      * `allowed` is the deploy-pinned registrar list. It is fixed here exactly
@@ -187,6 +200,27 @@ export class PassportSimulator {
         if (secret) this.actAs(secret);
         this.ctx = this.contract.impureCircuits.registerPassport(
             this.ctx, vin, contentRoot
+        ).context;
+        return this.ledger;
+    }
+
+    /**
+     * Let `writerId` write this vehicle's fields. Acting secret decides who is
+     * asking; only the vehicle's registrar may.
+     */
+    authoriseWriter(vin, writerId, secret) {
+        if (secret) this.actAs(secret);
+        this.ctx = this.contract.impureCircuits.authoriseWriter(
+            this.ctx, vin, writerId
+        ).context;
+        return this.ledger;
+    }
+
+    /** Take that permission away again. */
+    withdrawWriter(vin, writerId, secret) {
+        if (secret) this.actAs(secret);
+        this.ctx = this.contract.impureCircuits.withdrawWriter(
+            this.ctx, vin, writerId
         ).context;
         return this.ledger;
     }
@@ -287,6 +321,11 @@ export class PassportSimulator {
         walk(l.claims);
         walk(l.updateCount);
         walk(l.allowedRegistrars);
+        // Added with the writer work. A new ledger collection that this does
+        // not walk is a hole in every privacy test at once: they would keep
+        // passing while no longer looking at where a value could leak.
+        walk(l.writers);
+        walk(l.fieldWriter);
         return { words, blobs };
     }
 }
