@@ -58,6 +58,16 @@ export const CLAIM_GROUPS = [
  * One entry is one question.
  *
  *   field    the registry field name, which must exist in scenario.mjs FIELDS
+ *   against  SET ONLY ON A TWO-FIELD QUESTION. The second field, compared
+ *            against the first. These are the questions that are not a field
+ *            against a number: "serviced within the last 15 000 km" is the
+ *            odometer against the reading at the last service, and neither
+ *            value can be published without giving away the thing the
+ *            passport exists to keep. A two-field question carries `slack`
+ *            instead of `bound`, and is answered by proveFieldAtMostField.
+ *   slack    two-field questions only: how far apart the pair may be. Zero
+ *            means they must be equal, which is what "every recall has been
+ *            done" means.
  *   atMost   true for a ceiling, false for a floor
  *   bound    how the question is scored against a claim's bound:
  *              bigint          a fixed rung
@@ -201,6 +211,12 @@ export const CLAIM_CATALOGUE = [
         yes: 'Every service the schedule called for was recorded'
     },
     {
+        id: 'servicedWithin15000km', group: 'service',
+        field: 'odometerKm', against: 'lastServiceOdometerKm', slack: 15_000n,
+        label: 'Serviced within the last 15,000 km',
+        yes: 'The odometer has not run more than 15,000 km past the reading taken at the last service. Neither reading is published'
+    },
+    {
         id: 'timingBeltDone', group: 'service', field: 'timingBeltReplacedDate', atMost: false, bound: 1n,
         label: 'Timing belt has been replaced',
         yes: 'A timing belt replacement is on the record, with a date'
@@ -220,6 +236,12 @@ export const CLAIM_CATALOGUE = [
         id: 'noDangerousDefect', group: 'service', field: 'dangerousDefectCount', atMost: true, bound: 0n,
         label: 'No dangerous defect ever recorded',
         yes: 'No inspection recorded a defect classed as dangerous'
+    },
+    {
+        id: 'allRecallsDone', group: 'service',
+        field: 'recallIssuedCount', against: 'recallCompletedCount', slack: 0n,
+        label: 'Every recall has been carried out',
+        yes: 'As many recalls were completed as were issued. How many there were stays hidden'
     },
 
     // ---------------------------------------------------------- circularity
@@ -274,6 +296,7 @@ export const epochDaysToday = (now = Date.now()) => Math.floor(now / 86_400_000)
  * proven last year must stop answering it rather than quietly going on.
  */
 export const boundFor = (q, now = Date.now()) => {
+    if (isCompare(q)) return q.slack;
     if (q.bound === null) return null;
     if (typeof q.bound === 'bigint') return q.bound;
     return BigInt(epochDaysToday(now) - q.bound.daysAgo);
@@ -282,5 +305,10 @@ export const boundFor = (q, now = Date.now()) => {
 /** The questions in a group, in catalogue order. */
 export const questionsIn = (groupId) => CLAIM_CATALOGUE.filter((q) => q.group === groupId);
 
-/** Every distinct field the catalogue can ask about. */
-export const CLAIM_FIELDS = [...new Set(CLAIM_CATALOGUE.map((q) => q.field))];
+/** True for a question that compares two of a vehicle's own fields. */
+export const isCompare = (q) => typeof q.against === 'string';
+
+/** Every distinct field the catalogue can ask about, both sides included. */
+export const CLAIM_FIELDS = [...new Set(
+    CLAIM_CATALOGUE.flatMap((q) => (isCompare(q) ? [q.field, q.against] : [q.field]))
+)];

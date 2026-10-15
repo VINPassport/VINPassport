@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import {
-    CLAIM_CATALOGUE, CLAIM_GROUPS, boundFor, questionsIn, CLAIM_FIELDS
+    CLAIM_CATALOGUE, CLAIM_GROUPS, boundFor, questionsIn, CLAIM_FIELDS, isCompare
 } from '../../site/assets/claim-catalogue.mjs';
 import { QUESTIONS } from '../../site/assets/verdict.mjs';
 import { FIELDS, PANEL, Rule } from '../../scripts/lib/scenario.mjs';
@@ -31,10 +31,25 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 test('every question asks about a field that exists in the registry', () => {
     const missing = CLAIM_CATALOGUE
-        .filter((q) => !(q.field in FIELDS))
-        .map((q) => `${q.id} -> ${q.field}`);
+        .flatMap((q) => (isCompare(q) ? [[q, q.field], [q, q.against]] : [[q, q.field]]))
+        .filter(([, f]) => !(f in FIELDS))
+        .map(([q, f]) => `${q.id} -> ${f}`);
     assert.deepEqual(missing, [],
         'a question about a field nobody can initialise can never be answered');
+});
+
+test('a two-field question carries a slack and no bound, and names both sides', () => {
+    const compares = CLAIM_CATALOGUE.filter(isCompare);
+    assert.equal(compares.length, 2, 'servicedWithin15000km and allRecallsDone');
+    for (const q of compares) {
+        assert.equal(typeof q.slack, 'bigint', `${q.id} needs a slack`);
+        assert.equal(q.bound, undefined, `${q.id} must not also carry a bound`);
+        assert.notEqual(q.field, q.against, `${q.id} compares a field with itself`);
+        // boundFor returns the slack, so one code path reads every question.
+        assert.equal(boundFor(q), q.slack);
+    }
+    // Equality is expressible: slack zero is "these two are the same".
+    assert.equal(CLAIM_CATALOGUE.find((q) => q.id === 'allRecallsDone').slack, 0n);
 });
 
 test('question ids are unique, and every group is declared', () => {
@@ -86,24 +101,42 @@ test('a moving threshold moves, and a fixed rung does not', () => {
 
 // ------------------------------------------------------------ circuits
 
-test('a floor question plans as proveFieldAtLeast, a ceiling as proveFieldAtMost', () => {
+test('each question plans onto the circuit that can answer it', () => {
     const stages = planCalls({
-        vin: 'VPDTEST', fields: { serviceCount: 6, odometerKm: 42_000 },
-        prove: { fourServices: true, mileageUnder: 150_000 }
+        vin: 'VPDTEST',
+        fields: {
+            serviceCount: 6, odometerKm: 42_000, lastServiceOdometerKm: 38_000,
+            recallIssuedCount: 1, recallCompletedCount: 1
+        },
+        prove: {
+            fourServices: true, mileageUnder: 150_000,
+            servicedWithin15000km: true, allRecallsDone: true
+        }
     });
     const claims = stages.flatMap((s) => s.steps).filter((s) => s.kind === 'claim');
     const byId = Object.fromEntries(claims.map((c) => [c.claim, c.circuit]));
     assert.equal(byId.fourServices, 'proveFieldAtLeast');
     assert.equal(byId.mileageUnder, 'proveFieldAtMost');
+    assert.equal(byId.servicedWithin15000km, 'proveFieldAtMostField');
+    assert.equal(byId.allRecallsDone, 'proveFieldAtMostField');
+
+    // A two-field claim carries BOTH field names, or the runner cannot open
+    // the second commitment and the call would prove against a zero.
+    const cmp = claims.find((c) => c.claim === 'servicedWithin15000km');
+    assert.equal(cmp.name, 'odometerKm');
+    assert.equal(cmp.against, 'lastServiceOdometerKm');
+    assert.equal(cmp.bound, 15_000n);
 });
 
-test('the catalogue actually exercises both proof circuits', () => {
+test('the catalogue exercises all three proof circuits', () => {
     // Until the catalogue existed every requested claim was a ceiling, which
     // is why proveFieldAtLeast had never been submitted on chain.
-    const floors = CLAIM_CATALOGUE.filter((q) => !q.atMost);
-    const ceilings = CLAIM_CATALOGUE.filter((q) => q.atMost);
+    const single = CLAIM_CATALOGUE.filter((q) => !isCompare(q));
+    const floors = single.filter((q) => !q.atMost);
+    const ceilings = single.filter((q) => q.atMost);
     assert.ok(floors.length >= 5, `only ${floors.length} floor questions`);
     assert.ok(ceilings.length >= 5, `only ${ceilings.length} ceiling questions`);
+    assert.ok(CLAIM_CATALOGUE.filter(isCompare).length >= 2);
 });
 
 // -------------------------------------------------------------- rules
@@ -112,10 +145,10 @@ test('no question asks a ceiling of a field that can only rise past it', () => {
     // A neverFalls field can be proven at most N today and exceed N tomorrow.
     // That is sound, and the page marks the claim superseded. What must never
     // happen is a question on a field with no rule at all.
-    for (const q of CLAIM_CATALOGUE) {
-        const rule = FIELDS[q.field].rule;
+    for (const f of CLAIM_FIELDS) {
+        const rule = FIELDS[f].rule;
         assert.ok(rule === Rule.neverFalls || rule === Rule.neverChanges
-            || rule === Rule.neverRises, `${q.field} has no integrity rule`);
+            || rule === Rule.neverRises, `${f} has no integrity rule`);
     }
 });
 

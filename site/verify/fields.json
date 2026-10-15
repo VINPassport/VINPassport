@@ -85,6 +85,261 @@
       "name": "dismantlingTimeMinutes",
       "label": "Dismantling time",
       "kind": "minutes"
+    },
+    "f27a7e2c4289bb2a4c421e8695480e73efb81ca755325db483ab8deb9e320115": {
+      "name": "titleStatusMask",
+      "label": "Title status",
+      "kind": "mask"
+    },
+    "dd4f81ac2ae6cfe5b95d97f89d616018813ae8ff5c58c6bc8c9f5a7823d35554": {
+      "name": "writeOffDate",
+      "label": "Write-off recorded",
+      "kind": "date"
+    },
+    "396427202561a93241b95c68a1c3b37c9f04b1f41ca9569d874c3678ff417797": {
+      "name": "repairedAndReturnedDate",
+      "label": "Repaired, back on road",
+      "kind": "date"
+    },
+    "5882e4d6030d1156f9deab50fa22506612a0a36ee7402cef93e9560c42dee884": {
+      "name": "stolenRecordCount",
+      "label": "Theft reports",
+      "kind": "count"
+    },
+    "0305d673050411ea5a081c6be28a548ae2d0be6ac8712eacddbaa126b83dde48": {
+      "name": "recoveredRecordCount",
+      "label": "Recovery records",
+      "kind": "count"
+    },
+    "6fea4dacdd4213b9a2c7715ba5deabfb5a8100591fbe3f9c302e91340b8ee889": {
+      "name": "scrapCertificateDate",
+      "label": "Certificate of destruction",
+      "kind": "date"
+    },
+    "9992662b3820e120b2f600524150e6a289015011664b2719cc1206fbf5b53c27": {
+      "name": "exportMarkerCount",
+      "label": "Export markers",
+      "kind": "count"
+    },
+    "ccc11e710b39cbbfb17d36f868292396334a240b11652c2f4dbc05acaafa5917": {
+      "name": "keeperSinceDate",
+      "label": "Current keeper since",
+      "kind": "date"
+    },
+    "e63b210c2d4ec6e6db0109e445d3ce7587a1c7480bbf6b55d07b68415da0440f": {
+      "name": "usageClassMask",
+      "label": "Recorded uses",
+      "kind": "mask"
+    },
+    "2fd2cc2bca887742186be271db93516360dcdefbeb7ba9195ca0b1282951bb8f": {
+      "name": "importStatus",
+      "label": "Import status",
+      "kind": "code"
+    },
+    "20a150dd4f601ba4e84ab13e73fa6e95ba9702cf243ebc68da91c7f4a2393eea": {
+      "name": "countryChangeCount",
+      "label": "Country changes",
+      "kind": "count"
+    },
+    "45da5d7689bd742535e6c6058e7107049213a0074efe0907558737941c6c0a05": {
+      "name": "plateChangeCount",
+      "label": "Plate changes",
+      "kind": "count"
+    },
+    "b0aef711f9c2c53795b94d234a4db45106f6817d90862411397467a177f8fd83": {
+      "name": "colourChangeCount",
+      "label": "Colour changes",
+      "kind": "count"
+    },
+    "426dda38e36e357893bfbcc65591ad525fba80f208c9f9af33dc974ec785d305": {
+      "name": "odometerReadingDate",
+      "label": "Odometer read on",
+      "kind": "date"
+    },
+    "f665454978b4d0746a86212ecbda538cd9e987957434fd2fec01e4d5dd6450de": {
+      "name": "odometerReadingCount",
+      "label": "Odometer readings",
+      "kind": "count"
+    },
+    "6c4fa46dd20f16d5642768215f44946925ee9ce2822a063f5ade646f16fabf63": {
+      "name": "odometerSourceMask",
+      "label": "Reading sources",
+      "kind": "mask"
+    },
+    "dac14ec6c93a737556d882e768f7cd0326acee14774896ff8832c0d285b21c9a": {
+      "name": "odometerAnomalyCount",
+      "label": "Odometer anomalies",
+      "kind": "count"
+    },
+    "7d839dd069ed3a5c353a618daf6a46f8500c5549884b17a8a52a4b7958d5e877": {
+      "name": "inspectionCount",
+      "label": "Inspections",
+      "kind": "count"
+    },
+    "76678e1f42282402db22bc76b4e2e495673259e06d6a0a7a648fd7b0a77174ad": {
+      "name": "inspectionPassCount",
+      "label": "Inspections passed",
+      "kind": "count"
+    },
+    "8dc4b8a53aae87c2974465d4929570b11c75c24c71bd7e4ef2811d739c56992a": {
+      "name": "inspectionFailCount",
+      "label": "Inspections failed",
+      "kind": "count"
+    },
+    "0e4dd6831f0a8707da37cb2336d2a8f63136247d614f7a7b05315c0e3870afe1": {
+      "name": "inspectionExpiryDate",
+      "label": "Inspection valid until",
+      "kind": "date"
+    },
+    "fb440c0718d2f0bb0e4d1122c38d5b198b7ca878ccb9145a787ee37bc0feb739": {
+      "name": "dangerousDefectCount",
+      "label": "Dangerous defects",
+      "kind": "count"
+    },
+    "5922c9e42cb6d7f8457b66703982d8715770b7b6bfae07318f73279f8dc71102": {
+      "name": "majorDefectCount",
+      "label": "Major defects",
+      "kind": "count"
+    },
+    "16af04e0f5d1c86a36659502ed2bb4aed04a534e68410c59295778d7e9add539": {
+      "name": "advisoryCount",
+      "label": "Advisories",
+      "kind": "count"
+    },
+    "88dbd62b5d66c90b18b3b9ba39d07663c1ddc624149d7323b33a8cc3b96ec0ad": {
+      "name": "damageEventCount",
+      "label": "Damage events",
+      "kind": "count"
+    },
+    "32ec34d59ab66534499ca256678e491c96f3e4e974bc4d3242013dd3341ab237": {
+      "name": "structuralRepairCount",
+      "label": "Structural repairs",
+      "kind": "count"
+    },
+    "e92037351817931ef2d2ad079e12ed9593bd2cf868cba40280f1141a2b6bfdf4": {
+      "name": "airbagDeploymentCount",
+      "label": "Airbag deployments",
+      "kind": "count"
+    },
+    "776494776104e3253849298d6c7384fc55fef14b13af16d9991df736229d8f91": {
+      "name": "floodDamageCount",
+      "label": "Flood damage records",
+      "kind": "count"
+    },
+    "900f76444bd0d814dd4cc41d418c64fcaf3011945dcd1168b7934db05ccea298": {
+      "name": "fireDamageCount",
+      "label": "Fire damage records",
+      "kind": "count"
+    },
+    "1e346d477f81e30729e1376e4609e3d182d4ab07265893adcd7238922f175182": {
+      "name": "hailDamageCount",
+      "label": "Hail damage records",
+      "kind": "count"
+    },
+    "1ed7bcf3250a28796000e8b3cb1ec0cec13329f05cf958337b579d452cb9bbef": {
+      "name": "repairCount",
+      "label": "Repairs recorded",
+      "kind": "count"
+    },
+    "2297b154839a5c2a05663decf9d52ade8f7dbb81b45fb72c96bea77178aa4d7a": {
+      "name": "partsReplacedCount",
+      "label": "Parts replaced",
+      "kind": "count"
+    },
+    "d450e96664dd8b8b3fd32545e89ccdd0a69ce7c32bb605598b9545a084e39816": {
+      "name": "maxRepairCostBandCode",
+      "label": "Largest repair band",
+      "kind": "code"
+    },
+    "7968257eaaeee07212bfbfddd2630120dee2e4edc1f494ec9442c40633b56466": {
+      "name": "lastServiceDate",
+      "label": "Last service",
+      "kind": "date"
+    },
+    "b6239d97e7a609a21328561a13192631ead5b420e16044e3e498a6c20b77f824": {
+      "name": "lastServiceOdometerKm",
+      "label": "Odometer at last service",
+      "kind": "km"
+    },
+    "1930dba9bccf7d633af5f8827bbd653616268df198c6f1c64662b37fd2c40c1f": {
+      "name": "scheduledServiceMissedCount",
+      "label": "Scheduled services missed",
+      "kind": "count"
+    },
+    "3dec41c3c0bb4ce7d4b468e0f11523fbfc21619a83d8fb6df7a477ea6463ea8a": {
+      "name": "timingBeltReplacedDate",
+      "label": "Timing belt replaced",
+      "kind": "date"
+    },
+    "76d5d0a3ab838de90920ccc554895be3b3f49400311f7c055012de1dc5cc21b8": {
+      "name": "recallIssuedCount",
+      "label": "Recalls issued",
+      "kind": "count"
+    },
+    "b9e7bcc0059b1382275ba3c4ffd09832de3254d424b9ba358a5e1002f3dbd64a": {
+      "name": "recallCompletedCount",
+      "label": "Recalls completed",
+      "kind": "count"
+    },
+    "96a4c4dd7fd6569f823737479683941a1fc4bec606747b139fb8dc87caebcb4a": {
+      "name": "modelYear",
+      "label": "Model year",
+      "kind": "year"
+    },
+    "9c314685cb24e37e88770d183296422193d26507af7ce409cddb710c087990fa": {
+      "name": "makeCode",
+      "label": "Make",
+      "kind": "code"
+    },
+    "1b72c4f2ef9265080009a050a0c83be2b2dbc0d80c557580c71775f39417a78c": {
+      "name": "modelCode",
+      "label": "Model",
+      "kind": "code"
+    },
+    "088ba0f155faa5a827be00462093fefaceac20069991c3f7874b9996fbbf5769": {
+      "name": "bodyTypeCode",
+      "label": "Body type",
+      "kind": "code"
+    },
+    "f7216f2f28924231e9b46b7c990d359a193e52021f282745c41087070df0c26b": {
+      "name": "transmissionCode",
+      "label": "Transmission",
+      "kind": "code"
+    },
+    "58d194f5a7a04848949d176207699b3bf5986bd6d9248c10be984fdc8563430d": {
+      "name": "driveTypeCode",
+      "label": "Drive type",
+      "kind": "code"
+    },
+    "1ae2c799154eec8ca89eaa5aafe062bf28bb40b5692ac674c4440b3d6ff6c040": {
+      "name": "colourCodeAtFirstReg",
+      "label": "Colour at first registration",
+      "kind": "code"
+    },
+    "de295ac32ddb2b582cdae8c6e02309d21b57a9f457321a8bb0e5e9fe6ce993f5": {
+      "name": "engineCapacityCc",
+      "label": "Engine capacity",
+      "kind": "cc"
+    },
+    "e68de521b8a35ebd319d4bfc94ff89fd7e7f342f0af508a3547955bab4094678": {
+      "name": "enginePowerKw",
+      "label": "Engine power",
+      "kind": "kw"
+    },
+    "55bda9a3d3b12dfb7dabc374765fd9a00558bfe8c18a263c23ff029d96857597": {
+      "name": "seatCount",
+      "label": "Seats",
+      "kind": "count"
+    },
+    "04770c708e2e2b1f1e9d2e07c46271f9d723bc1cca12012c5f008389e5e96e39": {
+      "name": "doorCount",
+      "label": "Doors",
+      "kind": "count"
+    },
+    "6c2a6a16a42080ec60b33d6a0e4cf9c8b72ab468c1afd283e56bc3f57a58ebb5": {
+      "name": "kerbWeightKg",
+      "label": "Kerb weight",
+      "kind": "kg"
     }
   },
   "demoVehicles": [

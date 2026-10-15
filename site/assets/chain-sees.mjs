@@ -60,7 +60,13 @@ const absentRow = (what, why) =>
  */
 export function chainSeesBlock(vin, view, ledger) {
     const commitments = Object.keys(ledger.fieldCommitment ?? {}).length;
-    const claims = view.answers.map((a) => a.claim).filter(Boolean);
+    // Two shapes now arrive in one list. A two-field claim carries a slack
+    // and a pair of commitments where a single-field one carries a bound and
+    // one commitment, so they are split here rather than rendered by a
+    // builder that would print "≥ undefined" for the pair.
+    const everyClaim = view.answers.map((a) => a.claim).filter(Boolean);
+    const claims = everyClaim.filter((c) => c.slack === undefined);
+    const compares = everyClaim.filter((c) => c.slack !== undefined);
 
     const held = [
         seeRow('VIN hash', vin,
@@ -91,11 +97,25 @@ export function chainSeesBlock(vin, view, ledger) {
                 : ', the registrar that registered it.');
     };
 
-    const claimRows = claims.length
-        ? claims.map((c) => seeRow(
-            `Claim · ${c.atMost ? '≤' : '≥'} ${fmt(c.bound)}`,
-            short(c.commitment),
-            `Proven against that commitment, at slot ${esc(short(c.slot))}. The bound is public because it is the question asked; the value that satisfied it is not here.${wroteIt(c.slot)}`)).join('')
+    // A two-field claim has no single bound, commitment or slot: it holds a
+    // pair of each and a public slack. Rendered with the single-field shape
+    // it printed "≥ undefined" at "slot undefined", so it gets its own row.
+    const compareRow = (c) => seeRow(
+        `Claim · pair ≤ ${fmt(c.slack)}`,
+        `${short(c.commitmentHigh)} / ${short(c.commitmentLow)}`,
+        'Two of this vehicle\'s own fields, compared without publishing either. '
+        + `Proven against both commitments, at slots ${esc(short(c.slotHigh))} and `
+        + `${esc(short(c.slotLow))}. Only how far apart the pair may be is public.`
+        + wroteIt(c.slotHigh));
+
+    const allRows = claims.map((c) => seeRow(
+        `Claim · ${c.atMost ? '≤' : '≥'} ${fmt(c.bound)}`,
+        short(c.commitment),
+        `Proven against that commitment, at slot ${esc(short(c.slot))}. The bound is public because it is the question asked; the value that satisfied it is not here.${wroteIt(c.slot)}`))
+        .concat(compares.map(compareRow));
+
+    const claimRows = allRows.length
+        ? allRows.join('')
         : `<div style="padding:9px 0;font-size:12.5px;color:rgba(14,23,38,.62)">No claims proven yet. Registration publishes a root and a registrar and nothing else.</div>`;
 
     const absent = [

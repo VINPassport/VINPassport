@@ -11,7 +11,7 @@ import {
     REGISTRAR_SECRET, DEALER_SECRET, DEALER_ID, GARAGE_SECRET, GARAGE_ID
 } from '../../test/passport-simulator.mjs';
 import { buildTree, padToWidth } from '@odatano/dpp-sdk/merkle';
-import { CLAIM_CATALOGUE, CLAIM_GROUPS, boundFor } from '../../site/assets/claim-catalogue.mjs';
+import { CLAIM_CATALOGUE, CLAIM_GROUPS, boundFor, isCompare } from '../../site/assets/claim-catalogue.mjs';
 import { blake2b } from '@noble/hashes/blake2';
 import { randomBytes } from 'node:crypto';
 
@@ -20,7 +20,7 @@ export { PassportSimulator, Rule, fieldKey, bytes32, hex };
 // Re-exported so a caller needs one import for "the registry and the
 // questions asked of it". The catalogue lives under site/assets because the
 // verify page loads it directly in a browser; this is the same file.
-export { CLAIM_CATALOGUE, CLAIM_GROUPS, boundFor };
+export { CLAIM_CATALOGUE, CLAIM_GROUPS, boundFor, isCompare };
 
 /**
  * The parties a registrar can hand the pen to in this demonstration.
@@ -402,6 +402,13 @@ export function applyIntake(sim, intake, salt) {
     for (const q of CLAIM_CATALOGUE) {
         const wanted = intake.prove?.[q.id];
         if (!wanted) continue;
+        // A question comparing two of the vehicle's own fields publishes only
+        // how far apart they may be, and opens both commitments.
+        if (isCompare(q)) {
+            attempt(`prove ${q.id}`, () =>
+                sim.proveFieldAtMostField(vin, K[q.field], K[q.against], q.slack));
+            continue;
+        }
         const bound = q.bound === null ? BigInt(wanted) : boundFor(q);
         attempt(`prove ${q.id}`, () => (q.atMost
             ? sim.proveFieldAtMost(vin, K[q.field], bound)
@@ -418,7 +425,18 @@ export function buildDemoVehicles(sim, salt) {
     const a = applyIntake(sim, {
         vin: 'WVWZZZ1JZXW000001',
         registrar: 'demo-authority',
-        fields: { odometerKm: 18_430, accidentCount: 0, ownerCount: 1, writeOffCategory: 0, serviceCount: 1 },
+        fields: {
+            odometerKm: 18_430, accidentCount: 0, ownerCount: 1, writeOffCategory: 0,
+            serviceCount: 1,
+            // The pair behind "serviced within the last 15 000 km": the
+            // odometer, and the reading taken when it was last serviced.
+            // Neither is ever published; only how far apart they may be.
+            lastServiceOdometerKm: 18_430,
+            // And the pair behind "every recall has been carried out". One
+            // recall is issued here and completed below, so the claim says
+            // something: with both at zero it would be true but empty.
+            recallIssuedCount: 1, recallCompletedCount: 0
+        },
         panel: {
             vehicleCategory: 'M1', fuelType: 'bev', emissionsClass: 'n/a',
             batteryPassportId: 'BPID-EU-000184-2027', batteryChemistry: 'NMC811',
@@ -436,22 +454,38 @@ export function buildDemoVehicles(sim, salt) {
             { label: 'service garage', id: GARAGE_ID, secret: GARAGE_SECRET }
         ],
         updates: [
-            { odometerKm: 44_210, serviceCount: 2, by: 'service garage' },
-            { odometerKm: 61_890, serviceCount: 3, by: 'service garage' },
-            { serviceCount: 4, by: 'service garage' },
+            { odometerKm: 44_210, serviceCount: 2, lastServiceOdometerKm: 44_210, by: 'service garage' },
+            { odometerKm: 61_890, serviceCount: 3, lastServiceOdometerKm: 61_890, by: 'service garage' },
+            // The recall is carried out at this service, which is what
+            // lets the vehicle answer "every recall has been carried out"
+            // without saying how many there were.
+            {
+                odometerKm: 79_000, serviceCount: 4, lastServiceOdometerKm: 79_000,
+                recallCompletedCount: 1, by: 'service garage'
+            },
             // The resale: the dealership takes the car in and records the
             // reading at handover. It is the last party to write the
             // odometer, which is why the panel can name it rather than the
-            // manufacturer who registered the vehicle years earlier.
+            // manufacturer who registered the vehicle years earlier. It does
+            // NOT service the car, so the odometer now runs 4 260 km past the
+            // last service reading, which is what the compare claim proves.
             { odometerKm: 83_260, by: 'dealership' }
         ],
-        prove: { neverWrittenOff: true, noAccidents: true, oneKeeper: true, mileageUnder: 150_000 }
+        prove: {
+            neverWrittenOff: true, noAccidents: true, oneKeeper: true, mileageUnder: 150_000,
+            servicedWithin15000km: true, allRecallsDone: true
+        }
     }, salt);
 
     const b = applyIntake(sim, {
         vin: 'WAUZZZ8V5KA000002',
         registrar: 'demo-authority',
-        fields: { odometerKm: 96_500, accidentCount: 2, ownerCount: 3, writeOffCategory: 1 },
+        fields: {
+            odometerKm: 96_500, accidentCount: 2, ownerCount: 3, writeOffCategory: 1,
+            // Present, so the questions are askable, and unanswered, because
+            // this seller declined to answer them. That is the contrast.
+            lastServiceOdometerKm: 41_000, recallIssuedCount: 2, recallCompletedCount: 0
+        },
         panel: { vehicleCategory: 'M1', fuelType: 'diesel', emissionsClass: 'Euro 5', firstRegistrationDate: 15_910 },
         updates: [{ odometerKm: 112_040 }],
         prove: { mileageUnder: 200_000 }

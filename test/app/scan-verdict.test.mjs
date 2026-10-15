@@ -35,7 +35,11 @@ const answers = (vin) => {
 // claim answers every question it is strong enough for: see the test below.
 const A_PROVEN = [
     'neverWrittenOff', 'notStructuralWriteOff',
-    'noAccidents', 'oneKeeper', 'atMostThreeKeepers', 'mileageUnder'
+    'noAccidents', 'oneKeeper', 'atMostThreeKeepers', 'mileageUnder',
+    // Two-field claims: the odometer against the reading at the last
+    // service, and recalls issued against recalls completed. One circuit
+    // opens two commitments and publishes neither value, only the slack.
+    'servicedWithin15000km', 'allRecallsDone'
 ];
 
 // ---------------------------------------------------------------- vehicle A
@@ -156,7 +160,11 @@ test('every ledger claim is either an answer or an extra, and none vanish', () =
             ...view.answers.filter((a) => a.claim).map((a) => a.claim.key),
             ...view.extras.map((x) => x.claim.key)
         ]);
-        assert.equal(shown.size, view.claimCount);
+        // Both collections: a two-field claim lives in relClaims and must be
+        // shown exactly as a single-field one is.
+        const onLedger = ledger.claims.filter((c) => c.vinHash === vin).length
+            + (ledger.relClaims ?? []).filter((c) => c.vinHash === vin).length;
+        assert.equal(shown.size, onLedger);
     }
 });
 

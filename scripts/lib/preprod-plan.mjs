@@ -9,7 +9,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import { webcrypto } from 'node:crypto';
-import { CLAIM_CATALOGUE, boundFor } from '../../site/assets/claim-catalogue.mjs';
+import { CLAIM_CATALOGUE, boundFor, isCompare } from '../../site/assets/claim-catalogue.mjs';
 
 /**
  * Circuits that write a cell the ledger already holds.
@@ -36,7 +36,10 @@ import { CLAIM_CATALOGUE, boundFor } from '../../site/assets/claim-catalogue.mjs
 export const CELL_UPDATING = new Set(['recordField']);
 
 export const MAX_CALLS_PER_TX = 8;      // nightgate-tx batch ceiling
-export const MAX_CALLS_PER_RUN = 12;    // bounds a run's wall clock
+// Bounds a run's wall clock. Raised from 12 once initialisations stopped
+// closing a transaction each: sixteen calls is about three transactions now,
+// where twelve used to be twelve.
+export const MAX_CALLS_PER_RUN = 16;
 
 /**
  * The claims a console can request, mapped onto circuit calls.
@@ -56,6 +59,11 @@ export const MAX_CALLS_PER_RUN = 12;    // bounds a run's wall clock
  */
 export const CLAIM_DEFS = Object.fromEntries(CLAIM_CATALOGUE.map((q) => [q.id, {
     field: q.field,
+    // Set only on a two-field question. It names the field the first one is
+    // compared against, and `slack` replaces the bound.
+    against: q.against,
+    compare: isCompare(q),
+    slack: q.slack,
     atMost: q.atMost,
     openBound: q.bound === null,
     openLabel: q.openLabel,
@@ -136,6 +144,15 @@ export function planCalls(intake) {
     for (const [claim, def] of Object.entries(CLAIM_DEFS)) {
         const wanted = intake.prove?.[claim];
         if (!wanted) continue;
+        if (def.compare) {
+            // Not cell-updating: it inserts a fresh relClaimKey, so it
+            // batches with the other claims exactly as they batch together.
+            steps.push({
+                kind: 'claim', circuit: 'proveFieldAtMostField',
+                claim, name: def.field, against: def.against, bound: def.slack
+            });
+            continue;
+        }
         steps.push({
             kind: 'claim',
             circuit: def.atMost ? 'proveFieldAtMost' : 'proveFieldAtLeast',
@@ -178,6 +195,11 @@ const zero32 = () => new Uint8Array(32);
 export function makeWitnessHolder(registrarSecret) {
     const holder = {
         pending: { value: 0n, salt: zero32() }, prev: { value: 0n, salt: zero32() },
+        // The SECOND opening, for a claim comparing two of a vehicle's
+        // fields. Armed per call like everything else, and left at zero for
+        // the calls that do not use it: the circuits that read it are the
+        // only ones that ask for it.
+        other: { value: 0n, salt: zero32() },
         // Who the call in flight acts as. A run used to act as one registrar
         // throughout; a vehicle that changes hands does not. The registrar
         // still authorises, but the dealership writes under its OWN identity,
@@ -197,6 +219,8 @@ export function makeWitnessHolder(registrarSecret) {
             newSalt: armedRead('newSalt', () => holder.pending.salt),
             previousValue: armedRead('previousValue', () => holder.prev.value),
             previousSalt: armedRead('previousSalt', () => holder.prev.salt),
+            otherValue: armedRead('otherValue', () => holder.other.value),
+            otherSalt: armedRead('otherSalt', () => holder.other.salt),
             // Armed per call like the rest, because a delegated write acts as
             // a different identity. Refuses to read when absent for the same
             // reason the value reads do: proving against a zero secret would
@@ -212,6 +236,7 @@ export function makeWitnessHolder(registrarSecret) {
         arm: (label, state) => () => {
             holder.pending = state.pending ?? { value: 0n, salt: zero32() };
             holder.prev = state.prev ?? { value: 0n, salt: zero32() };
+            holder.other = state.other ?? { value: 0n, salt: zero32() };
             // Unstated means the run's own registrar, so every existing call
             // site keeps the behaviour it had.
             holder.secret = state.secret ?? registrarSecret;

@@ -48,9 +48,28 @@ test('it names every claim it was given, by its bound and its commitment', () =>
     const claims = view.answers.map((a) => a.claim).filter(Boolean);
     assert.ok(claims.length > 0, 'the export should carry at least one claim to render');
     for (const c of claims) {
-        assert.ok(html.includes(short(c.commitment)),
-            `claim against ${short(c.commitment)} is missing from the panel`);
+        // Two shapes. A single-field claim has one commitment; a two-field
+        // claim has a pair and a slack, and both of its commitments must
+        // appear or the panel is hiding half of what the ledger holds.
+        const shown = c.slack === undefined
+            ? [c.commitment]
+            : [c.commitmentHigh, c.commitmentLow];
+        for (const h of shown) {
+            assert.ok(html.includes(short(h)),
+                `claim against ${short(h)} is missing from the panel`);
+        }
     }
+});
+
+test('a two-field claim is rendered as a pair, never as a bound', () => {
+    const compares = view.answers
+        .map((a) => a.claim).filter(Boolean)
+        .filter((c) => c.slack !== undefined);
+    assert.ok(compares.length > 0, 'the demo export should carry a two-field claim');
+    // The single-field builder would print "≥ undefined" for these, which is
+    // exactly what this guards against.
+    assert.ok(!html.includes('undefined'), 'the panel printed undefined');
+    assert.ok(html.includes('pair ≤'), 'no pair row was rendered');
 });
 
 /**

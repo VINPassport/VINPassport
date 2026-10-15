@@ -9,7 +9,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-import { passportView, QUESTIONS } from '../assets/verdict.mjs';
+import { passportView, QUESTIONS, isCompare } from '../assets/verdict.mjs';
 import { loadState } from '../assets/sources.mjs?v=4';
 import { chainSeesBlock, fmt, short, esc } from '../assets/chain-sees.mjs?v=2';
 import { qrPanel } from '../assets/passport-qr.mjs?v=1';
@@ -20,14 +20,28 @@ const TICK =
     '<span class="tick"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" ' +
     'stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg></span>';
 
+// The mileage question names its ceiling, because "under a stated ceiling"
+// says nothing without the number. A two-field question also has odometerKm
+// as its first field and has no bound at all, so it must not be caught here:
+// it rendered as "Mileage under undefined km" until this excluded it.
 const qLabel = (q, claim) =>
-    q.field === 'odometerKm' && claim
+    q.field === 'odometerKm' && claim && !q.against && claim.bound !== undefined
         ? `Mileage under ${fmt(claim.bound)} km`
         : q.label;
+
+/** A two-field claim: the pair being compared, and how far apart they may be. */
+const comparePair = (a) =>
+    `${a.field ?? a.meta?.name ?? 'first'} − ${a.against ?? 'second'} ≤ ${fmt(a.claim.slack)}`;
 
 const qSub = (a) => {
     if (a.status === 'not-proven') return 'No claim on the ledger. Not proven, not a no.';
     if (a.invalid) return `Field key ${short(a.claim.fieldKey)} is not a canonical VINPassport field. A claim on an unrecognised key proves nothing about this vehicle; treat it as invalid.`;
+    if (a.claim?.slack !== undefined) {
+        const pair = comparePair(a);
+        return a.status === 'proven'
+            ? `${pair} · both values hidden, proven against the current record`
+            : `${pair} · one of the two has moved since, so this is superseded`;
+    }
     const bound = `${a.meta?.name ?? a.field} ${a.atMost ? '≤' : '≥'} ${fmt(a.claim.bound)}`;
     return a.status === 'proven'
         ? `${bound} · proven against the current record`
@@ -46,6 +60,20 @@ function detailBlock(a, ctx) {
     </div>`;
     }
     const c = a.claim;
+    if (c?.slack !== undefined) {
+        // Two commitments and a public slack. The thing worth saying here is
+        // that the comparison happened without either reading being named.
+        return `<div class="vp-detail vfy-measure" style="margin:0 0 16px;padding:13px 15px;border:1px solid rgba(0,74,173,.3);background:#EDE4D8">
+      <p style="margin:0 0 11px;font-size:13px;line-height:1.55;color:rgba(14,23,38,.78)">This claim compares <b>two hidden values of the same vehicle</b>. The proof opens both commitments inside the circuit and publishes only how far apart the two are allowed to be. Neither reading, and not even the difference between them, was put on the ledger.</p>
+      <div class="mono" style="display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:10.5px">
+        <span style="color:rgba(14,23,38,.62)">claim</span><span>${esc(comparePair(a))}</span>
+        <span style="color:rgba(14,23,38,.62)">first field</span><span style="word-break:break-all">${short(c.fieldKeyHigh)}</span>
+        <span style="color:rgba(14,23,38,.62)">second field</span><span style="word-break:break-all">${short(c.fieldKeyLow)}</span>
+        <span style="color:rgba(14,23,38,.62)">proven against</span><span style="word-break:break-all">${short(c.commitmentHigh)}</span>
+        <span style="color:rgba(14,23,38,.62)">and against</span><span style="word-break:break-all">${short(c.commitmentLow)}</span>
+      </div>
+    </div>`;
+    }
     const cname = a.invalid ? 'unrecognised field key' : (a.meta?.name ?? a.field ?? 'field');
     return `<div class="vp-detail vfy-measure" style="margin:0 0 16px;padding:13px 15px;border:1px solid rgba(0,74,173,.3);background:#EDE4D8">
       <p style="margin:0 0 11px;font-size:13px;line-height:1.55;color:rgba(14,23,38,.78)">A zero-knowledge proof was accepted on the ledger. It could not have been produced unless the hidden value satisfied the bound, and the value itself was never published.</p>
@@ -60,14 +88,16 @@ function detailBlock(a, ctx) {
 
 function rowsFor(view, secondary = false, ctx = null) {
     const extras = (view.extras ?? []).map((x) => ({
-        field: x.meta?.name, atMost: x.claim.atMost, meta: x.meta,
+        field: x.meta?.name, atMost: x.claim.atMost, meta: x.meta, compare: x.compare,
         // A claim whose fieldKey is not in the canonical vocabulary is not a
         // recognised VINPassport field: render it as invalid, never as a
         // friendly-labelled claim (a forged key must not read as legitimate).
         invalid: !x.meta,
-        label: x.meta
-            ? `${x.meta.label} ${x.claim.atMost ? 'at most' : 'at least'} ${fmt(x.claim.bound)}`
-            : 'Unrecognised field key, not a canonical VINPassport claim',
+        label: x.compare
+            ? `${x.meta?.label ?? 'A field'} compared with another field of this vehicle`
+            : x.meta
+                ? `${x.meta.label} ${x.claim.atMost ? 'at most' : 'at least'} ${fmt(x.claim.bound)}`
+                : 'Unrecognised field key, not a canonical VINPassport claim',
         status: x.status, claim: x.claim
     }));
     const all = view.answers.concat(extras);

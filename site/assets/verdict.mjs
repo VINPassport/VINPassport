@@ -18,7 +18,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-import { CLAIM_CATALOGUE, CLAIM_GROUPS, boundFor } from './claim-catalogue.mjs';
+import { CLAIM_CATALOGUE, CLAIM_GROUPS, boundFor, isCompare } from './claim-catalogue.mjs';
 
 /**
  * The full catalogue, under the name this module has always exported.
@@ -27,7 +27,7 @@ import { CLAIM_CATALOGUE, CLAIM_GROUPS, boundFor } from './claim-catalogue.mjs';
  */
 export const QUESTIONS = CLAIM_CATALOGUE;
 
-export { CLAIM_GROUPS, boundFor };
+export { CLAIM_GROUPS, boundFor, isCompare };
 
 /** "150000" -> "150 000": thin-space grouping, no locale surprises. */
 export const formatNumber = (s) =>
@@ -92,7 +92,35 @@ export function passportView(ledger, vinHex, vocabulary, now = Date.now()) {
     const mine = ledger.claims.filter((c) => c.vinHash === vinHex);
     const isCurrent = (c) => ledger.fieldCommitment[c.slot] === c.commitment;
 
+    const relMine = (ledger.relClaims ?? []).filter((c) => c.vinHash === vinHex);
+    const relCurrent = (c) =>
+        ledger.fieldCommitment[c.slotHigh] === c.commitmentHigh &&
+        ledger.fieldCommitment[c.slotLow] === c.commitmentLow;
+
     const answers = QUESTIONS.map((q) => {
+        // A question comparing two of the vehicle's own fields is answered by
+        // a RelClaim, and goes stale when EITHER value moves.
+        if (isCompare(q)) {
+            const hi = nameToKey[q.field];
+            const lo = nameToKey[q.against];
+            const found = (hi && lo) ? relMine.filter(
+                (c) => c.fieldKeyHigh === hi && c.fieldKeyLow === lo
+                    && BigInt(c.slack) <= q.slack
+            ) : [];
+            if (found.length === 0) return { ...q, status: 'not-proven', claim: null };
+            // Tightest first: the smallest slack is the strongest statement.
+            const best = [...found].sort((a, b) => {
+                const cur = Number(relCurrent(b)) - Number(relCurrent(a));
+                if (cur !== 0) return cur;
+                return BigInt(a.slack) < BigInt(b.slack) ? -1 : 1;
+            })[0];
+            return {
+                ...q,
+                status: relCurrent(best) ? 'proven' : 'superseded',
+                claim: best,
+                meta: byKey[best.fieldKeyHigh] ?? null
+            };
+        }
         const keyHex = nameToKey[q.field];
         const threshold = boundFor(q, now);
         const candidates = keyHex
@@ -123,6 +151,17 @@ export function passportView(ledger, vinHex, vocabulary, now = Date.now()) {
     // Claims that answered no standard question still deserve a row: a
     // verifier should never discover ledger state the page chose not to show.
     const shown = new Set(answers.filter((a) => a.claim).map((a) => a.claim.key));
+    // Two-field claims the catalogue did not cover still deserve a row, for
+    // the same reason single-field ones do: nothing on the ledger may be
+    // quietly withheld from a reader.
+    const relExtras = relMine
+        .filter((c) => !shown.has(c.key))
+        .map((c) => ({
+            claim: c,
+            meta: byKey[c.fieldKeyHigh] ?? null,
+            compare: true,
+            status: relCurrent(c) ? 'proven' : 'superseded'
+        }));
     const extras = mine
         .filter((c) => !shown.has(c.key))
         .map((c) => ({
@@ -150,7 +189,7 @@ export function passportView(ledger, vinHex, vocabulary, now = Date.now()) {
         registrar: ledger.registrar[vinHex] ?? null,
         answers,
         groups,
-        extras,
+        extras: extras.concat(relExtras),
         provenCount: answers.filter((a) => a.status === 'proven').length,
         questionCount: answers.length,
         claimCount: mine.length

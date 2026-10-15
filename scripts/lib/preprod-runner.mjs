@@ -867,7 +867,14 @@ export async function createRunner({ log = console.log } = {}) {
                         } else if (s.kind === 'claim') {
                             // Direction comes from the catalogue: a floor is a
                             // different circuit, not a different bound.
-                            if (s.circuit === 'proveFieldAtLeast') {
+                            if (s.circuit === 'proveFieldAtMostField') {
+                                if (!(s.against in FIELDS)) throw new Error('unknown field');
+                                sim.proveFieldAtMostField(
+                                    vinBytes, K[s.name], K[s.against], s.bound
+                                );
+                                s.writeIndex = (writes[s.name]?.length ?? 0) - 1;
+                                s.writeIndexAgainst = (writes[s.against]?.length ?? 0) - 1;
+                            } else if (s.circuit === 'proveFieldAtLeast') {
                                 sim.proveFieldAtLeast(vinBytes, K[s.name], s.bound);
                             } else {
                                 sim.proveFieldAtMost(vinBytes, K[s.name], s.bound);
@@ -940,6 +947,21 @@ export async function createRunner({ log = console.log } = {}) {
                 };
             }
             const opened = writeAt(s.name, s.writeIndex);
+            if (s.circuit === 'proveFieldAtMostField') {
+                // Two openings, because the claim is about a pair. The
+                // circuit reads the first through previousValue/Salt and the
+                // second through otherValue/Salt.
+                const openedAgainst = writeAt(s.against, s.writeIndexAgainst);
+                return {
+                    circuitId: 'proveFieldAtMostField',
+                    args: [vinBytes, K[s.name], K[s.against], s.bound],
+                    before: arm(label, {
+                        pending: { value: 0n, salt: zero32() },
+                        prev: { ...opened },
+                        other: { ...openedAgainst }
+                    })
+                };
+            }
             return {
                 circuitId: s.circuit === 'proveFieldAtLeast' ? 'proveFieldAtLeast' : 'proveFieldAtMost',
                 args: [vinBytes, K[s.name], s.bound],
@@ -1624,7 +1646,13 @@ export async function createRunner({ log = console.log } = {}) {
         return {
             vin: randomDemoVin(),
             registrar: 'passport.vin-demo',
-            fields: { odometerKm: base, accidentCount: 0, ownerCount: 2, serviceCount: 6 },
+            fields: {
+                odometerKm: base, accidentCount: 0, ownerCount: 2, serviceCount: 6,
+                // The pair the compare claim is about. The garage services
+                // the car, then the dealership adds miles without servicing
+                // it, so the two readings genuinely differ.
+                lastServiceOdometerKm: base
+            },
             panel: {
                 vehicleCategory: 'M1', fuelType: pick(['bev', 'petrol', 'hybrid']),
                 firstRegistrationDate: 19_700 + Math.floor(Math.random() * 1_000),
@@ -1647,7 +1675,13 @@ export async function createRunner({ log = console.log } = {}) {
             // fourServices is a FLOOR, so it runs proveFieldAtLeast. Every
             // other demo claim is a ceiling, which is why that circuit had
             // never reached the chain despite being compiled and tested.
-            prove: { noAccidents: true, oneKeeper: true, mileageUnder: 150_000, fourServices: true }
+            // Four shapes in one run: two ceilings, a floor, and a claim
+            // comparing two of the vehicle's own hidden fields. Between them
+            // they exercise every proof circuit the contract has.
+            prove: {
+                noAccidents: true, oneKeeper: true, mileageUnder: 150_000,
+                fourServices: true, servicedWithin15000km: true
+            }
         };
     }
 
