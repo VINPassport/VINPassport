@@ -219,6 +219,11 @@ would be the disclosure** and hiding its value would protect nothing.
 The panel already behaves this way, because absent leaves are still salted and still anchored. The
 field map does not, which is why the rule is written down rather than assumed.
 
+**The demonstration vehicles do not follow this rule, and that is a gap rather than a decision.**
+They initialise a handful of fields each, because a preprod run is capped at `MAX_CALLS_PER_RUN`
+to bound its wall clock, and because the static demo was built before the rule was written down. A
+real passport must carry the whole set. Said here rather than left for a reader to notice.
+
 ## What a field costs, and the one line that sets the price
 
 Each `initialiseField` **closes its transaction**, so N fields is N transactions. The cause is not
@@ -280,6 +285,23 @@ Three properties of that list are not obvious and are tested in
 - **Bounds are fixed standard rungs.** `claimKey` includes the bound, so answers accumulate and
   never reset. A bespoke bound per enquiry is what narrows a value towards a point, so only the
   two open-bound questions take a bound from the asker, and the test refuses a third.
+
+### Questions that compare a vehicle with itself
+
+Two of the questions are not a field against a number. *Serviced within the last 15 000 km* is the
+odometer against the reading taken at the last service; *every recall has been carried out* is
+recalls issued against recalls completed. Neither can be asked with a public bound, because the
+thing being compared to is hidden too, and publishing one of the pair in order to prove something
+about the pair gives away exactly what the passport exists to keep.
+
+`proveFieldAtMostField` opens both commitments inside the circuit and publishes only the **slack**:
+how far apart the two values are allowed to be. A slack of zero is equality, which is what "every
+recall has been carried out" means. These claims live in their own `relClaims` map rather than
+widening `Claim`, so a reader that understands only single-field claims cannot misread one of them
+as a claim about one field, and they go stale when **either** value moves.
+
+A question of this shape carries `against` and `slack` where the others carry `bound`. Adding one
+is a data change; the circuit is already deployed.
 
 ---
 
