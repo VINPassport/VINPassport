@@ -77,6 +77,30 @@ export struct Claim {
   atMost: Boolean
 }
 
+// What a verifier reads after a claim about one field against another.
+//
+// Some of what a buyer asks is not a field against a number, it is a field
+// against another field. "Serviced within the last 15 000 km" is the odometer
+// against the reading taken at the last service. "Every recall has been done"
+// is recalls issued against recalls completed. Neither can be put as a public
+// bound, because the thing being compared to is itself hidden, and asking the
+// holder to publish one of the two in order to prove a fact about the pair
+// would give away exactly what this contract exists to keep.
+//
+// `slack` is public and is the whole claim: it is how far apart the two values
+// are allowed to be. Slack zero says the low field has caught up with the high
+// one, which is what "every recall has been done" means.
+export struct RelClaim {
+  slotHigh: Bytes<32>,
+  slotLow: Bytes<32>,
+  vinHash: Bytes<32>,
+  fieldKeyHigh: Bytes<32>,
+  fieldKeyLow: Bytes<32>,
+  commitmentHigh: Bytes<32>,
+  commitmentLow: Bytes<32>,
+  slack: Uint<64>
+}
+
 // ---------------------------------------------------------------- public ledger
 
 // vinHash -> content root anchoring the canonical passport payload
@@ -95,8 +119,30 @@ export ledger fieldRule: Map<Bytes<32>, Rule>;
 // same value is idempotent: it writes the same key twice.
 export ledger claims: Map<Bytes<32>, Claim>;
 
-// How many field updates have been recorded across every vehicle
-export ledger updateCount: Counter;
+// relClaimKey -> a claim comparing TWO of a vehicle's fields, neither value
+// published. Kept in its own map rather than widened into Claim, so a reader
+// that understands only single-field claims cannot misread one of these as
+// a claim about one field.
+export ledger relClaims: Map<Bytes<32>, RelClaim>;
+
+// THERE IS DELIBERATELY NO GLOBAL UPDATE COUNTER HERE.
+//
+// There was one, and it cost more than it was worth. A Counter is a single
+// cell and it is always populated, so every circuit that touched it wrote an
+// already-populated cell. The ledger refuses such a write when any later
+// intent follows it in the same transaction, which meant initialiseField
+// closed its transaction: a vehicle carrying sixty fields cost sixty
+// transactions, one per field.
+//
+// Without it, initialiseField writes three fresh Map keys and nothing else,
+// so initialisations batch exactly as registration and the proof circuits
+// already did. recordField still closes its transaction, because it genuinely
+// overwrites a commitment, and that is the right shape: registration is a
+// bulk event, and later updates arrive one at a time anyway.
+//
+// Nothing needed the number. It was read only for display, and an indexer can
+// count field writes from the events without the contract keeping a tally
+// that costs every caller a transaction.
 
 // WHO MAY REGISTER A VEHICLE, fixed at deployment and never afterwards. There
 // is no circuit that adds to this set, so the list a verifier reads is the
@@ -151,6 +197,11 @@ witness previousSalt(): Bytes<32>;
 // Fresh salt for the new commitment, so two vehicles holding the same value
 // do not produce the same commitment.
 witness newSalt(): Bytes<32>;
+
+// The SECOND field's current value and salt, for a claim that compares two of
+// a vehicle's fields. Neither is disclosed, exactly as the first pair is not.
+witness otherValue(): Uint<64>;
+witness otherSalt(): Bytes<32>;
 
 // The registrar's authority secret. Never disclosed: only the identity derived
 // from it reaches the ledger, and only when a vehicle is registered.
@@ -217,6 +268,21 @@ export circuit writerKeyOf(
 ): Bytes<32> {
   return persistentHash<Vector<3, Bytes<32>>>(
     [pad(32, "vinpassport:writer:v1"), vinHash, writerId]
+  );
+}
+
+// A two-field claim's public name. Binds both slots, both commitments and the
+// slack, so the claim dies when either value moves, not just the first.
+circuit relClaimKey(
+  tag: Bytes<32>,
+  slotHigh: Bytes<32>,
+  slotLow: Bytes<32>,
+  slack: Uint<64>,
+  commitmentHigh: Bytes<32>,
+  commitmentLow: Bytes<32>
+): Bytes<32> {
+  return persistentHash<Vector<6, Bytes<32>>>(
+    [tag, slotHigh, slotLow, slack as Bytes<32>, commitmentHigh, commitmentLow]
   );
 }
 
@@ -348,7 +414,6 @@ export circuit initialiseField(
   fieldCommitment.insert(slot, persistentCommit<Uint<64>>(value, newSalt()));
   fieldRule.insert(slot, disclose(rule));
   fieldWriter.insert(slot, writer);
-  updateCount.increment(1);
 }
 
 // Write a new value for a field, proving in-circuit that the caller knows the
@@ -390,7 +455,6 @@ export circuit recordField(vinHash: Bytes<32>, fieldKey: Bytes<32>): [] {
 
   fieldCommitment.insert(slot, persistentCommit<Uint<64>>(current, newSalt()));
   fieldWriter.insert(slot, writer);
-  updateCount.increment(1);
 }
 
 // Prove the hidden value is at or below a public bound.
@@ -471,6 +535,78 @@ export circuit proveFieldAtLeast(
       commitment: commitment,
       bound: disclose(bound),
       atMost: false
+    }
+  );
+}
+
+// Prove one hidden field is no more than `slack` above another hidden field.
+//
+// "Serviced within the last 15 000 km": high is the odometer, low is the
+// reading at the last service, slack is 15 000. "Every recall has been done":
+// high is recalls issued, low is recalls completed, slack is 0. In both cases
+// the two readings stay hidden and only their permitted separation is public.
+//
+// Both commitments must be opened, so the caller has to know BOTH values. That
+// is the same bar as recordField sets for one field, applied twice: a claim
+// about a pair needs the openings for the pair.
+//
+// The two fields must differ. Comparing a field with itself would prove
+// nothing at all while looking like a claim, and a claim that cannot fail is
+// worse than no claim, because a reader cannot tell the difference.
+export circuit proveFieldAtMostField(
+  vinHash: Bytes<32>,
+  fieldKeyHigh: Bytes<32>,
+  fieldKeyLow: Bytes<32>,
+  slack: Uint<64>
+): [] {
+  assert(passports.member(disclose(vinHash)), "unknown passport");
+
+  const root = passports.lookup(disclose(vinHash));
+  const slotHigh = slotOf(disclose(vinHash), disclose(fieldKeyHigh), root);
+  const slotLow = slotOf(disclose(vinHash), disclose(fieldKeyLow), root);
+
+  assert(slotHigh != slotLow, "a field compared with itself proves nothing");
+  assert(fieldCommitment.member(slotHigh), "first field not initialised");
+  assert(fieldCommitment.member(slotLow), "second field not initialised");
+
+  const high = previousValue();
+  const highSalt = previousSalt();
+  const low = otherValue();
+  const lowSalt = otherSalt();
+
+  const commitmentHigh = fieldCommitment.lookup(slotHigh);
+  const commitmentLow = fieldCommitment.lookup(slotLow);
+
+  assert(
+    persistentCommit<Uint<64>>(high, highSalt) == commitmentHigh,
+    "first value does not open the stored commitment"
+  );
+  assert(
+    persistentCommit<Uint<64>>(low, lowSalt) == commitmentLow,
+    "second value does not open the stored commitment"
+  );
+
+  // high <= low + slack. Addition widens, so the sum cannot wrap and let an
+  // enormous slack make a false claim provable.
+  assert(
+    (high as Uint<65>) <= (low as Uint<65>) + (disclose(slack) as Uint<65>),
+    "the two values are further apart than the claimed slack"
+  );
+
+  relClaims.insert(
+    relClaimKey(
+      pad(32, "vinpassport:relclaim:v1"),
+      slotHigh, slotLow, disclose(slack), commitmentHigh, commitmentLow
+    ),
+    RelClaim {
+      slotHigh: slotHigh,
+      slotLow: slotLow,
+      vinHash: disclose(vinHash),
+      fieldKeyHigh: disclose(fieldKeyHigh),
+      fieldKeyLow: disclose(fieldKeyLow),
+      commitmentHigh: commitmentHigh,
+      commitmentLow: commitmentLow,
+      slack: disclose(slack)
     }
   );
 }

@@ -323,7 +323,7 @@ because the harness asked for it rather than because anyone remembered to.
 | `fieldCommitment` | `Map<Bytes<32>, Bytes<32>>` | slot → commitment to that field's current value |
 | `fieldRule` | `Map<Bytes<32>, Rule>` | slot → the integrity rule, written once at creation |
 | `claims` | `Map<Bytes<32>, Claim>` | claim key → a proof that was made, and the value version it was made about |
-| `updateCount` | `Counter` | How many field updates exist across all vehicles |
+| `relClaims` | `Map` | Claims comparing two of a vehicle's fields, holding both commitments and the public slack, and neither value |
 
 A **`Claim`** records what was proven and never the value that satisfied it: the slot, the VIN hash,
 the field key, the bound, the direction, and **the commitment the proof opened**. That last part is

@@ -277,18 +277,6 @@
     { "op": "declare_pub_input", "var": 78 },
     { "op": "pi_skip", "guard": 4, "count": 1 },
     { "op": "declare_pub_input", "var": 79 },
-    { "op": "pi_skip", "guard": 4, "count": 1 },
-    { "op": "load_imm", "imm": "05" },
-    { "op": "declare_pub_input", "var": 76 },
-    { "op": "declare_pub_input", "var": 4 },
-    { "op": "declare_pub_input", "var": 4 },
-    { "op": "declare_pub_input", "var": 81 },
-    { "op": "pi_skip", "guard": 4, "count": 4 },
-    { "op": "load_imm", "imm": "0E" },
-    { "op": "declare_pub_input", "var": 82 },
-    { "op": "declare_pub_input", "var": 4 },
-    { "op": "pi_skip", "guard": 4, "count": 2 },
-    { "op": "declare_pub_input", "var": 79 },
     { "op": "pi_skip", "guard": 4, "count": 1 }
   ]
 }

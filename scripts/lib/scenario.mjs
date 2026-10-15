@@ -469,6 +469,19 @@ export function exportLedger(sim, sourceNote) {
         for (const [k, v] of m) out[hex(k)] = val(v);
         return out;
     };
+    // A claim comparing two of a vehicle's fields. Both commitments and the
+    // public slack, and neither value: the same bargain as a single-field
+    // claim, made about a pair.
+    const relClaims = [];
+    for (const [key, c] of l.relClaims) {
+        relClaims.push({
+            key: hex(key), slotHigh: hex(c.slotHigh), slotLow: hex(c.slotLow),
+            vinHash: hex(c.vinHash),
+            fieldKeyHigh: hex(c.fieldKeyHigh), fieldKeyLow: hex(c.fieldKeyLow),
+            commitmentHigh: hex(c.commitmentHigh), commitmentLow: hex(c.commitmentLow),
+            slack: c.slack.toString()
+        });
+    }
     const claims = [];
     for (const [key, c] of l.claims) {
         claims.push({
@@ -495,7 +508,7 @@ export function exportLedger(sim, sourceNote) {
         writers: [...l.writers].map(hex),
         fieldWriter: mapToObj(l.fieldWriter, hex),
         claims,
-        updateCount: l.updateCount.toString()
+        relClaims
     };
 }
 

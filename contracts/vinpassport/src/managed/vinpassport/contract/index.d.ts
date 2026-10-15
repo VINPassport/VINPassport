@@ -10,11 +10,23 @@ export type Claim = { slot: Uint8Array;
                       atMost: boolean
                     };
 
+export type RelClaim = { slotHigh: Uint8Array;
+                         slotLow: Uint8Array;
+                         vinHash: Uint8Array;
+                         fieldKeyHigh: Uint8Array;
+                         fieldKeyLow: Uint8Array;
+                         commitmentHigh: Uint8Array;
+                         commitmentLow: Uint8Array;
+                         slack: bigint
+                       };
+
 export type Witnesses<PS> = {
   newValue(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint];
   previousValue(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint];
   previousSalt(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, Uint8Array];
   newSalt(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, Uint8Array];
+  otherValue(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint];
+  otherSalt(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, Uint8Array];
   registrarSecret(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, Uint8Array];
 }
 
@@ -43,6 +55,11 @@ export type ImpureCircuits<PS> = {
                     vinHash_0: Uint8Array,
                     fieldKey_0: Uint8Array,
                     bound_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+  proveFieldAtMostField(context: __compactRuntime.CircuitContext<PS>,
+                        vinHash_0: Uint8Array,
+                        fieldKeyHigh_0: Uint8Array,
+                        fieldKeyLow_0: Uint8Array,
+                        slack_0: bigint): __compactRuntime.CircuitResults<PS, []>;
 }
 
 export type ProvableCircuits<PS> = {
@@ -70,6 +87,11 @@ export type ProvableCircuits<PS> = {
                     vinHash_0: Uint8Array,
                     fieldKey_0: Uint8Array,
                     bound_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+  proveFieldAtMostField(context: __compactRuntime.CircuitContext<PS>,
+                        vinHash_0: Uint8Array,
+                        fieldKeyHigh_0: Uint8Array,
+                        fieldKeyLow_0: Uint8Array,
+                        slack_0: bigint): __compactRuntime.CircuitResults<PS, []>;
 }
 
 export type PureCircuits = {
@@ -114,6 +136,11 @@ export type Circuits<PS> = {
                     vinHash_0: Uint8Array,
                     fieldKey_0: Uint8Array,
                     bound_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+  proveFieldAtMostField(context: __compactRuntime.CircuitContext<PS>,
+                        vinHash_0: Uint8Array,
+                        fieldKeyHigh_0: Uint8Array,
+                        fieldKeyLow_0: Uint8Array,
+                        slack_0: bigint): __compactRuntime.CircuitResults<PS, []>;
 }
 
 export type Ledger = {
@@ -152,7 +179,13 @@ export type Ledger = {
     lookup(key_0: Uint8Array): Claim;
     [Symbol.iterator](): Iterator<[Uint8Array, Claim]>
   };
-  readonly updateCount: bigint;
+  relClaims: {
+    isEmpty(): boolean;
+    size(): bigint;
+    member(key_0: Uint8Array): boolean;
+    lookup(key_0: Uint8Array): RelClaim;
+    [Symbol.iterator](): Iterator<[Uint8Array, RelClaim]>
+  };
   allowedRegistrars: {
     isEmpty(): boolean;
     size(): bigint;

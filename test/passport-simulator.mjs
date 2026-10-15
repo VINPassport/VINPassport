@@ -90,6 +90,18 @@ export const witnesses = {
         ctx.privateState,
         ctx.privateState.store[ctx.privateState.pending.slot]?.salt ?? bytes32(0)
     ],
+    // The SECOND field's opening, for a claim comparing two of a vehicle's
+    // fields. Same fallback-to-zero rule as the first pair and for the same
+    // reason: a caller who does not know the value must be stopped by the
+    // circuit's commitment-opening assert, not by a helpful local error.
+    otherValue: (ctx) => [
+        ctx.privateState,
+        ctx.privateState.store[ctx.privateState.other]?.value ?? 0n
+    ],
+    otherSalt: (ctx) => [
+        ctx.privateState,
+        ctx.privateState.store[ctx.privateState.other]?.salt ?? bytes32(0)
+    ],
     // Whoever is acting right now. The circuit derives the identity from this
     // and compares it; nothing here chooses what the chain will believe.
     registrarSecret: (ctx) => [ctx.privateState, ctx.privateState.actor]
@@ -137,6 +149,7 @@ export class PassportSimulator {
         const initial = {
             store: {},
             pending: { slot: null, value: 0n, salt: bytes32(0) },
+            other: null,
             actor: REGISTRAR_SECRET
         };
         // Four slots on chain; a set keeps one copy, so repeating the last
@@ -285,6 +298,37 @@ export class PassportSimulator {
     }
 
     /**
+     * Prove `high` is no more than `slack` above `low`, disclosing neither.
+     *
+     * Both openings are staged: `pending` carries the high field, as the
+     * single-field proofs do, and `other` points at the low one. The circuit
+     * reads them through previousValue/previousSalt and otherValue/otherSalt
+     * respectively.
+     */
+    proveFieldAtMostField(vin, high, low, slack, openHigh, openLow) {
+        const refHigh = this.ref(vin, high);
+        const refLow = this.ref(vin, low);
+        const known = {
+            high: this.privateState.store[refHigh],
+            low: this.privateState.store[refLow]
+        };
+        if (openHigh) this.ctx.currentPrivateState.store[refHigh] = openHigh;
+        if (openLow) this.ctx.currentPrivateState.store[refLow] = openLow;
+        this.ctx.currentPrivateState.pending = { slot: refHigh, value: 0n, salt: bytes32(0) };
+        this.ctx.currentPrivateState.other = refLow;
+        try {
+            this.ctx = this.contract.impureCircuits.proveFieldAtMostField(
+                this.ctx, vin, high, low, slack
+            ).context;
+        } finally {
+            if (openHigh && known.high) this.ctx.currentPrivateState.store[refHigh] = known.high;
+            if (openLow && known.low) this.ctx.currentPrivateState.store[refLow] = known.low;
+            this.ctx.currentPrivateState.other = null;
+        }
+        return this.ledger;
+    }
+
+    /**
      * Every value the public ledger holds, collected by KIND rather than
      * flattened to text.
      *
@@ -319,7 +363,10 @@ export class PassportSimulator {
         walk(l.fieldCommitment);
         walk(l.fieldRule);
         walk(l.claims);
-        walk(l.updateCount);
+        // relClaims holds two commitments and a public slack, and no value.
+        // Walked for the same reason as everything else here: a collection
+        // this does not visit is a hole in every privacy test at once.
+        walk(l.relClaims);
         walk(l.allowedRegistrars);
         // Added with the writer work. A new ledger collection that this does
         // not walk is a hole in every privacy test at once: they would keep
