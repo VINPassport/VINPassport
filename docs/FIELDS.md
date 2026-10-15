@@ -2,6 +2,10 @@
 
 **Target: `attestation-vault-32`, 32 slots, depth 5.** 26 fields in use, 6 reserved.
 
+**That cap applies to the anchored document, not to the number of provable fields.** The two are
+different budgets and only one is scarce: see [Two budgets](#two-budgets-and-only-one-is-scarce).
+The registry holds **68 fields** today, of which 26 are panel slots and the rest are history.
+
 > This document was rewritten on 2026-08-23. NIGHTGATE 0.19.0 (22 Aug) introduced a 32-slot vault
 > lineage, lifting what had been this project's tightest constraint. The previous revision described
 > a 16-slot panel filled to capacity.
@@ -126,14 +130,16 @@ either way.
 
 ## Who writes a field, over a vehicle's life
 
-The panel is designed for a car, not for a registration event. Four of its slots are life-cycle
+The panel is designed for a car, not for a registration event. Six of its slots are life-cycle
 counters, and the rule each is created under is what makes them useful:
 
 | Slot | Field | Rule | What a real event looks like |
 |---|---|---|---|
 | 0 | `odometerKm` | neverFalls | A service reads 62,400 where the last read 44,210 |
+| 1 | `accidentCount` | neverFalls | A collision is reported: 0 becomes 1 |
 | 2 | `ownerCount` | neverFalls | A sale: 1 becomes 2 |
 | 3 | `serviceCount` | neverFalls | A service: 3 becomes 4 |
+| 4 | `writeOffCategory` | neverFalls | An insurer categorises the vehicle: 0 becomes a category code |
 | 6 | `lastInspectionDate` | neverFalls | A roadworthiness test moves the date forward |
 | 5 | `firstRegistrationDate` | neverChanges | Set once and never again |
 
@@ -149,6 +155,133 @@ Two things that do not change when someone else writes:
   registrar can. The circuit refuses it.
 - **Permission is not knowledge.** Updating a field also requires the current value and its salt.
   Those are private state, handed over deliberately and per field, outside the contract.
+
+## Two budgets, and only one is scarce
+
+There are two places a fact can live, and they have nothing to do with each other.
+
+| | Cap | How it is enforced |
+|---|---|---|
+| **The anchored panel**, the canonical document | **Hard 32** | `padToWidth` throws: *"33 entries do not fit a 32-slot tree"* |
+| **Provable fields**, `fieldCommitment` on chain | **No cap** | A `Map` keyed by `slotOf(vinHash, fieldKey, contentRoot)`; any field key at all |
+
+Verified by execution rather than by reading, because the whole shape of the registry depends on
+it: a field key in no panel slot was initialised, updated, had a decrease refused under
+`neverFalls`, and backed a proven claim; 41 such fields coexisted on one vehicle. Separately,
+`contentRoot` iterates slots 0 to 31 and reads names from `PANEL` only, so **twenty history
+fields left the root byte-identical** while changing one real panel field moved it.
+
+Two consequences, both load-bearing:
+
+- **Adding a history field re-anchors nothing.** No new root, no recompile, no redeploy, and every
+  passport already on chain stays valid.
+- **History does not belong in the panel.** The panel is the document a manufacturer hands over
+  under Annex V. A vehicle’s history is a stream of events that outlives whoever registered it.
+  The six remaining slots are therefore held for the Annex V / CoC alignment that
+  [REGULATION.md](REGULATION.md) flags as an open deliverable, plus `partsRemovalInfoRef` for
+  Article 11, which is one of the four items Art. 13(2) requires and which we do not yet carry.
+
+## The history set
+
+Fifty-one fields with no panel slot, covering what a buyer actually asks and what CARFAX, HPI and
+carVertical publish. Grouped as the catalogue groups them: title and legal status, ownership and
+use, odometer, roadworthiness, damage and repair, service, recalls, and specification. The
+authoritative list is `FIELDS` in [`scripts/lib/scenario.mjs`](../scripts/lib/scenario.mjs); it is
+not restated here, because a second copy of a list is a second thing to get wrong.
+
+Three rules shaped it:
+
+**Every history field is `neverFalls`.** History accumulates. A count of accidents, a date that
+moves forward, a bitmask that only ever gains bits. The specification block is `neverChanges`
+because it describes the vehicle as built.
+
+**A value that must be able to fall is restated as two that cannot.** Open recalls drops when one
+is fixed, so there is no such field: `recallIssuedCount` and `recallCompletedCount` are both
+monotone and open recalls is the difference. Outstanding finance is deliberately absent, being
+live lien data rather than a passport fact.
+
+**A provable value is `Uint<64>`, so a string cannot be one.** Make, model and body type are
+numeric codes against a published list and are provable like anything else. Free text, photos and
+a garage’s name stay in the document, bound by the content root.
+
+### Presence is public, so the set is written whole
+
+`slotOf` is an exported pure circuit over a public `vinHash` and a public `contentRoot`, so anyone
+can compute a slot for a candidate field name and ask whether this vehicle holds it. The field
+map therefore leaks **which** fields exist, though never their values.
+
+That is harmless for a field every vehicle carries and fatal for one only some do. If
+`floodDamageCount` were initialised only on cars that had flooded, **the existence of the field
+would be the disclosure** and hiding its value would protect nothing.
+
+> **A vehicle initialises the whole registry, zeros included, or none of it.**
+
+The panel already behaves this way, because absent leaves are still salted and still anchored. The
+field map does not, which is why the rule is written down rather than assumed.
+
+## What a field costs, and the one line that sets the price
+
+Each `initialiseField` **closes its transaction**, so N fields is N transactions. The cause is not
+the field write:
+
+```
+initialiseField  fieldCommitment.insert(slot, ...)   fresh key
+                 fieldRule.insert(slot, ...)         fresh key
+                 fieldWriter.insert(slot, writer)    fresh key
+                 updateCount.increment(1)            <- an already-populated cell
+```
+
+`updateCount` is a global `Counter`: one cell, always populated. The ledger refuses a
+populated-cell write when any later intent follows it in the same transaction, which is the bare
+`1010/188` in [DEMO-MODE.md](DEMO-MODE.md). `registerPassport` and `proveFieldAtMost` perform the
+same kind of fresh `Map` insert and **batch freely**, which is the evidence that the inserts are
+not what closes the transaction.
+
+Remove the counter and `initialiseField` is three fresh inserts, so up to `MAX_CALLS_PER_TX` ride
+together:
+
+| | Today | Without `updateCount` |
+|---|---|---|
+| 60 fields at registration | 60 transactions | 8 transactions |
+| Proving, paid per field either way | unchanged | unchanged |
+| Per-transaction submit and confirm | paid 60 times | paid 8 times |
+
+`updateCount` has no correctness role. Its only readers are display: the "Updates recorded" row in
+`site/assets/chain-sees.mjs`, a cell in `site/proofs/proofs.js`, and the README ledger table. An
+indexer can count field writes without it.
+
+`recordField` stays one per transaction whatever happens, because it genuinely overwrites
+`fieldCommitment`. That asymmetry suits the use case exactly: registration is a bulk event and
+lifetime updates arrive one at a time anyway.
+
+**Honesty note.** `initialiseField` proving time has never been measured; the 16.56s figure is
+`registerPassport`. Batching eight initialisations in one transaction has never been tried. The
+reasoning above is from the contract plus the observed behaviour of two circuits that write the
+same way, not from a measurement.
+
+## The question catalogue
+
+A field is only worth holding if somebody can ask a question of it. The questions are published in
+[`site/assets/claim-catalogue.mjs`](../site/assets/claim-catalogue.mjs) and read by all three
+surfaces: the verify page, the preprod planner and the simulator. Before it existed each kept its
+own hardcoded list of four, and they agreed by luck.
+
+A reader sees every question the passport **could** answer, and gets back `proven`, `superseded`
+or `not-proven`. Never a value. The unanswered questions are the point: they make declining to
+answer visible.
+
+Three properties of that list are not obvious and are tested in
+`test/app/claim-catalogue.test.mjs`:
+
+- **There is no proven no.** A failed proof writes nothing, so silence is the only other outcome.
+  A "no" exists only if someone deliberately proves the opposite direction.
+- **A bound of zero is a full disclosure.** `atMost 0` on a `Uint<64>` fixes the value at zero.
+  Most yes/no questions are that shape; they let the holder choose to reveal, they do not hide.
+- **Bounds are fixed standard rungs.** `claimKey` includes the bound, so answers accumulate and
+  never reset. A bespoke bound per enquiry is what narrows a value towards a point, so only the
+  two open-bound questions take a bound from the asker, and the test refuses a third.
+
+---
 
 ## Operational requirements
 

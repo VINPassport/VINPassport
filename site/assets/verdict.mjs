@@ -11,31 +11,61 @@
  * or it does not exist. This module never infers "clean" from silence: a
  * question with no claim behind it is `not-proven`, rendered as exactly that.
  *
+ * THE QUESTIONS THEMSELVES NOW COME FROM THE PUBLISHED CATALOGUE, so a buyer
+ * sees every question a passport COULD answer, not only the handful this file
+ * once hardcoded. Most will be `not-proven` on most vehicles, and that is the
+ * feature: it makes declining to answer visible.
+ *
  * SPDX-License-Identifier: Apache-2.0
  */
+import { CLAIM_CATALOGUE, CLAIM_GROUPS, boundFor } from './claim-catalogue.mjs';
 
 /**
- * The questions a buyer actually asks, in the order they ask them.
- * `bound` is the strictest bound that still answers the question; a claim
- * with a LOWER-or-equal bound in the same direction also answers it.
- * `bound: null` accepts any at-most claim on the field (a ceiling is the
- * answer; its size is shown rather than judged).
+ * The full catalogue, under the name this module has always exported.
+ * `bound` may be a bigint, null, or a moving threshold, so read it with
+ * `boundFor(q)` rather than directly.
  */
-export const QUESTIONS = [
-    { field: 'writeOffCategory', atMost: true, bound: 0n, label: 'Never written off' },
-    { field: 'accidentCount', atMost: true, bound: 0n, label: 'No reported accidents' },
-    { field: 'ownerCount', atMost: true, bound: 1n, label: 'One keeper from new' },
-    { field: 'odometerKm', atMost: true, bound: null, label: 'Mileage under a stated ceiling' }
-];
+export const QUESTIONS = CLAIM_CATALOGUE;
+
+export { CLAIM_GROUPS, boundFor };
 
 /** "150000" -> "150 000": thin-space grouping, no locale surprises. */
 export const formatNumber = (s) =>
-    String(s).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    String(s).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f');
+
+/** Epoch days back to a plain ISO date, which is how a date bound reads. */
+export const formatEpochDays = (days) =>
+    new Date(Number(days) * 86_400_000).toISOString().slice(0, 10);
 
 export const formatBound = (kind, bound) => {
+    if (kind === 'date') return formatEpochDays(bound);
     const n = formatNumber(bound);
     if (kind === 'km') return `${n} km`;
+    if (kind === 'pct') return `${n}%`;
+    if (kind === 'kg') return `${n} kg`;
+    if (kind === 'cc') return `${n} cc`;
+    if (kind === 'kw') return `${n} kW`;
+    if (kind === 'minutes') return `${n} min`;
     return n;
+};
+
+/**
+ * Does this claim answer this question?
+ *
+ * Direction has to match, because an upper bound and a lower bound are
+ * different statements about the same field. Then the claim must be at least
+ * as strong as the question asks: for a ceiling that means a bound at or
+ * below the threshold, for a floor at or above it.
+ *
+ * A question with a null bound accepts any claim in its direction, because
+ * its shape is "under a ceiling the asker names" and the bound is shown
+ * rather than judged.
+ */
+const answersIt = (q, claim, threshold) => {
+    if (Boolean(claim.atMost) !== Boolean(q.atMost)) return false;
+    if (threshold === null) return true;
+    const b = BigInt(claim.bound);
+    return q.atMost ? b <= threshold : b >= threshold;
 };
 
 /**
@@ -47,8 +77,10 @@ export const formatBound = (kind, bound) => {
  *   'superseded'  a claim answers it, but the field has moved on since: the
  *                 claim was true of an earlier version, ask for a fresh proof
  *   'not-proven'  no claim on the ledger answers it; this is NOT "no"
+ *
+ * `now` is injectable so a test can pin the moving date thresholds.
  */
-export function passportView(ledger, vinHex, vocabulary) {
+export function passportView(ledger, vinHex, vocabulary, now = Date.now()) {
     const contentRoot = ledger.passports[vinHex];
     if (!contentRoot) return { found: false };
 
@@ -62,20 +94,22 @@ export function passportView(ledger, vinHex, vocabulary) {
 
     const answers = QUESTIONS.map((q) => {
         const keyHex = nameToKey[q.field];
-        const candidates = mine.filter(
-            (c) =>
-                c.fieldKey === keyHex &&
-                c.atMost === q.atMost &&
-                (q.bound === null || BigInt(c.bound) <= q.bound)
-        );
+        const threshold = boundFor(q, now);
+        const candidates = keyHex
+            ? mine.filter((c) => c.fieldKey === keyHex && answersIt(q, c, threshold))
+            : [];
         if (candidates.length === 0) {
             return { ...q, status: 'not-proven', claim: null };
         }
         // Prefer a claim about the current value; among those, the tightest.
+        // Tightest means the LOWEST bound for a ceiling and the HIGHEST for a
+        // floor, which are the same idea pointing opposite ways.
         const ranked = [...candidates].sort((a, b) => {
             const cur = Number(isCurrent(b)) - Number(isCurrent(a));
             if (cur !== 0) return cur;
-            return BigInt(a.bound) < BigInt(b.bound) ? -1 : 1;
+            const [x, y] = [BigInt(a.bound), BigInt(b.bound)];
+            if (x === y) return 0;
+            return (q.atMost ? x < y : x > y) ? -1 : 1;
         });
         const best = ranked[0];
         return {
@@ -97,12 +131,28 @@ export function passportView(ledger, vinHex, vocabulary) {
             status: isCurrent(c) ? 'proven' : 'superseded'
         }));
 
+    // Grouped for display. A group that answers nothing is still carried,
+    // because the point of publishing the catalogue is that a reader can see
+    // which questions went unanswered.
+    const groups = CLAIM_GROUPS.map((g) => {
+        const qs = answers.filter((a) => a.group === g.id);
+        return {
+            ...g,
+            answers: qs,
+            proven: qs.filter((a) => a.status === 'proven').length,
+            total: qs.length
+        };
+    }).filter((g) => g.total > 0);
+
     return {
         found: true,
         contentRoot,
         registrar: ledger.registrar[vinHex] ?? null,
         answers,
+        groups,
         extras,
+        provenCount: answers.filter((a) => a.status === 'proven').length,
+        questionCount: answers.length,
         claimCount: mine.length
     };
 }

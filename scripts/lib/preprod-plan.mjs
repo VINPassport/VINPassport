@@ -9,6 +9,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import { webcrypto } from 'node:crypto';
+import { CLAIM_CATALOGUE, boundFor } from '../../site/assets/claim-catalogue.mjs';
 
 /**
  * Circuits that write a cell the ledger already holds.
@@ -32,13 +33,43 @@ export const CELL_UPDATING = new Set(['initialiseField', 'recordField']);
 export const MAX_CALLS_PER_TX = 8;      // nightgate-tx batch ceiling
 export const MAX_CALLS_PER_RUN = 12;    // bounds a run's wall clock
 
-/** The claims a console can request, mapped onto circuit calls. */
-export const CLAIM_DEFS = {
-    neverWrittenOff: { field: 'writeOffCategory', bound: () => 0n, label: 'Never written off' },
-    noAccidents: { field: 'accidentCount', bound: () => 0n, label: 'No reported accidents' },
-    oneKeeper: { field: 'ownerCount', bound: () => 1n, label: 'One keeper' },
-    mileageUnder: { field: 'odometerKm', bound: (v) => BigInt(v), label: 'Mileage under' }
-};
+/**
+ * The claims a console can request, mapped onto circuit calls.
+ *
+ * DERIVED FROM THE ONE CATALOGUE, not restated here. This list, the questions
+ * the verify page renders and the claims the simulator runs were three
+ * separate hardcoded fours that agreed by luck; they are now the same data.
+ * See site/assets/claim-catalogue.mjs.
+ *
+ *   atMost     which circuit proves it. A floor is proveFieldAtLeast, and
+ *              before this existed every requested claim was a ceiling, which
+ *              is why proveFieldAtLeast had never been submitted on chain.
+ *   openBound  the question names no rung, so the asker supplies the bound
+ *              ("under a ceiling you state"). Everything else uses the
+ *              catalogue's standard rung, which is what stops a bespoke bound
+ *              per enquiry narrowing the hidden value.
+ */
+export const CLAIM_DEFS = Object.fromEntries(CLAIM_CATALOGUE.map((q) => [q.id, {
+    field: q.field,
+    atMost: q.atMost,
+    openBound: q.bound === null,
+    openLabel: q.openLabel,
+    bound: (v) => (q.bound === null ? BigInt(v) : boundFor(q)),
+    label: q.label
+}]));
+
+/** Units for the questions whose bound the asker supplies. */
+const UNIT = { km: ' km', kg: ' kg', pct: '%', minutes: ' min', cc: ' cc', kw: ' kW' };
+
+/**
+ * A receipt label for a requested claim. An open-bound question has to carry
+ * the bound the asker named, because "Mileage under" says nothing on its own.
+ * `kind` comes from the field registry, which this module does not import.
+ */
+export const claimLabel = (def, wanted, kind) =>
+    def.openBound
+        ? `${def.openLabel ?? def.label} ${wanted}${UNIT[kind] ?? ''}`
+        : def.label;
 
 // Random demo VIN: real 17-char shape, VPD prefix marks it as a demo unit.
 const VIN_ALPHABET = 'ABCDEFGHJKLMNPRSTUVWXYZ0123456789'; // no I/O/Q
@@ -98,8 +129,13 @@ export function planCalls(intake) {
         }
     });
     for (const [claim, def] of Object.entries(CLAIM_DEFS)) {
-        const wanted = claim === 'mileageUnder' ? intake.prove?.mileageUnder : intake.prove?.[claim];
-        if (wanted) steps.push({ kind: 'claim', circuit: 'proveFieldAtMost', claim, name: def.field, bound: def.bound(wanted) });
+        const wanted = intake.prove?.[claim];
+        if (!wanted) continue;
+        steps.push({
+            kind: 'claim',
+            circuit: def.atMost ? 'proveFieldAtMost' : 'proveFieldAtLeast',
+            claim, name: def.field, bound: def.bound(wanted)
+        });
     }
     if (steps.length > MAX_CALLS_PER_RUN) {
         throw Object.assign(

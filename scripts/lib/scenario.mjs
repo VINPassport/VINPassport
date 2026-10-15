@@ -11,10 +11,16 @@ import {
     REGISTRAR_SECRET, DEALER_SECRET, DEALER_ID, GARAGE_SECRET, GARAGE_ID
 } from '../../test/passport-simulator.mjs';
 import { buildTree, padToWidth } from '@odatano/dpp-sdk/merkle';
+import { CLAIM_CATALOGUE, CLAIM_GROUPS, boundFor } from '../../site/assets/claim-catalogue.mjs';
 import { blake2b } from '@noble/hashes/blake2';
 import { randomBytes } from 'node:crypto';
 
 export { PassportSimulator, Rule, fieldKey, bytes32, hex };
+
+// Re-exported so a caller needs one import for "the registry and the
+// questions asked of it". The catalogue lives under site/assets because the
+// verify page loads it directly in a browser; this is the same file.
+export { CLAIM_CATALOGUE, CLAIM_GROUPS, boundFor };
 
 /**
  * The parties a registrar can hand the pen to in this demonstration.
@@ -84,7 +90,117 @@ export const FIELDS = {
     reusabilityPct:            { label: 'Reusability',          kind: 'pct',      rule: Rule.neverChanges },
     recyclabilityPct:          { label: 'Recyclability',        kind: 'pct',      rule: Rule.neverChanges },
     recoverabilityPct:         { label: 'Recoverability',       kind: 'pct',      rule: Rule.neverChanges },
-    dismantlingTimeMinutes:    { label: 'Dismantling time',     kind: 'minutes',  rule: Rule.neverChanges }
+    dismantlingTimeMinutes:    { label: 'Dismantling time',     kind: 'minutes',  rule: Rule.neverChanges },
+
+    // ---------------------------------------------------------------------
+    // THE HISTORY SET: slots 17 and up do not exist, and that is the point.
+    //
+    // Everything below is a PROVABLE FIELD WITHOUT A PANEL SLOT. The panel is
+    // capped at 32 and `contentRoot` reads names from PANEL only, so these
+    // contribute nothing to the root: adding them re-anchors nothing and
+    // leaves every existing passport valid. `fieldCommitment` is an unbounded
+    // Map keyed by slotOf(vinHash, fieldKey, contentRoot), so the number of
+    // provable fields was never capped; only the anchored document is.
+    //
+    // The division is not arbitrary. The PANEL is the canonical document the
+    // regulation asks a manufacturer to hand over. A vehicle's HISTORY is not
+    // document content: it is a stream of events that outlives the party that
+    // registered the car, and it belongs in the field map.
+    //
+    // PRESENCE IS PUBLIC, SO THE SET MUST BE WRITTEN WHOLE. `slotOf` is an
+    // exported pure circuit over a public vinHash and contentRoot, so anyone
+    // can probe whether a vehicle holds a given field. If floodDamageCount
+    // were initialised only on cars that flooded, the FIELD'S EXISTENCE would
+    // be the disclosure and hiding its value would protect nothing. A vehicle
+    // therefore initialises the whole registry, zeros included, or none of it.
+    // The panel already behaves this way ("absent leaves are still salted");
+    // the field map does not, which is why this is written down here.
+    //
+    // Rules follow from what each field IS, as above. Every history field is
+    // neverFalls because history accumulates: a count of accidents, a date
+    // that moves forward, a bitmask that only ever gains bits. The
+    // specification block is neverChanges because it describes the vehicle as
+    // built. Dates are EPOCH DAYS. Masks are integers whose bits are ordered
+    // by severity, so an `atMost` bound reads as "nothing worse than this".
+    // ---------------------------------------------------------------------
+
+    // Title and legal status
+    titleStatusMask:           { label: 'Title status',            kind: 'mask',  rule: Rule.neverFalls },
+    writeOffDate:              { label: 'Write-off recorded',      kind: 'date',  rule: Rule.neverFalls },
+    repairedAndReturnedDate:   { label: 'Repaired, back on road',  kind: 'date',  rule: Rule.neverFalls },
+    stolenRecordCount:         { label: 'Theft reports',           kind: 'count', rule: Rule.neverFalls },
+    recoveredRecordCount:      { label: 'Recovery records',        kind: 'count', rule: Rule.neverFalls },
+    scrapCertificateDate:      { label: 'Certificate of destruction', kind: 'date', rule: Rule.neverFalls },
+    exportMarkerCount:         { label: 'Export markers',          kind: 'count', rule: Rule.neverFalls },
+
+    // Ownership and use. No person appears here, and none ever should: a
+    // keeper's name on an immutable ledger could never be erased, which is
+    // why this records COUNTS AND DATES only. Belgium's Car-Pass has run on
+    // the same rule for twenty years.
+    keeperSinceDate:           { label: 'Current keeper since',    kind: 'date',  rule: Rule.neverFalls },
+    usageClassMask:            { label: 'Recorded uses',           kind: 'mask',  rule: Rule.neverFalls },
+    importStatus:              { label: 'Import status',           kind: 'code',  rule: Rule.neverFalls },
+    countryChangeCount:        { label: 'Country changes',         kind: 'count', rule: Rule.neverFalls },
+    plateChangeCount:          { label: 'Plate changes',           kind: 'count', rule: Rule.neverFalls },
+    colourChangeCount:         { label: 'Colour changes',          kind: 'count', rule: Rule.neverFalls },
+
+    // Odometer. The reading DATE is what makes a mileage claim mean anything:
+    // "under 150 000 km" is a different statement if it was read last week or
+    // in 2019.
+    odometerReadingDate:       { label: 'Odometer read on',        kind: 'date',  rule: Rule.neverFalls },
+    odometerReadingCount:      { label: 'Odometer readings',       kind: 'count', rule: Rule.neverFalls },
+    odometerSourceMask:        { label: 'Reading sources',         kind: 'mask',  rule: Rule.neverFalls },
+    odometerAnomalyCount:      { label: 'Odometer anomalies',      kind: 'count', rule: Rule.neverFalls },
+
+    // Roadworthiness
+    inspectionCount:           { label: 'Inspections',             kind: 'count', rule: Rule.neverFalls },
+    inspectionPassCount:       { label: 'Inspections passed',      kind: 'count', rule: Rule.neverFalls },
+    inspectionFailCount:       { label: 'Inspections failed',      kind: 'count', rule: Rule.neverFalls },
+    inspectionExpiryDate:      { label: 'Inspection valid until',  kind: 'date',  rule: Rule.neverFalls },
+    dangerousDefectCount:      { label: 'Dangerous defects',       kind: 'count', rule: Rule.neverFalls },
+    majorDefectCount:          { label: 'Major defects',           kind: 'count', rule: Rule.neverFalls },
+    advisoryCount:             { label: 'Advisories',              kind: 'count', rule: Rule.neverFalls },
+
+    // Damage and repair. Cost is BANDED rather than an amount: a precise
+    // repair bill is commercially sensitive and a band answers the question.
+    damageEventCount:          { label: 'Damage events',           kind: 'count', rule: Rule.neverFalls },
+    structuralRepairCount:     { label: 'Structural repairs',      kind: 'count', rule: Rule.neverFalls },
+    airbagDeploymentCount:     { label: 'Airbag deployments',      kind: 'count', rule: Rule.neverFalls },
+    floodDamageCount:          { label: 'Flood damage records',    kind: 'count', rule: Rule.neverFalls },
+    fireDamageCount:           { label: 'Fire damage records',     kind: 'count', rule: Rule.neverFalls },
+    hailDamageCount:           { label: 'Hail damage records',     kind: 'count', rule: Rule.neverFalls },
+    repairCount:               { label: 'Repairs recorded',        kind: 'count', rule: Rule.neverFalls },
+    partsReplacedCount:        { label: 'Parts replaced',          kind: 'count', rule: Rule.neverFalls },
+    maxRepairCostBandCode:     { label: 'Largest repair band',     kind: 'code',  rule: Rule.neverFalls },
+
+    // Service
+    lastServiceDate:           { label: 'Last service',            kind: 'date',  rule: Rule.neverFalls },
+    lastServiceOdometerKm:     { label: 'Odometer at last service', kind: 'km',   rule: Rule.neverFalls },
+    scheduledServiceMissedCount: { label: 'Scheduled services missed', kind: 'count', rule: Rule.neverFalls },
+    timingBeltReplacedDate:    { label: 'Timing belt replaced',    kind: 'date',  rule: Rule.neverFalls },
+
+    // Recalls. Two monotone counters rather than one "open recalls" that
+    // would have to FALL when a recall is fixed, which no rule here permits.
+    // Open recalls is the difference, and neither half can be walked back.
+    recallIssuedCount:         { label: 'Recalls issued',          kind: 'count', rule: Rule.neverFalls },
+    recallCompletedCount:      { label: 'Recalls completed',       kind: 'count', rule: Rule.neverFalls },
+
+    // Specification, as numeric codes against a published list. A provable
+    // value is Uint<64>, so a make or a body type cannot be a string here;
+    // an enumeration can, and then it is provable like anything else. Free
+    // text stays in the document, bound by the content root.
+    modelYear:                 { label: 'Model year',              kind: 'year',  rule: Rule.neverChanges },
+    makeCode:                  { label: 'Make',                    kind: 'code',  rule: Rule.neverChanges },
+    modelCode:                 { label: 'Model',                   kind: 'code',  rule: Rule.neverChanges },
+    bodyTypeCode:              { label: 'Body type',               kind: 'code',  rule: Rule.neverChanges },
+    transmissionCode:          { label: 'Transmission',            kind: 'code',  rule: Rule.neverChanges },
+    driveTypeCode:             { label: 'Drive type',              kind: 'code',  rule: Rule.neverChanges },
+    colourCodeAtFirstReg:      { label: 'Colour at first registration', kind: 'code', rule: Rule.neverChanges },
+    engineCapacityCc:          { label: 'Engine capacity',         kind: 'cc',    rule: Rule.neverChanges },
+    enginePowerKw:             { label: 'Engine power',            kind: 'kw',    rule: Rule.neverChanges },
+    seatCount:                 { label: 'Seats',                   kind: 'count', rule: Rule.neverChanges },
+    doorCount:                 { label: 'Doors',                   kind: 'count', rule: Rule.neverChanges },
+    kerbWeightKg:              { label: 'Kerb weight',             kind: 'kg',    rule: Rule.neverChanges }
 };
 
 export const K = Object.fromEntries(Object.keys(FIELDS).map((n) => [n, fieldKey(n)]));
@@ -273,15 +389,23 @@ export function applyIntake(sim, intake, salt) {
     }
     asRegistrar();
 
-    const CLAIMS = {
-        neverWrittenOff: () => sim.proveFieldAtMost(vin, K.writeOffCategory, 0n),
-        noAccidents:     () => sim.proveFieldAtMost(vin, K.accidentCount, 0n),
-        oneKeeper:       () => sim.proveFieldAtMost(vin, K.ownerCount, 1n),
-        mileageUnder:    () => sim.proveFieldAtMost(vin, K.odometerKm, BigInt(intake.prove.mileageUnder))
-    };
-    for (const [name, run] of Object.entries(CLAIMS)) {
-        const wanted = name === 'mileageUnder' ? intake.prove?.mileageUnder : intake.prove?.[name];
-        if (wanted) attempt(`prove ${name}`, run);
+    // Every question in the published catalogue, rather than a hardcoded four.
+    // An intake names a claim by its catalogue id. A question whose bound is
+    // null takes the bound from the request, because its whole shape is
+    // "under a ceiling the asker names"; everything else uses the standard
+    // rung, which is what stops a bespoke bound per enquiry narrowing the
+    // value. See site/assets/claim-catalogue.mjs.
+    //
+    // A claim whose field was never initialised is REFUSED by the circuit and
+    // lands in `refused`, which is the honest outcome: the question exists,
+    // this passport cannot answer it, and nothing is written.
+    for (const q of CLAIM_CATALOGUE) {
+        const wanted = intake.prove?.[q.id];
+        if (!wanted) continue;
+        const bound = q.bound === null ? BigInt(wanted) : boundFor(q);
+        attempt(`prove ${q.id}`, () => (q.atMost
+            ? sim.proveFieldAtMost(vin, K[q.field], bound)
+            : sim.proveFieldAtLeast(vin, K[q.field], bound)));
     }
 
     return { vinHex, applied, refused };

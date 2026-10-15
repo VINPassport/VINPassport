@@ -50,7 +50,7 @@ import {
     FIELDS, K, vinHash as vinHashOf, contentRoot, PANEL
 } from './scenario.mjs';
 import {
-    CLAIM_DEFS, planCalls, makeStage, stepLabel, makeWitnessHolder, randomDemoVin
+    CLAIM_DEFS, claimLabel, planCalls, makeStage, stepLabel, makeWitnessHolder, randomDemoVin
 } from './preprod-plan.mjs';
 import { preprodEndpoints, publicPreprodEndpoints, assertNoSecrets, guardLogs } from './endpoints.mjs';
 
@@ -865,7 +865,13 @@ export async function createRunner({ log = console.log } = {}) {
                             sim.recordField(vinBytes, K[s.name], s.value, salt);
                             s.writeIndex = ((writes[s.name] ??= []).push({ value: s.value, salt })) - 1;
                         } else if (s.kind === 'claim') {
-                            sim.proveFieldAtMost(vinBytes, K[s.name], s.bound);
+                            // Direction comes from the catalogue: a floor is a
+                            // different circuit, not a different bound.
+                            if (s.circuit === 'proveFieldAtLeast') {
+                                sim.proveFieldAtLeast(vinBytes, K[s.name], s.bound);
+                            } else {
+                                sim.proveFieldAtMost(vinBytes, K[s.name], s.bound);
+                            }
                             // Claims run last, so the write they open is the
                             // field's final one - fixed here, not at call time.
                             s.writeIndex = (writes[s.name]?.length ?? 0) - 1;
@@ -935,7 +941,8 @@ export async function createRunner({ log = console.log } = {}) {
             }
             const opened = writeAt(s.name, s.writeIndex);
             return {
-                circuitId: 'proveFieldAtMost', args: [vinBytes, K[s.name], s.bound],
+                circuitId: s.circuit === 'proveFieldAtLeast' ? 'proveFieldAtLeast' : 'proveFieldAtMost',
+                args: [vinBytes, K[s.name], s.bound],
                 before: arm(label, { pending: { value: 0n, salt: zero32() }, prev: { ...opened } })
             };
         };
@@ -1400,10 +1407,10 @@ export async function createRunner({ log = console.log } = {}) {
             fields: Object.fromEntries(Object.entries(writes).map(([name, ws]) => [name, ws.map((w, i) => ({ writeIndex: i, value: w.value.toString(), salt: hex(w.salt) }))])),
             panel: intake.panel ?? {},
             claims: (intake.prove ? Object.entries(CLAIM_DEFS) : []).flatMap(([claim, def]) => {
-                const wanted = claim === 'mileageUnder' ? intake.prove?.mileageUnder : intake.prove?.[claim];
+                const wanted = intake.prove?.[claim];
                 if (!wanted) return [];
                 const wasRefused = refused.some((r) => r.step.startsWith(`prove ${claim}`));
-                return [{ claim, label: def.label + (claim === 'mileageUnder' ? ` ${wanted} km` : ''), outcome: wasRefused ? 'refused in-circuit - nothing written' : 'proven on-chain' }];
+                return [{ claim, label: claimLabel(def, wanted, FIELDS[def.field]?.kind), outcome: wasRefused ? 'refused in-circuit - nothing written' : 'proven on-chain' }];
             }),
             refused,
             onChain: stagesOut,
@@ -1617,7 +1624,7 @@ export async function createRunner({ log = console.log } = {}) {
         return {
             vin: randomDemoVin(),
             registrar: 'passport.vin-demo',
-            fields: { odometerKm: base, accidentCount: 0, ownerCount: 2 },
+            fields: { odometerKm: base, accidentCount: 0, ownerCount: 2, serviceCount: 6 },
             panel: {
                 vehicleCategory: 'M1', fuelType: pick(['bev', 'petrol', 'hybrid']),
                 firstRegistrationDate: 19_700 + Math.floor(Math.random() * 1_000),
@@ -1637,7 +1644,10 @@ export async function createRunner({ log = console.log } = {}) {
             }],
             // oneKeeper is DESIGNED to refuse (two keepers): the guided run
             // shows a refusal being caught in-circuit and reported, not hidden.
-            prove: { noAccidents: true, oneKeeper: true, mileageUnder: 150_000 }
+            // fourServices is a FLOOR, so it runs proveFieldAtLeast. Every
+            // other demo claim is a ceiling, which is why that circuit had
+            // never reached the chain despite being compiled and tested.
+            prove: { noAccidents: true, oneKeeper: true, mileageUnder: 150_000, fourServices: true }
         };
     }
 
@@ -1661,10 +1671,12 @@ export async function createRunner({ log = console.log } = {}) {
             return out;
         }).filter((r) => Object.keys(r).length);
         const prove = {};
-        for (const claim of Object.keys(CLAIM_DEFS)) {
-            if (claim === 'mileageUnder') {
-                const m = Number(body.prove?.mileageUnder);
-                if (Number.isInteger(m) && m > 0 && m <= 10_000_000) prove.mileageUnder = m;
+        for (const [claim, def] of Object.entries(CLAIM_DEFS)) {
+            if (def.openBound) {
+                // The asker names the ceiling, so it is a number and is range
+                // checked. Every other question uses its standard rung.
+                const m = Number(body.prove?.[claim]);
+                if (Number.isInteger(m) && m > 0 && m <= 10_000_000) prove[claim] = m;
             } else if (body.prove?.[claim]) prove[claim] = true;
         }
         const panel = {};

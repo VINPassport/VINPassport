@@ -78,9 +78,11 @@ function rowsFor(view, secondary = false, ctx = null) {
         openAt = all.findIndex((a) => a.field === 'odometerKm' && a.status !== 'not-proven');
         if (openAt === -1) openAt = all.findIndex((a) => a.status !== 'not-proven');
     }
-    return all.map((a, i) => {
+    const openRow = all[openAt] ?? null;
+
+    const claimRow = (a) => {
         const proven = a.status !== 'not-proven';
-        const open = i === openAt;
+        const open = a === openRow;
         const mark = proven ? TICK : '<span class="none"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12h14"></path></svg></span>';
         const name = proven
             ? `<b style="display:block;font-size:15.5px">${esc(qLabel(a, a.claim))}</b>`
@@ -94,7 +96,37 @@ function rowsFor(view, secondary = false, ctx = null) {
         <div style="flex:1;min-width:0">${name}<span style="font-size:12px;color:rgba(14,23,38,.62)">${esc(qSub(a))}</span></div>
         <span class="mono vp-toggle" aria-hidden="true" style="flex:none;font-size:12px;color:rgba(14,23,38,.62)"></span>
       </div></summary>${detailBlock(a, ctx)}</details>`;
-    }).join('\n');
+    };
+
+    // Grouped, and every group is shown even when it answers nothing.
+    //
+    // THE UNANSWERED GROUPS ARE THE POINT. A buyer is entitled to see the
+    // whole list of questions this passport could answer, not only the ones
+    // the seller chose to answer, because a question nobody answered is the
+    // thing worth asking about. They are collapsed rather than hidden: the
+    // tally on the summary states the score before anything is opened.
+    const groupBlock = (label, items, proven, forceOpen) => {
+        const total = items.length;
+        const done = proven === total && total > 0;
+        const tally = total === 0 ? 'none'
+            : done ? `all ${total} answered`
+                : `${proven} of ${total} answered`;
+        return `<details class="vp-group"${forceOpen || proven > 0 ? ' open' : ''}><summary>
+      <div class="vp-group-head">
+        <b>${esc(label)}</b>
+        <span class="vp-group-tally${proven > 0 ? ' is-some' : ''}">${esc(tally)}</span>
+        <span class="mono vp-toggle" aria-hidden="true"></span>
+      </div></summary>${items.map(claimRow).join('\n')}</details>`;
+    };
+
+    const sections = (view.groups ?? []).map((g) => groupBlock(g.label, g.answers, g.proven, false));
+    if (extras.length) {
+        // Anything on the ledger that no catalogue question covers. Shown
+        // open, because an unrecognised claim is exactly what a reader must
+        // not have to go looking for.
+        sections.push(groupBlock('Other claims on this ledger', extras, extras.length, true));
+    }
+    return sections.join('\n');
 }
 
 function scoreBand(view, secondary) {

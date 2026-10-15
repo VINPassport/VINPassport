@@ -16,31 +16,64 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { passportView, formatBound, formatNumber, QUESTIONS } from '../../site/assets/verdict.mjs';
+import { passportView, formatBound, formatNumber, QUESTIONS, boundFor } from '../../site/assets/verdict.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const ledger = JSON.parse(readFileSync(join(ROOT, 'site', 'verify', 'demo-data.json'), 'utf8'));
 const vocabulary = JSON.parse(readFileSync(join(ROOT, 'site', 'verify', 'fields.json'), 'utf8'));
 
 const [A, B] = vocabulary.demoVehicles.map((v) => v.vinHash);
+// Keyed by catalogue id, not by field: several questions ask about the same
+// field at different bounds, so a field is no longer a unique key.
 const answers = (vin) => {
     const view = passportView(ledger, vin, vocabulary);
     assert.equal(view.found, true);
-    return Object.fromEntries(view.answers.map((a) => [a.field, a]));
+    return Object.fromEntries(view.answers.map((a) => [a.id, a]));
 };
+
+// The questions vehicle A's four claims answer. Six, not four, because a
+// claim answers every question it is strong enough for: see the test below.
+const A_PROVEN = [
+    'neverWrittenOff', 'notStructuralWriteOff',
+    'noAccidents', 'oneKeeper', 'atMostThreeKeepers', 'mileageUnder'
+];
 
 // ---------------------------------------------------------------- vehicle A
 
-test('vehicle A: every buyer question is proven against the current record', () => {
+test('vehicle A: the questions its claims answer are proven', () => {
     const a = answers(A);
-    for (const q of QUESTIONS) {
-        assert.equal(a[q.field].status, 'proven', `${q.field} should be proven`);
+    for (const id of A_PROVEN) {
+        assert.equal(a[id].status, 'proven', `${id} should be proven`);
     }
+});
+
+test('the whole catalogue is published, and everything unclaimed is not-proven', () => {
+    const a = answers(A);
+    // The point of publishing the catalogue is that a reader sees the
+    // questions NOBODY answered, so there must be many of them here.
+    assert.ok(QUESTIONS.length > 25, `catalogue is only ${QUESTIONS.length} questions`);
+    assert.equal(Object.keys(a).length, QUESTIONS.length);
+    for (const q of QUESTIONS) {
+        if (A_PROVEN.includes(q.id)) continue;
+        assert.equal(a[q.id].status, 'not-proven',
+            `${q.id} has no claim behind it and must read as not-proven`);
+        assert.equal(a[q.id].claim, null, `${q.id} must carry no claim to mis-render`);
+    }
+});
+
+test('a claim answers every question it is strong enough for', () => {
+    const a = answers(A);
+    // One ledger claim, writeOffCategory at most 0, answers both the strict
+    // question and the looser one. Nothing extra was proven or paid for.
+    assert.equal(a.neverWrittenOff.claim.key, a.notStructuralWriteOff.claim.key);
+    assert.equal(a.neverWrittenOff.claim.bound, '0');
+    // ...and the same claim does NOT answer a question about another field.
+    assert.equal(a.cleanTitle.status, 'not-proven');
 });
 
 test('vehicle A: the mileage verdict carries its public bound, never a reading', () => {
     const a = answers(A);
-    assert.equal(a.odometerKm.claim.bound, '150000');
+    assert.equal(a.mileageUnder.claim.bound, '150000');
     // The reading (83 260 km) exists only in the generating process. If it
     // were anywhere in the exported ledger, the demo would be a lie.
     assert.ok(!JSON.stringify(ledger).includes('83260'));
@@ -50,17 +83,17 @@ test('vehicle A: the mileage verdict carries its public bound, never a reading',
 
 test('vehicle B: unproven questions are not-proven, never inferred as a no', () => {
     const b = answers(B);
-    assert.equal(b.writeOffCategory.status, 'not-proven');
-    assert.equal(b.accidentCount.status, 'not-proven');
-    assert.equal(b.ownerCount.status, 'not-proven');
+    assert.equal(b.neverWrittenOff.status, 'not-proven');
+    assert.equal(b.noAccidents.status, 'not-proven');
+    assert.equal(b.oneKeeper.status, 'not-proven');
     // ...while the claim it DID prove renders as proven.
-    assert.equal(b.odometerKm.status, 'proven');
-    assert.equal(b.odometerKm.claim.bound, '200000');
+    assert.equal(b.mileageUnder.status, 'proven');
+    assert.equal(b.mileageUnder.claim.bound, '200000');
 });
 
 test('vehicle B: a not-proven question carries no claim to mis-render', () => {
     const b = answers(B);
-    assert.equal(b.writeOffCategory.claim, null);
+    assert.equal(b.neverWrittenOff.claim, null);
 });
 
 // ---------------------------------------------------------------- supersession
@@ -116,10 +149,39 @@ test('a claim outside the standard questions still surfaces as an extra', () => 
 test('every ledger claim is either an answer or an extra, and none vanish', () => {
     for (const vin of [A, B]) {
         const view = passportView(ledger, vin, vocabulary);
-        const shown =
-            view.answers.filter((a) => a.claim).length + view.extras.length;
-        assert.equal(shown, view.claimCount);
+        // Counted by DISTINCT claim key, because one claim can answer several
+        // questions. The invariant is that no claim on the ledger goes
+        // unshown, not that claims and rows are one to one.
+        const shown = new Set([
+            ...view.answers.filter((a) => a.claim).map((a) => a.claim.key),
+            ...view.extras.map((x) => x.claim.key)
+        ]);
+        assert.equal(shown.size, view.claimCount);
     }
+});
+
+test('groups cover every question exactly once', () => {
+    const view = passportView(ledger, A, vocabulary);
+    const grouped = view.groups.flatMap((g) => g.answers.map((a) => a.id));
+    assert.equal(grouped.length, view.answers.length);
+    assert.equal(new Set(grouped).size, grouped.length);
+    // Each group reports its own tally, which is what the page prints.
+    for (const g of view.groups) {
+        assert.equal(g.total, g.answers.length);
+        assert.equal(g.proven, g.answers.filter((a) => a.status === 'proven').length);
+    }
+});
+
+test('a moving date threshold expires a claim rather than carrying it forever', () => {
+    // "Serviced within the last 12 months" is a floor at today less 365 days.
+    // The same claim must answer it now and stop answering it later, or the
+    // page would call a 2019 service recent in 2031.
+    const q = QUESTIONS.find((x) => x.id === 'servicedRecently');
+    const dayMs = 86_400_000;
+    const now = Date.UTC(2026, 9, 15);
+    const near = boundFor(q, now);
+    const far = boundFor(q, now + 400 * dayMs);
+    assert.ok(far > near, 'the threshold must move forward with time');
 });
 
 // ---------------------------------------------------------------- formatting
