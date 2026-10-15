@@ -61,6 +61,41 @@ const SHOTS_SPEC = [
         })()`
     },
     {
+        name: 'c9-writers',
+        // The console only: this one needs `npm run app`, because the page
+        // is static but the writer identities are the server's.
+        path: '/intake/',
+        element: 'section:has(.wrt)',
+        prepare: `(async () => {
+            // Retrofit records carry later updates; a new vehicle starts at
+            // zero and has none, so there would be nothing to attribute.
+            const type = [...document.querySelectorAll('section')]
+                .find((s) => /PASSPORT TYPE/.test(s.textContent));
+            const labels = type ? [...type.querySelectorAll('label')] : [];
+            if (labels[1]) labels[1].click();
+            await new Promise((r) => setTimeout(r, 200));
+            const picker = document.querySelector('select');
+            if (picker && picker.options.length > 1) {
+                picker.value = picker.options[1].value;
+                picker.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            await new Promise((r) => setTimeout(r, 200));
+            const dealer = document.querySelector('.wrt[data-writer="dealership"]');
+            if (!dealer) return { error: 'the writer control is not on the page' };
+            dealer.click();
+            await new Promise((r) => setTimeout(r, 250));
+            if (document.getElementById('writerby').hidden) {
+                return { error: 'the "written by" row did not appear' };
+            }
+            // Show it attributing the updates, which is the point of the row.
+            const by = document.getElementById('wby');
+            by.value = 'dealership';
+            by.dispatchEvent(new Event('change', { bubbles: true }));
+            if (by.value !== 'dealership') return { error: 'the writer could not be selected' };
+            return { ok: true };
+        })()`
+    },
+    {
         name: 'v13-written-by',
         path: '/verify/?src=demo',
         element: '.vfy-claims-on-ledger',

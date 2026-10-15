@@ -165,7 +165,21 @@
   </section>
 
   <section style="margin-bottom:30px">
-    <div class="sect"><span class="snum">06</span><h2 class="stitle">WHERE THIS RUNS</h2><span class="smeta">local circuits, or Midnight preprod</span></div>
+    <div class="sect"><span class="snum">06</span><h2 class="stitle">WHO ELSE MAY WRITE THIS VEHICLE</h2><span class="smeta">authoriseWriter</span></div>
+    <p style="margin:0 0 12px;font-size:13px;line-height:1.6;max-width:62ch;color:rgba(14,23,38,.8)">A car outlives the party that registered it. Hand the right to write <b>this one vehicle</b> to a dealership or a garage, and take it back later. The integrity rule does not move with it: an authorised writer can raise the odometer and still cannot lower it.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px 16px">
+      <label class="wrt" data-writer="dealership" style="display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border:1px solid rgba(0,74,173,.28);cursor:pointer"><span style="flex:none;width:16px;height:16px;border:1px solid rgba(0,74,173,.4);display:grid;place-items:center;margin-top:1px"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" style="visibility:hidden"><path d="M20 6L9 17l-5-5"></path></svg></span><span><b style="font-size:14px">A dealership</b><small style="display:block;font-size:11.5px;color:rgba(14,23,38,.62)">Records the handover when the car is sold on</small></span></label>
+      <label class="wrt" data-writer="service garage" style="display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border:1px solid rgba(0,74,173,.28);cursor:pointer"><span style="flex:none;width:16px;height:16px;border:1px solid rgba(0,74,173,.4);display:grid;place-items:center;margin-top:1px"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" style="visibility:hidden"><path d="M20 6L9 17l-5-5"></path></svg></span><span><b style="font-size:14px">A service garage</b><small style="display:block;font-size:11.5px;color:rgba(14,23,38,.62)">Records services and the mileage at each one</small></span></label>
+    </div>
+    <div id="writerby" hidden style="margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:9px">
+      <label class="lbl" for="wby" style="margin:0">The later updates are written by</label>
+      <select id="wby" class="inp" style="width:auto;min-width:200px"><option value="">the registering authority</option></select>
+    </div>
+    <p style="margin:11px 0 0;font-size:12px;line-height:1.55;color:rgba(14,23,38,.62)">Only the registrar of a vehicle may authorise a writer for it, and the circuit checks that rather than trusting the console. <b>No secret leaves your machine:</b> the page sends a name, and the identity behind it is derived in-circuit from a secret this process holds.</p>
+  </section>
+
+  <section style="margin-bottom:30px">
+    <div class="sect"><span class="snum">07</span><h2 class="stitle">WHERE THIS RUNS</h2><span class="smeta">local circuits, or Midnight preprod</span></div>
     <label id="ppwrap" style="display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid rgba(0,74,173,.28);cursor:pointer">
       <span id="ppbox" style="flex:none;width:16px;height:16px;border:1px solid rgba(0,74,173,.4);display:grid;place-items:center;margin-top:2px"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" style="visibility:hidden"><path d="M20 6L9 17l-5-5"></path></svg></span>
       <span style="flex:1 1 260px;min-width:0"><b style="font-size:14px">Submit to Midnight preprod</b><small id="ppnote" style="display:block;margin-top:3px;font-size:12px;line-height:1.55;color:rgba(14,23,38,.62)">Off: the compiled circuits run here and the result is local. On: the fields below become real transactions on the deployed contract, funded from our wallet, ending in a receipt only you can open. The VIN is replaced with a generated demo one, so a real vehicle is never claimed on a test chain.</small></span>

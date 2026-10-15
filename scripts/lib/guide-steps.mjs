@@ -24,6 +24,10 @@ export const CREATE = [
  'Tick the questions you want this passport to be able to answer. Each one becomes a separate proof.',
  'A claim is <b>a question with a bound, not a value</b>. Proving "no reported accidents" publishes the bound and a commitment; it never publishes the count. Tick only what a buyer will actually ask, because each claim is a real proof with a real cost, and an unasked question is better left unanswered than answered expensively.'],
 
+['c9-writers', 'Decide who else may write this vehicle',
+ 'Tick a dealership, a service garage, or neither. If the record carries later updates, choose which of them wrote those.',
+ 'A car outlives the party that registered it, and a passport that only its first author can touch stops being true the day the car is sold. The registrar can hand the right to write <b>one vehicle</b> to another party and withdraw it again, and the circuit enforces both: only that vehicle’s registrar may authorise, and a party who was never authorised cannot write however the request is made. <b>The rule does not move with the pen.</b> An authorised dealership can raise the odometer and still cannot lower it, because the rule was fixed when the field was created. Nothing secret leaves this page: it sends the <i>name</i> of a party, and the identity behind it is derived inside the circuit from a secret the console process holds.'],
+
 ['c6-where-and-run', 'Choose where it runs, then register and prove',
  'Local circuits run the real compiled contract on this machine, with no fees and no network. Preprod submits to the Midnight test network. Then press <b>REGISTER &amp; PROVE</b>.',
  'Both options run the same circuits, so a local run proves exactly the same things about the record. What it does not do is leave a public trace. Choose preprod only when you want that trace, because <b>those writes are permanent</b>: a VIN can never be registered twice, and a field is initialised once with its rule fixed at that moment.'],

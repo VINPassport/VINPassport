@@ -33,7 +33,8 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, normalize } from 'node:path';
 import {
-    PassportSimulator, buildDemoVehicles, applyIntake, exportLedger, vocabulary, saltStream
+    PassportSimulator, buildDemoVehicles, applyIntake, exportLedger, vocabulary, saltStream,
+    DEMO_WRITERS, CONSOLE_REGISTRAR_SECRET
 } from './lib/scenario.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -137,7 +138,32 @@ async function handleIntake(req, res) {
     for (const req of ['vin', 'registrar', 'fields']) {
         if (!intake[req]) return json(res, 400, { error: `missing "${req}"` });
     }
-    const result = applyIntake(sim, intake, salt);
+
+    // Delegation arrives as LABELS and is resolved here, against identities
+    // this process holds. A console that accepted a writer's secret over HTTP
+    // would hand anyone the ability to write as that party, which is the
+    // opposite of what a per-vehicle writer list is for. An unknown label is
+    // refused rather than ignored: silently dropping it would produce a run
+    // that looks delegated and is not.
+    const asked = Array.isArray(intake.authorise) ? intake.authorise : [];
+    const writers = [];
+    for (const label of asked) {
+        const w = DEMO_WRITERS[String(label)];
+        if (!w) return json(res, 400, { error: `unknown writer "${label}"` });
+        if (!writers.some((x) => x.label === w.label)) writers.push(w);
+    }
+    for (const round of intake.updates ?? []) {
+        const by = round?.by;
+        if (by && !writers.some((x) => x.label === by)) {
+            return json(res, 400, { error: `"${by}" writes an update but was never authorised` });
+        }
+    }
+
+    const result = applyIntake(
+        sim,
+        { ...intake, writers, registrarSecret: CONSOLE_REGISTRAR_SECRET },
+        salt
+    );
     if (!vehicles.some((v) => v.vinHash === result.vinHex) &&
         result.applied.includes('registerPassport')) {
         vehicles.push({

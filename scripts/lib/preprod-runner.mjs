@@ -144,8 +144,8 @@ export async function createRunner({ log = console.log } = {}) {
     // without it: there would be nothing to prove authority with.
     const registrarFile = process.env.VINPASSPORT_REGISTRAR_FILE
         ?? join(ROOT, '..', '_local-tracking', 'REGISTRAR-SECRETS.env');
-    const readRegistrar = (key) => {
-        const prefix = `VINPASSPORT_REGISTRAR_A_${key}_HEX=`;
+    const readRegistrar = (key, who = 'A') => {
+        const prefix = `VINPASSPORT_REGISTRAR_${who}_${key}_HEX=`;
         const line = readFileSync(registrarFile, 'utf8').split(/\r?\n/).find((l) => l.startsWith(prefix));
         const value = line?.slice(prefix.length).trim();
         if (!/^[0-9a-f]{64}$/.test(value ?? '')) {
@@ -161,6 +161,17 @@ export async function createRunner({ log = console.log } = {}) {
     }
     const registrarSecret = readRegistrar('SECRET');
     const registrarIdBytes = readRegistrar('ID');
+
+    // The dealership in the guided run. Registrar C is a listed authority but
+    // it is NOT the registrar of any vehicle this demo creates, so when it
+    // writes a field the only thing permitting that is the per-vehicle writer
+    // entry registrar A inserted for it. That is the property worth showing on
+    // chain: delegation, not registrar-ness. Optional, because a registrar
+    // file with only A in it should still run everything else.
+    let dealer = null;
+    try {
+        dealer = { label: 'dealership', secret: readRegistrar('SECRET', 'C'), id: readRegistrar('ID', 'C') };
+    } catch { /* no C in the file: the run simply does not delegate */ }
     const seedHex = readFileSync(seedFile, 'utf8')
         .split(/\r?\n/).find((l) => l.startsWith('VINPASSPORT_SEED_HEX='))?.slice(21).trim();
     if (!seedHex || seedHex.length !== 128) throw new Error('seed file does not hold VINPASSPORT_SEED_HEX=<128 hex>');
@@ -834,7 +845,14 @@ export async function createRunner({ log = console.log } = {}) {
             for (const stage of plan.stages) {
                 stage.steps = stage.steps.filter((s) => {
                     try {
+                        // Act as whoever this step acts as, then put the
+                        // registrar back. A delegated write that the chain
+                        // would refuse must be refused here too, and a
+                        // registrar-only call that followed a delegated one
+                        // must not inherit the delegate's identity.
+                        sim.actAs(s.by === dealer?.label ? dealer.secret : registrarSecret);
                         if (s.kind === 'register') sim.registerPassport(vinBytes, croot);
+                        else if (s.kind === 'authorise') sim.authoriseWriter(vinBytes, s.writerId);
                         else if (s.kind === 'init') {
                             if (!(s.name in FIELDS)) throw new Error('unknown field');
                             const salt = saltOf(s.name, 0);
@@ -886,6 +904,14 @@ export async function createRunner({ log = console.log } = {}) {
                     before: arm(label, { pending: { value: 0n, salt: zero32() }, prev: { value: 0n, salt: zero32() } })
                 };
             }
+            if (s.kind === 'authorise') {
+                // Only the vehicle's registrar may authorise, so this one is
+                // never delegated.
+                return {
+                    circuitId: 'authoriseWriter', args: [vinBytes, s.writerId],
+                    before: arm(label, { pending: { value: 0n, salt: zero32() }, prev: { value: 0n, salt: zero32() } })
+                };
+            }
             if (s.kind === 'init') {
                 const w = writeAt(s.name, 0);
                 return {
@@ -898,7 +924,13 @@ export async function createRunner({ log = console.log } = {}) {
                 const w = writeAt(s.name, s.writeIndex);
                 return {
                     circuitId: 'recordField', args: [vinBytes, K[s.name]],
-                    before: arm(label, { pending: { ...w }, prev: { ...prev } })
+                    // A delegated write proves under the writer's own secret,
+                    // so the identity the circuit derives is the dealership's
+                    // and the ledger records it against the field.
+                    before: arm(label, {
+                        pending: { ...w }, prev: { ...prev },
+                        secret: s.by === dealer?.label ? dealer.secret : undefined
+                    })
                 };
             }
             const opened = writeAt(s.name, s.writeIndex);
@@ -1592,7 +1624,17 @@ export async function createRunner({ log = console.log } = {}) {
                 co2FootprintKgCO2e: 7_000 + Math.floor(Math.random() * 4_000),
                 recycledPlasticPct: 20 + Math.floor(Math.random() * 15)
             },
-            updates: [{ odometerKm: base + 12_000 + Math.floor(Math.random() * 20_000) }],
+            // The vehicle changes hands. Registrar A registered it; the
+            // dealership is handed the right to write THIS vehicle and then
+            // records the reading at handover under its own identity. Both
+            // circuits land on chain, and the update still has to satisfy the
+            // rule fixed when the field was created: delegation hands over the
+            // pen, never the right to break the rule.
+            ...(dealer ? { authorise: [{ label: dealer.label, id: dealer.id }] } : {}),
+            updates: [{
+                odometerKm: base + 12_000 + Math.floor(Math.random() * 20_000),
+                ...(dealer ? { by: dealer.label } : {})
+            }],
             // oneKeeper is DESIGNED to refuse (two keepers): the guided run
             // shows a refusal being caught in-circuit and reported, not hidden.
             prove: { noAccidents: true, oneKeeper: true, mileageUnder: 150_000 }

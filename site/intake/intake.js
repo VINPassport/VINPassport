@@ -180,11 +180,56 @@ claimLabels.forEach((label, i) => {
     });
 });
 
+// ------------------------------------------------- who else may write it
+//
+// The page holds LABELS and nothing else. The identity behind a label, and
+// the secret that proves it in-circuit, stay on the server: a console that
+// handled a writer's secret would be handing it to every viewer, which is
+// the opposite of what a per-vehicle writer list is for.
+const writerLabels = [...document.querySelectorAll('.wrt')];
+const writerBy = $('writerby');
+const bySelect = $('wby');
+const authorised = new Set();
+
+const paintWriters = () => {
+    for (const label of writerLabels) {
+        const on = authorised.has(label.dataset.writer);
+        const box = label.querySelector('span');
+        label.style.border = on ? '1px solid #004AAD' : '1px solid rgba(0,74,173,.28)';
+        label.style.background = on ? 'rgba(0,74,173,.07)' : 'transparent';
+        box.style.background = on ? '#004AAD' : 'transparent';
+        box.style.color = on ? '#EDE4D8' : 'inherit';
+        box.style.border = on ? 'none' : '1px solid rgba(0,74,173,.4)';
+        box.querySelector('svg').style.visibility = on ? 'visible' : 'hidden';
+    }
+    // Choosing who writes only means something when there is an update to
+    // write and somebody authorised to write it.
+    const updates = selected?.updates?.length ?? 0;
+    const offer = authorised.size > 0 && updates > 0;
+    writerBy.hidden = !offer;
+    const keep = bySelect.value;
+    bySelect.innerHTML = '<option value="">the registering authority</option>'
+        + [...authorised].map((w) => `<option value="${w}">the ${w}</option>`).join('');
+    bySelect.value = authorised.has(keep) ? keep : '';
+};
+
+writerLabels.forEach((label) => {
+    label.addEventListener('click', () => {
+        const who = label.dataset.writer;
+        authorised.has(who) ? authorised.delete(who) : authorised.add(who);
+        paintWriters();
+        paintCircuitCount();
+    });
+});
+
 function paintCircuitCount() {
     const updates = selected?.updates?.length ?? 0;
-    const n = 1 + 5 + updates + claimState.filter(Boolean).length;
+    // Each authorisation is a circuit call of its own, so the count has to
+    // know about them or it understates what the run will do.
+    const n = 1 + 5 + updates + authorised.size + claimState.filter(Boolean).length;
     circuitsNote.textContent = `${n} circuits will run`;
 }
+paintWriters();
 paintCircuitCount();
 
 // ---------------------------------------------------------------- fill
@@ -217,6 +262,7 @@ function fillForm(v) {
     claimState[3] = v.prove.mileageUnder > 0;
     if (v.prove.mileageUnder > 0) mileageInput.value = v.prove.mileageUnder;
     claimState.forEach((_, i) => paintClaim(i));
+    paintWriters();
     paintCircuitCount();
 }
 
@@ -227,6 +273,7 @@ picker.addEventListener('change', () => {
         fillForm(v);
         expectBox.textContent = v.expect.replace(/^Expect: /, '');
     }
+    paintWriters();
     paintCircuitCount();
 });
 
@@ -243,7 +290,12 @@ function buildIntake() {
             writeOffCategory: Number($('wo').value),
             serviceCount: Number($('sv').value)
         },
-        updates: selected?.updates ?? [],
+        // Labels only. The server resolves each to an identity it holds.
+        authorise: [...authorised],
+        updates: (selected?.updates ?? []).map((round) =>
+            (bySelect.value && authorised.has(bySelect.value))
+                ? { ...round, by: bySelect.value }
+                : round),
         prove: {
             neverWrittenOff: claimState[0],
             noAccidents: claimState[1],

@@ -494,6 +494,20 @@ registers vehicle A, a service garage records two services, and the selling deal
 reading at handover. `/verify/` names the party that last wrote the field behind each claim, and
 the mileage claim on that vehicle resolves to the dealership rather than the manufacturer.
 
+**On chain, 15 October 2026.** The guided run now authorises a writer and lets it write, in one
+transaction: `a2550dd87a9ff5ddee9b82d02aafd0e49dbb081ec073c9ab2d6c491d2d4c1210`, block 2984363,
+carrying `authoriseWriter` followed by a `recordField` proved under the dealership's own secret.
+The dealership is registrar C, a listed authority that is **not** the registrar of that vehicle,
+so the only thing permitting the write is the per-vehicle entry registrar A inserted for it. That
+distinction is the point: it demonstrates delegation rather than registrar-ness.
+
+Two consequences inside the runner. A run used to act as one identity throughout, so the witness
+served one registrar secret for its whole life; the secret is now armed per call alongside the
+value pair. And the intake console can ask for it: it sends the NAME of a party, never a secret,
+and the server resolves that against identities it holds. A console that accepted a writer's
+secret over HTTP would hand every viewer the ability to write as that party, which is the
+opposite of what a per-vehicle writer list is for.
+
 ## Reversed
 
 Recorded so they are not accidentally reinstated.

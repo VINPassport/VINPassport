@@ -50,9 +50,10 @@ export const randomDemoVin = () => {
 
 export const stepLabel = (s) =>
     s.kind === 'register' ? 'registerPassport'
-        : s.kind === 'init' ? `initialiseField ${s.name}`
-            : s.kind === 'update' ? `update ${s.round}: ${s.name} -> ${s.value}`
-                : `prove ${s.claim}${s.claim === 'mileageUnder' ? ' ' + s.bound : ''}`;
+        : s.kind === 'authorise' ? `authoriseWriter ${s.writerLabel}`
+            : s.kind === 'init' ? `initialiseField ${s.name}`
+                : s.kind === 'update' ? `update ${s.round}: ${s.name} -> ${s.value}${s.by ? ` (by ${s.by})` : ''}`
+                    : `prove ${s.claim}${s.claim === 'mileageUnder' ? ' ' + s.bound : ''}`;
 
 export const makeStage = (steps) => ({
     label: steps.length === 1 ? stepLabel(steps[0])
@@ -80,9 +81,20 @@ export function planCalls(intake) {
     for (const [name, value] of Object.entries(intake.fields ?? {})) {
         steps.push({ kind: 'init', circuit: 'initialiseField', name, value: BigInt(value) });
     }
+    // Delegation comes after the fields exist. `authoriseWriter` asserts the
+    // passport is known and that the caller is ITS registrar, so it cannot
+    // lead the run, and a writer that is going to update a field needs the
+    // field initialised first. It only inserts a fresh key, so unlike a
+    // field write it does not close a transaction.
+    for (const w of intake.authorise ?? []) {
+        steps.push({ kind: 'authorise', circuit: 'authoriseWriter', writerLabel: w.label, writerId: w.id });
+    }
     (intake.updates ?? []).forEach((round, i) => {
-        for (const [name, value] of Object.entries(round)) {
-            steps.push({ kind: 'update', circuit: 'recordField', name, value: BigInt(value), round: i + 1 });
+        // `by` names an authorised writer instead of the registrar. It is not
+        // a field, so it never becomes a value.
+        const { by, ...values } = round;
+        for (const [name, value] of Object.entries(values)) {
+            steps.push({ kind: 'update', circuit: 'recordField', name, value: BigInt(value), round: i + 1, by });
         }
     });
     for (const [claim, def] of Object.entries(CLAIM_DEFS)) {
@@ -123,7 +135,14 @@ const zero32 = () => new Uint8Array(32);
  * the public chain.
  */
 export function makeWitnessHolder(registrarSecret) {
-    const holder = { pending: { value: 0n, salt: zero32() }, prev: { value: 0n, salt: zero32() }, armed: null };
+    const holder = {
+        pending: { value: 0n, salt: zero32() }, prev: { value: 0n, salt: zero32() },
+        // Who the call in flight acts as. A run used to act as one registrar
+        // throughout; a vehicle that changes hands does not. The registrar
+        // still authorises, but the dealership writes under its OWN identity,
+        // so the secret has to be armed per call like the value pair.
+        secret: registrarSecret, armed: null
+    };
     const armedRead = (what, pick) => (ctx) => {
         if (!holder.armed) {
             throw new Error(`witness ${what}() was read before any call armed it; refusing to prove a zero value`);
@@ -137,21 +156,24 @@ export function makeWitnessHolder(registrarSecret) {
             newSalt: armedRead('newSalt', () => holder.pending.salt),
             previousValue: armedRead('previousValue', () => holder.prev.value),
             previousSalt: armedRead('previousSalt', () => holder.prev.salt),
-            // Constant for a whole run rather than armed per call: a run acts
-            // as one registrar throughout. Still refuses to read when absent,
-            // for the same reason the armed reads do - proving against a zero
-            // secret would derive an identity nobody holds and fail on chain
-            // for a confusing reason instead of here for a clear one.
-            registrarSecret: (ctx) => {
-                if (!registrarSecret) {
-                    throw new Error('witness registrarSecret() was read, but makeWitnessHolder was given no secret');
+            // Armed per call like the rest, because a delegated write acts as
+            // a different identity. Refuses to read when absent for the same
+            // reason the value reads do: proving against a zero secret would
+            // derive an identity nobody holds and fail on chain for a
+            // confusing reason instead of here for a clear one.
+            registrarSecret: armedRead('registrarSecret', () => {
+                if (!holder.secret) {
+                    throw new Error('witness registrarSecret() was read, but no secret is armed');
                 }
-                return [ctx.privateState, registrarSecret];
-            }
+                return holder.secret;
+            })
         },
         arm: (label, state) => () => {
             holder.pending = state.pending ?? { value: 0n, salt: zero32() };
             holder.prev = state.prev ?? { value: 0n, salt: zero32() };
+            // Unstated means the run's own registrar, so every existing call
+            // site keeps the behaviour it had.
+            holder.secret = state.secret ?? registrarSecret;
             holder.armed = label;
         }
     };

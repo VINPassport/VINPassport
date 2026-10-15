@@ -16,6 +16,23 @@ import { randomBytes } from 'node:crypto';
 
 export { PassportSimulator, Rule, fieldKey, bytes32, hex };
 
+/**
+ * The parties a registrar can hand the pen to in this demonstration.
+ *
+ * Keyed by label because a LABEL is all a browser ever sends. The secret is
+ * what proves the identity in-circuit, so it stays in this process: a console
+ * that accepted a secret over HTTP would be handing anyone the ability to
+ * write as the dealership, which is the opposite of what the writer list is
+ * for. The id is public, and is what the ledger records.
+ */
+export const DEMO_WRITERS = {
+    dealership: { label: 'dealership', id: DEALER_ID, secret: DEALER_SECRET },
+    'service garage': { label: 'service garage', id: GARAGE_ID, secret: GARAGE_SECRET }
+};
+
+/** The identity the console itself acts as. */
+export const CONSOLE_REGISTRAR_SECRET = REGISTRAR_SECRET;
+
 // ---------------------------------------------------------------- vocabulary
 
 /** The panel fields the surfaces know how to render. */
