@@ -19,16 +19,21 @@ import { CLAIM_CATALOGUE, boundFor } from '../../site/assets/claim-catalogue.mjs
  * transaction (the node reports it as a bare 1010/188). Reading the contract:
  *
  *   registerPassport   inserts a fresh vinHash into passports + registrar
- *   initialiseField    inserts a fresh slot, then updateCount.increment()
- *   recordField        OVERWRITES the slot, then updateCount.increment()
+ *   initialiseField    inserts a fresh slot, a fresh rule and a fresh writer
+ *   recordField        OVERWRITES the slot and the writer
  *   proveFieldAtMost   inserts a fresh claimKey into claims
  *
- * updateCount is a Counter - one cell, always populated - so initialiseField
- * and recordField are the cell-updating pair. Registration and the proof
- * circuits touch nothing that already exists, which is why "anchor first,
- * then proofs" is the shape that batches.
+ * Only recordField writes a cell that already holds something, so it is the
+ * only circuit that closes a transaction. Everything else inserts fresh keys
+ * and batches freely.
+ *
+ * initialiseField USED TO BE IN THIS SET, and not because of the field write:
+ * it also incremented a global `updateCount` Counter, which is one cell and
+ * always populated. That single line made a vehicle with sixty fields cost
+ * sixty transactions. The counter was removed from the contract; nothing
+ * needed the number, and an indexer can count field writes from the events.
  */
-export const CELL_UPDATING = new Set(['initialiseField', 'recordField']);
+export const CELL_UPDATING = new Set(['recordField']);
 
 export const MAX_CALLS_PER_TX = 8;      // nightgate-tx batch ceiling
 export const MAX_CALLS_PER_RUN = 12;    // bounds a run's wall clock

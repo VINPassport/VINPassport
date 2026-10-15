@@ -82,7 +82,7 @@ function vehicleSection(vin, claims, ledger, vinfo, fields) {
     if (cells.length >= 4) {
         cells[0].textContent = String(vins.length);
         cells[1].textContent = String(ledger.claims.length);
-        cells[2].textContent = String(ledger.updateCount);
+        cells[2].textContent = String((ledger.relClaims ?? []).length);
         cells[3].textContent = '0';
     }
 

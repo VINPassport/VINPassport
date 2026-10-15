@@ -6,8 +6,13 @@
  *
  *  1. Packing. The ledger refuses a call that updates an already-populated
  *     cell when a later intent follows it in the same transaction, so a
- *     cell-updating call (initialiseField and recordField both bump the
- *     updateCount counter) must be LAST in its transaction.
+ *     cell-updating call must be LAST in its transaction. Only recordField
+ *     is one: it overwrites a commitment that already exists.
+ *
+ *     initialiseField was one too, until the global updateCount Counter was
+ *     removed. The counter was a single always-populated cell, so bumping it
+ *     closed the transaction and a vehicle carrying sixty fields cost sixty
+ *     transactions. Nothing read the number except a display.
  *
  *  2. Arming. nightgate-tx runs per-call `before` hooks only for a BATCH; a
  *     single call is proven with the witnesses exactly as they stand. An
@@ -20,7 +25,9 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { planCalls, CELL_UPDATING, makeWitnessHolder } from '../../scripts/lib/preprod-plan.mjs';
+import {
+    planCalls, CELL_UPDATING, makeWitnessHolder, MAX_CALLS_PER_TX
+} from '../../scripts/lib/preprod-plan.mjs';
 
 const kinds = (plan) => plan.map((st) => st.steps.map((s) => s.kind));
 
@@ -40,19 +47,37 @@ test('a cell-updating call is always last in its transaction', () => {
     }
 });
 
-test('the register rides with the first initialisation, and claims batch together', () => {
+test('initialisations batch with the register, and only an update breaks the run', () => {
     const plan = planCalls({
         fields: { odometerKm: 10, accidentCount: 0, ownerCount: 1 },
         updates: [{ odometerKm: 20 }],
         prove: { noAccidents: true, mileageUnder: 100 }
     });
     assert.deepEqual(kinds(plan), [
-        ['register', 'init'],   // register inserts fresh cells; the init closes the tx
-        ['init'],
-        ['init'],
-        ['update'],
-        ['claim', 'claim']      // claims touch no populated cell, so they ride together
+        // Register, every initialisation AND the update now share one
+        // transaction. The update overwrites a commitment so it must come
+        // last, and here it already does. This was five transactions before
+        // the counter came out.
+        ['register', 'init', 'init', 'init', 'update'],
+        ['claim', 'claim']      // claims touch no populated cell either
     ]);
+});
+
+test('a large field set costs transactions in batches, not one per field', () => {
+    // The reason the counter had to go. Sixty fields was sixty transactions;
+    // now it is however many MAX_CALLS_PER_TX allows, plus the register.
+    // Eleven, because MAX_CALLS_PER_RUN caps a DEMO run at twelve calls.
+    // That cap is ours, to bound the wall clock, and the chain has no such
+    // limit: the point here is the ratio, not the number.
+    const fields = {};
+    for (let i = 0; i < 11; i++) fields['f' + i] = i;
+    const plan = planCalls({ fields, prove: {} });
+    const calls = plan.reduce((n, st) => n + st.steps.length, 0);
+    assert.equal(calls, 12, 'one register plus eleven initialisations');
+    assert.equal(plan.length, 2, 'twelve calls is two transactions, not twelve');
+    for (const stage of plan) {
+        assert.ok(stage.steps.length <= MAX_CALLS_PER_TX);
+    }
 });
 
 test('a claims-only intake is a single transaction', () => {

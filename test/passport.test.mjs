@@ -79,7 +79,7 @@ describe('registerPassport', () => {
         const l = sim.registerPassport(VIN_A, ROOT, REGISTRAR);
 
         expect(l.fieldCommitment.isEmpty()).toBe(true);
-        expect(l.updateCount).toBe(0n);
+        expect(l.fieldRule.isEmpty()).toBe(true);
     });
 
     it('refuses to re-register a VIN, so a passport cannot be overwritten', () => {
@@ -123,10 +123,15 @@ describe('a declaration that may never change', () => {
     });
 
     it('leaves the commitment untouched after a refused revision', () => {
-        const before = sim.ledger.updateCount;
+        // The whole ledger, not a counter: a refusal must write nothing at
+        // all, and a snapshot says that where a tally only said "no more
+        // writes than before".
+        const before = JSON.stringify(sim.ledgerValues(), (k, v) =>
+            typeof v === 'bigint' ? v.toString() : v);
         try { sim.recordField(VIN_A, DECLARATION, PCT(30), S2); } catch { /* expected */ }
 
-        expect(sim.ledger.updateCount).toBe(before);
+        expect(JSON.stringify(sim.ledgerValues(), (k, v) =>
+            typeof v === 'bigint' ? v.toString() : v)).toBe(before);
     });
 
     /**
@@ -255,11 +260,13 @@ describe('registrar authority', () => {
         const two = new PassportSimulator([REGISTRAR_ID, SECOND_ID]);
         two.registerPassport(VIN_A, ROOT, REGISTRAR_SECRET);
         two.initialiseField(VIN_A, ODO, Rule.neverFalls, 10n, S1, REGISTRAR_SECRET);
-        const before = two.ledger.updateCount;
+        const before = JSON.stringify(two.ledgerValues(), (k, v) =>
+            typeof v === 'bigint' ? v.toString() : v);
 
         try { two.recordField(VIN_A, ODO, 20n, S2, undefined, SECOND_SECRET); } catch { /* expected */ }
 
-        expect(two.ledger.updateCount).toBe(before);
+        expect(JSON.stringify(two.ledgerValues(), (k, v) =>
+            typeof v === 'bigint' ? v.toString() : v)).toBe(before);
     });
 
     it('still lets ANYONE prove a claim, which is a separate right from writing', () => {
@@ -294,7 +301,10 @@ describe('initialiseField', () => {
         const l = sim.initialiseField(VIN_A, ODO, Rule.neverFalls, 12_000n, S1);
 
         expect(l.fieldCommitment.size()).toBe(1n);
-        expect(l.updateCount).toBe(1n);
+        // The rule and the writer are written with the commitment, and all
+        // three are fresh keys, which is what lets initialisations batch.
+        expect(l.fieldRule.size()).toBe(1n);
+        expect(l.fieldWriter.size()).toBe(1n);
     });
 
     it('stores a commitment, not the value and not the salt', () => {
@@ -373,7 +383,6 @@ describe('recordField: a field that may never fall', () => {
         const after = [...l.fieldCommitment].map(([, c]) => hex(c));
 
         expect(after).not.toEqual(before);
-        expect(l.updateCount).toBe(6n);
     });
 
     it('accepts an unchanged odometer: a vehicle can sit still', () => {
@@ -421,7 +430,7 @@ describe('recordField: a field that may never fall', () => {
         const after = sim.ledger;
 
         expect([...after.fieldCommitment].map(([k, c]) => hex(k) + hex(c))).toEqual(before);
-        expect(after.updateCount).toBe(5n);
+        expect(after.fieldCommitment.size()).toBe(5n);
     });
 });
 
@@ -431,9 +440,15 @@ describe('recordField: a field that may never rise', () => {
     beforeEach(() => { registered(); });
 
     it('accepts degradation', () => {
+        const slot = hex(pureCircuits.slotOf(VIN_A, DECLINING, ROOT));
+        const was = hex(sim.ledger.fieldCommitment.lookup(
+            pureCircuits.slotOf(VIN_A, DECLINING, ROOT)));
         const l = sim.recordField(VIN_A, DECLINING, PCT(96.4), S2);
 
-        expect(l.updateCount).toBe(6n);
+        // The commitment moved, which is the only public sign a value did.
+        expect(hex(l.fieldCommitment.lookup(
+            pureCircuits.slotOf(VIN_A, DECLINING, ROOT)))).not.toBe(was);
+        expect(slot).toHaveLength(64);
     });
 
     it('accepts an unchanged reading', () => {
@@ -458,11 +473,16 @@ describe('recordField: a field that may never rise', () => {
     });
 
     it('accepts a long declining history', () => {
+        const slot = pureCircuits.slotOf(VIN_A, DECLINING, ROOT);
+        const first = hex(sim.ledger.fieldCommitment.lookup(slot));
         sim.recordField(VIN_A, DECLINING, PCT(96.4), S2);
         sim.recordField(VIN_A, DECLINING, PCT(94.1), S3);
         const l = sim.recordField(VIN_A, DECLINING, PCT(91.8), bytes32(0xd4));
 
-        expect(l.updateCount).toBe(8n);
+        // Three accepted steps down, and still exactly one commitment for
+        // the field: history is depth, not breadth, on this ledger.
+        expect(hex(l.fieldCommitment.lookup(slot))).not.toBe(first);
+        expect(l.fieldCommitment.size()).toBe(5n);
     });
 
     it('applies the opposite rule to another field on the SAME vehicle', () => {
@@ -575,10 +595,12 @@ describe('proveFieldAtMost', () => {
     });
 
     it('changes nothing: a query is not an update', () => {
-        const before = sim.ledger.updateCount;
+        // A proof inserts a claim, so the ledger does change. What must not
+        // change is any FIELD: proving is a separate act from writing.
+        const before = [...sim.ledger.fieldCommitment].map(([k, c]) => hex(k) + hex(c));
         sim.proveFieldAtMost(VIN_A, ODO, 150_000n);
 
-        expect(sim.ledger.updateCount).toBe(before);
+        expect([...sim.ledger.fieldCommitment].map(([k, c]) => hex(k) + hex(c))).toEqual(before);
     });
 
     it('tracks the current value, not the first one', () => {
@@ -634,10 +656,10 @@ describe('proveFieldAtLeast', () => {
     });
 
     it('changes nothing', () => {
-        const before = sim.ledger.updateCount;
+        const before = [...sim.ledger.fieldCommitment].map(([k, c]) => hex(k) + hex(c));
         sim.proveFieldAtLeast(VIN_A, DECLINING, PCT(90));
 
-        expect(sim.ledger.updateCount).toBe(before);
+        expect([...sim.ledger.fieldCommitment].map(([k, c]) => hex(k) + hex(c))).toEqual(before);
     });
 });
 
@@ -928,7 +950,13 @@ describe('what the public ledger never learns', () => {
         const { words, blobs } = sim.ledgerValues();
         expect(blobs).toContain(hex(ROOT));          // public by design
         expect(blobs).toContain(hex(REGISTRAR_ID));  // public by design
-        expect(words).toContain(5n);                 // the update counter
+
+        // The integrity rules are public by design, and with the global
+        // counter gone they are now the ONLY numbers a registered vehicle
+        // puts on the ledger: one per field and nothing else. So this pins
+        // the collector and states the stronger property at the same time.
+        expect(words).toContain(BigInt(Rule.neverRises));
+        expect(words).toHaveLength(5);
 
         // And the pairing that matters: the id is published, the secret it
         // came from is not. If the collector ever found the secret, every
@@ -943,15 +971,14 @@ describe('what the public ledger never learns', () => {
         expect(hex(l.passports.lookup(VIN_A))).toBe(hex(ROOT));
         expect(hex(l.registrar.lookup(VIN_A))).toBe(hex(REGISTRAR_ID));
         expect(l.fieldCommitment.size()).toBe(5n);
-        expect(l.updateCount).toBe(5n);
         for (const [, commitment] of l.fieldCommitment) {
             expect(hex(commitment)).toHaveLength(64);
         }
     });
 
-    it('leaks nothing through the counter beyond how many updates there were', () => {
+    it('a pristine car and a wreck are indistinguishable on the ledger', () => {
         registered();
-        const mine = sim.ledger.updateCount;
+        const mine = sim.ledger.fieldCommitment.size();
 
         const other = new PassportSimulator();
         other.registerPassport(VIN_A, ROOT, REGISTRAR);
@@ -961,8 +988,11 @@ describe('what the public ledger never learns', () => {
         other.initialiseField(VIN_A, WRITE_OFF, Rule.neverFalls, 2n, S1);
         other.initialiseField(VIN_A, DECLINING, Rule.neverRises, PCT(41), S1);
 
-        // A pristine one-owner car and a written-off wreck, indistinguishable.
-        expect(other.ledger.updateCount).toBe(mine);
+        // A pristine one-owner car and a written-off wreck. Same number of
+        // fields, same rules, and no public number that came from a value:
+        // with the global counter gone there is not even a tally to compare.
+        expect(other.ledger.fieldCommitment.size()).toBe(mine);
+        expect(other.ledgerValues().words).toEqual(sim.ledgerValues().words);
     });
 });
 
@@ -1332,12 +1362,131 @@ describe('a vehicle changes hands', () => {
 
         expect(wroteIt(VIN_A, ODO)).toBe(hex(GARAGE_ID));
         expect(wroteIt(VIN_A, OWNERS)).toBe(hex(DEALER_ID));
-        expect(sim.ledger.updateCount).toBe(6n);
 
         // And after all of that, the buyer's question still answers from the
         // ledger, and the odometer still cannot go backwards for anyone.
         sim.proveFieldAtMost(VIN_A, ODO, 150_000n);
         expect(() => sim.recordField(VIN_A, ODO, 60_000n, S1, undefined, GARAGE_SECRET))
             .toThrow(rejects('value decreased'));
+    });
+});
+
+// ------------------------------------------- a claim about two hidden fields
+
+describe('proveFieldAtMostField', () => {
+    // The questions a buyer asks that are not a field against a number.
+    // "Serviced within the last 15 000 km" is the odometer against the
+    // reading taken at the last service; "every recall has been done" is
+    // recalls issued against recalls completed. Neither can be put as a
+    // public bound, because the thing being compared to is hidden too.
+    const SERVICED_AT = fieldKey('lastServiceOdometerKm');
+    const ISSUED = fieldKey('recallIssuedCount');
+    const COMPLETED = fieldKey('recallCompletedCount');
+
+    beforeEach(() => {
+        sim.registerPassport(VIN_A, ROOT, REGISTRAR);
+        sim.initialiseField(VIN_A, ODO, Rule.neverFalls, 62_400n, S1);
+        sim.initialiseField(VIN_A, SERVICED_AT, Rule.neverFalls, 54_000n, S2);
+        sim.initialiseField(VIN_A, ISSUED, Rule.neverFalls, 2n, S1);
+        sim.initialiseField(VIN_A, COMPLETED, Rule.neverFalls, 2n, S2);
+    });
+
+    it('proves the odometer is within the slack of the last service reading', () => {
+        // 62 400 - 54 000 = 8 400, comfortably inside 15 000.
+        expect(() => sim.proveFieldAtMostField(VIN_A, ODO, SERVICED_AT, 15_000n))
+            .not.toThrow();
+        expect(sim.ledger.relClaims.size()).toBe(1n);
+    });
+
+    it('refuses when the two values are further apart than the slack', () => {
+        expect(() => sim.proveFieldAtMostField(VIN_A, ODO, SERVICED_AT, 5_000n))
+            .toThrow(rejects('the two values are further apart than the claimed slack'));
+    });
+
+    it('writes nothing at all when it refuses', () => {
+        try { sim.proveFieldAtMostField(VIN_A, ODO, SERVICED_AT, 5_000n); } catch { /* expected */ }
+
+        expect(sim.ledger.relClaims.isEmpty()).toBe(true);
+    });
+
+    it('proves equality with a slack of zero: every recall has been done', () => {
+        expect(() => sim.proveFieldAtMostField(VIN_A, ISSUED, COMPLETED, 0n)).not.toThrow();
+        expect(sim.ledger.relClaims.size()).toBe(1n);
+    });
+
+    it('a slack of zero refuses once a recall is outstanding', () => {
+        sim.recordField(VIN_A, ISSUED, 3n, S3);
+
+        expect(() => sim.proveFieldAtMostField(VIN_A, ISSUED, COMPLETED, 0n))
+            .toThrow(rejects('the two values are further apart than the claimed slack'));
+    });
+
+    it('needs the opening for BOTH fields, not just the first', () => {
+        expect(() => sim.proveFieldAtMostField(
+            VIN_A, ODO, SERVICED_AT, 15_000n, undefined, { value: 54_000n, salt: WRONG_SALT }
+        )).toThrow(rejects('second value does not open the stored commitment'));
+    });
+
+    it('cannot be satisfied by claiming a flattering value for the first field', () => {
+        expect(() => sim.proveFieldAtMostField(
+            VIN_A, ODO, SERVICED_AT, 1n, { value: 54_001n, salt: S1 }
+        )).toThrow(rejects('first value does not open the stored commitment'));
+    });
+
+    it('refuses a field compared with itself, which would prove nothing', () => {
+        expect(() => sim.proveFieldAtMostField(VIN_A, ODO, ODO, 0n))
+            .toThrow(rejects('a field compared with itself proves nothing'));
+    });
+
+    it('refuses when either field was never initialised', () => {
+        const ABSENT = fieldKey('timingBeltReplacedDate');
+
+        expect(() => sim.proveFieldAtMostField(VIN_A, ODO, ABSENT, 99n))
+            .toThrow(rejects('second field not initialised'));
+        expect(() => sim.proveFieldAtMostField(VIN_A, ABSENT, ODO, 99n))
+            .toThrow(rejects('first field not initialised'));
+    });
+
+    it('publishes the slack and the commitments, and neither value', () => {
+        sim.proveFieldAtMostField(VIN_A, ODO, SERVICED_AT, 15_000n);
+        const { words } = sim.ledgerValues();
+
+        expect(words).toContain(15_000n);        // the slack is the claim
+        expect(words).not.toContain(62_400n);    // the odometer is not
+        expect(words).not.toContain(54_000n);    // nor the service reading
+        expect(words).not.toContain(8_400n);     // nor the difference
+    });
+
+    it('the claim names both fields so a reader knows what was compared', () => {
+        sim.proveFieldAtMostField(VIN_A, ODO, SERVICED_AT, 15_000n);
+        const [, claim] = [...sim.ledger.relClaims][0];
+
+        expect(hex(claim.fieldKeyHigh)).toBe(hex(ODO));
+        expect(hex(claim.fieldKeyLow)).toBe(hex(SERVICED_AT));
+        expect(hex(claim.vinHash)).toBe(hex(VIN_A));
+        expect(claim.slack).toBe(15_000n);
+    });
+
+    it('goes stale when EITHER value moves, not just the first', () => {
+        sim.proveFieldAtMostField(VIN_A, ODO, SERVICED_AT, 15_000n);
+        const [, claim] = [...sim.ledger.relClaims][0];
+        const slotLow = pureCircuits.slotOf(VIN_A, SERVICED_AT, ROOT);
+
+        // A service happens: the LOW field moves, the high one does not.
+        sim.recordField(VIN_A, SERVICED_AT, 61_000n, S3);
+
+        // The claim is still on the ledger, and a reader comparing it against
+        // the current commitment can see it no longer describes the record.
+        expect(hex(claim.commitmentLow))
+            .not.toBe(hex(sim.ledger.fieldCommitment.lookup(slotLow)));
+    });
+
+    it('is open to anyone who can open both commitments, like the other proofs', () => {
+        // Proving is a separate right from writing: an outsider who was handed
+        // both openings can still ask the question.
+        sim.actAs(OUTSIDER_SECRET);
+
+        expect(() => sim.proveFieldAtMostField(VIN_A, ODO, SERVICED_AT, 15_000n))
+            .not.toThrow();
     });
 });

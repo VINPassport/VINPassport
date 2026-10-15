@@ -83,15 +83,22 @@ Reading our own circuits tells you which calls those are:
 | Circuit | Writes | Populated cell? |
 |---|---|---|
 | `registerPassport` | fresh `vinHash` into `passports` + `registrar` | no |
-| `initialiseField` | fresh slot, then `updateCount.increment()` | **yes, the counter** |
-| `recordField` | **overwrites** the slot, then `updateCount.increment()` | **yes, twice** |
+| `initialiseField` | fresh slot, fresh rule, fresh writer | no |
+| `recordField` | **overwrites** the slot and the writer | **yes** |
 | `proveFieldAtMost` | fresh `claimKey` into `claims` | no |
 
-`updateCount` is a `Counter`, one cell that is always populated, which is why
-initialisations and updates each close a transaction, while registration and
-proofs batch freely. It is also why the vendor's "anchor first, then proofs"
-shape is the one that works. A guided run collapses from nine transactions to
-five: `[register + first init]`, `[init]`, `[init]`, `[update]`, `[all claims]`.
+Only `recordField` writes a cell that already holds something, so it is the
+only circuit that closes a transaction. The vendor's "anchor first, then
+proofs" shape is still the one that works, and a guided run is now **two**
+transactions: `[register + every init + the update]`, `[all claims]`.
+
+`initialiseField` used to close one too, and not because of the field write.
+It also bumped a global `updateCount` `Counter`, which is a single cell and
+always populated, so one line of bookkeeping made a vehicle carrying sixty
+fields cost sixty transactions. The counter was removed: nothing read the
+number except a display, and an indexer can count field writes from the
+events. Registration, initialisation and the proof circuits all insert fresh
+keys only, so they batch freely.
 
 **Per-call private state must be armed explicitly.** nightgate-tx runs a
 call's `before` hook only when the transaction carries a *batch*; a single
