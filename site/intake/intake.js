@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import { DEMO_VEHICLES } from '../assets/demo-vehicles.mjs';
+import { CLAIM_CATALOGUE, isCompare } from '../assets/claim-catalogue.mjs';
 import { qrPanel } from '../assets/passport-qr.mjs?v=1';
 
 const $ = (id) => document.getElementById(id);
@@ -156,29 +157,76 @@ rebuildPicker();
 
 // ---------------------------------------------------------------- claims
 
-const claimsSection = byTitle('CLAIMS TO PROVE');
-const claimLabels = [...claimsSection.querySelectorAll(':scope > div > label')];
-const mileageInput = claimLabels[3].querySelector('input');
-const claimState = [true, true, true, true];
+// The fields this form collects. A question about anything else cannot be
+// answered here, however good a question it is, because the field would
+// never be initialised and the circuit would refuse.
+const FORM_FIELDS = new Set([
+    'odometerKm', 'accidentCount', 'ownerCount', 'writeOffCategory',
+    'serviceCount', 'lastServiceOdometerKm', 'recallIssuedCount', 'recallCompletedCount'
+]);
 
-const paintClaim = (i) => {
-    const label = claimLabels[i];
+// The catalogue, narrowed to what this form can answer. Derived rather than
+// listed, so a question added to the catalogue appears here the moment the
+// form collects its field, and never before.
+const OFFERED = CLAIM_CATALOGUE.filter((q) => (isCompare(q)
+    ? FORM_FIELDS.has(q.field) && FORM_FIELDS.has(q.against)
+    : FORM_FIELDS.has(q.field)));
+
+// Ticked by default: the four a buyer asks first, which are also the four
+// this console offered before the catalogue existed.
+const DEFAULT_ON = new Set(['neverWrittenOff', 'noAccidents', 'oneKeeper', 'mileageUnder']);
+const claimState = Object.fromEntries(OFFERED.map((q) => [q.id, DEFAULT_ON.has(q.id)]));
+
+const TICK_SVG = '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" '
+    + 'stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"></path></svg>';
+
+/** The line under a question: what it actually asks of the ledger. */
+const claimSub = (q) => {
+    if (isCompare(q)) return `${q.field} − ${q.against} ≤ ${q.slack}`;
+    if (q.bound === null) return `${q.field} ≤ a bound you set`;
+    if (typeof q.bound === 'object') return `${q.field}, within ${q.bound.daysAgo} days`;
+    return `${q.field} ${q.atMost ? '≤' : '≥'} ${q.bound}`;
+};
+
+const claimGrid = document.getElementById('claimgrid');
+// Replaces the four static labels the page ships as a no-script fallback.
+claimGrid.innerHTML = OFFERED.map((q) => {
+    const open = q.bound === null;
+    return `<label data-claim="${q.id}" style="display:flex;gap:10px;align-items:${open ? 'center' : 'flex-start'};padding:11px 13px;border:1px solid #004AAD;background:rgba(0,74,173,.07);cursor:pointer">`
+        + `<span style="flex:none;width:16px;height:16px;background:#004AAD;color:#EDE4D8;display:grid;place-items:center${open ? '' : ';margin-top:1px'}">${TICK_SVG}</span>`
+        + (open
+            ? `<span style="display:flex;align-items:center;gap:7px;font-size:14px;flex-wrap:wrap"><b>Mileage under</b><input data-bound="${q.id}" value="500" class="mono" style="width:82px;min-height:34px;padding:4px 8px;font-size:13px;background:#EDE4D8;border:1px solid rgba(0,74,173,.28);color:#0E1726">km</span>`
+            : `<span><b style="font-size:14px">${q.label}</b><small style="display:block;font-size:11.5px;color:rgba(14,23,38,.62)">${claimSub(q)}</small></span>`)
+        + '</label>';
+}).join('');
+
+const claimLabels = Object.fromEntries(
+    [...claimGrid.querySelectorAll('label')].map((l) => [l.dataset.claim, l])
+);
+const mileageInput = claimGrid.querySelector('input[data-bound="mileageUnder"]');
+
+const paintClaim = (id) => {
+    const label = claimLabels[id];
+    if (!label) return;
     const box = label.querySelector('span');
-    const on = claimState[i];
+    const on = claimState[id];
     label.style.border = on ? '1px solid #004AAD' : '1px solid rgba(0,74,173,.28)';
     label.style.background = on ? 'rgba(0,74,173,.07)' : 'transparent';
     box.style.background = on ? '#004AAD' : 'transparent';
     box.style.border = on ? 'none' : '1px solid rgba(0,74,173,.4)';
     box.querySelector('svg').style.visibility = on ? 'visible' : 'hidden';
 };
-claimLabels.forEach((label, i) => {
+for (const [id, label] of Object.entries(claimLabels)) {
     label.addEventListener('click', (e) => {
         if (e.target === mileageInput) return;
-        claimState[i] = !claimState[i];
-        paintClaim(i);
+        claimState[id] = !claimState[id];
+        paintClaim(id);
         paintCircuitCount();
     });
-});
+}
+Object.keys(claimState).forEach(paintClaim);
+document.getElementById('claimsmeta').textContent =
+    `${OFFERED.length} of ${CLAIM_CATALOGUE.length} catalogue questions`;
 
 // ------------------------------------------------- who else may write it
 //
@@ -222,12 +270,22 @@ writerLabels.forEach((label) => {
     });
 });
 
+// What a preprod run is allowed to cost, mirroring MAX_CALLS_PER_RUN in
+// scripts/lib/preprod-plan.mjs. Exceeded, the server refuses the intake, so
+// the console says so before the button is pressed rather than after.
+const RUN_CAP = 16;
+
 function paintCircuitCount() {
     const updates = selected?.updates?.length ?? 0;
+    const ticked = Object.values(claimState).filter(Boolean).length;
     // Each authorisation is a circuit call of its own, so the count has to
     // know about them or it understates what the run will do.
-    const n = 1 + 5 + updates + authorised.size + claimState.filter(Boolean).length;
-    circuitsNote.textContent = `${n} circuits will run`;
+    const n = 1 + FORM_FIELDS.size + updates + authorised.size + ticked;
+    circuitsNote.textContent = n > RUN_CAP
+        ? `${n} circuits will run, over the ${RUN_CAP} a preprod run allows`
+        : `${n} circuits will run`;
+    circuitsNote.style.color = n > RUN_CAP ? '#004AAD' : '';
+    circuitsNote.style.fontWeight = n > RUN_CAP ? '700' : '';
 }
 paintWriters();
 paintCircuitCount();
@@ -256,12 +314,17 @@ function fillForm(v) {
     $('kp').value = v.fields.ownerCount;
     $('wo').value = String(v.fields.writeOffCategory);
     $('sv').value = v.fields.serviceCount;
-    claimState[0] = v.prove.neverWrittenOff;
-    claimState[1] = v.prove.noAccidents;
-    claimState[2] = v.prove.oneKeeper;
-    claimState[3] = v.prove.mileageUnder > 0;
+    $('lsv').value = v.fields.lastServiceOdometerKm ?? 0;
+    $('ri').value = v.fields.recallIssuedCount ?? 0;
+    $('rc').value = v.fields.recallCompletedCount ?? 0;
+    // A demo record names the four classic claims. Everything else the
+    // catalogue offers is left as the operator set it.
+    claimState.neverWrittenOff = v.prove.neverWrittenOff;
+    claimState.noAccidents = v.prove.noAccidents;
+    claimState.oneKeeper = v.prove.oneKeeper;
+    claimState.mileageUnder = v.prove.mileageUnder > 0;
     if (v.prove.mileageUnder > 0) mileageInput.value = v.prove.mileageUnder;
-    claimState.forEach((_, i) => paintClaim(i));
+    Object.keys(claimState).forEach(paintClaim);
     paintWriters();
     paintCircuitCount();
 }
@@ -288,7 +351,10 @@ function buildIntake() {
             accidentCount: Number($('ac').value),
             ownerCount: Number($('kp').value),
             writeOffCategory: Number($('wo').value),
-            serviceCount: Number($('sv').value)
+            serviceCount: Number($('sv').value),
+            lastServiceOdometerKm: Number($('lsv').value),
+            recallIssuedCount: Number($('ri').value),
+            recallCompletedCount: Number($('rc').value)
         },
         // Labels only. The server resolves each to an identity it holds.
         authorise: [...authorised],
@@ -296,12 +362,12 @@ function buildIntake() {
             (bySelect.value && authorised.has(bySelect.value))
                 ? { ...round, by: bySelect.value }
                 : round),
-        prove: {
-            neverWrittenOff: claimState[0],
-            noAccidents: claimState[1],
-            oneKeeper: claimState[2],
-            mileageUnder: claimState[3] ? Number(mileageInput.value) : 0
-        }
+        // Every ticked question, by its catalogue id. An open-bound
+        // question carries the number the operator set; the rest are a plain
+        // yes, because their bound is the catalogue's standard rung.
+        prove: Object.fromEntries(OFFERED
+            .filter((q) => claimState[q.id])
+            .map((q) => [q.id, q.bound === null ? Number(mileageInput.value) : true]))
     };
     if ($('dl').value.trim()) intake.label = $('dl').value.trim();
 

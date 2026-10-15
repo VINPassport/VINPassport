@@ -142,26 +142,29 @@
   </section>
 
   <section style="margin-bottom:30px">
-    <div class="sect"><span class="snum">04</span><h2 class="stitle">RECORD AT REGISTRATION</h2><span class="smeta">slots 0 to 4 · rule: never falls</span></div>
+    <div class="sect"><span class="snum">04</span><h2 class="stitle">RECORD AT REGISTRATION</h2><span class="smeta">rule: never falls</span></div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px 18px">
       <div><label class="lbl" for="km">Mileage km</label><input id="km" class="inp mono" value="22"></div>
       <div><label class="lbl" for="ac">Accidents</label><input id="ac" class="inp mono" value="0"></div>
       <div><label class="lbl" for="kp">Keepers</label><input id="kp" class="inp mono" value="0"></div>
       <div><label class="lbl" for="wo">Write-off category</label><select id="wo" class="inp"><option>0, none</option></select></div>
       <div><label class="lbl" for="sv">Services</label><input id="sv" class="inp mono" value="0"></div>
+      <div><label class="lbl" for="lsv">Odometer at last service</label><input id="lsv" class="inp mono" value="0"></div>
+      <div><label class="lbl" for="ri">Recalls issued</label><input id="ri" class="inp mono" value="0"></div>
+      <div><label class="lbl" for="rc">Recalls completed</label><input id="rc" class="inp mono" value="0"></div>
     </div>
-    <p style="margin:10px 0 0;font-size:12px;color:rgba(14,23,38,.62)">Each field is created under its integrity rule, fixed on the ledger at creation. None of these five may ever fall. Keepers 0 is what says new, never registered.</p>
+    <p style="margin:10px 0 0;font-size:12px;color:rgba(14,23,38,.62)">Each field is created under its integrity rule, fixed on the ledger at creation. None of these may ever fall. Keepers 0 is what says new, never registered. The last three are pairs: the odometer against the reading at the last service, and recalls issued against recalls completed, which is what lets a claim compare two hidden values without publishing either.</p>
   </section>
 
   <section style="margin-bottom:30px">
-    <div class="sect"><span class="snum">05</span><h2 class="stitle">CLAIMS TO PROVE</h2><span class="smeta">proveFieldAtMost × 4</span></div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px 16px">
+    <div class="sect"><span class="snum">05</span><h2 class="stitle">CLAIMS TO PROVE</h2><span class="smeta" id="claimsmeta">from the published catalogue</span></div>
+    <div id="claimgrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px 16px">
       <label style="display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border:1px solid #004AAD;background:rgba(0,74,173,.07);cursor:pointer"><span style="flex:none;width:16px;height:16px;background:#004AAD;color:#EDE4D8;display:grid;place-items:center;margin-top:1px"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"></path></svg></span><span><b style="font-size:14px">Never written off</b><small style="display:block;font-size:11.5px;color:rgba(14,23,38,.62)">writeOffCategory ≤ 0</small></span></label>
       <label style="display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border:1px solid #004AAD;background:rgba(0,74,173,.07);cursor:pointer"><span style="flex:none;width:16px;height:16px;background:#004AAD;color:#EDE4D8;display:grid;place-items:center;margin-top:1px"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"></path></svg></span><span><b style="font-size:14px">No reported accidents</b><small style="display:block;font-size:11.5px;color:rgba(14,23,38,.62)">accidentCount ≤ 0</small></span></label>
       <label style="display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border:1px solid #004AAD;background:rgba(0,74,173,.07);cursor:pointer"><span style="flex:none;width:16px;height:16px;background:#004AAD;color:#EDE4D8;display:grid;place-items:center;margin-top:1px"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"></path></svg></span><span><b style="font-size:14px">One keeper from new</b><small style="display:block;font-size:11.5px;color:rgba(14,23,38,.62)">ownerCount ≤ 1</small></span></label>
       <label style="display:flex;gap:10px;align-items:center;padding:11px 13px;border:1px solid #004AAD;background:rgba(0,74,173,.07);cursor:pointer"><span style="flex:none;width:16px;height:16px;background:#004AAD;color:#EDE4D8;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"></path></svg></span><span style="display:flex;align-items:center;gap:7px;font-size:14px;flex-wrap:wrap"><b>Mileage under</b><input value="500" class="mono" style="width:82px;min-height:34px;padding:4px 8px;font-size:13px;background:#EDE4D8;border:1px solid rgba(0,74,173,.28);color:#0E1726">km</span></label>
     </div>
-    <p style="margin:11px 0 0;font-size:12px;color:rgba(14,23,38,.62)">A claim the record cannot support <b>aborts during proving and writes nothing</b>. Verification then shows not proven, never a false tick.</p>
+    <p style="margin:11px 0 0;font-size:12px;color:rgba(14,23,38,.62)">A claim the record cannot support <b>aborts during proving and writes nothing</b>. Verification then shows not proven, never a false tick. The list is the <a href="../verify/">published catalogue</a>, narrowed to the questions this form collects the fields for: the console cannot offer a question it has no way to answer.</p>
   </section>
 
   <section style="margin-bottom:30px">
