@@ -42,7 +42,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { connect, createTxBuilder } from '@odatano/nightgate-tx';
-import { Contract } from '../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
+import { Contract, pureCircuits } from '../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
 import { buildId } from './lib/build-id.mjs';
 import { readRegistrarSlots, REGISTRAR_ROLES } from './lib/registrar-slots.mjs';
 import { preprodEndpoints, redacted, guardLogs } from './lib/endpoints.mjs';
@@ -124,7 +124,14 @@ const fail = (msg) => { console.error(`\nSTOP: ${msg}`); process.exit(1); };
 // --sponsor-file builds nothing and signs nothing, so it needs neither the
 // prover keys nor the seed. Demanding them would be asking for a secret the
 // work does not use.
-const CIRCUITS = ['registerPassport', 'initialiseField', 'recordField', 'proveFieldAtMost', 'proveFieldAtLeast'];
+// Derived from the contract, never listed here. A second copy of the circuit
+// set is the same drift that killed the 2026-10-15 redeploy: the contract
+// grew, and only some of the files that describe it heard about it. Pure
+// circuits are excluded because they compile into their callers and have no
+// keys of their own.
+const PURE = new Set(Object.keys(pureCircuits));
+const CIRCUITS = [...readFileSync(join(ROOT, 'contracts', 'vinpassport', 'src', 'vinpassport.compact'), 'utf8')
+    .matchAll(/^export\s+circuit\s+(\w+)/gm)].map((m) => m[1]).filter((c) => !PURE.has(c));
 if (!SPONSOR_FILE) {
     for (const c of CIRCUITS) {
         if (!existsSync(join(MANAGED, 'keys', `${c}.prover`))) {
@@ -427,10 +434,15 @@ const builder = await createTxBuilder({
     zkConfigDir: MANAGED
 });
 
-// The contract declares four witnesses, and the compiled class checks their
-// SHAPE at construction even though a deploy never calls one. These stubs
-// satisfy the shape and throw if that assumption ever stops holding - a
-// deploy that silently invoked a witness would be worth crashing over.
+// The compiled class checks the SHAPE of the witness set at construction,
+// even though a deploy never calls one, so EVERY witness the contract
+// declares has to appear here. These stubs satisfy the shape and throw if
+// that assumption ever stops holding - a deploy that silently invoked a
+// witness would be worth crashing over.
+//
+// Adding a witness to the contract therefore breaks the deploy, at the
+// constructor, before anything is built or spent. That is how
+// otherValue/otherSalt were found missing on 2026-10-15.
 const neverCalled = (name) => () => {
     throw new Error(`witness ${name}() was invoked during deploy - that must never happen`);
 };
@@ -439,6 +451,10 @@ const witnesses = {
     previousValue: neverCalled('previousValue'),
     previousSalt: neverCalled('previousSalt'),
     newSalt: neverCalled('newSalt'),
+    // The two-field circuit opens a SECOND commitment, so it reads a
+    // second value and salt. A deploy calls neither.
+    otherValue: neverCalled('otherValue'),
+    otherSalt: neverCalled('otherSalt'),
     // The constructor pins identities that were derived off-chain; it never
     // reads a secret. If a deploy ever asks for one, the shape assumption
     // above has stopped holding and the deploy should die rather than guess.
