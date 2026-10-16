@@ -122,7 +122,11 @@ witness holder refuses to be read until something has armed it, so a missed
 arming is a loud build error instead of a quiet zero on the public chain.
 `test/app/preprod-plan.test.mjs` pins both rules.
 
-A guided run is five transactions and lands in roughly eight minutes; the job
+A guided run is nine calls and lands in 13 to 20 minutes, depending on whether
+the ledger accepts the setup batch or makes each call its own transaction. An
+intake may ask for up to `MAX_CALLS_PER_RUN` calls, currently 24, which in the
+split case is about half an hour. That ceiling is ours and bounds the wait, not
+the chain's and not the wallet's; the job
 API exposes each step's live status so a UI can render the wait as the story
 it actually is: *this is a zero-knowledge proof being made and a real chain
 accepting it*.

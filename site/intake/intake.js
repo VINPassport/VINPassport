@@ -273,7 +273,7 @@ writerLabels.forEach((label) => {
 // What a preprod run is allowed to cost, mirroring MAX_CALLS_PER_RUN in
 // scripts/lib/preprod-plan.mjs. Exceeded, the server refuses the intake, so
 // the console says so before the button is pressed rather than after.
-const RUN_CAP = 16;
+const RUN_CAP = 24;
 
 function paintCircuitCount() {
     const updates = selected?.updates?.length ?? 0;

@@ -36,10 +36,27 @@ import { CLAIM_CATALOGUE, boundFor, isCompare } from '../../site/assets/claim-ca
 export const CELL_UPDATING = new Set(['recordField']);
 
 export const MAX_CALLS_PER_TX = 8;      // nightgate-tx batch ceiling
-// Bounds a run's wall clock. Raised from 12 once initialisations stopped
-// closing a transaction each: sixteen calls is about three transactions now,
-// where twelve used to be twelve.
-export const MAX_CALLS_PER_RUN = 16;
+// Bounds a run's WALL CLOCK. The chain imposes nothing like it; this is ours.
+//
+// It was 12, then 16 once initialisations stopped closing a transaction each
+// and sixteen calls became about three transactions. That reasoning has since
+// gone stale: the ledger refused the eight-call setup batch on two runs out of
+// three on 16 October, because it sorts a batch into guaranteed and fallible
+// stages by gas cost and those move as the contract fills. The runner falls
+// back to one transaction per call, so the honest planning assumption is now
+// one call per transaction, not three calls to one.
+//
+// Measured in that split case, seven consecutive single-call stages: 91, 80,
+// 79, 81, 82, 69 and 82 seconds. At 80 seconds a call, 24 calls is about 32
+// minutes, against a per-stage budget of 8 minutes and a 75 minute backstop
+// that it does not come near.
+//
+// 24 rather than 16 because that is what the intake console needs to offer
+// everything its form collects: a registration, eight fields, an update and
+// nine claims is nineteen calls. What a higher number really costs is queue
+// time, since the wallet carries one spend in flight and a long run blocks
+// everything behind it.
+export const MAX_CALLS_PER_RUN = 24;
 
 /**
  * The claims a console can request, mapped onto circuit calls.

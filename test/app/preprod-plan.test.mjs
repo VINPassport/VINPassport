@@ -25,9 +25,14 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 import {
-    planCalls, CELL_UPDATING, makeWitnessHolder, MAX_CALLS_PER_TX
+    planCalls, CELL_UPDATING, makeWitnessHolder, MAX_CALLS_PER_TX, MAX_CALLS_PER_RUN
 } from '../../scripts/lib/preprod-plan.mjs';
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 const kinds = (plan) => plan.map((st) => st.steps.map((s) => s.kind));
 
@@ -66,7 +71,7 @@ test('initialisations batch with the register, and only an update breaks the run
 test('a large field set costs transactions in batches, not one per field', () => {
     // The reason the counter had to go. Sixty fields was sixty transactions;
     // now it is however many MAX_CALLS_PER_TX allows, plus the register.
-    // Eleven, because MAX_CALLS_PER_RUN caps a DEMO run at twelve calls.
+    // Eleven keeps this well inside MAX_CALLS_PER_RUN whatever that is.
     // That cap is ours, to bound the wall clock, and the chain has no such
     // limit: the point here is the ratio, not the number.
     const fields = {};
@@ -101,4 +106,23 @@ test('the witness holder refuses to be read before a call arms it', () => {
     holder.armed = null;
     assert.throws(() => witnesses.newSalt(ctx), /before any call armed it/,
         'disarming between transactions must re-arm the guard');
+});
+
+/**
+ * The intake console keeps its own copy of the run ceiling, because it warns
+ * the operator BEFORE the button is pressed and a browser cannot import a
+ * Node module from `scripts/`. A copy of a number is a number that drifts,
+ * and the failure is quiet in both directions: a console that under-reports
+ * lets someone build an intake the server then refuses, and one that
+ * over-reports scares them off a run that would have worked.
+ *
+ * Checked by reading the source rather than importing it, because the file
+ * touches the DOM at load.
+ */
+test('the console and the server agree on the run ceiling', () => {
+    const src = readFileSync(join(ROOT, 'site', 'intake', 'intake.js'), 'utf8');
+    const m = src.match(/const RUN_CAP = (\d+);/);
+    assert.ok(m, 'intake.js no longer declares RUN_CAP; this guard has gone blind');
+    assert.equal(Number(m[1]), MAX_CALLS_PER_RUN,
+        'the console and the planner disagree about how many calls a run may make');
 });
