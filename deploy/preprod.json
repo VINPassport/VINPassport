@@ -1,11 +1,11 @@
 {
   "network": "preprod",
-  "contractAddress": "314beac1224fe680d0736835829fda85648d901e6556d4fcd0463424b0666f65",
-  "txHash": "370b7cb3a1ad182b712567faf75ec501f75ab80a704bec205be54e7f4b90ce7a",
-  "blockHeight": 2977555,
-  "submitterReportedId": "0x0b88793d0a1226aabdbd086ce6b6e3b1fc0ebddc2e44443275b380777d06fee5",
+  "contractAddress": "2f66c442f14ec98ca59372e14eaa08832f71de9d4aed74aa7bb48140e5d648f5",
+  "txHash": "6f4ce1692a1e1c115b4de63f3b7b6ed95f03540c9004926fb091a9bb20cebf69",
+  "blockHeight": 2999411,
+  "submitterReportedId": "0xc685604a19a558e77fec5c1b1b928c46fd0872fec20a531648d7e2e2b220723d",
   "contract": "vinpassport",
   "confirmedOnIndexer": true,
-  "buildId": "1b5c25ac8b4c6665",
+  "buildId": "0fdd47a77126b79c",
   "note": "Public record of the deployment. Address and tx hash are public by definition. txHash is the hash the public indexer resolves for this deploy; submitterReportedId, when present, is the different identifier the submitter returned. buildId fingerprints the compiled artefacts this address holds: sha256 over contract/index.js and every circuit .bzkir, first 16 hex characters."
 }

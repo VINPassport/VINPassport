@@ -174,6 +174,29 @@ Three things a deployment needs that a clone does not:
 3. **Sole ownership of that wallet.** Two processes on one seed spend the same
    dust twice and both get rejected, so exactly one host runs the engine.
 
+### Warm the snapshot before a cold run, not during it
+
+A run begins by restoring the wallet from the snapshot and catching it up to
+the tip, and that catch-up is charged to the run. Measured on 16 October,
+back to back on the same machine:
+
+| Snapshot age at start | Time from enqueue to "wallet at tip" |
+| --- | --- |
+| 19 hours | **65 s** |
+| minutes | **8 s** |
+
+The engine saves a snapshot after every run, so consecutive runs already pay
+the small number. The exposure is the first run after a quiet spell.
+
+`npm run warm:dust` (with `VINPASSPORT_SEED_FILE` set) does the catch-up on
+its own. Run it **ahead** of a planned demo, not immediately before one:
+the work is the same either way, so moving it to the moment before a run
+saves nothing. It only helps when it overlaps something else, which is why it
+is a separate command rather than a step inside the runner.
+
+Never run it while a demo run is in flight. Both write the same snapshot
+directory, and the rule above about one process per seed is the same rule.
+
 ## How it is deployed
 
 Two services, because restoring the wallet is heavy synchronous WASM work that

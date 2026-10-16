@@ -1,67 +1,112 @@
 {
-  "note": "A recording of the guided run of 15 October 2026, kept so the page can still show a real run while no circuit server is answering. Every field below is already public on the preprod chain: the claims and their bounds are on the ledger, and no field reading appears here, because none was published.",
+  "note": "A recording of the guided run of 16 October 2026, kept so the page can still show a real run while no circuit server is answering. Every field below is already public on the preprod chain: the claims and their bounds are on the ledger, and no field reading appears here, because none was published.",
   "network": "preprod",
-  "contractAddress": "314beac1224fe680d0736835829fda85648d901e6556d4fcd0463424b0666f65",
-  "vinHash": "69d6ab9a25c3bdf72e56ae568a3f80e9956484fe6f7501eae32c10c21341c496",
+  "contractAddress": "2f66c442f14ec98ca59372e14eaa08832f71de9d4aed74aa7bb48140e5d648f5",
+  "vinHash": "f02d08818e376dd8be860e84008084cd5271c603b893ee88aee47a3547172b30",
   "registrarId": "9ecd472baaaa93fe3f1dd92b610c7ae4fff14bed398f3e48530402812a2938be",
-  "contentRoot": "578ef47e7976c5eafd3cdec699e8a20769e8c312a30dfcffd451e0b151274174",
-  "finishedAt": "2026-10-15T00:29:00.739Z",
+  "contentRoot": "e55fb828efdf7a7450cc3884b90fa2b850bb168d6889e40f83f1522037c68135",
+  "finishedAt": "2026-10-16T02:09:18.309Z",
   "stages": [
     {
-      "stage": 1,
-      "label": "2 calls: registerPassport + initialiseField odometerKm",
+      "stage": 2,
+      "label": "registerPassport",
       "calls": [
-        "registerPassport",
-        "initialiseField odometerKm"
+        "registerPassport"
       ],
-      "txHash": "d5ed6578e0fbfb3a2d3d205c6e78107bafbb7295688d2b5e16e85dd42bf3e051",
-      "blockHeight": 2984311,
-      "explorer": "https://preprod.midnightexplorer.com/transactions/d5ed6578e0fbfb3a2d3d205c6e78107bafbb7295688d2b5e16e85dd42bf3e051"
+      "txHash": "16fd96871426375c6499202840fecb5ffdc0976b4e817dd1195e4416332cdde3",
+      "blockHeight": 2999608,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/16fd96871426375c6499202840fecb5ffdc0976b4e817dd1195e4416332cdde3"
     },
     {
-      "stage": 2,
+      "stage": 3,
+      "label": "initialiseField odometerKm",
+      "calls": [
+        "initialiseField odometerKm"
+      ],
+      "txHash": "f31c14d6ace5676608afd98a94bbf1617aa1735adacf1a12824ffdb80fc3bb9d",
+      "blockHeight": 2999640,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/f31c14d6ace5676608afd98a94bbf1617aa1735adacf1a12824ffdb80fc3bb9d"
+    },
+    {
+      "stage": 4,
       "label": "initialiseField accidentCount",
       "calls": [
         "initialiseField accidentCount"
       ],
-      "txHash": "0b28ba0e704f27eae0585a8870d24dc93d0898ed83ccba17bd4c37e86d73db8c",
-      "blockHeight": 2984327,
-      "explorer": "https://preprod.midnightexplorer.com/transactions/0b28ba0e704f27eae0585a8870d24dc93d0898ed83ccba17bd4c37e86d73db8c"
+      "txHash": "20224bff4fb8d25b6310d0566f376ade0b8a650c17bcf551144f4ca03cb22d79",
+      "blockHeight": 2999656,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/20224bff4fb8d25b6310d0566f376ade0b8a650c17bcf551144f4ca03cb22d79"
     },
     {
-      "stage": 3,
+      "stage": 5,
       "label": "initialiseField ownerCount",
       "calls": [
         "initialiseField ownerCount"
       ],
-      "txHash": "a3033e92dc70ad4445e3aefd02cae6c839a231d4eca1501cdba488fe7c36bd3b",
-      "blockHeight": 2984343,
-      "explorer": "https://preprod.midnightexplorer.com/transactions/a3033e92dc70ad4445e3aefd02cae6c839a231d4eca1501cdba488fe7c36bd3b"
+      "txHash": "3a72e4010ea2324ef213a4e93b733e7ff1d2ca6651b28d42f41d10e1401e9cf1",
+      "blockHeight": 2999677,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/3a72e4010ea2324ef213a4e93b733e7ff1d2ca6651b28d42f41d10e1401e9cf1"
     },
     {
-      "stage": 4,
-      "label": "2 calls: authoriseWriter dealership + update 1: odometerKm, new value committed (by dealership)",
+      "stage": 6,
+      "label": "initialiseField serviceCount",
       "calls": [
-        "authoriseWriter dealership",
+        "initialiseField serviceCount"
+      ],
+      "txHash": "1ebbabfd87a5e3e313e8c0e2d76d30027082468e8ceffe3578caa8e958ed35a6",
+      "blockHeight": 2999693,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/1ebbabfd87a5e3e313e8c0e2d76d30027082468e8ceffe3578caa8e958ed35a6"
+    },
+    {
+      "stage": 7,
+      "label": "initialiseField lastServiceOdometerKm",
+      "calls": [
+        "initialiseField lastServiceOdometerKm"
+      ],
+      "txHash": "1956bbb35af44f031ce76879a444e08bce1c4b694eaba1d31fe6d19d92e0c2ee",
+      "blockHeight": 2999709,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/1956bbb35af44f031ce76879a444e08bce1c4b694eaba1d31fe6d19d92e0c2ee"
+    },
+    {
+      "stage": 8,
+      "label": "authoriseWriter dealership",
+      "calls": [
+        "authoriseWriter dealership"
+      ],
+      "txHash": "b26b4ce9c8bd52b14595ce7d9b8dad57b0dd9f2b236d91ed85a89b42b7f4fa38",
+      "blockHeight": 2999726,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/b26b4ce9c8bd52b14595ce7d9b8dad57b0dd9f2b236d91ed85a89b42b7f4fa38"
+    },
+    {
+      "stage": 9,
+      "label": "update 1: odometerKm, new value committed (by dealership)",
+      "calls": [
         "update 1: odometerKm, new value committed (by dealership)"
       ],
-      "txHash": "a2550dd87a9ff5ddee9b82d02aafd0e49dbb081ec073c9ab2d6c491d2d4c1210",
-      "blockHeight": 2984363,
-      "explorer": "https://preprod.midnightexplorer.com/transactions/a2550dd87a9ff5ddee9b82d02aafd0e49dbb081ec073c9ab2d6c491d2d4c1210"
+      "txHash": "1947a425cae6b998503d46a81af82e516021f044075b9ff17bd73aacc83f12cc",
+      "blockHeight": 2999751,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/1947a425cae6b998503d46a81af82e516021f044075b9ff17bd73aacc83f12cc"
     },
     {
-      "stage": 5,
-      "label": "2 calls: prove noAccidents + prove mileageUnder 150000",
+      "stage": 10,
+      "label": "4 calls: prove mileageUnder 150000 + prove noAccidents + prove fourServices + prove servicedWithin15000km",
       "calls": [
+        "prove mileageUnder 150000",
         "prove noAccidents",
-        "prove mileageUnder 150000"
+        "prove fourServices",
+        "prove servicedWithin15000km"
       ],
-      "txHash": "86966d24dcf5c73a9c24ee98a89ff8a3c8412529321dee7954ee3de137b6abc9",
-      "blockHeight": 2984380,
-      "explorer": "https://preprod.midnightexplorer.com/transactions/86966d24dcf5c73a9c24ee98a89ff8a3c8412529321dee7954ee3de137b6abc9"
+      "txHash": "b06028c681e6fa532ab24230331c9d125d1ad09abcdd066310076b5c26f310c0",
+      "blockHeight": 2999783,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/b06028c681e6fa532ab24230331c9d125d1ad09abcdd066310076b5c26f310c0"
     }
   ],
   "claims": [
+    {
+      "claim": "mileageUnder",
+      "label": "Mileage under 150000 km",
+      "outcome": "proven on-chain"
+    },
     {
       "claim": "noAccidents",
       "label": "No reported accidents",
@@ -69,12 +114,17 @@
     },
     {
       "claim": "oneKeeper",
-      "label": "One keeper",
+      "label": "One keeper from new",
       "outcome": "refused in-circuit - nothing written"
     },
     {
-      "claim": "mileageUnder",
-      "label": "Mileage under 150000 km",
+      "claim": "fourServices",
+      "label": "At least four services recorded",
+      "outcome": "proven on-chain"
+    },
+    {
+      "claim": "servicedWithin15000km",
+      "label": "Serviced within the last 15,000 km",
       "outcome": "proven on-chain"
     }
   ],

@@ -477,9 +477,10 @@ the receiving identity is wrong or its secret is lost, and nothing is recoverabl
 per-vehicle writer list gets the life cycle without that risk, and `allowedRegistrars` remains
 fixed at deployment as [D23](#settled) describes.
 
-**Status: deployed 14 October 2026**, at
-`314beac1224fe680d0736835829fda85648d901e6556d4fcd0463424b0666f65`, block 2977555, fee paid from
-our own dust. The address before it, the seven-export build of 13 October, is archived at
+**Status: deployed 14 October 2026, redeployed 16 October with the two-field circuit**, at
+`2f66c442f14ec98ca59372e14eaa08832f71de9d4aed74aa7bb48140e5d648f5`, block 2999411, fee paid from
+our own dust. The addresses before it, the seven-export build of 13 October and the ten-export build of 14
+October, are archived at
 `deploy/preprod-superseded-*.json`.
 
 Deploying meant a new address, a new guided run and re-measuring, which is why it was taken as its

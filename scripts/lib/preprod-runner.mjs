@@ -36,6 +36,7 @@ import {
     classifyNodeReject, isPreMempoolReject, isTransportFailure, isAlreadyImported
 } from '@odatano/nightgate-tx/txbuilder';
 import { matchesDeployed } from './build-id.mjs';
+import { CLAIM_CATALOGUE } from '../../site/assets/claim-catalogue.mjs';
 import { HDWallet, Roles } from '@midnightntwrk/wallet-sdk-hd';
 import { WalletFacade, WalletEntrySchema, mergeWalletEntries } from '@midnightntwrk/wallet-sdk-facade';
 import { InMemoryTransactionHistoryStorage } from '@midnightntwrk/wallet-sdk-abstractions';
@@ -1642,6 +1643,10 @@ export async function createRunner({ log = console.log } = {}) {
 
     function guidedIntake() {
         const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+        // The catalogue is the authority on how far apart the odometer and the
+        // last-service reading may be. Read it; do not restate it.
+        const SERVICE_SLACK = Number(CLAIM_CATALOGUE
+            .find((q) => q.id === 'servicedWithin15000km').slack);
         const base = 18_000 + Math.floor(Math.random() * 40_000);
         return {
             vin: randomDemoVin(),
@@ -1666,8 +1671,22 @@ export async function createRunner({ log = console.log } = {}) {
             // rule fixed when the field was created: delegation hands over the
             // pen, never the right to break the rule.
             ...(dealer ? { authorise: [{ label: dealer.label, id: dealer.id }] } : {}),
+            // The gap this update opens is exactly what
+            // `servicedWithin15000km` asks about, so it is derived from that
+            // question's own slack rather than from a number that has to be
+            // kept in step with it by hand. It lands between 55% and 90% of
+            // the slack: a real gap, never one that refuses.
+            //
+            // It used to be `base + 12_000 + rand(20_000)`, a gap of 12 000 to
+            // 32 000 against a 15 000 slack, so the two-field circuit refused
+            // in about six runs out of seven and had never reached the chain.
+            // A claim the page offers and then usually refuses teaches a
+            // visitor the opposite of what the circuit does. The run still
+            // shows a refusal, from `oneKeeper`, where the data genuinely
+            // fails the rule.
             updates: [{
-                odometerKm: base + 12_000 + Math.floor(Math.random() * 20_000),
+                odometerKm: base + Math.floor(SERVICE_SLACK * 0.55)
+                    + Math.floor(Math.random() * Math.floor(SERVICE_SLACK * 0.35)),
                 ...(dealer ? { by: dealer.label } : {})
             }],
             // oneKeeper is DESIGNED to refuse (two keepers): the guided run
