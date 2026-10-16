@@ -94,10 +94,11 @@ export const randomDemoVin = () => {
 
 export const stepLabel = (s) =>
     s.kind === 'register' ? 'registerPassport'
-        : s.kind === 'authorise' ? `authoriseWriter ${s.writerLabel}`
-            : s.kind === 'init' ? `initialiseField ${s.name}`
-                : s.kind === 'update' ? `update ${s.round}: ${s.name} -> ${s.value}${s.by ? ` (by ${s.by})` : ''}`
-                    : `prove ${s.claim}${s.claim === 'mileageUnder' ? ' ' + s.bound : ''}`;
+        : s.kind === 'withdraw' ? `withdrawWriter ${s.writerLabel}`
+            : s.kind === 'authorise' ? `authoriseWriter ${s.writerLabel}`
+                : s.kind === 'init' ? `initialiseField ${s.name}`
+                    : s.kind === 'update' ? `update ${s.round}: ${s.name} -> ${s.value}${s.by ? ` (by ${s.by})` : ''}`
+                        : `prove ${s.claim}${s.claim === 'mileageUnder' ? ' ' + s.bound : ''}`;
 
 export const makeStage = (steps) => ({
     label: steps.length === 1 ? stepLabel(steps[0])
@@ -141,6 +142,18 @@ export function planCalls(intake) {
             steps.push({ kind: 'update', circuit: 'recordField', name, value: BigInt(value), round: i + 1, by });
         }
     });
+    // Taking the pen back comes AFTER the writer has used it, or the update
+    // it was granted for would be refused. It is listed before the claims
+    // because the claims are proven by the registrar and do not care either
+    // way, and because a run that ends on a withdrawal reads as the whole
+    // life cycle: granted, used, revoked.
+    //
+    // `writers.remove` empties a cell rather than filling one, so it does not
+    // close a transaction the way a field write does. If the ledger disagrees
+    // the runner's batch fallback will split it out and say so.
+    for (const w of intake.withdraw ?? []) {
+        steps.push({ kind: 'withdraw', circuit: 'withdrawWriter', writerLabel: w.label, writerId: w.id });
+    }
     for (const [claim, def] of Object.entries(CLAIM_DEFS)) {
         const wanted = intake.prove?.[claim];
         if (!wanted) continue;

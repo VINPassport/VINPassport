@@ -33,11 +33,23 @@ Both routes share one queue (runs never conflict), one engine, and one cap.
 
 ## The cap
 
-**5 runs per UTC day, global, guided and manual counted together.** The status
-endpoint shows used/remaining and the reset time, so the limit is visible
-before anyone starts. A run counts when it starts, whether or not it succeeds,
-so retry-spam cannot stretch the budget. The cap exists because every run
-writes permanent public state and spends real (self-replenishing) dust.
+**20 runs per UTC day, global, guided and manual counted together.** The
+status endpoint shows used/remaining and the reset time, so the limit is
+visible before anyone starts. A run counts when it starts, whether or not it
+succeeds, so retry-spam cannot stretch the budget.
+
+It was 5, on the assumption that dust was the scarce thing. Measured on 16
+October: a deploy and two full guided runs, twenty transactions between them,
+left the balance unchanged at 60 DUST, because preprod prices every unit at
+1 SPECK. Dust is not the constraint here and the old number was protecting
+nothing.
+
+What remains finite is time. The funding wallet carries **one spend in
+flight**, so runs serialise rather than overlap, and a run takes 12 to 20
+minutes depending on whether the ledger accepts the setup batch. Twenty runs
+is therefore most of a day's wall clock, and a visitor's real limit is the
+queue ahead of them, not the counter. The cap stays finite anyway, because
+every run writes permanent public state.
 
 ## Anatomy of a run
 
@@ -156,7 +168,7 @@ indexer query to verify it. Two properties worth stating plainly:
 VINPASSPORT_PREPROD=1
 VINPASSPORT_SEED_FILE=/path/to/seed.env        # VINPASSPORT_SEED_HEX=<128 hex>
 VINPASSPORT_STATE_DIR=/path/to/wallet-state    # {shielded,unshielded,dust}.blob
-VINPASSPORT_DEMO_CAP=5                         # optional
+VINPASSPORT_DEMO_CAP=20                        # optional
 node scripts/app-server.mjs
 ```
 

@@ -18,10 +18,13 @@
 > **deployed on Midnight preprod** (16 Oct 2026, block 2999411,
 > [`deploy/preprod.json`](deploy/preprod.json)) and has been **exercised end to end on chain**:
 > registration, five field initialisations, a delegated update and four proven claims, across
-> blocks 2999608 to 2999783, with a fifth claim refused in-circuit because the rule held. One of
-> those transactions **authorises a dealership to write that one vehicle and then has the
-> dealership write it**, so the writer circuits are on the public chain rather than only in the
-> test suite. The four proven claims cover **all three proof circuits**, including one that
+> blocks 3000263 to 3000384, with a fifth claim refused in-circuit because the rule held. The run
+> **authorises a dealership to write that one vehicle, has the dealership write it, then takes
+> the authorisation back**, so a delegation's whole life cycle is on the public chain rather than
+> only in the test suite. The reading the dealership wrote stays written and stays stamped with
+> it, because revoking a grant cannot make it untrue that they wrote it. **Every circuit the
+> contract has has now run on a public ledger**, all eight that prove.
+> The four proven claims cover **all three proof circuits**, including one that
 > compares two of the vehicle's own hidden fields and publishes only how far apart they are
 > allowed to be.
 > The `/demo/` surface and the intake console write **real transactions to that contract**, paying

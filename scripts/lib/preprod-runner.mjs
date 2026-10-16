@@ -22,7 +22,7 @@
  * Requires (never committed, never sent to the client):
  *   VINPASSPORT_SEED_FILE   file containing VINPASSPORT_SEED_HEX=<128 hex>
  *   VINPASSPORT_STATE_DIR   dir with {shielded,unshielded,dust}.blob snapshots
- *   VINPASSPORT_DEMO_CAP    optional, default 5
+ *   VINPASSPORT_DEMO_CAP    optional, default 20
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -184,7 +184,15 @@ export async function createRunner({ log = console.log } = {}) {
     const contractAddress = deployRecord.contractAddress;
     const built = matchesDeployed(deployRecord);
     if (!built.ok) throw new Error(`this build is not the deployed contract:\n   ${built.reason}`);
-    const capacity = Number(process.env.VINPASSPORT_DEMO_CAP ?? 5);
+    // 20, not 5. Measured 16 Oct: a deploy and two full guided runs, twenty
+    // transactions between them, left the dust balance unchanged at 60 DUST,
+    // because preprod prices every unit at 1 SPECK. Dust was never what the
+    // cap was protecting. What it protects is a wallet that carries ONE spend
+    // in flight, so runs serialise: at 12 to 20 minutes each, twenty of them
+    // is most of a day's wall clock and the queue is the real limit a visitor
+    // meets. The cap stays finite because every run writes permanent public
+    // state, and because a number is easier to reason about than a queue.
+    const capacity = Number(process.env.VINPASSPORT_DEMO_CAP ?? 20);
 
     // ---- wallet keys -------------------------------------------------------
     const hd = HDWallet.fromSeed(new Uint8Array(Buffer.from(seedHex, 'hex')));
@@ -854,6 +862,7 @@ export async function createRunner({ log = console.log } = {}) {
                         sim.actAs(s.by === dealer?.label ? dealer.secret : registrarSecret);
                         if (s.kind === 'register') sim.registerPassport(vinBytes, croot);
                         else if (s.kind === 'authorise') sim.authoriseWriter(vinBytes, s.writerId);
+                        else if (s.kind === 'withdraw') sim.withdrawWriter(vinBytes, s.writerId);
                         else if (s.kind === 'init') {
                             if (!(s.name in FIELDS)) throw new Error('unknown field');
                             const salt = saltOf(s.name, 0);
@@ -918,11 +927,15 @@ export async function createRunner({ log = console.log } = {}) {
                     before: arm(label, { pending: { value: 0n, salt: zero32() }, prev: { value: 0n, salt: zero32() } })
                 };
             }
-            if (s.kind === 'authorise') {
-                // Only the vehicle's registrar may authorise, so this one is
-                // never delegated.
+            if (s.kind === 'authorise' || s.kind === 'withdraw') {
+                // Only the vehicle's registrar may grant or revoke, so neither
+                // is ever delegated. Both read no field, so both are armed
+                // with zeros: the witness hooks still have to run, because an
+                // unarmed read is a silent zero commitment rather than an
+                // error.
                 return {
-                    circuitId: 'authoriseWriter', args: [vinBytes, s.writerId],
+                    circuitId: s.kind === 'authorise' ? 'authoriseWriter' : 'withdrawWriter',
+                    args: [vinBytes, s.writerId],
                     before: arm(label, { pending: { value: 0n, salt: zero32() }, prev: { value: 0n, salt: zero32() } })
                 };
             }
@@ -1689,6 +1702,12 @@ export async function createRunner({ log = console.log } = {}) {
                     + Math.floor(Math.random() * Math.floor(SERVICE_SLACK * 0.35)),
                 ...(dealer ? { by: dealer.label } : {})
             }],
+            // ...and then the grant is taken back, so one run shows the whole
+            // life cycle of a delegation: granted, used, revoked. The fields
+            // the dealership already wrote stay written and stay stamped with
+            // it, which is the circuit's documented behaviour: withdrawing an
+            // authorisation cannot make it untrue that they wrote them.
+            ...(dealer ? { withdraw: [{ label: dealer.label, id: dealer.id }] } : {}),
             // oneKeeper is DESIGNED to refuse (two keepers): the guided run
             // shows a refusal being caught in-circuit and reported, not hidden.
             // fourServices is a FLOOR, so it runs proveFieldAtLeast. Every
