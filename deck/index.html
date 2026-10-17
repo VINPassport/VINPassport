@@ -321,9 +321,9 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
       same assertions that reject a transaction on chain</p>
       <p><span class="big-num">+104</span> app tests · <span class="big-num">+24</span> SDK assumption assertions</p>
       <ul>
-        <li><strong>Mutation-checked</strong>: every guard deleted in turn, recompiled, re-run. <strong>20 of 20</strong> killed</li>
+        <li><strong>Mutation-checked</strong>: every guard deleted in turn, recompiled, re-run. <strong>25 of 25</strong> killed</li>
         <li>Reproduces <strong>byte-identically</strong> from source, toolchain pinned exact</li>
-        <li><strong>Proving measured</strong>, wasm: register <strong>16.6s</strong> · at-most <strong>29.4s</strong> · at-least <strong>27.1s</strong>. Paid at issue, not at verification</li>
+        <li><strong>Proving measured</strong>, wasm: register <strong>17.5s</strong> · at-most <strong>27.6s</strong> · at-least <strong>27.0s</strong> · initialise a field <strong>37.4s</strong>. Paid at issue, not at verification. Initialising is the most expensive and the most repeated, which is the ceiling Wave 3 goes after</li>
       </ul>
     </div>
     <div class="box">
@@ -347,7 +347,7 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
     <div class="box">
       <h3>Ours</h3>
       <ul>
-        <li>The Compact contract: seven circuits, its own ledger and three integrity rules. Not a fork of <code>attestation-vault</code></li>
+        <li>The Compact contract: eleven circuits, eight of which prove, its own ledger and three integrity rules. Not a fork of <code>attestation-vault</code></li>
         <li>The 32-slot vehicle field panel: a vehicle-domain design</li>
         <li>All three surfaces, the demo fleet, the tests</li>
       </ul>
@@ -357,7 +357,7 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
       <ul>
         <li><code>@odatano/dpp-sdk</code>: key derivation, value scaling, Merkle construction</li>
         <li><code>@odatano/nightgate-tx</code>: transaction building, batch ordering, in-process proving - against our own key</li>
-        <li>Hosted NIGHTGATE <strong>sponsored both our deploys</strong> under a metered grant: Wave 1 on 28 Aug, the seven-circuit Wave 2 contract on 13 Oct, live at <code>c8dc0aa4…f7957</code></li>
+        <li>Hosted NIGHTGATE <strong>sponsored our first two deploys</strong> under a metered grant, Wave 1 on 28 Aug and the Wave 2 contract on 13 Oct. The grant allowed two and both are spent, so every <strong>redeploy since has been self-funded</strong> from DUST this project's own wallet generates. Live at <code>2f66c442…e5d648f5</code>, 16 Oct</li>
         <li>Running fees are <strong>not sponsored</strong>: the demo pays its own DUST. Every transaction was already built, proven and signed our side, so <strong>no witness ever leaves</strong></li>
       </ul>
       <p>Not used: CAP service, OData layer, <code>attestation-vault</code>, disclosure grants. Tiered disclosure was deferred on purpose: a passport that cannot tell one writer from another is not worth adding tiers to.</p>
@@ -402,7 +402,7 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
   <h2>Each wave states its delta in advance, and reports it after</h2>
   <table style="flex:1">
     <tr><th style="width:130px">Wave 2<br><span style="font-weight:400;opacity:.65">shipped</span></th>
-        <td><strong>A second contract that closes the limits we named, live on preprod</strong>: register and initialise gated on a registrar identity derived in-circuit, an allowlist pinned at deploy, field commitments bound in-circuit to the content root, a third integrity rule with the panel widened from 5 fields to 17, and every guard mutation-checked, 20 of 20. Deployed 13 Oct 2026, block 2962145. Cost measured against it with real proofs: <strong>0.81 DUST</strong> to register and initialise a vehicle at the protocol reference price, and <strong>29.4s</strong> in wasm to issue a claim</td></tr>
+        <td><strong>A second contract that closes the limits we named, live on preprod</strong>: register and initialise gated on a registrar identity derived in-circuit, an allowlist pinned at deploy, field commitments bound in-circuit to the content root, a third integrity rule with the field registry widened from 5 to 68, a circuit that compares two of a vehicle's own hidden fields and publishes neither, and every guard mutation-checked, 25 of 25. Deployed 16 Oct 2026, block 2999411. Cost measured with real proofs: <strong>0.81 DUST</strong> at the protocol reference price to register a vehicle and initialise the five fields the demo writes, and <strong>27.6s</strong> in wasm to issue a claim. A vehicle carrying the whole 68-field registry is a different and much larger number, which is the throughput work Wave 3 is about</td></tr>
     <tr><th>Wave 2<br><span style="font-weight:400;opacity:.65">deferred</span></th>
         <td><strong>The NIGHTGATE integration</strong>: tiered disclosure, disclosure grants, live browser reads, the CAP service layer. Named for Wave 2 and held back on purpose, because a passport that cannot tell one writer from another is not worth adding tiers to. <em>documentComparison</em> waits on more than one anchored root per vehicle</td></tr>
     <tr><th>Wave 3</th>
