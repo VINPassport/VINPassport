@@ -20,11 +20,9 @@
    condition today, and an upgrade could quietly drop it.
    Run by scripts/check-browser-circuits.mjs. */
 
-// passport-simulator.mjs has one Buffer use, in its hex() helper. Shimmed here
-// so the check answers the bundling question rather than tripping on one line.
-globalThis.Buffer ??= {
-    from: (b) => ({ toString: () => [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, '0')).join('') })
-};
+// NO Buffer SHIM. There was one, for the single hex() helper that used it;
+// that helper is pure JS now and nothing here may quietly depend on a Node
+// global again. If a Buffer comes back, this check is where it surfaces.
 
 const out = document.getElementById('out');
 const lines = [];

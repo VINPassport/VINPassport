@@ -34,8 +34,9 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, normalize } from 'node:path';
 import {
     PassportSimulator, buildDemoVehicles, applyIntake, exportLedger, vocabulary, saltStream,
-    DEMO_WRITERS, CONSOLE_REGISTRAR_SECRET
+    CONSOLE_REGISTRAR_SECRET
 } from './lib/scenario.mjs';
+import { requireIntakeFields, resolveWriters } from './lib/intake-engine.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = Number(process.env.PORT ?? 8790);
@@ -72,7 +73,10 @@ const TYPES = {
     '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
     '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml',
     '.png': 'image/png', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml',
-    '.mp4': 'video/mp4'
+    '.mp4': 'video/mp4',
+    // The intake engine's runtime. Served as anything else, the browser
+    // refuses to compile it and the console has no circuits.
+    '.wasm': 'application/wasm'
 };
 
 async function serveStatic(res, urlPath) {
@@ -135,28 +139,15 @@ async function handleIntake(req, res) {
     let intake;
     try { intake = await readJson(req); }
     catch (e) { return json(res, e.code ?? 400, { error: e.message }); }
-    for (const req of ['vin', 'registrar', 'fields']) {
-        if (!intake[req]) return json(res, 400, { error: `missing "${req}"` });
-    }
-
-    // Delegation arrives as LABELS and is resolved here, against identities
-    // this process holds. A console that accepted a writer's secret over HTTP
-    // would hand anyone the ability to write as that party, which is the
-    // opposite of what a per-vehicle writer list is for. An unknown label is
-    // refused rather than ignored: silently dropping it would produce a run
-    // that looks delegated and is not.
-    const asked = Array.isArray(intake.authorise) ? intake.authorise : [];
-    const writers = [];
-    for (const label of asked) {
-        const w = DEMO_WRITERS[String(label)];
-        if (!w) return json(res, 400, { error: `unknown writer "${label}"` });
-        if (!writers.some((x) => x.label === w.label)) writers.push(w);
-    }
-    for (const round of intake.updates ?? []) {
-        const by = round?.by;
-        if (by && !writers.some((x) => x.label === by)) {
-            return json(res, 400, { error: `"${by}" writes an update but was never authorised` });
-        }
+    // Validation and label resolution live in intake-engine.mjs, which the
+    // browser console also calls. Two intake paths is how delegation came to
+    // be honoured on one and silently dropped on the other.
+    let writers;
+    try {
+        requireIntakeFields(intake);
+        writers = resolveWriters(intake);
+    } catch (e) {
+        return json(res, e.code ?? 400, { error: e.message });
     }
 
     const result = applyIntake(

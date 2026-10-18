@@ -20,6 +20,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { resolveWriters } from '../../scripts/lib/intake-engine.mjs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
@@ -84,11 +85,23 @@ test('the console sends a name, never a secret', () => {
     assert.match(page, /authorise: \[\.\.\.authorised\]/,
         'the page does not send the authorised writers as labels');
 
-    // And the server refuses a label it does not hold, rather than ignoring
-    // it: silently dropping one produces a run that looks delegated and is
-    // not.
-    const server = readFileSync(join(ROOT, 'scripts', 'app-server.mjs'), 'utf8');
-    assert.match(server, /unknown writer/, 'the server does not refuse an unknown writer');
-    assert.match(server, /was never authorised/,
-        'the server does not refuse an update written by a party it never authorised');
+});
+
+test('a label nobody holds is refused, and refused the same way everywhere', () => {
+    // This used to read the server's source for the two refusal messages,
+    // which passed for the wrong reason: it proved the strings existed, not
+    // that anything acted on them, and it broke the moment the rule moved to
+    // the module the browser console shares. Call the rule instead.
+    assert.throws(() => resolveWriters({ authorise: ['a dealership nobody holds'] }),
+        /unknown writer/,
+        'an unknown label is ignored rather than refused, so a run would look delegated and would not be');
+    assert.throws(() => resolveWriters({ updates: [{ odometerKm: 1, by: 'dealership' }] }),
+        /was never authorised/,
+        'a party that was never granted the pen can write a field');
+    // The grant itself still has to work, or the two refusals above would be
+    // satisfied by a function that refuses everything.
+    assert.deepEqual(
+        resolveWriters({ authorise: ['dealership'], updates: [{ odometerKm: 1, by: 'dealership' }] })
+            .map((w) => w.label),
+        ['dealership']);
 });

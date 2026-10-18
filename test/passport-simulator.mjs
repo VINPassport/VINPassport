@@ -40,7 +40,11 @@ import {
 
 export { Rule, pureCircuits };
 
-export const hex = (bytes) => Buffer.from(bytes).toString('hex');
+// Pure JS rather than Buffer: this module is bundled into the browser for
+// the intake console, where Buffer does not exist. Byte-identical to
+// Buffer.from(bytes).toString('hex').
+export const hex = (bytes) =>
+    Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 
 /** A deterministic 32-byte value, so a failure is reproducible. */
 export const bytes32 = (fill) => new Uint8Array(32).fill(fill);
