@@ -76,7 +76,7 @@ function detailBlock(a, ctx) {
     }
     const cname = a.invalid ? 'unrecognised field key' : (a.meta?.name ?? a.field ?? 'field');
     return `<div class="vp-detail vfy-measure" style="margin:0 0 16px;padding:13px 15px;border:1px solid rgba(0,74,173,.3);background:#EDE4D8">
-      <p style="margin:0 0 11px;font-size:13px;line-height:1.55;color:rgba(14,23,38,.78)">A zero-knowledge proof was accepted on the ledger. It could not have been produced unless the hidden value satisfied the bound, and the value itself was never published.</p>
+      <p style="margin:0 0 11px;font-size:13px;line-height:1.55;color:rgba(14,23,38,.78)">The circuit accepted this claim. It could not have been produced unless the hidden value satisfied the bound, and the value itself was never published. On a live chain that acceptance is a zero-knowledge proof on the ledger.</p>
       <div class="mono" style="display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:10.5px">
         <span style="color:rgba(14,23,38,.62)">claim</span><span>${esc(cname)} ${a.atMost ? '≤' : '≥'} ${fmt(c.bound)}</span>
         <span style="color:rgba(14,23,38,.62)">field key</span><span style="word-break:break-all">${short(c.fieldKey)}</span>
@@ -213,7 +213,7 @@ const LEDE = `<section class="vfy-lede">
   </p>
   <p class="vfy-measure" style="margin:10px 0 0;font-size:13.5px;line-height:1.6;color:rgba(14,23,38,.66)">First time reading one of these? <a href="../guide/#verify" style="color:#004AAD">The guide explains every part of this page</a>, including what a tick does not mean.</p>
   <div class="vfy-legend">
-    <div>${TICK}<span style="font-size:13px;line-height:1.5;color:rgba(14,23,38,.72)"><b style="display:block;font-size:14px;color:#0E1726">Proven</b>A zero-knowledge proof for this claim was accepted on the ledger. It could not exist unless the hidden value satisfied the bound.</span></div>
+    <div>${TICK}<span style="font-size:13px;line-height:1.5;color:rgba(14,23,38,.72)"><b style="display:block;font-size:14px;color:#0E1726">Proven</b>The circuit accepted this claim, and it could not exist unless the hidden value satisfied the bound. On a live chain that acceptance is a zero-knowledge proof on the ledger; here it is the same circuit, run wherever this record was made.</span></div>
     <div><span class="none"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12h14"></path></svg></span><span style="font-size:13px;line-height:1.5;color:rgba(14,23,38,.72)"><b style="display:block;font-size:14px;color:#0E1726">Not proven</b>Nothing on the ledger answers this question. That is silence, <b>not a no</b>. The difference matters, and the page will not blur it.</span></div>
   </div>
 </section>`;
