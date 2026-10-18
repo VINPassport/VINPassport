@@ -186,14 +186,54 @@ Four choices here were made on other grounds and turn out to be the ones the act
 
 What it does not settle:
 
-- **Appendix 1 to Annex V lists the EVP parameters against CoC field identifiers** from Annex VIII
-  of Implementing Regulation (EU) 2020/683. Our 32-slot panel was built from the circularity
-  passport and from what a buyer asks, not from that table. Whether the two align is an open
-  question and a deliverable, not a claim.
+- ~~**Appendix 1 to Annex V lists the EVP parameters against CoC field identifiers.** Whether our
+  panel aligns is an open question.~~ **Read 18 October 2026. It does not align, and the gap is
+  the useful finding.** See the next section.
 - The EVP holds environmental performance **at the moment of registration**, updated when the CoC
   fields change (3.2.1). A service history is not within its scope. Euro 7 is what puts a QR code,
   a 20 year data duty and a tampering duty on the manufacturer; the rest of what VINPassport records
   sits beside it under the circularity passport.
+
+#### Appendix 1 to Annex V, read 18 October 2026
+
+Source: [Implementing Regulation (EU) 2025/1707](https://eur-lex.europa.eu/eli/reg_impl/2025/1707/oj),
+Annex V Appendix 1, read in a browser because EUR-Lex answers an automated request with `202`.
+
+Five tables, restated here against their Certificate of Conformity field identifiers:
+
+| Table | What it carries | CoC fields |
+|---|---|---|
+| 1. General vehicle information | Approval certificate number, date approval granted, make, **VIN**, date of manufacture, commercial name | 0.1, 0.2.1, 0.10, 0.11, 0.11(b) |
+| 2. Vehicle family identifiers | PEMS family; **OBM family and battery durability family are marked Reserved** | 0.2.3.3 |
+| 3. Powertrain data | Maximum net power, combustion engine and electric motor | 27.1, 27.3 |
+| 4. Pollutant emissions | WLTP highest values for CO, NOx, NMHC, THC, THC+NOx, particle mass, particle number | 48 |
+| 5. CO2, fuel consumption, electrical energy | WLTP values across the phases, electric range, and the OVC-HEV charge-sustaining, charge-depleting, weighted and equivalent-range rows | 49.1, 49.2, 49.4, 49.5 |
+
+**About 20 discrete values for a conventional M1, nearer 45 for a plug-in hybrid**, and every one
+of them is fixed at type approval.
+
+**What this settles, and it is not what we assumed.** The EVP is an emissions and type-approval
+record. **The odometer is not an EVP parameter. Neither is accident history, write-off status,
+owner count, flood damage or service history.** None of the fields the fraud story is built on
+appear in Appendix 1. Our 32-slot panel was built from the circularity passport and from what a
+buyer asks, and that was the right source: the two documents answer different questions.
+
+**Three distinct duties, which had been running together in our own material:**
+
+<!-- disclosure-ok: restates Arts. 4(7), 4(10) and 17 of Reg (EU) 2024/1257 and Annex V of Reg (EU) 2025/1707. Quoted law, not a finding about this codebase. -->
+
+| Provision | Duty | Changes over life? |
+|---|---|---|
+| **Art. 17, Annex V, App. 1** | Issue an EVP of the parameters above; keep it **accessible 20 years**; reflect updates **in the relevant CoC fields** (3.2.1) | Essentially never. CoC fields move only on re-approval |
+| **Art. 4(10)** | Data available must cover the EVP, OBM and OBFCM, **including lifetime values** and traction battery state of health | **Yes.** This, not the EVP, is where odometer-adjacent and degradation data sit |
+| **Art. 4(7)(d), (j)** | Design, construct and assemble so as to **minimise tampering vulnerabilities**, across **all phases of the life-cycle**, for the odometer and for the EVP | A design duty, discharged continuously |
+
+<!-- /disclosure-ok -->
+
+The ratchet answers 4(7)(d) and 4(7)(j). It is not an Appendix 1 obligation and must not be sold as
+one. The accurate claim is that a ledger refusing a backward write is a life-cycle anti-tampering
+measure under 4(7), and that lifetime values fall under 4(10), while the EVP itself is a static
+emissions record we can carry cheaply alongside both.
 
 #### What this changes
 
