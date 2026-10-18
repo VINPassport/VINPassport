@@ -1,18 +1,27 @@
-/* The compiled VINPassport contract, executing in a browser.
+/* The compiled VINPassport contract, and the intake path above it, executing
+   in a browser.
 
    This is circuit EXECUTION, not proving: the same work app-server.mjs does
    for the intake console, which is why it needs 1.4 MB of runtime wasm and
    none of the 52 MB of prover keys. If it holds, the intake console can run
    on the published static site with no host and no running cost, and only
    the guided preprod run still needs a machine somewhere.
-   
-   It is a check rather than a note because the thing it establishes is a
-   property of a dependency: @midnight-ntwrk/onchain-runtime-v3 declares a
-   `browser` export condition today, and an upgrade could quietly drop it.
+
+   Two layers, because either could fail on its own:
+
+     circuits   the compiled contract through PassportSimulator
+     intake     scenario.mjs, which is what the console actually calls, and
+                which reached for node:crypto and Buffer until it was made
+                runtime-agnostic. Those four lines are the reason this half
+                exists: Node keeps passing whether or not they came back.
+
+   It is a check rather than a note because what it establishes belongs to a
+   dependency: @midnight-ntwrk/onchain-runtime-v3 declares a `browser` export
+   condition today, and an upgrade could quietly drop it.
    Run by scripts/check-browser-circuits.mjs. */
 
 // passport-simulator.mjs has one Buffer use, in its hex() helper. Shimmed here
-// so the spike answers the bundling question rather than tripping on one line.
+// so the check answers the bundling question rather than tripping on one line.
 globalThis.Buffer ??= {
     from: (b) => ({ toString: () => [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, '0')).join('') })
 };
@@ -27,6 +36,8 @@ try {
         await import('../passport-simulator.mjs');
     const { pureCircuits } = await import('../../contracts/vinpassport/src/managed/vinpassport/contract/index.js');
     say(`loaded in ${Math.round(performance.now() - t0)} ms`);
+
+    // ---- layer one: the circuits themselves --------------------------------
 
     const sim = new PassportSimulator([REGISTRAR_ID]);
     sim.actAs(REGISTRAR_SECRET);
@@ -61,9 +72,54 @@ try {
     const writer = hex(sim.ledger.fieldWriter.lookup(slot));
     say('');
     say(`five circuits in ${ms} ms`);
-    say(`fieldWriter = ${writer.slice(0, 16)}...`);
-    say(`dealership  = ${hex(DEALER_ID).slice(0, 16)}...`);
-    say(writer === hex(DEALER_ID) ? 'RESULT ok' : 'RESULT failed: the writer recorded was not the dealership');
+    if (writer !== hex(DEALER_ID)) {
+        say('RESULT failed: the writer recorded was not the dealership');
+        throw new Error('stop');
+    }
+    say('delegation recorded against the dealership');
+
+    // ---- layer two: the intake path the console actually calls -------------
+
+    const t2 = performance.now();
+    const { applyIntake, buildDemoVehicles, exportLedger, saltStream, DEMO_WRITERS, CONSOLE_REGISTRAR_SECRET } =
+        await import('../../scripts/lib/scenario.mjs');
+    say('');
+    say(`scenario.mjs loaded in ${Math.round(performance.now() - t2)} ms`);
+
+    const t3 = performance.now();
+    const sim2 = new PassportSimulator();
+    const salt = saltStream();
+    buildDemoVehicles(sim2, salt);
+    say('buildDemoVehicles  ok');
+
+    const result = applyIntake(sim2, {
+        vin: 'VPDBROWSERINTAKE1',
+        registrar: 'browser',
+        fields: { odometerKm: 40000, accidentCount: 0, serviceCount: 4 },
+        panel: { vehicleCategory: 'M1', fuelType: 'bev' },
+        writers: [DEMO_WRITERS.dealership],
+        registrarSecret: CONSOLE_REGISTRAR_SECRET,
+        updates: [{ odometerKm: 48000, by: 'dealership' }],
+        prove: { noAccidents: true, mileageUnder: 150000 }
+    }, salt);
+    say(`applyIntake        ok  (${result.applied.length} applied, ${result.refused.length} refused)`);
+    for (const r of result.refused) say(`   refused: ${r.step} - ${r.reason}`);
+
+    const exported = exportLedger(sim2, 'browser check');
+    const vehicles = Object.keys(exported.passports).length;
+    say(`exportLedger       ok  (${vehicles} vehicles, ${Object.keys(exported.fieldCommitment).length} fields)`);
+    say(`intake path in ${Math.round(performance.now() - t3)} ms`);
+
+    // The export has to be the shape local-ledger.mjs will accept, or the
+    // console would produce something /verify/ then refuses to read.
+    const shaped = ['passports', 'registrar', 'fieldCommitment', 'fieldRule', 'fieldWriter']
+        .every((k) => exported[k] && typeof exported[k] === 'object') && Array.isArray(exported.claims);
+
+    say('');
+    if (!shaped) say('RESULT failed: the export is not the shape the local ledger stores');
+    else if (result.refused.length) say('RESULT failed: the intake was refused in a browser but not in Node');
+    else if (!exported.passports[result.vinHex]) say('RESULT failed: the registered vehicle is not in the export');
+    else say('RESULT ok');
 } catch (e) {
-    say('RESULT failed: ' + (e?.stack ?? e));
+    if (String(e?.message) !== 'stop') say('RESULT failed: ' + (e?.stack ?? e));
 }

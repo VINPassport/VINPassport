@@ -7,9 +7,16 @@
  * published static site can offer "add a passport" with no host at all, and
  * only the guided preprod run still needs a machine, a wallet and fees.
  *
- * Measured 18 October: bundles with no shims beyond one Buffer helper,
- * 416 KB of wasm gzipped, loads in about 60 ms and runs five circuits in
- * about 30 ms, delegation included.
+ * Two layers, because either can fail without the other noticing: the
+ * compiled contract through PassportSimulator, and scenario.mjs above it,
+ * which is what the console actually calls and which reached for node:crypto
+ * and Buffer until it was made runtime-agnostic. Node keeps passing whether
+ * or not those four lines come back, so only this would catch it.
+ *
+ * Measured 18 October: bundles with no shim beyond one Buffer helper, 416 KB
+ * of wasm gzipped, loads in about 45 ms, five circuits in about 35 ms, and
+ * the whole intake path - demo vehicles, a delegated registration and the
+ * ledger export - in about 240 ms.
  *
  * This is a check rather than a note in a document because what it
  * establishes belongs to a dependency, not to us.
@@ -159,5 +166,5 @@ if (!text.includes('RESULT ok')) {
     console.error('\ncheck:browser FAILED - the contract bundled but did not run in the browser.');
     finish(1);
 }
-console.log('\ncheck:browser: the compiled circuits run client side, delegation included');
+console.log('\ncheck:browser: circuits and the whole intake path run client side');
 finish(0);

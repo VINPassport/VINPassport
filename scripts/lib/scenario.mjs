@@ -13,7 +13,21 @@ import {
 import { buildTree, padToWidth } from '@odatano/dpp-sdk/merkle';
 import { CLAIM_CATALOGUE, CLAIM_GROUPS, boundFor, isCompare } from '../../site/assets/claim-catalogue.mjs';
 import { blake2b } from '@noble/hashes/blake2';
-import { randomBytes } from 'node:crypto';
+/**
+ * PORTABILITY. This module builds ledger state, and the intake console needs
+ * to build it in a browser on the published static site, where there is no
+ * server to post a registration to. Nothing here is Node-specific in
+ * substance, so the four places that reached for a Node API now use the web
+ * equivalents, which Node has had as globals for years. No conditional
+ * imports, no bundler shims, and one code path rather than two.
+ */
+
+/** Fresh random bytes, from whichever crypto this runtime has. */
+const randomBytes = (n) => globalThis.crypto.getRandomValues(new Uint8Array(n));
+
+/** Hex in, bytes out. Replaces Buffer.from(hex, 'hex'). */
+const fromHex = (hex) =>
+    Uint8Array.from(hex.match(/../g) ?? [], (byte) => parseInt(byte, 16));
 
 export { PassportSimulator, Rule, fieldKey, bytes32, hex };
 
@@ -255,7 +269,11 @@ const utf8 = (s) => new TextEncoder().encode(s);
 // in an environment variable and silent when it happened. Every other piece
 // of key material here is already checked this way; this one was the
 // exception.
-const SEED_OVERRIDE = process.env.VINPASSPORT_SALT_SEED?.trim();
+// `process` does not exist in a browser, and a missing override there is
+// the ordinary case rather than an error: the page generates a fresh seed.
+const SEED_OVERRIDE = typeof process !== 'undefined'
+    ? process.env?.VINPASSPORT_SALT_SEED?.trim()
+    : undefined;
 if (SEED_OVERRIDE !== undefined && SEED_OVERRIDE !== '' && !/^[0-9a-fA-F]{64}$/.test(SEED_OVERRIDE)) {
     throw new Error(
         'VINPASSPORT_SALT_SEED must be exactly 64 hex characters (32 bytes). '
@@ -263,9 +281,7 @@ if (SEED_OVERRIDE !== undefined && SEED_OVERRIDE !== '' && !/^[0-9a-fA-F]{64}$/.
         + 'a malformed value would silently weaken every commitment rather than fail.'
     );
 }
-const SALT_SEED = SEED_OVERRIDE
-    ? Uint8Array.from(Buffer.from(SEED_OVERRIDE, 'hex'))
-    : randomBytes(32);
+const SALT_SEED = SEED_OVERRIDE ? fromHex(SEED_OVERRIDE) : randomBytes(32);
 const saltFrom = (label) => b2b(Uint8Array.from([...SALT_SEED, ...utf8(label)]));
 const nodeHash = (l, r) => b2b(Uint8Array.from([...l, ...r]));
 
@@ -302,7 +318,7 @@ export const contentRoot = (vin, fields, panel = {}, saltFn = saltFrom) => {
         ])));
     }
     const tree = buildTree(padToWidth(leaves, 32, () => b2b(utf8('vinpassport:pad'))), nodeHash);
-    return Uint8Array.from(Buffer.from(tree.rootHex, 'hex'));
+    return fromHex(tree.rootHex);
 };
 
 // A registrar is no longer named into existence. Its identity is derived in
