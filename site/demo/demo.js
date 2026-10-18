@@ -269,8 +269,10 @@ async function showRecordedRun() {
             lede.textContent = 'The guided run needs a circuit server, and this static site has '
                 + 'none, so nothing here can start a run today. What follows is a real run that '
                 + 'already happened on the deployed preprod contract: real proofs, real fees, and '
-                + 'blocks you can look up yourself. To run it live, clone the repository and '
-                + 'start it with npm run app.';
+                + 'blocks you can look up yourself. Clone the repository and start it with '
+                + 'npm run app to drive the same compiled circuits on your own machine. '
+                + 'Putting a passport on preprod as well needs a funded wallet, which is '
+                + 'the part a static site cannot hold.';
         }
         await showRecordedRun();
         return;

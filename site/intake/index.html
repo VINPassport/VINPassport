@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The engine that runs real preprod transactions. The published site is
+     static (GitHub Pages) and can never hold a wallet, so the two surfaces
+     that need one name the host here and probe it at load. Absent or not
+     answering, both pages stay honest and offer the recorded run instead,
+     which is why this can point at a host before that host exists. Only
+     /demo/ and /intake/ carry it: every other page reads the static export
+     and would pay the probe's timeout for nothing. -->
+<meta name="vinpassport-api" content="https://api.passport.vin">
 <title>Intake console · VINPassport</title>
 <meta name="description" content="Register a vehicle passport. Values stay local; only commitments and proven claims reach the ledger.">
 <link rel="icon" href="../favicon.ico" sizes="32x32">
