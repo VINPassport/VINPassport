@@ -68,6 +68,20 @@ ul { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 
 }
 .box h3 { color: var(--brand); font-size: 16px; text-transform: uppercase; letter-spacing: .06em; }
 
+/* A box is a flex column with its own `gap`, but its paragraphs still carried
+   the browser's default ~1em top AND bottom margin, which does not collapse in
+   a flex container. Every paragraph break was costing about 44px instead of 10.
+   On a slide fixed at 720px with overflow:hidden that pushed the boxes down
+   into the footer and, on the densest slides, past the bottom edge entirely:
+   three slides were shipping with text that simply was not on screen. */
+.box > p, .box > ul, .box > h3 { margin: 0; }
+
+/* Slides that are dense even after that. Buys roughly another 90px. */
+.slide.dense p, .slide.dense li { font-size: 17px; line-height: 1.45; }
+.slide.dense .box { padding: 16px 18px; }
+.slide.dense .cols { gap: 26px; }
+.slide.dense ul { gap: 6px; padding-left: 20px; }
+
 .slide-foot {
   position: absolute; left: 72px; right: 72px; bottom: 26px;
   display: flex; justify-content: space-between; align-items: baseline;
@@ -146,7 +160,7 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
 </section>
 
 <!-- ============================================================ 2 problem -->
-<section class="slide">
+<section class="slide dense">
   <div class="eyebrow">The problem</div>
   <h2>A vehicle's history must be checkable by strangers,<br>and too sensitive to publish</h2>
   <div class="cols">
@@ -157,14 +171,18 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
       earned: each is a field moving a way it should never move, and the buyer cannot tell.</p>
     </div>
     <div class="box">
-      <h3>From September 2032, by law</h3>
-      <p>Every vehicle placed on the EU market must carry a <strong>Digital Circularity Vehicle
-      Passport</strong>: identity, provenance, history, environmental declarations
-      (Reg (EU) 2026/1738, Art 13, in force since 13 Aug 2026).</p>
-      <p><strong>The regulation demands a passport that can be checked. It does not demand one
-      that is public.</strong> A full history is commercially sensitive to the seller and
-      personally identifying to the owner. Publish it, and one problem is solved by creating
-      the other.</p>
+      <h3>From 29 November 2026, by law</h3>
+      <p>Euro 7 puts an <strong>Environmental Vehicle Passport</strong> on every new M1/N1 type
+      from <strong>29 Nov 2026</strong>, all new M1/N1 a year later. It opens from a QR code on
+      the car with no app and no login, and <strong>must stay reachable for twenty years</strong>
+      (Reg (EU) 2025/1707 Art 17(4)). Art 4(7) separately obliges manufacturers to minimise
+      tampering with the <strong>odometer</strong> and with the passport itself.</p>
+      <p>The fuller Digital Circularity Vehicle Passport follows in September 2032
+      (Reg (EU) 2026/1738 Art 13). <strong>2032 is the roadmap. Six weeks away is the
+      customer.</strong></p>
+      <p><strong>The regulation demands a passport that can be checked, not one that is
+      public.</strong> A full history is commercially sensitive to the seller and personally
+      identifying to the owner. Publish it and one problem is solved by creating the other.</p>
     </div>
   </div>
   <div class="slide-foot"><span class="brandline"><i class="footmark" aria-hidden="true"></i><span class="wm"><span class="wm-vin">VIN</span>PASSPORT</span></span><span>2</span></div>
@@ -283,7 +301,7 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
 </section>
 
 <!-- ============================================================ 7 regulation panel -->
-<section class="slide">
+<section class="slide dense">
   <div class="eyebrow">Regulatory depth</div>
   <h2>The full DCVP panel, not a demo subset</h2>
   <div class="cols">
@@ -297,29 +315,34 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
       </ul>
     </div>
     <div class="box">
-      <h3>Where our passport ends</h3>
+      <h3>Where our passport ends: two boundaries</h3>
       <p>An EV's <strong>battery</strong> is a separate regime with its own passport (Reg (EU)
       2023/1542, from Feb 2027). We carry the <strong>reference</strong>: slot 29,
       <code>batteryPassportId</code>: and never restate the battery's claims.</p>
-      <p><em>The regulation asks these passports to interoperate. Interoperate, not absorb,
-      a reference is what that actually looks like.</em></p>
-      <p>Every declaration anchors under a salted 32-slot content root: it commits to everything
-      and reveals nothing: including which slots are filled.</p>
+      <p>The <strong>Euro 7 EVP is also separate</strong>, and we read its parameter table rather
+      than assume it. Appendix 1 to Annex V is about twenty type-approval and emissions values,
+      fixed at approval. <strong>We hold two, and the odometer is not an EVP parameter at
+      all</strong>: it reaches us through Art 4(7)(d) anti-tampering and the Art 4(10)
+      lifetime-values regime.</p>
+      <p><em>Both boundaries get one answer: interoperate, do not absorb. Separate section roots
+      under one top root, because they are different documents on different clocks.</em></p>
+      <p>Every declaration anchors under a salted content root: it commits to everything and
+      reveals nothing, including which slots are filled.</p>
     </div>
   </div>
   <div class="slide-foot"><span class="brandline"><i class="footmark" aria-hidden="true"></i><span class="wm"><span class="wm-vin">VIN</span>PASSPORT</span></span><span>7</span></div>
 </section>
 
 <!-- ============================================================ 8 QA -->
-<section class="slide">
+<section class="slide dense">
   <div class="eyebrow">Engineering &amp; quality</div>
   <h2>Tested like it matters, honest about what a proof means</h2>
   <div class="cols">
     <div class="box">
       <h3>The numbers</h3>
-      <p><span class="big-num">99</span> contract tests against the <strong>compiled circuits</strong>,
+      <p><span class="big-num">128</span> contract tests against the <strong>compiled circuits</strong>,
       same assertions that reject a transaction on chain</p>
-      <p><span class="big-num">+104</span> app tests · <span class="big-num">+24</span> SDK assumption assertions</p>
+      <p><span class="big-num">+155</span> app tests · <span class="big-num">+24</span> SDK assumption assertions</p>
       <ul>
         <li><strong>Mutation-checked</strong>: every guard deleted in turn, recompiled, re-run. <strong>25 of 25</strong> killed</li>
         <li>Reproduces <strong>byte-identically</strong> from source, toolchain pinned exact</li>
@@ -340,7 +363,7 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
 </section>
 
 <!-- ============================================================ 9 ecosystem -->
-<section class="slide">
+<section class="slide dense">
   <div class="eyebrow">Ecosystem</div>
   <h2>Built on Midnight, with ODATANO: precisely</h2>
   <div class="cols">
@@ -367,7 +390,7 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
 </section>
 
 <!-- ============================================================ 10 business -->
-<section class="slide">
+<section class="slide dense">
   <div class="eyebrow">Business: how this earns</div>
   <h2>Mandated demand, fiat-only revenue, free verification</h2>
   <div class="cols">
@@ -388,9 +411,12 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
       where the obligation starts: second-hand dealers are stage 3, inheriting passports
       rather than adopting a new system.</p>
       <h3 style="margin-top:6px">Honest about pricing</h3>
-      <p>Price points wait on <strong>measured unit cost</strong>: DUST per anchor and per proof,
-      still unmeasured. The structure is already built: billing gates the action, not the
-      chain, so pricing never touches crypto code.</p>
+      <p>Unit cost is <strong>measured, not assumed</strong>. On chain it is negligible: NIGHT is
+      never consumed, so about <strong>USD 331</strong> of held NIGHT supports a thousand vehicles
+      a day. The real cost is <strong>proving</strong>, and that is what Wave 3 goes after.</p>
+      <p><strong>Two products, not one.</strong> The regulated EVP is twenty static values, priced
+      at issue. Provenance is voluntary and is where lifetime cost lives. Conflating them was the
+      mistake the measurement caught.</p>
     </div>
   </div>
   <div class="slide-foot"><span class="brandline"><i class="footmark" aria-hidden="true"></i><span class="wm"><span class="wm-vin">VIN</span>PASSPORT</span></span><span>10</span></div>
@@ -420,7 +446,7 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
   <h2>Scan a car. Get a verdict. Trust the math, not the seller.</h2>
   <div class="term" style="max-width:640px">
     <div>git clone https://github.com/VINPassport/VINPassport</div>
-    <div>npm install &amp;&amp; npm test&nbsp;&nbsp;<span class="dim"># 99 + 104 + 24, all green</span></div>
+    <div>npm install &amp;&amp; npm test&nbsp;&nbsp;<span class="dim"># 128 + 155 + 24, all green</span></div>
     <div>npm run app&nbsp;&nbsp;<span class="dim"># the whole product on localhost</span></div>
   </div>
   <p style="margin-top:8px">

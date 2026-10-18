@@ -46,7 +46,8 @@
     "check:dust": "node scripts/check-dust.mjs",
     "warm:dust": "node scripts/sync-dust.mjs",
     "shots": "node scripts/capture-guide-shots.mjs",
-    "record:run": "node scripts/record-run.mjs"
+    "record:run": "node scripts/record-run.mjs",
+    "check:deck": "node scripts/check-deck.mjs"
   },
   "overrides": {
     "@midnight-ntwrk/ledger-v8": "8.1.3",

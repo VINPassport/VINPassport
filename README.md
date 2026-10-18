@@ -57,6 +57,16 @@ so as to minimise tampering with, among nine listed systems, the **odometer** an
 itself** (Art. 4(7)(d) and (j)). Every provision in that paragraph was read from the Official
 Journal on 14 October 2026 and is quoted in [REGULATION.md](docs/REGULATION.md).
 
+> **What the EVP actually contains, read 18 October 2026.** [Appendix 1 to Annex V of Implementing
+> Regulation (EU) 2025/1707](https://eur-lex.europa.eu/eli/reg_impl/2025/1707/oj) lists the
+> parameters: approval certificate, make, VIN, date of manufacture, powertrain power, the WLTP
+> pollutant values, CO2, consumption and electric range. About **20 discrete values for a
+> conventional M1**, all fixed at type approval. **The odometer is not one of them**, and neither
+> is accident history, write-off status or service history. The odometer reaches this project
+> through the Art. 4(7)(d) anti-tampering duty and the Art. 4(10) lifetime-values regime, not
+> through the EVP parameter list, and this repository does not claim otherwise. The mapping against
+> our own registry is in [FIELDS.md](docs/FIELDS.md#the-annex-v-alignment-worked-18-october-2026).
+
 The **Digital Circularity Vehicle Passport** follows from **1 September 2032** under
 [Regulation (EU) 2026/1738](https://eur-lex.europa.eu/eli/reg/2026/1738/oj), which entered into
 force on 13 August 2026 and requires that passport to be *"aligned, interoperable and, where
@@ -129,9 +139,9 @@ seconds.
 
 ```
  Test Files  1 passed (1)
-      Tests  99 passed (99)
+      Tests  128 passed (128)
 
-# pass 104
+# pass 155
 
 ================ 24 passed, 0 failed ================
 ```

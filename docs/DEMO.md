@@ -68,7 +68,7 @@ equally the order to click through live for anyone evaluating the repository.
 
 ```bash
 npm install
-npm test              # 99 contract + 104 app + 24 SDK, all green
+npm test              # 128 contract + 155 app + 24 SDK, all green
 npm run demo:export   # regenerate site/verify/demo-data.json from the circuits
 npm run serve:site    # the same pages as the live URL, locally
 ```
