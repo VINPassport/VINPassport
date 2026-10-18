@@ -53,6 +53,7 @@ import {
 import {
     CLAIM_DEFS, claimLabel, planCalls, makeStage, stepLabel, makeWitnessHolder, randomDemoVin
 } from './preprod-plan.mjs';
+import { dryRunStages } from './preprod-dryrun.mjs';
 import { preprodEndpoints, publicPreprodEndpoints, assertNoSecrets, guardLogs } from './endpoints.mjs';
 
 // Before anything connects: the indexer credential travels in every URL,
@@ -941,68 +942,23 @@ export async function createRunner({ log = console.log } = {}) {
 
         // -- pre-simulate through the real compiled circuits: refusals are
         //    results and are never submitted; a refused write also refuses
-        //    everything that would have opened its commitment.
+        //    everything that would have opened its commitment. The loop
+        //    itself lives in preprod-dryrun.mjs so it can be tested
+        //    without a wallet: it is where a delegated write meets the
+        //    authority rule, and a second copy of it is exactly the bug.
         const simStep = step('simulate', 'Dry-run through the compiled circuits');
-        const refused = [];
+        let refused = [];
         await runStep(simStep, async () => {
-            // Pinned to the identity this demo actually acts as, and acting as
-            // it, so the dry run exercises the same authority check the chain
-            // will apply rather than a permissive stand-in.
+            // Pinned to the identity this demo actually acts as, and acting
+            // as it, so the dry run exercises the same authority check the
+            // chain will apply rather than a permissive stand-in.
             const sim = new PassportSimulator([registrarIdBytes]);
             sim.actAs(registrarSecret);
-            for (const stage of plan.stages) {
-                stage.steps = stage.steps.filter((s) => {
-                    try {
-                        // Act as whoever this step acts as, then put the
-                        // registrar back. A delegated write that the chain
-                        // would refuse must be refused here too, and a
-                        // registrar-only call that followed a delegated one
-                        // must not inherit the delegate's identity.
-                        sim.actAs(s.by === dealer?.label ? dealer.secret : registrarSecret);
-                        if (s.kind === 'register') sim.registerPassport(vinBytes, croot);
-                        else if (s.kind === 'authorise') sim.authoriseWriter(vinBytes, s.writerId);
-                        else if (s.kind === 'withdraw') sim.withdrawWriter(vinBytes, s.writerId);
-                        else if (s.kind === 'init') {
-                            if (!(s.name in FIELDS)) throw new Error('unknown field');
-                            const salt = saltOf(s.name, 0);
-                            sim.initialiseField(vinBytes, K[s.name], FIELDS[s.name].rule, s.value, salt);
-                            writes[s.name] = [{ value: s.value, salt }];
-                            s.writeIndex = 0;
-                        } else if (s.kind === 'update') {
-                            if (!(s.name in FIELDS)) throw new Error('unknown field');
-                            const salt = saltOf(s.name, (writes[s.name]?.length ?? 0));
-                            sim.recordField(vinBytes, K[s.name], s.value, salt);
-                            s.writeIndex = ((writes[s.name] ??= []).push({ value: s.value, salt })) - 1;
-                        } else if (s.kind === 'claim') {
-                            // Direction comes from the catalogue: a floor is a
-                            // different circuit, not a different bound.
-                            if (s.circuit === 'proveFieldAtMostField') {
-                                if (!(s.against in FIELDS)) throw new Error('unknown field');
-                                sim.proveFieldAtMostField(
-                                    vinBytes, K[s.name], K[s.against], s.bound
-                                );
-                                s.writeIndex = (writes[s.name]?.length ?? 0) - 1;
-                                s.writeIndexAgainst = (writes[s.against]?.length ?? 0) - 1;
-                            } else if (s.circuit === 'proveFieldAtLeast') {
-                                sim.proveFieldAtLeast(vinBytes, K[s.name], s.bound);
-                            } else {
-                                sim.proveFieldAtMost(vinBytes, K[s.name], s.bound);
-                            }
-                            // Claims run last, so the write they open is the
-                            // field's final one - fixed here, not at call time.
-                            s.writeIndex = (writes[s.name]?.length ?? 0) - 1;
-                        }
-                        return true;
-                    } catch (e) {
-                        refused.push({ step: stepLabel(s), reason: String(e?.message ?? e).replace(/^.*failed assert: /, '') });
-                        return false;
-                    }
-                });
-            }
-            // Relabel from what SURVIVED. A stage keeps the label it was
-            // planned with otherwise, and would go on naming a claim the
-            // dry-run refused and never submitted.
-            plan.stages = plan.stages.filter((st) => st.steps.length > 0).map((st) => makeStage(st.steps));
+            const out = dryRunStages(plan.stages, {
+                sim, registrarSecret, dealer, vinBytes, croot, saltOf, writes
+            });
+            plan.stages = out.stages;
+            refused = out.refused;
             simStep.detail = refused.length ? `${refused.length} step(s) refused in-circuit; not submitted` : 'every step provable';
             if (!plan.stages.length) throw new Error('nothing survived the dry-run');
         });

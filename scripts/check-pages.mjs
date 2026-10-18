@@ -20,7 +20,12 @@
  * only way to see it is to run the page and listen for the exception.
  *
  *   npm run check:pages
- *   npm run check:pages -- --base http://localhost:8790   (against the app)
+ *   npm run check:pages -- --base http://localhost:8797   (against the app)
+ *   npm run check:pages -- --base <url> --expect app|static
+ *
+ * It names the server that answered before it tests anything, and --expect
+ * turns that into a refusal: the pages behave differently with and without a
+ * circuit server, so a run against the wrong one passes while proving nothing.
  *
  * With no --base it serves ./site itself from a throwaway port, which is the
  * static-host case: /api/* is expected to 404 there and is not reported.
@@ -44,6 +49,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const argv = process.argv.slice(2);
 const baseArg = argv.indexOf('--base');
 const EXTERNAL = baseArg >= 0 ? argv[baseArg + 1].replace(/\/$/, '') : null;
+const expectArg = argv.indexOf('--expect');
+const EXPECT = expectArg >= 0 ? argv[expectArg + 1] : null;
 
 /** Every directory under site/ that holds an index.html, as a URL path. */
 const pages = [];
@@ -81,6 +88,56 @@ if (!EXTERNAL) {
     });
     await new Promise((r) => server.listen(PORT + 1, '127.0.0.1', r));
     base = `http://127.0.0.1:${PORT + 1}`;
+}
+
+/**
+ * WHICH SERVER IS ANSWERING, said out loud before anything is tested.
+ *
+ * The pages behave differently depending on this and look identical either
+ * way: with a circuit server the intake console enables REGISTER and the demo
+ * page offers a guided run, and without one both must say so and disable
+ * themselves. So a check run against the wrong server is not a failed check,
+ * it is a check of something else that passes.
+ *
+ * That is not hypothetical. Stale `npx serve` processes outlived the pattern
+ * meant to kill them and kept the earlier ports, so `npm run app` moved up the
+ * range and a browser pointed at the old port was driving a static host while
+ * the results were being read as the app's. Nothing was wrong with either
+ * server; the report just described a different one. One line of output and an
+ * optional `--expect` make that impossible to do quietly.
+ */
+async function identify(url) {
+    const get = async (path) => {
+        try {
+            const r = await fetch(url + path, { signal: AbortSignal.timeout(4000) });
+            return { status: r.status, body: r.ok ? await r.json().catch(() => null) : null };
+        } catch (e) { return { status: 0, error: String(e?.message ?? e) }; }
+    };
+    const health = await get('/api/health');
+    if (health.status === 0) return { kind: 'unreachable', detail: health.error };
+    if (health.body?.ok !== true) return { kind: 'static', detail: `/api/health answered ${health.status}` };
+    const demo = await get('/api/demo/status');
+    const d = demo.body ?? {};
+    return {
+        kind: 'app',
+        detail: d.enabled
+            ? `preprod runner ${d.ready ? 'ready' : d.warming ? 'warming' : d.error ? `error: ${d.error}` : 'idle'}`
+            : 'local circuits only, no preprod runner'
+    };
+}
+
+const who = await identify(base);
+console.log(`  base  ${base}  ->  ${who.kind}  (${who.detail})`);
+if (who.kind === 'unreachable') {
+    console.error(`\ncheck:pages FAILED - nothing is listening on ${base}.`);
+    server?.close();
+    process.exit(2);
+}
+if (EXPECT && EXPECT !== who.kind) {
+    console.error(`\ncheck:pages FAILED - asked for --expect ${EXPECT} and found a ${who.kind} server.`);
+    console.error('Checking the wrong server is not a failed check, it is a passing check of something else.');
+    server?.close();
+    process.exit(2);
 }
 
 const BRAVE = [
