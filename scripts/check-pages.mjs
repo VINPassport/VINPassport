@@ -147,6 +147,14 @@ await send('Page.enable');
 await send('Runtime.enable');
 await send('Network.enable');
 
+/* The profile directory persists between runs, so without this the browser
+   will happily answer from its disk cache and this check reports the state of
+   the last run rather than the current one. That is worse than no check: it
+   passes on content nobody is serving any more. It bit during the very
+   investigation this script came out of, reporting a stale figure from a
+   version that had already been replaced. */
+await send('Network.setCacheDisabled', { cacheDisabled: true });
+
 let bad = 0;
 for (const page of pages) {
     thrown = []; missing = [];
