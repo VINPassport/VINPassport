@@ -53,8 +53,8 @@
       <p style="margin:12px 0 0;font-size:15px;line-height:1.6;max-width:62ch;color:rgba(14,23,38,.8)">Nothing you type here is published. Values stay on this machine, and only commitments and proven claims reach the ledger.</p>
       <p style="margin:10px 0 0;font-size:13.5px;line-height:1.6;max-width:62ch;color:rgba(14,23,38,.66)">Registering a vehicle for the first time? <a href="../guide/#create" style="color:#004AAD">The guide walks these six steps</a> and says why each one is asked for.</p>
     </div>
-    <div style="flex:0 1 240px;min-width:0;padding:12px 14px;border:1px solid rgba(0,74,173,.28)">
-      <div style="display:flex;align-items:center;gap:8px;font-size:13px"><span style="width:7px;height:7px;background:#004AAD;flex:none"></span>Local circuit server found</div>
+    <div id="server-status" style="flex:0 1 240px;min-width:0;padding:12px 14px;border:1px solid rgba(0,74,173,.28)">
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px"><span style="width:7px;height:7px;background:#004AAD;flex:none"></span>Checking for a circuit server</div>
       <div class="mono" style="margin-top:6px;font-size:10.5px;color:rgba(14,23,38,.62)">attestation-vault-32 · depth 5</div>
     </div>
   </div>
@@ -190,7 +190,7 @@
   </section>
 
   <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:30px">
-    <button style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;min-height:48px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:17px;letter-spacing:.06em;cursor:pointer;background:#004AAD;color:#EDE4D8;border:1px solid #004AAD;padding:12px 28px">REGISTER &amp; PROVE</button>
+    <button style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;min-height:48px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:17px;letter-spacing:.06em;cursor:pointer;background:#004AAD;color:#EDE4D8;border:1px solid #004AAD;padding:12px 28px;opacity:.45;cursor:not-allowed" disabled title="Checking for the local circuit server">REGISTER &amp; PROVE</button>
     <button style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;min-height:48px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:17px;letter-spacing:.06em;cursor:pointer;background:transparent;color:#0E1726;border:1px solid rgba(0,74,173,.28);padding:12px 22px">DOWNLOAD INTAKE FILE</button>
     <span style="font-size:12px;color:rgba(14,23,38,.62)">counting the circuits&hellip;</span>
   </div>
@@ -217,7 +217,7 @@
   </footer>
 
 </div>
-<script type="module" src="intake.js?v=5"></script>
+<script type="module" src="intake.js?v=6"></script>
 <script type="module" src="../assets/nav.mjs?v=1"></script>
 </body>
 </html>

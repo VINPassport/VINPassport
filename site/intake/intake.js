@@ -47,7 +47,15 @@ for (const [id, opts] of Object.entries(OPTIONS)) {
 
 // ---------------------------------------------------------------- mode
 
-const statusCard = document.querySelector('nav ~ div div[style*="240px"]');
+/* Anchored on an id, not on `nav ~ div div[style*="240px"]`. That selector
+   stopped matching the day the <main> landmark went in for Annex V 4.2.1:
+   the card moved inside <main>, so it was no longer a sibling of <nav>. The
+   lookup returned null, this module threw before it could set the state, and
+   the page was left saying "Local circuit server found" with REGISTER enabled
+   on a static host that has no circuit server at all. It failed OPEN.
+   The page now ships in the neutral state with the button disabled, and only
+   this code turns it on, so the same class of failure fails closed. */
+const statusCard = document.querySelector('#server-status');
 const registerBtn = [...document.querySelectorAll('button')]
     .find((b) => b.textContent.includes('REGISTER'));
 const downloadBtn = [...document.querySelectorAll('button')]
@@ -63,23 +71,33 @@ let apiBase = '';
         serverMode = base != null;
         apiBase = base ?? '';
     } catch { serverMode = false; }
+
+    /* The label is SET, never string-replaced. The old code rewrote the
+       literal "Local circuit server found" that the page shipped with, so if
+       that text ever changed the rewrite became a no-op and the stale label
+       survived: a second way to report a server that is not there. */
     const line = statusCard.querySelector('div');
     const dot = line.querySelector('span');
-    if (serverMode && apiBase !== '') {
-        line.innerHTML = line.innerHTML.replace('Local circuit server found',
-            'Circuit server connected');
-        statusCard.querySelector('.mono').textContent =
-            `${apiBase.replace(/^https?:\/\//, '')} · shared demo ledger, resets on restart`;
-    }
-    if (!serverMode) {
+    const note = statusCard.querySelector('.mono');
+    const label = (text) => {
+        for (const n of [...line.childNodes]) if (n.nodeType === Node.TEXT_NODE) n.remove();
+        line.append(text);
+    };
+
+    if (serverMode) {
+        dot.style.background = '#004AAD';
+        label(apiBase === '' ? 'Local circuit server found' : 'Circuit server connected');
+        note.textContent = apiBase === ''
+            ? 'attestation-vault-32 · depth 5'
+            : `${apiBase.replace(/^https?:\/\//, '')} · shared demo ledger, resets on restart`;
+        registerBtn.disabled = false;
+        registerBtn.style.opacity = '';
+        registerBtn.style.cursor = 'pointer';
+        registerBtn.title = '';
+    } else {
         dot.style.background = '#8B95FF';
-        line.append(''); // keep node shape
-        line.childNodes[line.childNodes.length - 1].textContent = '';
-        line.lastChild.textContent = '';
-        line.innerHTML = line.innerHTML.replace('Local circuit server found',
-            'No local circuit server');
-        statusCard.querySelector('.mono').textContent =
-            'read-only demo · run npm run app for the circuits';
+        label('No local circuit server');
+        note.textContent = 'read-only demo · run npm run app for the circuits';
         registerBtn.disabled = true;
         registerBtn.style.opacity = '.45';
         registerBtn.style.cursor = 'not-allowed';

@@ -86,8 +86,13 @@ function vehicleSection(vin, claims, ledger, vinfo, fields) {
         cells[3].textContent = '0';
     }
 
-    // vehicle sections: replace the two static examples with the real ledger
-    const statics = [...document.querySelectorAll('body > div > section')];
+    // vehicle sections: replace the two static examples with the real ledger.
+    // Anchored on #main, not on `body > div > section`: the <main> landmark
+    // added for Annex V 4.2.1 sits between the wrapper and the sections, so
+    // the old selector silently matched nothing and this whole block threw on
+    // `statics[0]`, leaving the hard-coded examples on screen.
+    const statics = [...document.querySelectorAll('#main > section')];
+    if (!statics.length) throw new Error('proofs: no #main > section to replace; the page structure changed');
     const legend = document.querySelector('div[style*="Legend"], div');
     const holder = document.createElement('div');
     holder.innerHTML = vins.map((vin) =>
@@ -97,7 +102,7 @@ function vehicleSection(vin, claims, ledger, vinfo, fields) {
     for (const s of statics) s.remove();
 
     // source badge under the header
-    const header = document.querySelector('body > div > header p');
+    const header = document.querySelector('main > header p');
     const src = document.createElement('span');
     src.className = 'mono';
     src.style.cssText = 'display:block;margin-top:8px;font-size:10.5px;color:rgba(14,23,38,.62)';
