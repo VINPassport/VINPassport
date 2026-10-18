@@ -134,6 +134,105 @@ const zero32 = () => new Uint8Array(32);
 
 // ---------------------------------------------------------------- the runner
 
+/**
+ * Validate a manual intake posted to the preprod route.
+ *
+ * Pulled out of `createRunner` so it can be tested without a wallet, a seed
+ * file or a registrar secret. `dealer` is the one writer identity the runner
+ * holds, or null when registrar C is not configured.
+ */
+export function validateManualIntake(body, dealer) {
+    const fields = {};
+    for (const [name, v] of Object.entries(body.fields ?? {})) {
+        if (!(name in FIELDS)) throw new Error(`unknown field "${name}"`);
+        const n = Number(v);
+        if (!Number.isInteger(n) || n < 0 || n > 10_000_000) throw new Error(`field "${name}" must be an integer 0..10000000`);
+        fields[name] = n;
+    }
+    if (!Object.keys(fields).length) throw new Error('at least one field is needed');
+    /* Delegation, which this route used to lose.
+     *
+     * The intake console offers a dealership, sends `authorise: [label]`
+     * and stamps the update with `by: label`. Against the LOCAL engine
+     * (`/api/intake`) that works. Against preprod it did not: `authorise`
+     * was never read, so it was dropped, and `by` fell through the field
+     * loop below and threw `unknown field "by" in updates`. One form, two
+     * behaviours, and the silent half produced a run that looks delegated
+     * and is not, which is the exact thing the local route refuses by
+     * name.
+     *
+     * Labels are resolved against the identities this runner actually
+     * holds, and an unresolvable one is refused rather than ignored.
+     * Preprod carries a single writer, registrar C, and only when its
+     * secrets are configured; the console also offers a service garage,
+     * which has no preprod identity and must say so instead of quietly
+     * registering a vehicle nobody delegated.
+     */
+    const known = dealer ? { [dealer.label]: { label: dealer.label, id: dealer.id } } : {};
+    const resolve = (list, what) => {
+        const out = [];
+        for (const entry of Array.isArray(list) ? list : []) {
+            const label = String(typeof entry === 'string' ? entry : entry?.label ?? '');
+            const w = known[label];
+            if (!w) {
+                throw new Error(dealer
+                    ? `no preprod identity for "${label}"; this runner holds "${dealer.label}"`
+                    : `cannot ${what} "${label}": no writer identity is configured on this runner`);
+            }
+            if (!out.some((x) => x.label === w.label)) out.push(w);
+        }
+        return out;
+    };
+    const authorise = resolve(body.authorise, 'authorise');
+    const withdraw = resolve(body.withdraw, 'withdraw');
+
+    const updates = (Array.isArray(body.updates) ? body.updates : []).slice(0, 2).map((round) => {
+        const out = {};
+        for (const [name, v] of Object.entries(round ?? {})) {
+            // `by` names the writer, not a field. It is carried through
+            // rather than range-checked, and it has to have been
+            // authorised in this same intake or the ledger would refuse
+            // the write anyway, later and less clearly.
+            if (name === 'by') {
+                const label = String(v);
+                if (!authorise.some((w) => w.label === label)) {
+                    throw new Error(`"${label}" writes an update but was never authorised`);
+                }
+                out.by = label;
+                continue;
+            }
+            if (!(name in FIELDS)) throw new Error(`unknown field "${name}" in updates`);
+            const n = Number(v);
+            if (!Number.isInteger(n) || n < 0 || n > 10_000_000) throw new Error(`update "${name}" must be an integer 0..10000000`);
+            out[name] = n;
+        }
+        return out;
+    }).filter((r) => Object.keys(r).some((k) => k !== 'by'));
+    const prove = {};
+    for (const [claim, def] of Object.entries(CLAIM_DEFS)) {
+        if (def.openBound) {
+            // The asker names the ceiling, so it is a number and is range
+            // checked. Every other question uses its standard rung.
+            const m = Number(body.prove?.[claim]);
+            if (Number.isInteger(m) && m > 0 && m <= 10_000_000) prove[claim] = m;
+        } else if (body.prove?.[claim]) prove[claim] = true;
+    }
+    const panel = {};
+    for (const [name, v] of Object.entries(body.panel ?? {})) {
+        if (!(name in PANEL) || name === 'vinHash') continue;
+        panel[name] = String(v).slice(0, 60);
+    }
+    return {
+        vin: randomDemoVin(),   // ALWAYS server-generated: demos never squat a real VIN
+        registrar: String(body.registrar ?? 'passport.vin-demo').slice(0, 40) || 'passport.vin-demo',
+        fields, panel, updates, prove,
+        // Same shape the guided run emits, so both routes exercise the
+        // same circuits and the planner needs no special case.
+        ...(authorise.length ? { authorise } : {}),
+        ...(withdraw.length ? { withdraw } : {})
+    };
+}
+
 export async function createRunner({ log = console.log } = {}) {
     // ---- secrets and paths, from the environment only ----------------------
     const seedFile = process.env.VINPASSPORT_SEED_FILE;
@@ -1723,45 +1822,6 @@ export async function createRunner({ log = console.log } = {}) {
         };
     }
 
-    function validateManual(body) {
-        const fields = {};
-        for (const [name, v] of Object.entries(body.fields ?? {})) {
-            if (!(name in FIELDS)) throw new Error(`unknown field "${name}"`);
-            const n = Number(v);
-            if (!Number.isInteger(n) || n < 0 || n > 10_000_000) throw new Error(`field "${name}" must be an integer 0..10000000`);
-            fields[name] = n;
-        }
-        if (!Object.keys(fields).length) throw new Error('at least one field is needed');
-        const updates = (Array.isArray(body.updates) ? body.updates : []).slice(0, 2).map((round) => {
-            const out = {};
-            for (const [name, v] of Object.entries(round ?? {})) {
-                if (!(name in FIELDS)) throw new Error(`unknown field "${name}" in updates`);
-                const n = Number(v);
-                if (!Number.isInteger(n) || n < 0 || n > 10_000_000) throw new Error(`update "${name}" must be an integer 0..10000000`);
-                out[name] = n;
-            }
-            return out;
-        }).filter((r) => Object.keys(r).length);
-        const prove = {};
-        for (const [claim, def] of Object.entries(CLAIM_DEFS)) {
-            if (def.openBound) {
-                // The asker names the ceiling, so it is a number and is range
-                // checked. Every other question uses its standard rung.
-                const m = Number(body.prove?.[claim]);
-                if (Number.isInteger(m) && m > 0 && m <= 10_000_000) prove[claim] = m;
-            } else if (body.prove?.[claim]) prove[claim] = true;
-        }
-        const panel = {};
-        for (const [name, v] of Object.entries(body.panel ?? {})) {
-            if (!(name in PANEL) || name === 'vinHash') continue;
-            panel[name] = String(v).slice(0, 60);
-        }
-        return {
-            vin: randomDemoVin(),   // ALWAYS server-generated: demos never squat a real VIN
-            registrar: String(body.registrar ?? 'passport.vin-demo').slice(0, 40) || 'passport.vin-demo',
-            fields, panel, updates, prove
-        };
-    }
 
     return {
         status() {
@@ -1788,7 +1848,7 @@ export async function createRunner({ log = console.log } = {}) {
             };
         },
         runGuided() { return enqueue('guided', guidedIntake()); },
-        runManual(body) { return enqueue('manual', validateManual(body)); },
+        runManual(body) { return enqueue('manual', validateManualIntake(body, dealer)); },
         job(id) { return jobs.get(id) ?? null; }
     };
 }

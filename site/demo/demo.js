@@ -238,10 +238,40 @@ async function showRecordedRun() {
     try { base = await apiBase(); }
     catch {
         paintStatus({ enabled: false });
-        // Naming a host here ages badly. Say what is missing and where the
-        // visitor can still see the circuits run.
-        capLine.textContent = 'No circuit server is answering, so the guided run is unavailable. '
-            + 'The manual console still runs the real circuits.';
+        /* Three things were wrong here and all three told the visitor
+           something untrue.
+
+           "Preprod runs are off here" describes a server that answered and
+           said demos are switched off. Nothing answered at all, which is a
+           different fact with a different remedy.
+
+           "The manual console still runs the real circuits" was simply false
+           on this host. /intake/ needs the same circuit server, and with none
+           answering it correctly disables its own button. Sending someone
+           there promised a second thing that does not work either.
+
+           And the lede above still said "press the button and this site
+           registers a vehicle passport", with no working button on the page.
+
+           Naming a host ages badly, so say what is missing, what still works
+           here, and how to run it yourself. */
+        capState.textContent = 'No circuit server here';
+        const eyebrow = $('eyebrow');
+        if (eyebrow) eyebrow.textContent = 'Midnight preprod, recorded';
+        capLine.textContent = 'this static site has no backend, so no run can start from it';
+        // paintStatus sets this to "the manual console still runs the
+        // circuits locally", which is true when a server answered and said
+        // preprod is off, and false when nothing answered: /intake/ needs the
+        // same server and disables itself without it.
+        goNote.textContent = 'the console needs the same server, so it cannot run here either';
+        const lede = $('lede');
+        if (lede) {
+            lede.textContent = 'The guided run needs a circuit server, and this static site has '
+                + 'none, so nothing here can start a run today. What follows is a real run that '
+                + 'already happened on the deployed preprod contract: real proofs, real fees, and '
+                + 'blocks you can look up yourself. To run it live, clone the repository and '
+                + 'start it with npm run app.';
+        }
         await showRecordedRun();
         return;
     }

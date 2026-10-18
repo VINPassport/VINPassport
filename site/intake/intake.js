@@ -255,6 +255,7 @@ document.getElementById('claimsmeta').textContent =
 const writerLabels = [...document.querySelectorAll('.wrt')];
 const writerBy = $('writerby');
 const bySelect = $('wby');
+const withdrawBox = $('wdraw');
 const authorised = new Set();
 
 const paintWriters = () => {
@@ -273,6 +274,10 @@ const paintWriters = () => {
     const updates = selected?.updates?.length ?? 0;
     const offer = authorised.size > 0 && updates > 0;
     writerBy.hidden = !offer;
+    // The withdraw box lives in that block, so hiding it must also clear it.
+    // A checked box behind a hidden section would add a circuit call the
+    // operator cannot see and did not ask for on this intake.
+    if (!offer && withdrawBox) withdrawBox.checked = false;
     const keep = bySelect.value;
     bySelect.innerHTML = '<option value="">the registering authority</option>'
         + [...authorised].map((w) => `<option value="${w}">the ${w}</option>`).join('');
@@ -288,6 +293,9 @@ writerLabels.forEach((label) => {
     });
 });
 
+// Ticking it adds a call per writer, so the count has to follow it.
+withdrawBox?.addEventListener('change', paintCircuitCount);
+
 // What a preprod run is allowed to cost, mirroring MAX_CALLS_PER_RUN in
 // scripts/lib/preprod-plan.mjs. Exceeded, the server refuses the intake, so
 // the console says so before the button is pressed rather than after.
@@ -298,7 +306,9 @@ function paintCircuitCount() {
     const ticked = Object.values(claimState).filter(Boolean).length;
     // Each authorisation is a circuit call of its own, so the count has to
     // know about them or it understates what the run will do.
-    const n = 1 + FORM_FIELDS.size + updates + authorised.size + ticked;
+    // A withdrawal is its own circuit call, one per writer taken back.
+    const withdrawals = withdrawBox?.checked ? authorised.size : 0;
+    const n = 1 + FORM_FIELDS.size + updates + authorised.size + withdrawals + ticked;
     circuitsNote.textContent = n > RUN_CAP
         ? `${n} circuits will run, over the ${RUN_CAP} a preprod run allows`
         : `${n} circuits will run`;
@@ -376,6 +386,13 @@ function buildIntake() {
         },
         // Labels only. The server resolves each to an identity it holds.
         authorise: [...authorised],
+        /* Granted, used, then taken back: the same life cycle the guided run
+           shows. The fields the writer already wrote stay written and stay
+           stamped with it, which is the contract's documented behaviour, so
+           withdrawing proves the grant was real rather than undoing it. */
+        ...(withdrawBox?.checked && authorised.size
+            ? { withdraw: [...authorised] }
+            : {}),
         updates: (selected?.updates ?? []).map((round) =>
             (bySelect.value && authorised.has(bySelect.value))
                 ? { ...round, by: bySelect.value }
