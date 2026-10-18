@@ -3,14 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- The engine that runs real preprod transactions. The published site is
-     static (GitHub Pages) and can never hold a wallet, so the two surfaces
-     that need one name the host here and probe it at load. Absent or not
-     answering, both pages stay honest and offer the recorded run instead,
-     which is why this can point at a host before that host exists. Only
-     /demo/ and /intake/ carry it: every other page reads the static export
-     and would pay the probe's timeout for nothing. -->
-<meta name="vinpassport-api" content="https://api.passport.vin">
+<!-- NO vinpassport-api META TAG, DELIBERATELY.
+     The published site is static and can never hold a wallet, so a preprod
+     engine would have to live elsewhere and be named here:
+
+       <meta name="vinpassport-api" content="https://api.passport.vin">
+
+     That tag was added and then removed the same day. Resolution is
+     fail-closed, so pointing it at a host that does not answer looked free.
+     It is not: api.passport.vin resolves to the cancelled VPS, the
+     connection hangs rather than refusing, and the probe cost 6.8 SECONDS
+     measured on passport.vin - six seconds of "Checking for a circuit
+     server" before the console becomes usable, on the page a visitor is
+     most likely to try.
+     A host that is merely absent is cheap to probe. One that accepts
+     packets and never answers is not. Put the tag back when something is
+     actually listening, and not before. -->
 <title>Live preprod demo · VINPassport</title>
 <meta name="description" content="Run a real passport onto Midnight preprod: real proving, real fees, real blocks, and a receipt only you can open.">
 <link rel="icon" href="../favicon.ico" sizes="32x32">
@@ -113,7 +121,7 @@
   </footer>
 
 </div>
-<script type="module" src="demo.js?v=6"></script>
+<script type="module" src="demo.js?v=7"></script>
 <script type="module" src="../assets/nav.mjs?v=1"></script>
 </body>
 </html>
