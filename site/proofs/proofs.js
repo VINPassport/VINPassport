@@ -82,7 +82,12 @@ function vehicleSection(vin, claims, ledger, vinfo, fields) {
     if (cells.length >= 4) {
         cells[0].textContent = String(vins.length);
         cells[1].textContent = String(ledger.claims.length);
-        cells[2].textContent = String((ledger.relClaims ?? []).length);
+        // Field updates is the number of committed (vehicle, field) cells,
+        // which is `fieldCommitment`. This read `relClaims` and so reported
+        // the two-field comparison claims instead: 2 where the ledger holds
+        // 15. It was invisible until the block above stopped throwing, so the
+        // page had been serving the hard-coded 16 beside it either way.
+        cells[2].textContent = String(Object.keys(ledger.fieldCommitment ?? {}).length);
         cells[3].textContent = '0';
     }
 
