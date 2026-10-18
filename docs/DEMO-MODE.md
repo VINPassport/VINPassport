@@ -169,6 +169,14 @@ indexer query to verify it. Two properties worth stating plainly:
 ## Enabling it
 
 ```
+npm run app:preprod
+```
+
+That fills in the environment below from the local layout and starts the same
+server. Anything already set in the environment wins, so it is a shortcut
+rather than a second way of configuring things:
+
+```
 VINPASSPORT_PREPROD=1
 VINPASSPORT_SEED_FILE=/path/to/seed.env        # VINPASSPORT_SEED_HEX=<128 hex>
 VINPASSPORT_STATE_DIR=/path/to/wallet-state    # {shielded,unshielded,dust}.blob
@@ -212,6 +220,27 @@ is a separate command rather than a step inside the runner.
 
 Never run it while a demo run is in flight. Both write the same snapshot
 directory, and the rule above about one process per seed is the same rule.
+
+### Warming does not refresh the other two snapshots
+
+`warm:dust` syncs the dust wallet **alone**, deliberately: the shielded
+wallet's own stream is the same order of magnitude and nothing about it is
+needed to know how much dust there is. So a long warm leaves
+`shielded.blob` and `unshielded.blob` exactly as old as they were, and the
+server judges staleness on all three together. Warming for an hour therefore
+does not, by itself, get a two-day-old snapshot set past the replay limit.
+
+Past the limit (48 h, `VINPASSPORT_MAX_SNAPSHOT_AGE_H`) there are two moves:
+
+| | What it does | Cost |
+|---|---|---|
+| `VINPASSPORT_MAX_SNAPSHOT_AGE_H=<hours>` | replays forward from the snapshots anyway | one attempt, bounded by the warmup ceiling |
+| `VINPASSPORT_DISCARD_STALE_SNAPSHOTS=1` | starts the shielded and unshielded wallets from their keys | about 1.6M zswap events, and one transport error restarts it |
+
+Raising the limit is worth one attempt when the snapshots are only a little
+over, because a run that reaches the tip writes a fresh snapshot and the
+problem is gone. The dust snapshot is never discarded by either: `warm:dust`
+maintains it separately and rebuilding it is the expensive half.
 
 ## How it is deployed
 

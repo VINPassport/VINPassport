@@ -345,8 +345,23 @@ export async function createRunner({ log = console.log } = {}) {
         process.once(sig, () => { dropLock(); process.exit(0); });
     }
 
-    const restore = { shielded: loadBlob('shielded'), unshielded: loadBlob('unshielded'), dust: loadBlob('dust') };
+    // The flag has to DISCARD, or it only silences the check and the facade
+    // restores the very snapshots that were judged too old, replays forward
+    // from them and never reaches the tip - the failure the check exists to
+    // prevent, now unreported. Starting these two from their keys instead is
+    // what "from scratch" means.
+    //
+    // The dust snapshot is always kept. scripts/sync-dust.mjs maintains it on
+    // its own and rebuilding it is the expensive half, so discarding it here
+    // would throw away the one part that is already at the tip.
+    const DISCARD_STALE = process.env.VINPASSPORT_DISCARD_STALE_SNAPSHOTS === '1';
+    const restore = {
+        shielded: DISCARD_STALE ? null : loadBlob('shielded'),
+        unshielded: DISCARD_STALE ? null : loadBlob('unshielded'),
+        dust: loadBlob('dust')
+    };
     if (!restore.dust) throw new Error(`no dust snapshot in ${stateDir}; run the dust sync first`);
+    if (DISCARD_STALE) log('demo: discarding the shielded and unshielded snapshots; both resync from scratch');
 
     const configuration = {
         networkId: NETWORK_ID,
@@ -370,7 +385,6 @@ export async function createRunner({ log = console.log } = {}) {
     const MAX_SNAPSHOT_AGE_MS = Number(process.env.VINPASSPORT_MAX_SNAPSHOT_AGE_H || 48) * 3_600_000;
     const WARMUP_CEILING_MS = Number(process.env.VINPASSPORT_WARMUP_CEILING_M || 30) * 60_000;
     const IDLE_SHUTDOWN_MS = Number(process.env.VINPASSPORT_IDLE_SHUTDOWN_M || 20) * 60_000;
-    const DISCARD_STALE = process.env.VINPASSPORT_DISCARD_STALE_SNAPSHOTS === '1';
     let warmup = null;
     let lastUseAt = Date.now();
 
@@ -576,8 +590,12 @@ export async function createRunner({ log = console.log } = {}) {
         const age = Date.now() - savedAt;
         if (age <= MAX_SNAPSHOT_AGE_MS) return null;
         const d = (ms) => (ms / 86_400_000).toFixed(1);
-        return `the wallet snapshots are ${d(age)} days old, past the ${d(MAX_SNAPSHOT_AGE_MS)} day replay limit. `
-            + 'Start once with VINPASSPORT_DISCARD_STALE_SNAPSHOTS=1 to resync from scratch, and watch the first hour';
+        return `the shielded and unshielded snapshots are ${d(age)} days old, past the ${d(MAX_SNAPSHOT_AGE_MS)} day replay limit. `
+            + '`npm run warm:dust` does not refresh these two: it syncs the dust wallet alone, by design. '
+            + 'Either replay forward from them anyway with VINPASSPORT_MAX_SNAPSHOT_AGE_H=<hours>, which is '
+            + 'worth one attempt when they are only a little over, or discard them with '
+            + 'VINPASSPORT_DISCARD_STALE_SNAPSHOTS=1 and resync both from scratch - about 1.6M zswap events, '
+            + 'and one transport error restarts it, so watch the first hour';
     }
 
     function startWarmup() {
