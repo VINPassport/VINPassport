@@ -49,7 +49,8 @@
     "shots": "node scripts/capture-guide-shots.mjs",
     "record:run": "node scripts/record-run.mjs",
     "check:deck": "node scripts/check-deck.mjs",
-    "check:pages": "node scripts/check-pages.mjs"
+    "check:pages": "node scripts/check-pages.mjs",
+    "check:browser": "node scripts/check-browser-circuits.mjs"
   },
   "overrides": {
     "@midnight-ntwrk/ledger-v8": "8.1.3",
