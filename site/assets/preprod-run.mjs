@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-import { resolveApiBase } from './sources.mjs?v=4';
+import { resolveApiBase } from './sources.mjs?v=5';
 
 const POLL_MS = 3000;
 // Preprod's block explorer. Paths verified against a real run's transaction on
