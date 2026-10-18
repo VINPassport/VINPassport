@@ -181,6 +181,62 @@ Two consequences, both load-bearing:
   [REGULATION.md](REGULATION.md) flags as an open deliverable, plus `partsRemovalInfoRef` for
   Article 11, which is one of the four items Art. 13(2) requires and which we do not yet carry.
 
+## The Annex V alignment, worked 18 October 2026
+
+The reserve above was held for this. [Appendix 1 to Annex V of Implementing Regulation (EU)
+2025/1707](https://eur-lex.europa.eu/eli/reg_impl/2025/1707/oj) is now read and mapped against the
+panel. **The reserve is not large enough, and the finding is structural rather than a matter of a
+few slots.**
+
+| Appendix 1 parameter | CoC field | Panel slot |
+|---|---|---|
+| Vehicle Identification Number | 0.10 | **22 `vinHash`.** Held as `blake2b(VIN)`, which is the passport's public address. A reader supplies the VIN to reach the page at all, per Annex V 4.2.3, so the hash is the right shape |
+| Approval certificate number | 0.11(b) | **24 `euTypeApprovalNumber`** |
+| Date approval granted | 0.11(b) | none |
+| Make, trade name of manufacturer | 0.1 | none. `manufacturerBPN` is a business partner number, not the trade name |
+| Date of manufacture | 0.11 | none. Slot 5 is `firstRegistrationDate`, which is a different event |
+| Commercial name | 0.2.1 | none |
+| PEMS family identifier | 0.2.3.3 | none |
+| Maximum net power, combustion engine | 27.1 | none |
+| Maximum net power, electric motor | 27.3 | none |
+| WLTP highest values: CO, NOx, NMHC, THC, THC+NOx, particle mass, particle number | 48 | none. Slot 28 `emissionsClass` is the Euro standard, not the measured values |
+| CO2, fuel consumption and electric energy, WLTP, five phases | 49.1 | none. Slot 7 `co2FootprintKgCO2e` is a **life-cycle** footprint under 2026/1738 Art. 13, not a WLTP tailpipe figure. They are different quantities and must not be conflated |
+| Electric range | 49.2 | none |
+| OVC-HEV charge-sustaining, charge-depleting, weighted and equivalent-range rows | 49.4, 49.5 | none |
+
+**Two of roughly twenty are held, and both are identity rather than substance. Every measured
+emissions value is absent.**
+
+### What that means for the panel
+
+A conventional M1 needs about **18 further values**, a plug-in hybrid closer to 40. The reserve is
+**five numeric slots and one string**. It is short by roughly a dozen for the simplest case, and
+the panel cannot be widened: width is permanent, cross-root proofs relate documents of the same
+width, and the menu stops at 32.
+
+**So the EVP does not fit beside the circularity panel, and it should not try to.** They are
+different documents under different instruments with different update rules: the circularity panel
+serves Regulation 2026/1738 Art. 13, and the EVP serves Euro 7 Art. 17 and is fixed at type
+approval. The answer is **section roots**, which is also what the `attestation-vault-32` maintainer
+recommended independently for width beyond 32: several same-width trees under one top root.
+
+| Section | Carries | Changes |
+|---|---|---|
+| EVP | Appendix 1 parameters | Only on re-approval |
+| Circularity panel | 2026/1738 Art. 13 declarations | Rarely |
+| History | the fifty-one event fields below | Continuously |
+
+**This is not an argument for a bigger panel.** It is the regulation telling us the document
+boundary, and it happens to agree with the engineering.
+
+### What we do not hold, and do not need to
+
+Every absent parameter above is **type-approval data the manufacturer already owns and is obliged
+to issue**. We do not have to source it and should not pretend to. What this project supplies is
+the part Annex V 4.2 and Art. 17(4) make awkward: a vehicle-specific page reachable from an
+ISO/IEC 18004 code with nothing to type, an anchored record a reader can check was not edited, and
+a twenty year guarantee that does not depend on the vendor surviving.
+
 ## The history set
 
 Fifty-one fields with no panel slot, covering what a buyer actually asks and what CARFAX, HPI and
