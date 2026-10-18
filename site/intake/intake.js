@@ -3,12 +3,20 @@
  *
  * Two modes, decided by whether the app server answers /api/health:
  *
- *   server  REGISTER & PROVE posts to /api/intake, the compiled circuits run
- *           in-process, and the result section lists every step accepted or
- *           REFUSED, then links to the vehicle's verdicts.
- *   static  no server (GitHub Pages): the register button says so plainly and
- *           stays disabled; DOWNLOAD INTAKE FILE still produces the file for
- *           scripts/intake.mjs.
+ *   server   REGISTER & PROVE posts to /api/intake, the compiled circuits run
+ *            in-process, and the result section lists every step accepted or
+ *            REFUSED, then links to the vehicle's verdicts.
+ *   browser  no server (GitHub Pages): the SAME circuits run in this page,
+ *            and the ledger they produce is kept in sessionStorage so
+ *            /verify/ can read it. Same intake, same validation, same
+ *            refusals: both call scripts/lib/intake-engine.mjs.
+ *
+ * The browser mode is narrower than it looks and the page has to say so
+ * before anyone presses anything. The circuits are the compiled contract and
+ * the commitments are real, but nothing is PROVEN, nothing reaches a chain,
+ * and the record dies with the tab. Overstating any of those would be the
+ * same failure as the page that once reported a circuit server it did not
+ * have, only in the other direction.
  *
  * The markup is the designer's specification: this script only fills selects,
  * toggles the states the design already draws, and rebuilds the result rows
@@ -95,13 +103,16 @@ let apiBase = '';
         registerBtn.style.cursor = 'pointer';
         registerBtn.title = '';
     } else {
+        /* No server, so the circuits run HERE. The button is enabled because
+           something real happens when it is pressed, and the note says what
+           that is and what it is not, before the press rather than after. */
         dot.style.background = '#8B95FF';
-        label('No local circuit server');
-        note.textContent = 'read-only demo · run npm run app for the circuits';
-        registerBtn.disabled = true;
-        registerBtn.style.opacity = '.45';
-        registerBtn.style.cursor = 'not-allowed';
-        registerBtn.title = 'Needs the local circuit server: npm install && npm run app';
+        label('Running the circuits in this browser');
+        note.textContent = 'real commitments, nothing proven, nothing on a chain · kept in this tab only';
+        registerBtn.disabled = false;
+        registerBtn.style.opacity = '';
+        registerBtn.style.cursor = 'pointer';
+        registerBtn.title = 'Runs the compiled circuits in this page; the record stays in this tab';
     }
 })();
 
@@ -529,13 +540,47 @@ ppWrap.addEventListener('click', () => {
     paintPreprod();
 })();
 
+/**
+ * Register without a server: the compiled circuits, in this page.
+ *
+ * The engine is imported here and not at the top of the module, so the
+ * 1.4 MB of runtime wasm is fetched only when somebody actually registers.
+ * A visitor who reads the page and leaves never downloads it.
+ *
+ * The result is MERGED onto whatever this tab already held, so a second
+ * vehicle joins the first and both sit alongside the demo ones.
+ */
+async function registerInThisBrowser() {
+    const engine = await import('../assets/intake-engine/intake-engine.js');
+    const { saveLocalLedger, loadLocalLedger } = await import('../assets/local-ledger.mjs');
+    const out = engine.registerLocally(buildIntake());
+
+    const held = loadLocalLedger();
+    const base = held?.ledger
+        ?? await fetch('../verify/demo-data.json', { cache: 'no-store' }).then((r) => r.json());
+    const vehicles = [
+        ...(held?.vehicles ?? []).filter((v) => v.vinHash !== out.vinHex),
+        { vinHash: out.vinHex, title: String($('dl').value.trim() || 'Added here').slice(0, 60) }
+    ];
+    /* A storage failure is reported, never swallowed. Silently losing the
+       record means the visitor sees every step succeed and then finds
+       nothing on the scan page, with no idea which half went wrong. */
+    if (!saveLocalLedger(engine.mergeLedgers(base, out.ledger), { vehicles })) {
+        throw new Error(
+            'the registration ran, but this browser would not store it, so the scan page '
+            + 'will not see it. Private windows and blocked site data both do this.');
+    }
+    return out;
+}
+
 registerBtn.addEventListener('click', async () => {
-    if (!serverMode) return;
     registerBtn.disabled = true;
     const was = registerBtn.textContent;
     registerBtn.textContent = preprod ? 'SUBMITTING…' : 'PROVING…';
     try {
-        if (preprod) {
+        if (!serverMode) {
+            renderResult(await registerInThisBrowser());
+        } else if (preprod) {
             const { startManual, followJob } = await import('../assets/preprod-run.mjs?v=4');
             const started = await startManual(apiBase, buildIntake());
             registerBtn.textContent = 'RUNNING ON PREPROD…';
