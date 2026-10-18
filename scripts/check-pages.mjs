@@ -23,6 +23,9 @@
  *   npm run check:pages -- --base http://localhost:8797   (against the app)
  *   npm run check:pages -- --base <url> --expect app|static
  *
+ * It refuses outright if the base is some other application. `{ok:true}` on
+ * /api/health means an app is there, not that it is this one.
+ *
  * It names the server that answered before it tests anything, and --expect
  * turns that into a refusal: the pages behave differently with and without a
  * circuit server, so a run against the wrong one passes while proving nothing.
@@ -116,6 +119,16 @@ async function identify(url) {
     const health = await get('/api/health');
     if (health.status === 0) return { kind: 'unreachable', detail: health.error };
     if (health.body?.ok !== true) return { kind: 'static', detail: `/api/health answered ${health.status}` };
+    // `{ok:true}` says an app is there, not that it is THIS app. Another
+    // project on this machine answers /api/health exactly the same way and
+    // serves its own single page for every path, so a run against it loaded
+    // eight pages, threw nothing, and passed while testing another product.
+    // The ledger payload is ours and nothing else's, so ask for that.
+    const led = await get('/api/ledger');
+    const source = led.body?.ledger?.source ?? '';
+    if (!source.startsWith('vinpassport')) {
+        return { kind: 'foreign', detail: `an app, but not this one: /api/ledger said ${JSON.stringify(source) || `status ${led.status}`}` };
+    }
     const demo = await get('/api/demo/status');
     const d = demo.body ?? {};
     return {
@@ -130,6 +143,12 @@ const who = await identify(base);
 console.log(`  base  ${base}  ->  ${who.kind}  (${who.detail})`);
 if (who.kind === 'unreachable') {
     console.error(`\ncheck:pages FAILED - nothing is listening on ${base}.`);
+    server?.close();
+    process.exit(2);
+}
+if (who.kind === 'foreign') {
+    console.error('');
+    console.error(`check:pages FAILED - ${base} is serving a different application.`);
     server?.close();
     process.exit(2);
 }
