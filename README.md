@@ -134,14 +134,14 @@ npm install
 npm test
 ```
 
-Expected: **128 contract tests, 155 app tests and 24 SDK assertions, all passing**, in a couple of
+Expected: **129 contract tests, 193 app tests and 24 SDK assertions, all passing**, in a couple of
 seconds.
 
 ```
  Test Files  1 passed (1)
-      Tests  128 passed (128)
+      Tests  129 passed (129)
 
-# pass 155
+# pass 193
 
 ================ 24 passed, 0 failed ================
 ```
@@ -149,9 +149,9 @@ seconds.
 | Command | What it does |
 |---|---|
 | `npm test` | Everything below, in one run |
-| `npm run test:contract` | The 128 contract tests, against the compiled circuits |
+| `npm run test:contract` | The 129 contract tests, against the compiled circuits |
 | `npm run test:watch` | The same, re-running on change |
-| `npm run test:app` | 155 tests on the application paths: verdicts, the deploy's registrar list, the submission path, the chain-sees panel and the QR encoder, via `node --test`. **Most import and run product code; a minority assert on what is written in the repository** (that every screenshot the guide names exists, that each page's bar carries the same links, that every page names its content with one `<main>` and offers a way past the bar, that the verify page cannot answer with a vehicle nobody asked for, that no text colour drops below the contrast floor). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
+| `npm run test:app` | 193 tests on the application paths: verdicts, the deploy's registrar list, the submission path, the chain-sees panel and the QR encoder, via `node --test`. **Most import and run product code; a minority assert on what is written in the repository** (that every screenshot the guide names exists, that each page's bar carries the same links, that every page names its content with one `<main>` and offers a way past the bar, that the verify page cannot answer with a vehicle nobody asked for, that no text colour drops below the contrast floor). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
 | `npm run test:sdk` | 24 assertions pinning our assumptions about `@odatano/dpp-sdk` |
 | `npm run app` | All three surfaces + the circuits, one dependency-free server |
 | `npm run serve:site` | The site statically, as GitHub Pages serves it: no circuits, demo state only |
@@ -285,7 +285,7 @@ code. So every guard in the contract is checked by mutation: it is deleted, the 
 recompiled, and the suite is run against the compiled circuits to see what notices. A guard that
 can be removed with the suite still green is a guard nothing depends on.
 
-**25 of 25 guards are load-bearing.** Reproduce it yourself:
+**32 of 32 guards are load-bearing.** Reproduce it yourself:
 
 ```bash
 node scripts/mutate-guards.mjs --list   # the guards, no changes made
@@ -294,31 +294,45 @@ node scripts/mutate-guards.mjs          # delete each in turn, report the kills
 
 | Guard deleted | Circuit | Tests that fail |
 |---|---|---|
+| `not the registrar for this vehicle, and not authorised to write it` | `writerFor` | 6 |
 | `passport already registered` | `registerPassport` | 2 |
 | `not an authorised registrar` | `registerPassport` | 2 |
+| `unknown passport` | `authoriseWriter` | 1 |
+| `not the registrar for this vehicle` | `authoriseWriter` | 2 |
+| `the registrar already writes this vehicle` | `authoriseWriter` | 1 |
+| `unknown passport` | `withdrawWriter` | 1 |
+| `not the registrar for this vehicle` | `withdrawWriter` | 1 |
+| `not a writer for this vehicle` | `withdrawWriter` | 1 |
 | `unknown passport` | `initialiseField` | 1 |
-| `not the registrar for this vehicle` | `initialiseField` | 1 |
 | `field already initialised` | `initialiseField` | 2 |
 | `unknown passport` | `recordField` | 1 |
-| `not the registrar for this vehicle` | `recordField` | 2 |
 | `field not initialised` | `recordField` | 1 |
-| `previous value does not open the stored commitment` | `recordField` | 4 |
-| `value decreased` | `recordField` | **7** |
+| `previous value does not open the stored commitment` | `recordField` | 5 |
+| `value decreased` | `recordField` | 9 |
 | `value increased` | `recordField` | 3 |
 | `value changed` | `recordField` | 3 |
 | `unknown passport` | `proveFieldAtMost` | 1 |
 | `field not initialised` | `proveFieldAtMost` | 1 |
 | `value does not open the stored commitment` | `proveFieldAtMost` | 1 |
-| `value above the claimed bound` | `proveFieldAtMost` | **5** |
+| `value above the claimed bound` | `proveFieldAtMost` | 5 |
 | `unknown passport` | `proveFieldAtLeast` | 1 |
 | `field not initialised` | `proveFieldAtLeast` | 1 |
 | `value does not open the stored commitment` | `proveFieldAtLeast` | 1 |
 | `value below the claimed bound` | `proveFieldAtLeast` | 3 |
+| `unknown passport` | `proveFieldAtMostField` | 1 |
+| `a field compared with itself proves nothing` | `proveFieldAtMostField` | 1 |
+| `first field not initialised` | `proveFieldAtMostField` | 1 |
+| `second field not initialised` | `proveFieldAtMostField` | 1 |
+| `first value does not open the stored commitment` | `proveFieldAtMostField` | 1 |
+| `second value does not open the stored commitment` | `proveFieldAtMostField` | 1 |
+| `the two values are further apart than the claimed slack` | `proveFieldAtMostField` | 3 |
 
 The harness restores the tree afterwards, including the prover keys, so a run leaves the repository
-byte-identical to how it found it. It is also the reason one test exists: the first full sweep found
-a single guard that could be deleted unnoticed, and the mirror test that now covers it was written
-because the harness asked for it rather than because anyone remembered to.
+byte-identical to how it found it. It is also the reason two tests exist. Twice now a full sweep has
+found a single guard that could be deleted with the whole suite still green: first the floor proof
+about an unregistered vehicle, and then, when `proveFieldAtMostField` was added, the same case again
+on the new circuit. Both mirror tests were written because the harness asked for them rather than
+because anyone remembered to, which is the entire argument for running it.
 
 **5. Read the contract itself.** It is commented for a reader who does not know Compact: [`contracts/vinpassport/src/vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact).
 
@@ -488,7 +502,7 @@ repository begins with no contract at all.
 |---|---|
 | **The contract** - five exported circuits at Wave 1's close, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
 | **Deployed to Midnight preprod**, 28 August, built and signed locally | [`deploy/preprod.json`](deploy/preprod.json) |
-| **306 tests today** - 128 contract, 154 application, 24 SDK assumption assertions; all twenty-five guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
+| **346 tests today** - 129 contract, 193 application, 24 SDK assumption assertions; all thirty-two guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
 | **Three surfaces** - verification, intake console, proof explorer - all running the compiled circuits, not a mock | [passport.vin](https://passport.vin/) |
 | **On-chain runs from the browser, self-funded**, after a hosted sponsor turned out to be a single point of failure in a demo a judge runs unattended | [D24](docs/DECISIONS.md#settled) |
 | **The regulatory basis read from the Official Journal** rather than secondary analysis - which caught two wrong article citations that had survived months of work | [REGULATION.md](docs/REGULATION.md) |
@@ -511,17 +525,17 @@ tree at each wave's close, not from memory.
 | Integrity rules | 2 | **3** |
 | Fields carrying an integrity rule | 5 | **68** |
 | Of those, ever written on chain | 5 | **8** |
-| Contract tests | 67 | **128** |
-| Application tests | 50 | **155** |
+| Contract tests | 67 | **129** |
+| Application tests | 50 | **193** |
 | SDK assumption assertions | 24 | 24 |
-| Guards checked by mutation | the two integrity rules | **25 of 25** |
+| Guards checked by mutation | the two integrity rules | **32 of 32** |
 
 | What changed | Why it matters | Where to look |
 |---|---|---|
 | **The registrar is derived in-circuit** from a witness secret, and checked against an allowlist pinned at deployment. `registrarIdOf` is a new circuit | Wave 1 took the caller's word for who was writing. A contract that cannot tell one writer from another cannot refuse the wrong one | `registrarIdOf`, `registerPassport` |
 | **Every field commitment is bound to the content root** it was taken from | A commitment that floats free of its document can be replayed against a different document. Binding it means a revised document moves every slot with it | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact) |
 | **A third integrity rule, `neverChanges`**, and the panel widened from 5 fields to 17 | The lifecycle fields accumulate, so `neverFalls` fits them. The regulatory declarations do not move inside one document version, and filing them under `neverFalls` would have let a recycled-content figure drift upward - the direction that flatters | [`scenario.mjs`](scripts/lib/scenario.mjs), [FIELDS.md](docs/FIELDS.md) |
-| **Every guard mutation-checked, 25 of 25**, with the kill table published and the harness in the repo | "Tests pass" says nothing about whether a guard is load-bearing. Deleting it and watching what dies does | `node scripts/mutate-guards.mjs` |
+| **Every guard mutation-checked, 32 of 32**, with the kill table published and the harness in the repo | "Tests pass" says nothing about whether a guard is load-bearing. Deleting it and watching what dies does | `node scripts/mutate-guards.mjs` |
 | **A panel that states what the chain does *not* hold** | A verifier who misreads silence as a denial is the failure this project exists to prevent, so the page names the absences instead of leaving them to inference | [passport.vin/verify](https://passport.vin/verify/) |
 | **Moved to the Blockfrost indexer** after the preprod indexer was decommissioned mid-wave and began answering HTTP 410 | A submission a judge cannot run is not a submission | [`scripts/lib/endpoints.mjs`](scripts/lib/endpoints.mjs) |
 
@@ -541,8 +555,8 @@ line of comparison rather than two days of reading tag names.
 
 | Component | Status |
 |---|---|
-| Compact contract: 10 circuits, 7 of them proving | **Done.** Compiles clean, artifacts committed and reproducible from source |
-| Contract test suite | **Done.** 128 tests; every guard mutation-checked, 25 of 25 |
+| Compact contract: 11 circuits, 8 of them proving | **Done.** Compiles clean, artifacts committed and reproducible from source |
+| Contract test suite | **Done.** 129 tests; every guard mutation-checked, 32 of 32 |
 | SDK assumption guard | **Done.** 24 assertions against `@odatano/dpp-sdk` 0.2.0 |
 | Proving cost, the three circuits a verifier waits on | **Re-measured 14 Oct 2026 against the build deployed that day**, wasm in-process, no proof server, 32 cores, n=3 each. Build, prove and sign: `registerPassport` **17.5s** (5,229 B), `proveFieldAtMost` **27.6s** (5,567 B), `proveFieldAtLeast` **27.0s** (5,568 B). Within noise of the 13 October build (16.6s, 29.4s, 27.1s), so **the writer circuits and the two ledger collections they added cost these three nothing measurable**, which is the question re-measuring was there to answer. Registration is 3.7x Wave 1's 4.77s, the cost of the registrar identity derived in-circuit and the field commitments bound to the content root. **`initialiseField` was measured for the first time on 16 Oct and is the most expensive circuit here: 37.4s median (min 35.8 / max 53.2, n=5, 5,516 B).** It had never been timed because the three above are the ones a verifier's experience depends on, and it is the one an issuer runs most: a vehicle carrying the full 68-field registry is one registration and 68 of these, about **42.6 minutes of proving**. Batching does not reduce that, because batching removes block confirmations and not proofs. That number, rather than any wallet count, is the real ceiling on how many vehicles a day one writer can issue, and it is why [FIELDS.md](docs/FIELDS.md)'s whole-registry rule has never once been satisfied by a real vehicle. **These are the times to ISSUE a claim, paid once by whoever writes it.** A verifier reads the verdict off the ledger and waits on a query, never on a proof, which is why a proven claim is recorded rather than re-proven on demand ([D19](docs/DECISIONS.md#settled)). DUST cost per anchor and per proof was **measured on 14 Oct 2026** against the deployed contract with real proofs, and is published in [BUILD-SCOPE](docs/BUILD-SCOPE.md); latency is not cost |
 | Provable-field registry, 32 slots | **Settled** ([FIELDS.md](docs/FIELDS.md)). 26 in use, reserve 17 to 21, and 31. Slots 0 to 16 are wired end to end and provable; the rest are salted into the content root but carry no rule yet |
@@ -563,8 +577,8 @@ scripts/
   lib/scenario.mjs                   the 32-slot panel and its integrity rules
 test/
   passport-simulator.mjs             harness: compiled circuits + a local ledger
-  passport.test.mjs                  128 contract tests
-  app/                               155 tests on the paths around the circuits
+  passport.test.mjs                  129 contract tests
+  app/                               193 tests on the paths around the circuits
   sdk-assumptions.mjs                24 assertions pinning @odatano/dpp-sdk behaviour
 ```
 

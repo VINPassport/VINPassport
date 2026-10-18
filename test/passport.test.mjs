@@ -1438,6 +1438,16 @@ describe('proveFieldAtMostField', () => {
             .toThrow(rejects('a field compared with itself proves nothing'));
     });
 
+    // The same case that was missed once already under proveFieldAtLeast, and
+    // missed again when this circuit was added: the mutation harness could
+    // delete this guard with all 128 tests still green, which made it the one
+    // assertion in the contract nothing depended on. A gap between two fields
+    // of a vehicle that was never registered is a claim about nothing.
+    it('rejects a comparison about an unregistered vehicle', () => {
+        expect(() => sim.proveFieldAtMostField(VIN_B, ODO, SERVICED_AT, 15_000n))
+            .toThrow(rejects('unknown passport'));
+    });
+
     it('refuses when either field was never initialised', () => {
         const ABSENT = fieldKey('timingBeltReplacedDate');
 

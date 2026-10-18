@@ -217,7 +217,7 @@ than aspirational.
 **Consequence:** `proveFieldAtMost` with a bound of zero expresses "never written off" and "never
 had a reported accident"; the odometer is simply field `odometerKm` under `neverFalls`, one field
 among the panel rather than the subject of the contract. Every guard in the contract is
-mutation-checked, 25 of 25: removing any one of them fails exactly the tests it exists for, and
+mutation-checked, 32 of 32: removing any one of them fails exactly the tests it exists for, and
 `scripts/mutate-guards.mjs` is the standing check rather than a worked example.
 
 **Scope note:** this is the VEHICLE's record. An EV's battery is a separate regime with its own

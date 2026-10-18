@@ -214,7 +214,7 @@ async function showRecordedRun() {
       </div>
       <p style="margin:9px 0 0;font-size:13px;line-height:1.55;color:rgba(14,23,38,.78)">
         No circuit server is answering, so you cannot start a run from this page today. This one
-        was real: five transactions, proven and submitted to preprod, in blocks
+        was real: ${run.stages.length} transactions, proven and submitted to preprod, in blocks
         ${run.stages[0].blockHeight} to ${run.stages[run.stages.length - 1].blockHeight}. Every hash below is
         on the public chain and you can check any of them without us.
       </p>
@@ -225,8 +225,9 @@ async function showRecordedRun() {
         ${run.refused.length ? `<p style="margin:9px 0 0;font-size:12.5px;line-height:1.5;color:rgba(14,23,38,.62)">
           The refusal is the part worth watching, and the one part you cannot look up: the
           circuit would not produce the claim &quot;${esc(refusedLabel(run))}&quot;, because the
-          record did not support it. A refused claim writes nothing, which is why there are five
-          transactions above and not six. No server decided that; the arithmetic did.</p>` : ''}
+          record did not support it. A refused claim writes nothing, which is why
+          ${run.claims.length - run.refused.length} proof calls reached the chain and not
+          ${run.claims.length}. No server decided that; the arithmetic did.</p>` : ''}
       </div>
       <p class="mono" style="margin:14px 0 0;font-size:10.5px;line-height:1.6;color:rgba(14,23,38,.62);word-break:break-all">
         contract ${esc(run.contractAddress)}<br>vin hash ${esc(run.vinHash)}

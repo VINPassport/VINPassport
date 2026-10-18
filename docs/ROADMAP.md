@@ -80,7 +80,7 @@ contract changes wait for the 27th. This week takes the work that is not contrac
       transaction there costs 1 SPECK. Figures are therefore quoted at the protocol
       reference price, and one block of mainnet parameters closes the rest
 - [x] **Build the mutation harness.** DONE: `scripts/mutate-guards.mjs` reverts each guard
-      in turn and records which tests die. 20 of 20 are load-bearing, and the kill table
+      in turn and records which tests die. 32 of 32 are load-bearing, and the kill table
       is published in the README, so Wave 2 reports *N of N* rather than a worked example
       on two
 
