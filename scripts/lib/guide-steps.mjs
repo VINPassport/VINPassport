@@ -68,7 +68,7 @@ export const VERIFY = [
 
 ['v4-claim-open', 'Open one claim and read the proof',
  'Expand any row. You get the claim, the field key, the commitment it was proven against, and the ledger slot.',
- 'This is the whole product in one box. A zero-knowledge proof was accepted on the ledger, and it could not have been produced unless the hidden value satisfied the bound. <b>The value is not here because it was never published.</b> You are not being asked to trust that we hide it carefully; it was never on the chain to hide.'],
+ 'This is the whole product in one box. The circuit accepted the claim, and it could not have been produced unless the hidden value satisfied the bound. On a live chain that acceptance is a zero-knowledge proof on the ledger. <b>The value is not here because it was never published.</b> You are not being asked to trust that we hide it carefully; it was never on the chain to hide.'],
 
 ['v8-caveat', 'Read what a tick does not mean',
  'The caveat sits on the page by default, not behind a link.',
