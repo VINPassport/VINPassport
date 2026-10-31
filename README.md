@@ -12,6 +12,17 @@
 
 ---
 
+### Deployed on Midnight preprod
+
+| | |
+|---|---|
+| **Contract address** | `2f66c442f14ec98ca59372e14eaa08832f71de9d4aed74aa7bb48140e5d648f5` |
+| **Deployed** | 16 October 2026, block **2999411** |
+| **Deploy transaction** | `6f4ce1692a1e1c115b4de63f3b7b6ed95f03540c9004926fb091a9bb20cebf69` |
+| **Exercised on chain** | full passport run, blocks 3000263 to 3000384, one claim refused in-circuit |
+| **Contract shape** | 14 circuits: 11 exported, 8 of them provable |
+| **Check it yourself** | [`deploy/preprod.json`](deploy/preprod.json), and the indexer query under [Evaluating this repository](#evaluating-this-repository) |
+
 > **Status: pre-alpha, under active development.** The Compact contract is written, compiles and is
 > covered by tests, and the three application surfaces (verification, intake console, proof
 > explorer) run against the compiled circuits with one command (`npm run app`). The contract is
@@ -23,7 +34,7 @@
 > the authorisation back**, so a delegation's whole life cycle is on the public chain rather than
 > only in the test suite. The reading the dealership wrote stays written and stays stamped with
 > it, because revoking a grant cannot make it untrue that they wrote it. **Every circuit the
-> contract has has now run on a public ledger**, all eight that prove.
+> contract proves with has now run on a public ledger**, all eight of them.
 > The four proven claims cover **all three proof circuits**, including one that
 > compares two of the vehicle's own hidden fields and publishes only how far apart they are
 > allowed to be.
