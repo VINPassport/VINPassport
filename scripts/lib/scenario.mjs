@@ -13,6 +13,7 @@ import {
 import { buildTree, padToWidth } from '@odatano/dpp-sdk/merkle';
 import { CLAIM_CATALOGUE, CLAIM_GROUPS, boundFor, isCompare } from '../../site/assets/claim-catalogue.mjs';
 import { blake2b } from '@noble/hashes/blake2';
+import { tierOf } from './tiers.mjs';
 /**
  * PORTABILITY. This module builds ledger state, and the intake console needs
  * to build it in a browser on the published static site, where there is no
@@ -567,7 +568,7 @@ export function vocabulary(demoVehicles) {
         note: 'Public vocabulary: blake2b-256(field name) -> display metadata. See docs/FIELDS.md.',
         fields: Object.fromEntries(
             Object.entries(FIELDS).map(([name, meta]) => [
-                hex(K[name]), { name, label: meta.label, kind: meta.kind }
+                hex(K[name]), { name, label: meta.label, kind: meta.kind, tier: tierOf(name) }
             ])
         ),
         demoVehicles

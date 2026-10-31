@@ -39,6 +39,7 @@ import {
     persistentCommit, persistentHash,
     CompactTypeUnsignedInteger, CompactTypeBytes, CompactTypeVector
 } from '@midnight-ntwrk/compact-runtime';
+import { TIERS, POLICY_VERSION, FIELD_TIERS, tierOf, allows, vinAllowed } from './tiers.mjs';
 
 export const DISCLOSURE_KIND = 'vinpassport-disclosure/v1';
 
@@ -159,6 +160,36 @@ export function buildDisclosure(receipt, fieldNames, { writeIndex = 'latest', in
 }
 
 /**
+ * One field's opening against the ledger: the key follows from the name, the
+ * slot from the anchors, and the value and salt open the commitment stored
+ * there. Shared by both formats so they cannot disagree about what "opens"
+ * means.
+ */
+function checkOpening(f, vinHash, contentRoot, onChain) {
+    const out = { fieldName: f.fieldName, writeIndex: f.writeIndex };
+    try {
+        const expectedKey = hex(fieldKeyOf(f.fieldName));
+        if (expectedKey !== String(f.fieldKey).replace(/^0x/, '')) {
+            return { ...out, ok: false, why: 'fieldKey is not the hash of fieldName' };
+        }
+        const expectedSlot = hex(slotOf(vinHash, f.fieldKey, contentRoot));
+        if (expectedSlot !== String(f.slot).replace(/^0x/, '')) {
+            return { ...out, ok: false, why: 'slot does not follow from vinHash, fieldKey and contentRoot' };
+        }
+        const commitment = hex(commitmentOf(f.value, f.salt));
+        const stored = onChain(expectedSlot);
+        if (!stored) return { ...out, ok: false, why: 'no commitment on chain for this slot', commitment };
+        const ok = String(stored).replace(/^0x/, '') === commitment;
+        return {
+            ...out, ok, commitment,
+            why: ok ? 'value opens the commitment the ledger holds' : 'value does not open the stored commitment'
+        };
+    } catch (e) {
+        return { ...out, ok: false, why: String(e?.message ?? e) };
+    }
+}
+
+/**
  * Check a disclosure.
  *
  * `onChain` maps a slot (hex) to the commitment the ledger holds for it, or
@@ -186,35 +217,155 @@ export function verifyDisclosure(disclosure, onChain = () => null) {
         : null;
     if (vinOk === false) problems.push('vin does not hash to vinHash');
 
-    const fields = (disclosure?.fields ?? []).map((f) => {
-        const out = { fieldName: f.fieldName, writeIndex: f.writeIndex };
-        try {
-            const expectedKey = hex(fieldKeyOf(f.fieldName));
-            if (expectedKey !== String(f.fieldKey).replace(/^0x/, '')) {
-                return { ...out, ok: false, why: 'fieldKey is not the hash of fieldName' };
-            }
-            const expectedSlot = hex(slotOf(disclosure.vinHash, f.fieldKey, disclosure.contentRoot));
-            if (expectedSlot !== String(f.slot).replace(/^0x/, '')) {
-                return { ...out, ok: false, why: 'slot does not follow from vinHash, fieldKey and contentRoot' };
-            }
-            const commitment = hex(commitmentOf(f.value, f.salt));
-            const stored = onChain(expectedSlot);
-            if (!stored) return { ...out, ok: false, why: 'no commitment on chain for this slot', commitment };
-            const ok = String(stored).replace(/^0x/, '') === commitment;
-            return {
-                ...out, ok, commitment,
-                why: ok ? 'value opens the commitment the ledger holds' : 'value does not open the stored commitment'
-            };
-        } catch (e) {
-            return { ...out, ok: false, why: String(e?.message ?? e) };
-        }
-    });
+    const fields = (disclosure?.fields ?? [])
+        .map((f) => checkOpening(f, disclosure.vinHash, disclosure.contentRoot, onChain));
 
     return {
         ok: problems.length === 0 && fields.length > 0 && fields.every((f) => f.ok),
         vinMatchesHash: vinOk,
         problems,
         fields
+    };
+}
+
+// ------------------------------------------------------------------ bundles (v2)
+//
+// A BUNDLE is a disclosure addressed to one audience, per D26 in
+// docs/DECISIONS.md. It names its tier, and its contents are bounded by the
+// tier policy in ./tiers.mjs: a public bundle opens public fields, a trade
+// bundle public and trade fields, an authority bundle every field plus the
+// VIN. Any bundle may also reference claims already proven on the ledger,
+// which reveal a bound and never a value.
+//
+// The builder REFUSES a field above the tier. The reader does not trust the
+// builder: it recomputes every field's tier from its own copy of the policy
+// and reports what the bundle actually opens, flagging anything above the
+// tier it declares. Such a bundle still verifies, because a holder may choose
+// to hand over more, but the reader is told.
+
+export const BUNDLE_KIND = 'vinpassport-disclosure/v2';
+
+const HEX32 = /^(0x)?[0-9a-f]{64}$/i;
+const bare = (h) => String(h).replace(/^0x/, '').toLowerCase();
+
+/** The name behind a field key, for every field the policy knows. */
+const NAME_OF_KEY = new Map(Object.keys(FIELD_TIERS).map((n) => [hex(fieldKeyOf(n)), n]));
+
+/**
+ * Build the bundle a holder hands one audience.
+ *
+ * `fields` defaults to every field of the receipt the tier allows; name them
+ * to hand over fewer. `claims` are claim keys from the ledger, for the holder
+ * to point at what has already been proven. The builder checks names, not
+ * claims: it is offline and holds no ledger.
+ */
+export function buildBundle(receipt, tier, { fields: named, claims = [], audience } = {}) {
+    if (!TIERS.includes(tier)) throw new Error(`unknown tier '${tier}', expected one of ${TIERS.join(', ')}`);
+    if (!receipt?.vin && !receipt?.vinHash) throw new Error('receipt has no vin or vinHash');
+    if (!receipt?.contentRoot) throw new Error('receipt has no contentRoot');
+
+    const held = Object.keys(receipt.fields ?? {});
+    const chosen = named ?? held.filter((n) => n in FIELD_TIERS && allows(tier, tierOf(n)));
+    for (const name of chosen) {
+        const fieldTier = tierOf(name);
+        if (!allows(tier, fieldTier)) {
+            throw new Error(`'${name}' is a ${fieldTier} field and cannot go in a ${tier} bundle`);
+        }
+    }
+    const keys = claims.map(bare);
+    for (const k of keys) if (!HEX32.test(k)) throw new Error(`'${k}' is not a claim key`);
+    if (!chosen.length && !keys.length) throw new Error('a bundle must open a field or reference a claim');
+
+    const opened = chosen.length ? buildDisclosure(receipt, chosen, { includeVin: false }).fields : [];
+    const vinHash = receipt.vinHash ?? hex(vinHashOf(receipt.vin));
+    return {
+        kind: BUNDLE_KIND,
+        policy: POLICY_VERSION,
+        tier,
+        ...(audience ? { audience: String(audience) } : {}),
+        note: `A ${tier} disclosure. It opens only the fields listed here and carries no seed, `
+            + 'so it cannot open any other field of this vehicle. Each claim listed was proven on the '
+            + 'public ledger and reveals a bound, never a value.',
+        network: receipt.network ?? 'preprod',
+        contractAddress: receipt.contractAddress,
+        vinHashScheme: 'blake2b-256',
+        ...(vinAllowed(tier) && receipt.vin ? { vin: receipt.vin } : {}),
+        vinHash,
+        contentRoot: receipt.contentRoot,
+        fields: opened,
+        claims: keys
+    };
+}
+
+/**
+ * Read a bundle against the ledger.
+ *
+ * `commitmentAt(slot)` returns the commitment the ledger holds for a slot, or
+ * null; `claimAt(key)` returns the ledger's claim record for a key, or null.
+ * Both are the caller's to supply, so this stays offline and synchronous: the
+ * same code runs in a test, in the CLI and in a browser handed a file.
+ *
+ * `ok` means every opening opens what the ledger holds, and every claim
+ * exists, is about this vehicle, and was proven against the value the ledger
+ * holds NOW. A claim proven against an earlier value is reported as
+ * superseded and does not count: under a rule like neverFalls, an old bound
+ * can mislead about the current value.
+ */
+export function verifyBundle(bundle, { commitmentAt = () => null, claimAt = () => null } = {}) {
+    const problems = [];
+    if (bundle?.kind !== BUNDLE_KIND) problems.push(`unknown kind '${bundle?.kind}', expected '${BUNDLE_KIND}'`);
+    if (bundle?.policy !== POLICY_VERSION) problems.push(`unknown policy '${bundle?.policy}', expected '${POLICY_VERSION}'`);
+    const tier = TIERS.includes(bundle?.tier) ? bundle.tier : null;
+    if (!tier) problems.push(`unknown tier '${bundle?.tier}'`);
+    for (const banned of ['runSeed', 'saltRule', 'seed']) {
+        if (bundle && banned in bundle) problems.push(`bundle carries '${banned}', which it must not`);
+    }
+
+    const overDisclosed = [];
+    let vinMatchesHash = null;
+    if (bundle?.vin) {
+        if (tier && !vinAllowed(tier)) overDisclosed.push('VIN');
+        // A scheme this reader cannot compute offline is reported, not guessed.
+        if (bundle.vinHashScheme === 'blake2b-256') {
+            vinMatchesHash = hex(vinHashOf(bundle.vin)) === bare(bundle.vinHash);
+            if (!vinMatchesHash) problems.push('vin does not hash to vinHash');
+        }
+    }
+
+    const fields = (bundle?.fields ?? []).map((f) => {
+        const fieldTier = FIELD_TIERS[f.fieldName] ?? null;
+        if (!fieldTier) return { fieldName: f.fieldName, writeIndex: f.writeIndex, ok: false, tier: null, why: 'field is not in the tier policy' };
+        const checked = checkOpening(f, bundle.vinHash, bundle.contentRoot, commitmentAt);
+        if (tier && !allows(tier, fieldTier)) overDisclosed.push(f.fieldName);
+        return { ...checked, tier: fieldTier };
+    });
+
+    const claims = (bundle?.claims ?? []).map((key) => {
+        const k = bare(key);
+        const c = claimAt(k);
+        if (!c) return { key: k, ok: false, why: 'no such claim on the ledger' };
+        const fieldName = NAME_OF_KEY.get(bare(c.fieldKey)) ?? null;
+        const about = { key: k, fieldName, bound: c.bound, atMost: c.atMost };
+        if (bare(c.vinHash) !== bare(bundle.vinHash)) return { ...about, ok: false, why: 'claim is about a different vehicle' };
+        const now = commitmentAt(bare(c.slot));
+        const current = now != null && bare(now) === bare(c.commitment);
+        return {
+            ...about, ok: current, current,
+            why: current ? 'proven against the value the ledger holds now'
+                : 'proven against an earlier value, since superseded'
+        };
+    });
+
+    return {
+        ok: problems.length === 0 && fields.length + claims.length > 0
+            && fields.every((f) => f.ok) && claims.every((c) => c.ok),
+        tier,
+        problems,
+        opened: fields.filter((f) => f.ok).map((f) => f.fieldName),
+        overDisclosed,
+        vinMatchesHash,
+        fields,
+        claims
     };
 }
 

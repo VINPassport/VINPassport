@@ -1168,6 +1168,178 @@ describe('selective disclosure: one field, not the panel', () => {
     });
 });
 
+describe('tiered disclosure: one vehicle, three audiences (D26)', () => {
+    // A bundle is a disclosure addressed to one audience. These tests pin the
+    // three things that make a tier mean anything: what each tier opens is
+    // different, checked against ledger state the real circuits wrote; the
+    // builder refuses to go above its tier; and the reader does not take the
+    // bundle's word for its tier, it recomputes and reports.
+
+    const PLASTIC = fieldKey('recycledPlasticPct');        // public
+    const DISMANTLING = fieldKey('dismantlingTimeMinutes'); // authority
+
+    /** registered(), plus one public and one authority field. */
+    function fullVehicle() {
+        registered();
+        sim.initialiseField(VIN_A, PLASTIC, Rule.neverChanges, PCT(26.5), S2);
+        sim.initialiseField(VIN_A, DISMANTLING, Rule.neverChanges, 95n, S3);
+    }
+
+    const RECEIPT = () => ({
+        vinHash: hex(VIN_A),
+        contentRoot: hex(ROOT),
+        network: 'preprod',
+        contractAddress: 'c8dc0aa4',
+        fields: {
+            odometerKm: [{ writeIndex: 0, value: '12', salt: hex(S1) }],
+            accidentCount: [{ writeIndex: 0, value: '0', salt: hex(S1) }],
+            ownerCount: [{ writeIndex: 0, value: '1', salt: hex(S1) }],
+            writeOffCategory: [{ writeIndex: 0, value: '0', salt: hex(S1) }],
+            recycledPlasticPct: [{ writeIndex: 0, value: String(PCT(26.5)), salt: hex(S2) }],
+            dismantlingTimeMinutes: [{ writeIndex: 0, value: '95', salt: hex(S3) }]
+        }
+    });
+
+    const commitmentAt = (slotHex) => {
+        try { return hex(sim.ledger.fieldCommitment.lookup(Uint8Array.from(Buffer.from(slotHex, 'hex')))); }
+        catch { return null; }
+    };
+    const claimAt = (keyHex) => {
+        for (const [k, c] of sim.ledger.claims) {
+            if (hex(k) !== keyHex) continue;
+            return { slot: hex(c.slot), vinHash: hex(c.vinHash), fieldKey: hex(c.fieldKey),
+                     commitment: hex(c.commitment), bound: String(c.bound), atMost: c.atMost };
+        }
+        return null;
+    };
+    const claimKeys = () => [...sim.ledger.claims].map(([k]) => hex(k));
+    const LEDGER = { commitmentAt, claimAt };
+
+    it('opens a different set of fields at each tier, each against real ledger state', async () => {
+        const { buildBundle, verifyBundle } = await import('../scripts/lib/disclosure.mjs');
+        fullVehicle();
+        const opened = (tier) => {
+            const r = verifyBundle(buildBundle(RECEIPT(), tier), LEDGER);
+            expect(r.ok).toBe(true);
+            expect(r.overDisclosed).toEqual([]);
+            return [...r.opened].sort();
+        };
+        expect(opened('public')).toEqual(['recycledPlasticPct']);
+        expect(opened('trade')).toEqual(
+            ['accidentCount', 'odometerKm', 'ownerCount', 'recycledPlasticPct', 'writeOffCategory']);
+        expect(opened('authority')).toEqual(['accidentCount', 'dismantlingTimeMinutes', 'odometerKm',
+            'ownerCount', 'recycledPlasticPct', 'writeOffCategory']);
+    });
+
+    it('a public bundle carries no value and no salt above public', async () => {
+        const { buildBundle } = await import('../scripts/lib/disclosure.mjs');
+        const text = JSON.stringify(buildBundle(RECEIPT(), 'public'));
+        expect(text).not.toContain(hex(S1));     // every history field's salt
+        expect(text).not.toContain(hex(S3));     // the authority field's salt
+        for (const name of ['odometerKm', 'accidentCount', 'ownerCount', 'writeOffCategory', 'dismantlingTimeMinutes']) {
+            expect(text).not.toContain(name);
+        }
+    });
+
+    it('the builder refuses a field above the tier', async () => {
+        const { buildBundle } = await import('../scripts/lib/disclosure.mjs');
+        expect(() => buildBundle(RECEIPT(), 'public', { fields: ['odometerKm'] }))
+            .toThrow(/'odometerKm' is a trade field and cannot go in a public bundle/);
+        expect(() => buildBundle(RECEIPT(), 'trade', { fields: ['dismantlingTimeMinutes'] }))
+            .toThrow(/is a authority field and cannot go in a trade bundle/);
+        expect(() => buildBundle(RECEIPT(), 'owner')).toThrow(/unknown tier 'owner'/);
+    });
+
+    it('the reader recomputes tiers: a bundle that understates its tier verifies, and is flagged', async () => {
+        const { buildBundle, verifyBundle } = await import('../scripts/lib/disclosure.mjs');
+        fullVehicle();
+        const bundle = { ...buildBundle(RECEIPT(), 'authority'), tier: 'public' };
+        const r = verifyBundle(bundle, LEDGER);
+        // Every opening is genuine, so it verifies: a holder may give more.
+        expect(r.ok).toBe(true);
+        // But the reader is told exactly how much more.
+        expect([...r.overDisclosed].sort()).toEqual(
+            ['accidentCount', 'dismantlingTimeMinutes', 'odometerKm', 'ownerCount', 'writeOffCategory']);
+    });
+
+    it('references a claim rather than opening the field, and checks it is current', async () => {
+        const { buildBundle, verifyBundle } = await import('../scripts/lib/disclosure.mjs');
+        fullVehicle();
+        sim.proveFieldAtMost(VIN_A, WRITE_OFF, 0n);
+
+        const bundle = buildBundle(RECEIPT(), 'public', { claims: claimKeys() });
+        const r = verifyBundle(bundle, LEDGER);
+        expect(r.ok).toBe(true);
+        expect(r.claims).toHaveLength(1);
+        expect(r.claims[0]).toMatchObject({ fieldName: 'writeOffCategory', bound: '0', atMost: true, current: true });
+        // "Never written off" without the field itself ever appearing.
+        expect(r.opened).not.toContain('writeOffCategory');
+        expect(JSON.stringify(bundle)).not.toContain('writeOffCategory');
+    });
+
+    it('a claim proven against an earlier value is superseded and does not verify', async () => {
+        const { buildBundle, verifyBundle } = await import('../scripts/lib/disclosure.mjs');
+        fullVehicle();
+        sim.proveFieldAtMost(VIN_A, ODO, 50n);          // true of 12
+        sim.recordField(VIN_A, ODO, 30n, S2);           // the reading moves on
+        const r = verifyBundle(buildBundle(RECEIPT(), 'public', { claims: claimKeys() }), LEDGER);
+        expect(r.claims[0].current).toBe(false);
+        expect(r.claims[0].why).toMatch(/superseded/);
+        expect(r.ok).toBe(false);
+    });
+
+    it('a claim about another vehicle, or no claim at all, does not verify', async () => {
+        const { buildBundle, verifyBundle } = await import('../scripts/lib/disclosure.mjs');
+        fullVehicle();
+        registered(VIN_B, ROOT_B);
+        sim.proveFieldAtMost(VIN_B, WRITE_OFF, 0n);
+        const foreign = verifyBundle(buildBundle(RECEIPT(), 'public', { claims: claimKeys() }), LEDGER);
+        expect(foreign.claims[0].why).toMatch(/different vehicle/);
+        expect(foreign.ok).toBe(false);
+
+        const missing = verifyBundle(buildBundle(RECEIPT(), 'public', { claims: ['ab'.repeat(32)] }), LEDGER);
+        expect(missing.claims[0].why).toMatch(/no such claim/);
+        expect(missing.ok).toBe(false);
+    });
+
+    it('only the committed value verifies; a field outside the policy or an unknown tier fails', async () => {
+        const { buildBundle, verifyBundle } = await import('../scripts/lib/disclosure.mjs');
+        fullVehicle();
+        const flattering = buildBundle(RECEIPT(), 'trade');
+        flattering.fields.find((f) => f.fieldName === 'odometerKm').value = '5';
+        expect(verifyBundle(flattering, LEDGER).ok).toBe(false);
+
+        const stray = buildBundle(RECEIPT(), 'trade');
+        stray.fields.push({ ...stray.fields[0], fieldName: 'reservedNumeric0' });
+        const r = verifyBundle(stray, LEDGER);
+        expect(r.fields.at(-1).why).toMatch(/not in the tier policy/);
+        expect(r.ok).toBe(false);
+
+        const unknown = { ...buildBundle(RECEIPT(), 'trade'), tier: 'owner' };
+        expect(verifyBundle(unknown, LEDGER).problems).toContain("unknown tier 'owner'");
+    });
+
+    it('the VIN travels only at the authority tier, and is flagged anywhere else', async () => {
+        const { buildBundle, verifyBundle, vinHashOf, slotOf, commitmentOf } = await import('../scripts/lib/disclosure.mjs');
+        const VIN = 'WP0ZZZ99ZTS392124';
+        // A consistent pair, which the simulator's synthetic keys are not, so
+        // the ledger here is the commitment computed for that pair.
+        const receipt = { ...RECEIPT(), vin: VIN, vinHash: hex(vinHashOf(VIN)) };
+        const slot = hex(slotOf(receipt.vinHash, hex(PLASTIC), receipt.contentRoot));
+        const ledger = { commitmentAt: (s) => (s === slot ? hex(commitmentOf(PCT(26.5), hex(S2))) : null) };
+
+        expect(buildBundle(receipt, 'trade').vin).toBeUndefined();
+        expect(JSON.stringify(buildBundle(receipt, 'trade'))).not.toContain(VIN);
+
+        const authority = buildBundle(receipt, 'authority', { fields: ['recycledPlasticPct'] });
+        expect(authority.vin).toBe(VIN);
+        expect(verifyBundle(authority, ledger).vinMatchesHash).toBe(true);
+
+        const leaky = { ...buildBundle(receipt, 'public'), vin: VIN };
+        expect(verifyBundle(leaky, ledger).overDisclosed).toContain('VIN');
+    });
+});
+
 /**
  * A vehicle outlives the moment it was built.
  *

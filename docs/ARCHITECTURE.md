@@ -78,9 +78,10 @@ NIGHTGATE's three levels map onto vehicle stakeholders cleanly:
 service that shaped each answer to the caller's tier and refused queries probing hidden columns, as
 NIGHTPASS does. That was reversed before it was built ([R7](DECISIONS.md#reversed)): to redact a
 value a service must hold it, for every vehicle, in the clear. Instead a tier is **a bundle the
-holder hands over** and the reader checks against the ledger ([D26](DECISIONS.md#settled)). A
-`public` bundle carries only references to claims already on the ledger; a `trade` or `authority`
-bundle carries openings for the fields its tier allows, and nothing that opens any other.
+holder hands over** and the reader checks against the ledger ([D26](DECISIONS.md#settled)). Every
+bundle carries openings for the fields its tier allows and nothing that opens any other, and may
+cite claims already on the ledger, which reveal a bound and never a value. The exact assignment,
+one tier per field, is in [FIELDS.md](FIELDS.md#who-sees-a-field-disclosure-tiers).
 
 EVP content sits in `public` and stays there: Annex V 4.2.3 of Reg (EU) 2025/1707 forbids asking
 for anything beyond the VIN to read it.

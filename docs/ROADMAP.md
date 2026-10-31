@@ -204,10 +204,11 @@ entitled to.
 Rewritten 2026-10-31 by [D26](DECISIONS.md#settled) and [R7](DECISIONS.md#reversed): tiers are
 bundles the holder hands over, not redaction in a service, so the service-side items are gone.
 
-- [ ] A tier on every field in the registry ([FIELDS.md](FIELDS.md), `site/verify/fields.json`)
-- [ ] Disclosure bundles by tier: the builder refuses a field above the tier, the verifier reports
-      every field a bundle opens and flags any above its declared tier
-- [ ] A `public` bundle carries no value and no salt, held by a test
+- [x] A tier on every field in the registry ([FIELDS.md](FIELDS.md#who-sees-a-field-disclosure-tiers),
+      `scripts/lib/tiers.mjs`, `site/verify/fields.json`)
+- [x] Disclosure bundles by tier: the builder refuses a field above the tier, the verifier reports
+      every field a bundle opens and flags any above its declared tier (`scripts/disclose.mjs --tier`)
+- [x] A `public` bundle opens nothing above `public`, held by a test against real ledger state
 - [ ] Browser check of a bundle on `/verify/`: one vehicle, three audiences
 - [ ] `grantDisclosure` and `revokeDisclosure`, registrar-only, with a guard test per assert and the
       mutation harness re-run

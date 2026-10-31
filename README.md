@@ -145,14 +145,14 @@ npm install
 npm test
 ```
 
-Expected: **129 contract tests, 209 app tests and 24 SDK assertions, all passing**, in a couple of
+Expected: **138 contract tests, 228 app tests and 24 SDK assertions, all passing**, in a couple of
 seconds.
 
 ```
  Test Files  1 passed (1)
-      Tests  129 passed (129)
+      Tests  138 passed (138)
 
-# pass 209
+# pass 228
 
 ================ 24 passed, 0 failed ================
 ```
@@ -160,9 +160,9 @@ seconds.
 | Command | What it does |
 |---|---|
 | `npm test` | Everything below, in one run |
-| `npm run test:contract` | The 129 contract tests, against the compiled circuits |
+| `npm run test:contract` | The 138 contract tests, against the compiled circuits |
 | `npm run test:watch` | The same, re-running on change |
-| `npm run test:app` | 209 tests on the application paths: verdicts, the deploy's registrar list, the submission path, the chain-sees panel and the QR encoder, via `node --test`. **Most import and run product code; a minority assert on what is written in the repository** (that every screenshot the guide names exists, that each page's bar carries the same links, that every page names its content with one `<main>` and offers a way past the bar, that the verify page cannot answer with a vehicle nobody asked for, that no text colour drops below the contrast floor). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
+| `npm run test:app` | 228 tests on the application paths: verdicts, the deploy's registrar list, the submission path, the chain-sees panel and the QR encoder, via `node --test`. **Most import and run product code; a minority assert on what is written in the repository** (that every screenshot the guide names exists, that each page's bar carries the same links, that every page names its content with one `<main>` and offers a way past the bar, that the verify page cannot answer with a vehicle nobody asked for, that no text colour drops below the contrast floor). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
 | `npm run test:sdk` | 24 assertions pinning our assumptions about `@odatano/dpp-sdk` |
 | `npm run app` | All three surfaces + the circuits, one dependency-free server |
 | `npm run serve:site` | The site statically, as GitHub Pages serves it: no circuits, demo state only |
@@ -513,7 +513,7 @@ repository begins with no contract at all.
 |---|---|
 | **The contract** - five exported circuits at Wave 1's close, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
 | **Deployed to Midnight preprod**, 28 August, built and signed locally | [`deploy/preprod.json`](deploy/preprod.json) |
-| **362 tests today** - 129 contract, 209 application, 24 SDK assumption assertions; all thirty-two guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
+| **390 tests today** - 138 contract, 228 application, 24 SDK assumption assertions; all thirty-two guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
 | **Three surfaces** - verification, intake console, proof explorer - all running the compiled circuits, not a mock | [passport.vin](https://passport.vin/) |
 | **On-chain runs from the browser, self-funded**, after a hosted sponsor turned out to be a single point of failure in a demo a judge runs unattended | [D24](docs/DECISIONS.md#settled) |
 | **The regulatory basis read from the Official Journal** rather than secondary analysis - which caught two wrong article citations that had survived months of work | [REGULATION.md](docs/REGULATION.md) |
@@ -530,7 +530,7 @@ Wave 2 runs 29 September - 19 October 2026. Wave 1 closed with five circuits, fi
 141 tests. What follows was built inside Wave 2's window, and the numbers either side are from the
 tree at each wave's close, not from memory.
 
-| | Wave 1 close | Now |
+| | Wave 1 close | Wave 2 close |
 |---|---:|---:|
 | Exported circuits | 5 | **11**, eight of them proved |
 | Integrity rules | 2 | **3** |
@@ -567,7 +567,7 @@ line of comparison rather than two days of reading tag names.
 | Component | Status |
 |---|---|
 | Compact contract: 14 circuits, 11 exported, 8 of them proving | **Done.** Compiles clean, artifacts committed and reproducible from source |
-| Contract test suite | **Done.** 129 tests; every guard mutation-checked, 32 of 32 |
+| Contract test suite | **Done.** 138 tests; every guard mutation-checked, 32 of 32 |
 | SDK assumption guard | **Done.** 24 assertions against `@odatano/dpp-sdk` 0.2.0 |
 | Proving cost, the three circuits a verifier waits on | **Re-measured 14 Oct 2026 against the build deployed that day**, wasm in-process, no proof server, 32 cores, n=3 each. Build, prove and sign: `registerPassport` **17.5s** (5,229 B), `proveFieldAtMost` **27.6s** (5,567 B), `proveFieldAtLeast` **27.0s** (5,568 B). Within noise of the 13 October build (16.6s, 29.4s, 27.1s), so **the writer circuits and the two ledger collections they added cost these three nothing measurable**, which is the question re-measuring was there to answer. Registration is 3.7x Wave 1's 4.77s, the cost of the registrar identity derived in-circuit and the field commitments bound to the content root. **`initialiseField` was measured for the first time on 16 Oct and is the most expensive circuit here: 37.4s median (min 35.8 / max 53.2, n=5, 5,516 B).** It had never been timed because the three above are the ones a verifier's experience depends on, and it is the one an issuer runs most: a vehicle carrying the full 68-field registry is one registration and 68 of these, about **42.6 minutes of proving**. Batching does not reduce that, because batching removes block confirmations and not proofs. That number, rather than any wallet count, is the real ceiling on how many vehicles a day one writer can issue, and it is why [FIELDS.md](docs/FIELDS.md)'s whole-registry rule has never once been satisfied by a real vehicle. **These are the times to ISSUE a claim, paid once by whoever writes it.** A verifier reads the verdict off the ledger and waits on a query, never on a proof, which is why a proven claim is recorded rather than re-proven on demand ([D19](docs/DECISIONS.md#settled)). DUST cost per anchor and per proof was **measured on 14 Oct 2026** against the deployed contract with real proofs, and is published in [BUILD-SCOPE](docs/BUILD-SCOPE.md); latency is not cost |
 | Provable-field registry, 32 slots | **Settled** ([FIELDS.md](docs/FIELDS.md)). 26 in use, reserve 17 to 21, and 31. Slots 0 to 16 are wired end to end and provable; the rest are salted into the content root but carry no rule yet |
@@ -589,8 +589,8 @@ scripts/
   lib/scenario.mjs                   the 32-slot panel and its integrity rules
 test/
   passport-simulator.mjs             harness: compiled circuits + a local ledger
-  passport.test.mjs                  129 contract tests
-  app/                               209 tests on the paths around the circuits
+  passport.test.mjs                  138 contract tests
+  app/                               228 tests on the paths around the circuits
   sdk-assumptions.mjs                24 assertions pinning @odatano/dpp-sdk behaviour
 ```
 

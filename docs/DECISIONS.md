@@ -530,9 +530,18 @@ reasons:
 
 | Tier | Audience | The bundle carries | The reader learns |
 |---|---|---|---|
-| `public` | Buyer | References to claims already on the ledger. **No value and no salt** | That the stated bounds hold, and nothing else |
+| `public` | Buyer | Openings for the fields tagged `public` only: the vehicle as built and as declared | Those declared values. **No value and no salt for any field above `public`** |
 | `trade` | Dealer, recycler, insurer, lender | Openings for the fields tagged `public` or `trade` | Those exact values, each checked against its commitment |
 | `authority` | Registry, police, notified body | Openings for every field, and the VIN | The whole panel, checked field by field |
+
+Any bundle may also cite claims already proven on the ledger, which reveal a bound and never a
+value: a `public` bundle can show "never written off" without the write-off field appearing in it.
+
+*Corrected the same day, before any code shipped.* The first version of this table gave the
+`public` bundle no openings at all. That contradicted the policy it cites: the ARCHITECTURE table
+has the buyer seeing make, model, year and the environmental declarations, which are public by
+nature, and EVP data may not be gated beyond the VIN (Annex V 4.2.3). Because each field's salt
+stands alone, opening a public field reveals nothing about any other.
 
 The field-to-tier assignment is the table in [ARCHITECTURE.md](ARCHITECTURE.md), carried into the
 field registry. The tool that builds a bundle **refuses** a field above the bundle's tier. The

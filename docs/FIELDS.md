@@ -156,6 +156,38 @@ Two things that do not change when someone else writes:
 - **Permission is not knowledge.** Updating a field also requires the current value and its salt.
   Those are private state, handed over deliberately and per field, outside the contract.
 
+## Who sees a field: disclosure tiers
+
+Every field in the registry has exactly one tier, set in `scripts/lib/tiers.mjs` and published in
+`site/verify/fields.json`. A bundle for an audience opens only the fields its tier allows, and the
+tiers nest: `trade` sees everything `public` sees, `authority` everything `trade` sees, plus the
+VIN. Why a tier is a bundle the holder hands over rather than a server's redaction is
+[D26](DECISIONS.md#settled).
+
+| Tier | Audience | Fields | Count |
+|---|---|---|---|
+| `public` | Buyer scanning a listing | `firstRegistrationDate`; the regulatory declarations in slots 7 to 15 (CO2 footprint, recycled plastic, plastic from ELVs, steel, aluminium, critical raw material, reusability, recyclability, recoverability); the specification block (`modelYear`, `makeCode`, `modelCode`, `bodyTypeCode`, `transmissionCode`, `driveTypeCode`, `colourCodeAtFirstReg`, `engineCapacityCc`, `enginePowerKw`, `seatCount`, `doorCount`, `kerbWeightKg`) | 22 |
+| `trade` | Dealer, recycler, insurer, lender | The lifecycle counters in slots 0 to 4 and `lastInspectionDate`; title status as the trade sees it (`titleStatusMask`, `writeOffDate`, `repairedAndReturnedDate`); ownership and use; the odometer set; roadworthiness; damage and repair; service; recalls | 41 |
+| `authority` | Registry, police, notified body, ELV facility | Records an authority is the source of (`stolenRecordCount`, `recoveredRecordCount`, `exportMarkerCount`) and the end of life (`scrapCertificateDate`, `dismantlingTimeMinutes`) | 5 |
+
+The lines it draws, and why:
+
+- **The declarations and the specification are public.** They are what a type approval and an EVP
+  already publish, and EVP data may not be gated beyond the VIN (Reg (EU) 2025/1707, Annex V
+  4.2.3). Putting them higher would put the passport on the wrong side of the law it is built for.
+- **The history is trade.** It is what a buyer asks a seller to prove and what an appraiser needs
+  exactly. A buyer still gets the answer to the question through a claim, which reveals a bound and
+  never the value: "never written off" without the write-off field.
+- **Authority-sourced records stay at authority.** Theft, recovery and export records come from the
+  police and customs, and their detail can belong to an open matter. The trade sees the summary in
+  `titleStatusMask`.
+
+**This assignment is ours until the Commission says otherwise.** Reg (EU) 2026/1738 Art. 13(6)(d)
+orders an implementing act on the conditions for access to the passport, due by 14 August 2030 and
+not yet adopted ([REGULATION.md](REGULATION.md#two-parts-of-article-136-that-shape-the-design)).
+When it lands, this table is revisited against it. A test holds the policy and the published
+vocabulary to the same answer (`test/app/disclosure-tiers.test.mjs`).
+
 ## Two budgets, and only one is scarce
 
 There are two places a fact can live, and they have nothing to do with each other.
