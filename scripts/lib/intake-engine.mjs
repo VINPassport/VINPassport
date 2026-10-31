@@ -89,7 +89,7 @@ export function registerLocally(intake) {
 }
 
 /** Collections keyed by an opaque hash; a later write of the same key wins. */
-const MAPS = ['passports', 'registrar', 'fieldCommitment', 'fieldRule', 'fieldWriter'];
+const MAPS = ['passports', 'registrar', 'fieldCommitment', 'fieldRule', 'fieldWriter', 'grants'];
 /** Collections of objects carrying their own `key`. */
 const KEYED_LISTS = ['claims', 'relClaims'];
 

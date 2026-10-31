@@ -34,11 +34,12 @@ import { blake2b } from '@noble/hashes/blake2';
 import {
     Contract,
     Rule,
+    Tier,
     ledger,
     pureCircuits
 } from '../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
 
-export { Rule, pureCircuits };
+export { Rule, Tier, pureCircuits };
 
 // Pure JS rather than Buffer: this module is bundled into the browser for
 // the intake console, where Buffer does not exist. Byte-identical to
@@ -142,6 +143,12 @@ export const DEALER_ID = pureCircuits.registrarIdOf(DEALER_SECRET);
 export const GARAGE_SECRET = bytes32(0x44);
 export const GARAGE_ID = pureCircuits.registrarIdOf(GARAGE_SECRET);
 
+// A party given a view of a vehicle rather than the pen: a registration
+// authority reading the authority tier. It never acts on chain in the demo, so
+// only its identity is used; the secret exists to derive it the usual way.
+export const AUTHORITY_SECRET = bytes32(0x33);
+export const AUTHORITY_ID = pureCircuits.registrarIdOf(AUTHORITY_SECRET);
+
 export class PassportSimulator {
     /**
      * `allowed` is the deploy-pinned registrar list. It is fixed here exactly
@@ -238,6 +245,28 @@ export class PassportSimulator {
         if (secret) this.actAs(secret);
         this.ctx = this.contract.impureCircuits.withdrawWriter(
             this.ctx, vin, writerId
+        ).context;
+        return this.ledger;
+    }
+
+    /**
+     * Record that `granteeId` is entitled to the trade or authority view of
+     * this vehicle (D26). Acting secret decides who is asking; only the
+     * vehicle's registrar may.
+     */
+    grantDisclosure(vin, granteeId, tier, secret) {
+        if (secret) this.actAs(secret);
+        this.ctx = this.contract.impureCircuits.grantDisclosure(
+            this.ctx, vin, granteeId, tier
+        ).context;
+        return this.ledger;
+    }
+
+    /** Take a grant away. Nothing already handed over comes back. */
+    revokeDisclosure(vin, granteeId, secret) {
+        if (secret) this.actAs(secret);
+        this.ctx = this.contract.impureCircuits.revokeDisclosure(
+            this.ctx, vin, granteeId
         ).context;
         return this.ledger;
     }

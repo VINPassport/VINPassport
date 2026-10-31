@@ -18,9 +18,9 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
-    PassportSimulator, Rule, bytes32, hex, fieldKey, pureCircuits,
+    PassportSimulator, Rule, Tier, bytes32, hex, fieldKey, pureCircuits,
     REGISTRAR_SECRET, REGISTRAR_ID, SECOND_SECRET, SECOND_ID, OUTSIDER_SECRET,
-    DEALER_SECRET, DEALER_ID, GARAGE_SECRET, GARAGE_ID
+    DEALER_SECRET, DEALER_ID, GARAGE_SECRET, GARAGE_ID, AUTHORITY_ID
 } from './passport-simulator.mjs';
 
 const VIN_A = bytes32(0x11);
@@ -1338,6 +1338,46 @@ describe('tiered disclosure: one vehicle, three audiences (D26)', () => {
         const leaky = { ...buildBundle(receipt, 'public'), vin: VIN };
         expect(verifyBundle(leaky, ledger).overDisclosed).toContain('VIN');
     });
+
+    it('the reader computes the same grant key as the contract', async () => {
+        const { grantKeyOf } = await import('../scripts/lib/disclosure.mjs');
+        for (const who of [DEALER_ID, AUTHORITY_ID]) {
+            expect(grantKeyOf(hex(VIN_A), hex(who))).toBe(hex(pureCircuits.grantKeyOf(VIN_A, who)));
+        }
+    });
+
+    it('a bundle naming its audience is told whether the ledger granted that tier', async () => {
+        const { buildBundle, verifyBundle } = await import('../scripts/lib/disclosure.mjs');
+        fullVehicle();
+        const grantAt = (k) => {
+            const key = Uint8Array.from(Buffer.from(k, 'hex'));
+            return sim.ledger.grants.member(key) ? sim.ledger.grants.lookup(key) : null;
+        };
+        const check = (tier) => verifyBundle(
+            buildBundle(RECEIPT(), tier, { audienceId: hex(DEALER_ID) }), { ...LEDGER, grantAt });
+
+        // No grant yet. The values still open their commitments; the reader is told.
+        expect(check('trade').ok).toBe(true);
+        expect(check('trade').grant).toMatchObject({ held: null, covers: false });
+
+        sim.grantDisclosure(VIN_A, DEALER_ID, Tier.trade, REGISTRAR);
+        expect(check('trade').grant).toMatchObject({ held: 'trade', covers: true });
+        expect(check('authority').grant).toMatchObject({ held: 'trade', covers: false });
+
+        sim.grantDisclosure(VIN_A, DEALER_ID, Tier.authority, REGISTRAR);
+        expect(check('authority').grant.covers).toBe(true);
+        expect(check('trade').grant.covers).toBe(true);
+
+        sim.revokeDisclosure(VIN_A, DEALER_ID, REGISTRAR);
+        expect(check('trade').grant).toMatchObject({ held: null, covers: false });
+        // The public view needs no grant, so it is never looked up.
+        expect(check('public').grant).toBe(null);
+    });
+
+    it('the builder refuses an audience that is not an identity', async () => {
+        const { buildBundle } = await import('../scripts/lib/disclosure.mjs');
+        expect(() => buildBundle(RECEIPT(), 'trade', { audienceId: 'a dealer' })).toThrow(/is not an identity/);
+    });
 });
 
 /**
@@ -1544,6 +1584,111 @@ describe('a vehicle changes hands', () => {
 });
 
 // ------------------------------------------- a claim about two hidden fields
+
+describe('disclosure grants: who may see beyond the public view (D26)', () => {
+    // The disclosure itself is a bundle handed over off chain. A grant records
+    // the entitlement: which identity the registrar gave the trade or the
+    // authority view of one vehicle. These pin who may grant, what a grant is
+    // not, and that revoking needs something to revoke.
+
+    const held = (vin, who) => {
+        const key = pureCircuits.grantKeyOf(vin, who);
+        return sim.ledger.grants.member(key) ? sim.ledger.grants.lookup(key) : null;
+    };
+
+    it('the registrar grants a dealer the trade view, and the ledger records it', () => {
+        registered();
+        expect(held(VIN_A, DEALER_ID)).toBe(null);
+        sim.grantDisclosure(VIN_A, DEALER_ID, Tier.trade, REGISTRAR);
+        expect(held(VIN_A, DEALER_ID)).toBe(Tier.trade);
+    });
+
+    it('granting again changes the tier, with no revoke in between', () => {
+        registered();
+        sim.grantDisclosure(VIN_A, AUTHORITY_ID, Tier.trade, REGISTRAR);
+        sim.grantDisclosure(VIN_A, AUTHORITY_ID, Tier.authority, REGISTRAR);
+        expect(held(VIN_A, AUTHORITY_ID)).toBe(Tier.authority);
+        sim.grantDisclosure(VIN_A, AUTHORITY_ID, Tier.trade, REGISTRAR);
+        expect(held(VIN_A, AUTHORITY_ID)).toBe(Tier.trade);
+    });
+
+    it('a grant is for one vehicle, not for a fleet', () => {
+        registered(VIN_A, ROOT);
+        registered(VIN_B, ROOT_B);
+        sim.grantDisclosure(VIN_A, DEALER_ID, Tier.authority, REGISTRAR);
+        expect(held(VIN_B, DEALER_ID)).toBe(null);
+    });
+
+    it("only this vehicle's registrar may grant", () => {
+        registered();
+        sim.authoriseWriter(VIN_A, DEALER_ID, REGISTRAR);
+        // Another registrar on the deploy list, an outsider, and a writer this
+        // registrar admitted: none of them answers for who may read.
+        for (const secret of [SECOND_SECRET, OUTSIDER_SECRET, DEALER_SECRET]) {
+            expect(() => sim.grantDisclosure(VIN_A, GARAGE_ID, Tier.trade, secret))
+                .toThrow(rejects('not the registrar for this vehicle'));
+        }
+        expect(held(VIN_A, GARAGE_ID)).toBe(null);
+    });
+
+    it('a vehicle that was never registered can be neither granted nor revoked', () => {
+        expect(() => sim.grantDisclosure(VIN_B, DEALER_ID, Tier.trade, REGISTRAR))
+            .toThrow(rejects('unknown passport'));
+        expect(() => sim.revokeDisclosure(VIN_B, DEALER_ID, REGISTRAR))
+            .toThrow(rejects('unknown passport'));
+    });
+
+    it('a grant is not permission to write', () => {
+        // `writerFor` never reads `grants`. Being allowed to see every value
+        // is not being allowed to change one.
+        registered();
+        sim.grantDisclosure(VIN_A, DEALER_ID, Tier.authority, REGISTRAR);
+        expect(() => sim.recordField(VIN_A, OWNERS, 2n, S2, undefined, DEALER_SECRET))
+            .toThrow(rejects('not the registrar for this vehicle, and not authorised to write it'));
+        expect(sim.ledger.writers.member(pureCircuits.writerKeyOf(VIN_A, DEALER_ID))).toBe(false);
+    });
+
+    it('and permission to write is not a grant: the two lists are separate', () => {
+        registered();
+        sim.authoriseWriter(VIN_A, DEALER_ID, REGISTRAR);
+        expect(held(VIN_A, DEALER_ID)).toBe(null);
+        sim.grantDisclosure(VIN_A, DEALER_ID, Tier.trade, REGISTRAR);
+        sim.withdrawWriter(VIN_A, DEALER_ID, REGISTRAR);
+        expect(held(VIN_A, DEALER_ID)).toBe(Tier.trade);
+        expect(hex(pureCircuits.grantKeyOf(VIN_A, DEALER_ID)))
+            .not.toBe(hex(pureCircuits.writerKeyOf(VIN_A, DEALER_ID)));
+    });
+
+    it('revoking removes the grant, and only the registrar may', () => {
+        registered();
+        sim.grantDisclosure(VIN_A, DEALER_ID, Tier.trade, REGISTRAR);
+        expect(() => sim.revokeDisclosure(VIN_A, DEALER_ID, SECOND_SECRET))
+            .toThrow(rejects('not the registrar for this vehicle'));
+        expect(held(VIN_A, DEALER_ID)).toBe(Tier.trade);
+        sim.revokeDisclosure(VIN_A, DEALER_ID, REGISTRAR);
+        expect(held(VIN_A, DEALER_ID)).toBe(null);
+    });
+
+    it('revoking a grant that does not exist is refused, not quietly accepted', () => {
+        registered();
+        expect(() => sim.revokeDisclosure(VIN_A, DEALER_ID, REGISTRAR))
+            .toThrow(rejects('no grant for this identity on this vehicle'));
+        sim.grantDisclosure(VIN_A, DEALER_ID, Tier.trade, REGISTRAR);
+        sim.revokeDisclosure(VIN_A, DEALER_ID, REGISTRAR);
+        expect(() => sim.revokeDisclosure(VIN_A, DEALER_ID, REGISTRAR))
+            .toThrow(rejects('no grant for this identity on this vehicle'));
+    });
+
+    it('there is no public tier to grant', () => {
+        // The public view needs no grant, and Euro 7 passport data may not be
+        // put behind one (2025/1707 Annex V 4.2.3), so the type has no member
+        // for it and the runtime refuses anything outside the two it has.
+        expect(Object.keys(Tier).filter((k) => Number.isNaN(Number(k)))).toEqual(['trade', 'authority']);
+        registered();
+        expect(() => sim.grantDisclosure(VIN_A, DEALER_ID, 2, REGISTRAR)).toThrow();
+        expect(held(VIN_A, DEALER_ID)).toBe(null);
+    });
+});
 
 describe('proveFieldAtMostField', () => {
     // The questions a buyer asks that are not a field against a number.

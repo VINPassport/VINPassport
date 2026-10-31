@@ -79,6 +79,31 @@
       }
     },
     {
+      "name": "grantKeyOf",
+      "pure": true,
+      "proof": false,
+      "arguments": [
+        {
+          "name": "vinHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "granteeId",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
       "name": "registerPassport",
       "pure": false,
       "proof": true,
@@ -144,6 +169,69 @@
         },
         {
           "name": "writerId",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "grantDisclosure",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "vinHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "granteeId",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "tier",
+          "type": {
+            "type-name": "Enum",
+            "name": "Tier",
+            "elements": [
+              "trade",
+              "authority"
+            ]
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "revokeDisclosure",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "vinHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "granteeId",
           "type": {
             "type-name": "Bytes",
             "length": 32
@@ -617,6 +705,24 @@
       "value": {
         "type-name": "Bytes",
         "length": 32
+      }
+    },
+    {
+      "name": "grants",
+      "index": 9,
+      "exported": true,
+      "storage": "Map",
+      "key": {
+        "type-name": "Bytes",
+        "length": 32
+      },
+      "value": {
+        "type-name": "Enum",
+        "name": "Tier",
+        "elements": [
+          "trade",
+          "authority"
+        ]
       }
     }
   ]

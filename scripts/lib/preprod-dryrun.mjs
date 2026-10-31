@@ -68,6 +68,7 @@ export function dryRunStages(stages, { sim, registrarSecret, dealer, vinBytes, c
                 if (s.kind === 'register') sim.registerPassport(vinBytes, croot);
                 else if (s.kind === 'authorise') sim.authoriseWriter(vinBytes, s.writerId);
                 else if (s.kind === 'withdraw') sim.withdrawWriter(vinBytes, s.writerId);
+                else if (s.kind === 'grant') sim.grantDisclosure(vinBytes, s.granteeId, s.tierIndex);
                 else if (s.kind === 'init') {
                     if (!(s.name in FIELDS)) throw new Error('unknown field');
                     const salt = saltOf(s.name, 0);

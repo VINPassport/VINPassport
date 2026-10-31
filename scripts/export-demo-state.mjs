@@ -21,7 +21,9 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { PassportSimulator, buildDemoVehicles, exportLedger, vocabulary, saltStream } from './lib/scenario.mjs';
+import {
+    PassportSimulator, buildDemoVehicles, exportLedger, vocabulary, saltStream, DEMO_GRANTEES, hex
+} from './lib/scenario.mjs';
 import { buildBundle, verifyBundle, vinHashOf } from './lib/disclosure.mjs';
 
 const SITE = join(dirname(fileURLToPath(import.meta.url)), '..', 'site');
@@ -64,7 +66,9 @@ console.log(`exported ${ledger.claims.length} claims, ${Object.keys(ledger.passp
 //
 // The buyer's bundle opens the declared values and cites the claims already
 // proven; the dealer's opens the history as well; the authority's opens
-// everything and names the VIN.
+// everything and names the VIN. The dealer's and the authority's name their
+// audience by identity, and vehicle A's registrar granted each that view, so
+// a reader can find the entitlement on the ledger.
 if (Buffer.from(vinHashOf(VIN_A)).toString('hex') !== a.vinHex) {
     throw new Error('VIN_A no longer matches vehicle A; update it to the VIN buildDemoVehicles registers');
 }
@@ -78,17 +82,18 @@ const receipt = {
 const proven = ledger.claims.filter((c) => c.vinHash === a.vinHex).map((c) => c.key);
 const audiences = {
     public: { audience: 'a buyer', claims: proven },
-    trade: { audience: 'a dealer taking the car in part exchange' },
-    authority: { audience: 'a registration authority' }
+    trade: { audience: 'a dealer taking the car in part exchange', audienceId: hex(DEMO_GRANTEES.dealership.id) },
+    authority: { audience: 'a registration authority', audienceId: hex(DEMO_GRANTEES['registration authority'].id) }
 };
 const claimAt = (key) => ledger.claims.find((c) => c.key === key) ?? null;
 const commitmentAt = (slot) => ledger.fieldCommitment[slot] ?? null;
+const grantAt = (key) => ledger.grants[key] ?? null;
 
 mkdirSync(BUNDLES, { recursive: true });
 for (const [tier, options] of Object.entries(audiences)) {
     const bundle = buildBundle(receipt, tier, options);
-    const check = verifyBundle(bundle, { commitmentAt, claimAt });
-    if (!check.ok || check.overDisclosed.length) {
+    const check = verifyBundle(bundle, { commitmentAt, claimAt, grantAt });
+    if (!check.ok || check.overDisclosed.length || (tier !== 'public' && !check.grant?.covers)) {
         throw new Error(`the ${tier} bundle does not check against the ledger just written: ${JSON.stringify(check)}`);
     }
     writeFileSync(join(BUNDLES, `${tier}.json`), JSON.stringify(bundle, null, 2) + '\n');

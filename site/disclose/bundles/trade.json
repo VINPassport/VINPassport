@@ -3,99 +3,100 @@
   "policy": "vinpassport-tiers/v1",
   "tier": "trade",
   "audience": "a dealer taking the car in part exchange",
+  "audienceId": "9bdf83137712390552f06f8820fa1b74a29f8e6b9e3f0f148b7079476e3fcf47",
   "note": "A trade disclosure. It opens only the fields listed here and carries no seed, so it cannot open any other field of this vehicle. Each claim listed was proven on the public ledger and reveals a bound, never a value.",
   "network": "local-simulator",
   "vinHashScheme": "blake2b-256",
   "vinHash": "391ce048e0feacde85e7978c2c8320b3763a6c5ed5b2aacc7ca524469bafe357",
-  "contentRoot": "76d8e2b30ac2c1c3c615c0f73ad5dd35b9ea475d9281717111589f79a1a8d319",
+  "contentRoot": "3d319fbf3b54b5e2a51a29c5a930ec4fd8654c430176eb6458398330042f18bf",
   "fields": [
     {
       "fieldName": "odometerKm",
       "fieldKey": "2dd69ded11554ddb3306be039e80f3f82824b0d4af96b9bc287055558ea92fe7",
-      "slot": "a21f53589467f6f7df73387ce3e981ac462d6a6dba3cae8f49fedc9de330c170",
+      "slot": "0d38406c7e97dabf8a12aa622bff8a7cb984ed3f1a16e5766fe46945d67ea9cf",
       "writeIndex": 4,
       "value": "83260",
-      "salt": "99e38678bf7020b739a279e7961079aee36ff972ce83f23a5b43164c1b732fe0"
+      "salt": "369448ffcbf74076dc55421cd468d30866fdabd5142a955e59cbc573f78161ab"
     },
     {
       "fieldName": "accidentCount",
       "fieldKey": "aeb322aa379bd01ecb61ca57719f40e3c4a0368533dd62b1c7b5d2d995da98eb",
-      "slot": "2087a68d8170dc5b80e8426bae430c194ae5a1e730670ac9782f7cfd4fc0911b",
+      "slot": "3e3ac6d5db032f24b2d545497c969275a2e2d54f36a1474f285cd8fbbac91f5a",
       "writeIndex": 0,
       "value": "0",
-      "salt": "3d3dadb7e15f71cd892c82f11d260e5f1921d6584d4ab6a15a53aead2f3a2ff1"
+      "salt": "b88d68eb4f278767d020673051a902b0d9bcc8eaa56714dc788b07af6c0c50af"
     },
     {
       "fieldName": "ownerCount",
       "fieldKey": "7567eb36429241cb257b43d05709400ac5e7400e088048071b387d7d0548b25c",
-      "slot": "67af0ba75f30c1aef627634e8617c4d4b1300e57c43091fe2d2a0e20ba91399b",
+      "slot": "b2cbcab88493a517a124b234e065b64847d1df7968c4f946dd7a58e10f2d1c8b",
       "writeIndex": 0,
       "value": "1",
-      "salt": "55a091fbf77434d8d9c984a5e3111f0f03f4052135b035cdb45964eea4968e32"
+      "salt": "5dca7774ba59f0f36ab3152a250987901b95e250e2dc9ac6f29fb05f1d678a2a"
     },
     {
       "fieldName": "writeOffCategory",
       "fieldKey": "177d70535ec71b35583722c2d5f1ec963e3b32b7553dce868e547c0c5140e3c0",
-      "slot": "753a34e8c6c4bd748d4798480db90bd7181bccc887ba49b3c1ae568b20da811a",
+      "slot": "3e645eb0f420a5e44d7448501305229c7d647d2d8e282510f082f9d7c146abff",
       "writeIndex": 0,
       "value": "0",
-      "salt": "4d5c1d7449c3acf8a573ed44d903cc2ca84d63f7a82e416b0e2605b2a986762b"
+      "salt": "1b1dea1aa7622e5e69688aaf51dbad1277dafff8b233e5df5d7fe5ce2561cbc5"
     },
     {
       "fieldName": "serviceCount",
       "fieldKey": "48bdd789ee03fb0debd23d7e156228d3233f0110d48ed2d7dda663fb22521aff",
-      "slot": "0a734c4f90ef07b567d4e68a56157ddd1747235e291840b112cc20461bef2c79",
+      "slot": "dbda42ce012422fb289354ede81b4e2cb79397876226a9a617df644748de31ae",
       "writeIndex": 3,
       "value": "4",
-      "salt": "a2d05d2a5fe405c133c93617fc96f1b395970f74937cc790bfb03c0aa269266a"
+      "salt": "33d27b0f950c8a07bb40c5dfd217af3933361d5db7bdd740fd4daf7e096d560c"
     },
     {
       "fieldName": "lastServiceOdometerKm",
       "fieldKey": "b6239d97e7a609a21328561a13192631ead5b420e16044e3e498a6c20b77f824",
-      "slot": "836ff2dc0ee80e6dcec49c4947e92d7f07e47502048d3169f84e4fc9c129b7aa",
+      "slot": "a63d112ecae6256389275d802f1316b4c1ee60e6f3b4513050d1a6775b046b45",
       "writeIndex": 3,
       "value": "79000",
-      "salt": "4c075783bdb1f819616b302a37f1c098a61bc509ed024a70fe37ad15a48b6761"
+      "salt": "35e521022f72ebf7542fbfa0f7266fa560a80f970e425b58e23213887b596b58"
     },
     {
       "fieldName": "recallIssuedCount",
       "fieldKey": "76d5d0a3ab838de90920ccc554895be3b3f49400311f7c055012de1dc5cc21b8",
-      "slot": "d09c5bdd98e8384b67415e1906c791a8745eb59dfec84787fd275316703ee939",
+      "slot": "0c3c64a33b52fa256014b5429e45eabdb44f47c754bc685c1487a8f81fdfe695",
       "writeIndex": 0,
       "value": "1",
-      "salt": "94189d7b8fa872373cb426836782e38817d41eb327e85d3a93126f9024a951b1"
+      "salt": "f7097641dd0d89f40d6138c8d5d0fe87c65ce07b7940aa4d629570b3f6d0f659"
     },
     {
       "fieldName": "recallCompletedCount",
       "fieldKey": "b9e7bcc0059b1382275ba3c4ffd09832de3254d424b9ba358a5e1002f3dbd64a",
-      "slot": "3315a647e75911d7481fab073ead1302b7845b2eb390b31dda6e1de42f79cba3",
+      "slot": "ba0e2226666eadb51fdffcef33bc50ecb90afc631b7e92043467bba6dd8cd52c",
       "writeIndex": 1,
       "value": "1",
-      "salt": "c616a13712c54a290cf14107af0d9ec4534271db10b302acfdf8b0051ae57381"
+      "salt": "32c53b7bf35ee017dc15c986eb5c3e69f3a3fd2d57be0ee953344f4ca2b670ee"
     },
     {
       "fieldName": "co2FootprintKgCO2e",
       "fieldKey": "6d89c56c909e2d9309a132ced2bea500b282d66aba30a3b7ec4f6abd9ae3624d",
-      "slot": "c3f5ae772d165136f0b8eea7667ed40bf8ae8e4c794565c3467f1fbb015f092a",
+      "slot": "8bf8144cf700b6d9bbfb7dc8e1ab8a6c8819c717f16bacbfa58c6e96d1b8678b",
       "writeIndex": 0,
       "value": "8400",
-      "salt": "b5386fe2e4eba5712c9fca1f06bfbca3d053809ca46be97c6fa9cfb717ef35d2"
+      "salt": "2b64e7a6403596839216f94907c7008623b45a8f415a1dad9a83798e01b75c3c"
     },
     {
       "fieldName": "enginePowerKw",
       "fieldKey": "e68de521b8a35ebd319d4bfc94ff89fd7e7f342f0af508a3547955bab4094678",
-      "slot": "90e5b4d1f4146d6f48798b5e7f7ffdfb1cb3849bffe6871ff0bf22ffc3da6fce",
+      "slot": "9f89771866ccfcb08501ac602c2d860adceaf298c8486868cb3f271e94a94322",
       "writeIndex": 0,
       "value": "100",
-      "salt": "ed7edd6c418d271fc820b2a8a2c99b6ddef4c5efd8f8a8cef7fe3f32b043553c"
+      "salt": "b8778593d771f971dc68265579c7ebefb61afcad0fcc7e435049d37ada30ca75"
     },
     {
       "fieldName": "kerbWeightKg",
       "fieldKey": "6c2a6a16a42080ec60b33d6a0e4cf9c8b72ab468c1afd283e56bc3f57a58ebb5",
-      "slot": "1d01caecc5b4fa5fb70bad46206486da2050b60f94829b7c65e05c60378e9846",
+      "slot": "97b3200841fd858940f346282f59c39f672862e10a9ccfab7a0636b003c5eb58",
       "writeIndex": 0,
       "value": "1615",
-      "salt": "e38c7580c26ce1d50a79b3fe0e7b7997ed6e67b60122341f386ab8ea9f30efe0"
+      "salt": "b8249bfa86cd7dc10f8576718ba73a2d04c75ab94be16e91c14c4089033ff83f"
     }
   ],
   "claims": []

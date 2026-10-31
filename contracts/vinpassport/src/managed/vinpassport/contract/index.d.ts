@@ -2,6 +2,8 @@ import type * as __compactRuntime from '@midnight-ntwrk/compact-runtime';
 
 export enum Rule { neverFalls = 0, neverRises = 1, neverChanges = 2 }
 
+export enum Tier { trade = 0, authority = 1 }
+
 export type Claim = { slot: Uint8Array;
                       vinHash: Uint8Array;
                       fieldKey: Uint8Array;
@@ -40,6 +42,13 @@ export type ImpureCircuits<PS> = {
   withdrawWriter(context: __compactRuntime.CircuitContext<PS>,
                  vinHash_0: Uint8Array,
                  writerId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  grantDisclosure(context: __compactRuntime.CircuitContext<PS>,
+                  vinHash_0: Uint8Array,
+                  granteeId_0: Uint8Array,
+                  tier_0: Tier): __compactRuntime.CircuitResults<PS, []>;
+  revokeDisclosure(context: __compactRuntime.CircuitContext<PS>,
+                   vinHash_0: Uint8Array,
+                   granteeId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   initialiseField(context: __compactRuntime.CircuitContext<PS>,
                   vinHash_0: Uint8Array,
                   fieldKey_0: Uint8Array,
@@ -72,6 +81,13 @@ export type ProvableCircuits<PS> = {
   withdrawWriter(context: __compactRuntime.CircuitContext<PS>,
                  vinHash_0: Uint8Array,
                  writerId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  grantDisclosure(context: __compactRuntime.CircuitContext<PS>,
+                  vinHash_0: Uint8Array,
+                  granteeId_0: Uint8Array,
+                  tier_0: Tier): __compactRuntime.CircuitResults<PS, []>;
+  revokeDisclosure(context: __compactRuntime.CircuitContext<PS>,
+                   vinHash_0: Uint8Array,
+                   granteeId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   initialiseField(context: __compactRuntime.CircuitContext<PS>,
                   vinHash_0: Uint8Array,
                   fieldKey_0: Uint8Array,
@@ -100,6 +116,7 @@ export type PureCircuits = {
          contentRoot_0: Uint8Array): Uint8Array;
   registrarIdOf(secret_0: Uint8Array): Uint8Array;
   writerKeyOf(vinHash_0: Uint8Array, writerId_0: Uint8Array): Uint8Array;
+  grantKeyOf(vinHash_0: Uint8Array, granteeId_0: Uint8Array): Uint8Array;
 }
 
 export type Circuits<PS> = {
@@ -112,6 +129,9 @@ export type Circuits<PS> = {
   writerKeyOf(context: __compactRuntime.CircuitContext<PS>,
               vinHash_0: Uint8Array,
               writerId_0: Uint8Array): __compactRuntime.CircuitResults<PS, Uint8Array>;
+  grantKeyOf(context: __compactRuntime.CircuitContext<PS>,
+             vinHash_0: Uint8Array,
+             granteeId_0: Uint8Array): __compactRuntime.CircuitResults<PS, Uint8Array>;
   registerPassport(context: __compactRuntime.CircuitContext<PS>,
                    vinHash_0: Uint8Array,
                    contentRoot_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
@@ -121,6 +141,13 @@ export type Circuits<PS> = {
   withdrawWriter(context: __compactRuntime.CircuitContext<PS>,
                  vinHash_0: Uint8Array,
                  writerId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  grantDisclosure(context: __compactRuntime.CircuitContext<PS>,
+                  vinHash_0: Uint8Array,
+                  granteeId_0: Uint8Array,
+                  tier_0: Tier): __compactRuntime.CircuitResults<PS, []>;
+  revokeDisclosure(context: __compactRuntime.CircuitContext<PS>,
+                   vinHash_0: Uint8Array,
+                   granteeId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   initialiseField(context: __compactRuntime.CircuitContext<PS>,
                   vinHash_0: Uint8Array,
                   fieldKey_0: Uint8Array,
@@ -204,6 +231,13 @@ export type Ledger = {
     member(key_0: Uint8Array): boolean;
     lookup(key_0: Uint8Array): Uint8Array;
     [Symbol.iterator](): Iterator<[Uint8Array, Uint8Array]>
+  };
+  grants: {
+    isEmpty(): boolean;
+    size(): bigint;
+    member(key_0: Uint8Array): boolean;
+    lookup(key_0: Uint8Array): Tier;
+    [Symbol.iterator](): Iterator<[Uint8Array, Tier]>
   };
 }
 

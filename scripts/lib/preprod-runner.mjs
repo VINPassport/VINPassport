@@ -1012,6 +1012,14 @@ export async function createRunner({ log = console.log } = {}) {
                     before: arm(label, { pending: { value: 0n, salt: zero32() }, prev: { value: 0n, salt: zero32() } })
                 };
             }
+            if (s.kind === 'grant') {
+                // Registrar-only like authorising, and it reads no field, so it
+                // is armed with zeros for the same reason.
+                return {
+                    circuitId: 'grantDisclosure', args: [vinBytes, s.granteeId, s.tierIndex],
+                    before: arm(label, { pending: { value: 0n, salt: zero32() }, prev: { value: 0n, salt: zero32() } })
+                };
+            }
             if (s.kind === 'init') {
                 const w = writeAt(s.name, 0);
                 return {
@@ -1757,6 +1765,11 @@ export async function createRunner({ log = console.log } = {}) {
             // rule fixed when the field was created: delegation hands over the
             // pen, never the right to break the rule.
             ...(dealer ? { authorise: [{ label: dealer.label, id: dealer.id }] } : {}),
+            // The same dealership is given the trade view of this vehicle
+            // (D26). A grant is not the pen: it records who may be handed the
+            // history, so it outlives the withdrawal below, which is the
+            // contract's documented behaviour and worth seeing on chain.
+            ...(dealer ? { grants: [{ label: dealer.label, id: dealer.id, tier: 'trade' }] } : {}),
             // The gap this update opens is exactly what
             // `servicedWithin15000km` asks about, so it is derived from that
             // question's own slack rather than from a number that has to be

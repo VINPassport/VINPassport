@@ -7,37 +7,37 @@
   "network": "local-simulator",
   "vinHashScheme": "blake2b-256",
   "vinHash": "391ce048e0feacde85e7978c2c8320b3763a6c5ed5b2aacc7ca524469bafe357",
-  "contentRoot": "76d8e2b30ac2c1c3c615c0f73ad5dd35b9ea475d9281717111589f79a1a8d319",
+  "contentRoot": "3d319fbf3b54b5e2a51a29c5a930ec4fd8654c430176eb6458398330042f18bf",
   "fields": [
     {
       "fieldName": "co2FootprintKgCO2e",
       "fieldKey": "6d89c56c909e2d9309a132ced2bea500b282d66aba30a3b7ec4f6abd9ae3624d",
-      "slot": "c3f5ae772d165136f0b8eea7667ed40bf8ae8e4c794565c3467f1fbb015f092a",
+      "slot": "8bf8144cf700b6d9bbfb7dc8e1ab8a6c8819c717f16bacbfa58c6e96d1b8678b",
       "writeIndex": 0,
       "value": "8400",
-      "salt": "b5386fe2e4eba5712c9fca1f06bfbca3d053809ca46be97c6fa9cfb717ef35d2"
+      "salt": "2b64e7a6403596839216f94907c7008623b45a8f415a1dad9a83798e01b75c3c"
     },
     {
       "fieldName": "enginePowerKw",
       "fieldKey": "e68de521b8a35ebd319d4bfc94ff89fd7e7f342f0af508a3547955bab4094678",
-      "slot": "90e5b4d1f4146d6f48798b5e7f7ffdfb1cb3849bffe6871ff0bf22ffc3da6fce",
+      "slot": "9f89771866ccfcb08501ac602c2d860adceaf298c8486868cb3f271e94a94322",
       "writeIndex": 0,
       "value": "100",
-      "salt": "ed7edd6c418d271fc820b2a8a2c99b6ddef4c5efd8f8a8cef7fe3f32b043553c"
+      "salt": "b8778593d771f971dc68265579c7ebefb61afcad0fcc7e435049d37ada30ca75"
     },
     {
       "fieldName": "kerbWeightKg",
       "fieldKey": "6c2a6a16a42080ec60b33d6a0e4cf9c8b72ab468c1afd283e56bc3f57a58ebb5",
-      "slot": "1d01caecc5b4fa5fb70bad46206486da2050b60f94829b7c65e05c60378e9846",
+      "slot": "97b3200841fd858940f346282f59c39f672862e10a9ccfab7a0636b003c5eb58",
       "writeIndex": 0,
       "value": "1615",
-      "salt": "e38c7580c26ce1d50a79b3fe0e7b7997ed6e67b60122341f386ab8ea9f30efe0"
+      "salt": "b8249bfa86cd7dc10f8576718ba73a2d04c75ab94be16e91c14c4089033ff83f"
     }
   ],
   "claims": [
-    "8516f8d3f5492654b5e62b9ca91decbe15ef8e565cfb5ca1262e43ce5c9fe00c",
-    "c6a5906174098256956bdf4f9ad4e7971dc71b86591b0f0d38e2b509954bcf65",
-    "4a2ad806c3ec3abe1eaaa177b977f8c238c71b104c868d24626076de6db144d0",
-    "411e85a88488849c605af92ec214a833e8df8617313eaa44aa238f8a450a0576"
+    "24a237dcf3d1f46ffd04c5f02764bb7731434310e7894e4fa7273914fb6f23c4",
+    "36acb1249c4d05b243c7c066d2b41ee71455c0d77e165a96aaf3ac75b2b70e55",
+    "826b0676ddfd8da6554d2d1e36fc202f11eb1efb5a23d3af8d0da51367704bdb",
+    "bf228ea088aa3b679dd2b234d8524ae0bdc92317f04376301ef4da36d3150650"
   ]
 }

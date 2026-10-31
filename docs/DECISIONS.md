@@ -560,6 +560,14 @@ own. A grant records who was entitled to which tier, when, and on whose authorit
 same chain of accountability as [D25](#settled). **It cannot recall data already handed over.**
 Disclosure is a one-way door; the grant makes the door auditable, not lockable.
 
+*Built 31 Oct.* The `Tier` type has only `trade` and `authority`: the public view needs no grant,
+and Annex V 4.2.3 rules one out. Granting again replaces the tier; revoking a grant that does not
+exist is refused; a grant never confers write access, because `writerFor` never reads `grants`.
+A bundle may name its audience (`audienceId`), and the reader then reports whether the ledger
+shows that identity holding a grant that covers the bundle's tier. A missing grant is reported,
+not failed, for the reason over-disclosure is: the values still open their commitments. On preprod
+with the next deployment.
+
 **Who grants: the registrar, for now.** The keeper is arguably the party whose consent matters,
 but the contract has no keeper identity and adding one is a larger change. Keeper consent is a
 stated gap, not a solved problem.

@@ -43,6 +43,8 @@
 .ds-band[data-state="fail"]{border-color:#8A1C1C;background:rgba(138,28,28,.07)}
 .ds-band[data-state="pending"]{border-color:rgba(0,74,173,.32);background:transparent}
 .ds-band b{font:600 18px 'Barlow Condensed',sans-serif;letter-spacing:.04em;text-transform:uppercase}
+.ds-grant{margin:0 0 6px;max-width:80ch;font-size:13.5px;line-height:1.6;color:rgba(14,23,38,.8)}
+.ds-grant b{color:#004AAD}
 .ds-h3{margin:22px 0 10px;font:600 13px Barlow,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#002E6E}
 .ds-rows{list-style:none;margin:0;padding:0;border-top:1px solid rgba(0,74,173,.18)}
 .ds-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px;padding:11px 0;border-bottom:1px solid rgba(0,74,173,.18)}
@@ -145,7 +147,7 @@
     <div style="height:1px;background:rgba(0,74,173,.26);margin-bottom:24px"></div>
     <h2 id="limits" style="margin:0 0 18px;font-size:clamp(22px,2.4vw,30px);line-height:1.15;letter-spacing:.02em;text-transform:uppercase">Stated, so nobody has to find it</h2>
     <ul style="margin:0;padding-left:20px;max-width:78ch;font-size:14.5px;line-height:1.65;color:rgba(14,23,38,.82)">
-      <li><b>A bundle cannot be recalled.</b> Once handed over, the values in it are known to whoever holds it. Recording on the ledger who was entitled to which tier is planned and not yet built; it would make a disclosure auditable, never reversible.</li>
+      <li><b>A bundle cannot be recalled.</b> Once handed over, the values in it are known to whoever holds it. What the ledger records is who was granted which view, by the vehicle's registrar (<code>grantDisclosure</code>, shown here on the demo record and reaching preprod with the next deployment). That makes a disclosure auditable, never reversible.</li>
       <li><b>Which audience sees which field is our design for now.</b> The access conditions for a circularity passport are left to an implementing act under Reg (EU) 2026/1738 Art. 13(6)(d), due by 14 August 2030 and not yet adopted. The tiers will be revisited when it is.</li>
       <li><b>Presence is not private.</b> Anyone can tell which fields this vehicle has on the ledger, because each field's slot follows from public anchors. That is how this page lists what a bundle leaves closed. The values stay hidden.</li>
       <li><b>The registrar decides who is given a tier today.</b> The keeper's consent is not modelled in the contract yet.</li>
@@ -170,6 +172,6 @@
 
 </div>
 <script type="module" src="../assets/nav.mjs?v=1"></script>
-<script type="module" src="disclose.js?v=1"></script>
+<script type="module" src="disclose.js?v=2"></script>
 </body>
 </html>

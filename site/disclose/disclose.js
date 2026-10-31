@@ -51,7 +51,8 @@ let ledger, byName, bundles, engine;
 const results = {};
 const commitmentAt = (slot) => ledger.fieldCommitment[slot] ?? null;
 const claimAt = (key) => ledger.claims.find((c) => c.key === key) ?? null;
-const check = (bundle) => engine.verifyBundle(bundle, { commitmentAt, claimAt });
+const grantAt = (key) => ledger.grants?.[key] ?? null;
+const check = (bundle) => engine.verifyBundle(bundle, { commitmentAt, claimAt, grantAt });
 
 const meta = (name) => byName[name] ?? { label: name, kind: 'count', tier: null };
 const value = (name, v) => formatBound(meta(name).kind, v);
@@ -91,6 +92,19 @@ function claimRow(c) {
     </li>`;
 }
 
+/** What the ledger says about this reader's entitlement, in one paragraph. */
+function grantLine(tier, r) {
+    if (tier === 'public') {
+        return 'No grant needed. Reading the public view may require nothing beyond the VIN (Reg. (EU) 2025/1707, Annex V 4.2.3), so the contract has no public tier to grant.';
+    }
+    if (!r?.grant) return 'This file names no audience, so there is no grant to look up.';
+    const who = `<span class="mono">${esc(short(r.grant.audienceId))}</span>`;
+    if (!r.grant.held) {
+        return `No grant on record for ${who}. The values still check; nothing on the ledger says this reader was entitled to them.`;
+    }
+    return `<b>${r.grant.covers ? `${tick} Granted` : 'Granted a lower view'}:</b> this vehicle's registrar gave ${who} the ${esc(r.grant.held)} view (grant key <span class="mono">${esc(short(r.grant.key))}</span>). It records who was entitled, and on whose authority; it cannot recall what was handed over.`;
+}
+
 function render(tier) {
     const bundle = bundles[tier];
     const r = results[tier];
@@ -114,6 +128,7 @@ function render(tier) {
     panel.innerHTML = `
       <p style="margin:0 0 16px;max-width:74ch;font-size:15px;line-height:1.6;color:rgba(14,23,38,.82)">${esc(t.intro)}</p>
       ${band}
+      ${r ? `<p class="ds-grant" data-state="${tier === 'public' || r.grant?.covers ? 'ok' : 'none'}">${grantLine(tier, r)}</p>` : ''}
       <h3 class="ds-h3">Opened: ${bundle.fields.length} value${bundle.fields.length === 1 ? '' : 's'}</h3>
       <ul class="ds-rows">${bundle.fields.map((f) => fieldRow(f, byField.get(f.fieldName))).join('')}</ul>
       ${r && r.claims.length ? `<h3 class="ds-h3">Cited: claims already proven on the ledger</h3>

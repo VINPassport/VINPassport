@@ -25,7 +25,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { verifyBundle, fieldsOnLedger, vinHashOf } from '../../scripts/lib/disclosure.mjs';
+import { verifyBundle, fieldsOnLedger, vinHashOf, grantKeyOf } from '../../scripts/lib/disclosure.mjs';
 import { tierOf, allows } from '../../scripts/lib/tiers.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -41,7 +41,8 @@ const js = read('disclose', 'disclose.js');
 
 const commitmentAt = (slot) => ledger.fieldCommitment[slot] ?? null;
 const claimAt = (key) => ledger.claims.find((c) => c.key === key) ?? null;
-const LEDGER = { commitmentAt, claimAt };
+const grantAt = (key) => ledger.grants?.[key] ?? null;
+const LEDGER = { commitmentAt, claimAt, grantAt };
 const check = (b) => verifyBundle(b, LEDGER);
 const sorted = (a) => [...a].sort();
 
@@ -110,6 +111,39 @@ test('only the authority bundle names the VIN, and it is this vehicle', () => {
     assert.equal(check(bundles.authority).vinMatchesHash, true);
 });
 
+test('the dealer and the authority each hold a grant that covers their file', () => {
+    // The bundles name their audience by identity, and vehicle A's registrar
+    // granted each that view in the same run, so the entitlement is on the
+    // record a reader checks against.
+    for (const [tier, held] of [['trade', 'trade'], ['authority', 'authority']]) {
+        const r = check(bundles[tier]);
+        assert.match(bundles[tier].audienceId ?? '', /^[0-9a-f]{64}$/, `${tier} names no audience`);
+        assert.deepEqual({ held: r.grant?.held, covers: r.grant?.covers }, { held, covers: true }, tier);
+        assert.equal(r.grant.key, grantKeyOf(bundles[tier].vinHash, bundles[tier].audienceId));
+    }
+    // The buyer needs none, and none is looked up.
+    assert.equal(check(bundles.public).grant, null);
+    // The dealer's trade grant would not cover the authority's file.
+    const borrowed = { ...bundles.authority, audienceId: bundles.trade.audienceId };
+    assert.deepEqual({ held: check(borrowed).grant.held, covers: check(borrowed).grant.covers }, { held: 'trade', covers: false });
+});
+
+test('a vehicle key under a scheme the reader cannot compute offline is left unchecked', () => {
+    // A bundle names how its vehicle key was derived. The reader checks the
+    // VIN against it only for a scheme it can compute from the VIN alone, and
+    // otherwise says nothing either way rather than guessing. The openings do
+    // not depend on it: they are checked against the slot the key gives.
+    const keyed = { ...bundles.authority, vinHashScheme: 'voprf-ristretto255-sha512/v1' };
+    const r = check(keyed);
+    assert.equal(r.vinMatchesHash, null);
+    assert.deepEqual(r.problems, []);
+    assert.equal(r.ok, true);
+    // The scheme it can compute is still checked, and a wrong VIN still fails.
+    const wrong = { ...bundles.authority, vin: 'WVWZZZ1JZXW000002' };
+    assert.equal(check(wrong).vinMatchesHash, false);
+    assert.equal(check(wrong).ok, false);
+});
+
 test('changing any value in a bundle makes it fail', () => {
     // The page's first control. Off by one is the smallest change there is.
     for (const tier of ['public', 'trade', 'authority']) {
@@ -146,6 +180,7 @@ test('REPOSITORY ASSERTION: the page checks with the shared verifier, through th
     assert.match(js, /import\('\.\.\/assets\/intake-engine\/intake-engine\.js'\)/);
     assert.match(js, /engine\.verifyBundle\(/);
     assert.match(js, /engine\.fieldsOnLedger\(/);
+    assert.match(js, /engine\.verifyBundle\(bundle, \{ commitmentAt, claimAt, grantAt \}\)/);
     // No hashing of its own, so it cannot disagree with the tests.
     assert.doesNotMatch(js, /persistentCommit|persistentHash|blake2b/);
     const source = readFileSync(join(ROOT, 'scripts', 'lib', 'intake-engine.mjs'), 'utf8');

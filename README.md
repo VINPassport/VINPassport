@@ -21,6 +21,7 @@
 | **Deploy transaction** | `6f4ce1692a1e1c115b4de63f3b7b6ed95f03540c9004926fb091a9bb20cebf69` |
 | **Exercised on chain** | full passport run, blocks 3000263 to 3000384, one claim refused in-circuit |
 | **Contract shape** | 14 circuits: 11 exported, 8 of them provable |
+| **This repository** | One build ahead of that address: 17 circuits, 14 exported, 10 provable. The disclosure grant circuits ([D26](docs/DECISIONS.md#settled)) reach preprod with the next deploy |
 | **Check it yourself** | [`deploy/preprod.json`](deploy/preprod.json), and the indexer query under [Evaluating this repository](#evaluating-this-repository) |
 
 > **Status: pre-alpha, under active development.** The Compact contract is written, compiles and is
@@ -145,14 +146,14 @@ npm install
 npm test
 ```
 
-Expected: **138 contract tests, 242 app tests and 24 SDK assertions, all passing**, in a couple of
+Expected: **151 contract tests, 246 app tests and 24 SDK assertions, all passing**, in a couple of
 seconds.
 
 ```
  Test Files  1 passed (1)
-      Tests  138 passed (138)
+      Tests  151 passed (151)
 
-# pass 242
+# pass 246
 
 ================ 24 passed, 0 failed ================
 ```
@@ -160,9 +161,9 @@ seconds.
 | Command | What it does |
 |---|---|
 | `npm test` | Everything below, in one run |
-| `npm run test:contract` | The 138 contract tests, against the compiled circuits |
+| `npm run test:contract` | The 151 contract tests, against the compiled circuits |
 | `npm run test:watch` | The same, re-running on change |
-| `npm run test:app` | 242 tests on the application paths: verdicts, the deploy's registrar list, the submission path, the chain-sees panel and the QR encoder, via `node --test`. **Most import and run product code; a minority assert on what is written in the repository** (that every screenshot the guide names exists, that each page's bar carries the same links, that every page names its content with one `<main>` and offers a way past the bar, that the verify page cannot answer with a vehicle nobody asked for, that no text colour drops below the contrast floor). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
+| `npm run test:app` | 246 tests on the application paths: verdicts, the deploy's registrar list, the submission path, the chain-sees panel and the QR encoder, via `node --test`. **Most import and run product code; a minority assert on what is written in the repository** (that every screenshot the guide names exists, that each page's bar carries the same links, that every page names its content with one `<main>` and offers a way past the bar, that the verify page cannot answer with a vehicle nobody asked for, that no text colour drops below the contrast floor). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
 | `npm run test:sdk` | 24 assertions pinning our assumptions about `@odatano/dpp-sdk` |
 | `npm run app` | All three surfaces + the circuits, one dependency-free server |
 | `npm run serve:site` | The site statically, as GitHub Pages serves it: no circuits, demo state only |
@@ -255,7 +256,9 @@ build of 16 October 2026**: eleven exported circuits, eight of them proved, with
 authority and the per-vehicle writer list ([D25](docs/DECISIONS.md#settled)). We paid the fee
 ourselves, out of dust this project's own wallet generates.
 
-> **The repository matches that address, and the build proves it rather than asserting it.**
+> **Whether the repository matches that address is checked, not asserted. Today it does not, on
+> purpose:** main carries the disclosure grant circuits, one build ahead of the 16 October
+> deploy, and they reach preprod with the next one.
 > `deploy/preprod.json` carries a `buildId`: a sha256 over the compiled `contract/index.js` and
 > every circuit `.bzkir`, here `0fdd47a77126b79c`. Anything about to submit compares its own
 > build against it first. A circuit's verifier key is fixed at deployment, so a working tree
@@ -296,7 +299,7 @@ code. So every guard in the contract is checked by mutation: it is deleted, the 
 recompiled, and the suite is run against the compiled circuits to see what notices. A guard that
 can be removed with the suite still green is a guard nothing depends on.
 
-**32 of 32 guards are load-bearing.** Reproduce it yourself:
+**37 of 37 guards are load-bearing.** Reproduce it yourself:
 
 ```bash
 node scripts/mutate-guards.mjs --list   # the guards, no changes made
@@ -305,7 +308,7 @@ node scripts/mutate-guards.mjs          # delete each in turn, report the kills
 
 | Guard deleted | Circuit | Tests that fail |
 |---|---|---|
-| `not the registrar for this vehicle, and not authorised to write it` | `writerFor` | 6 |
+| `not the registrar for this vehicle, and not authorised to write it` | `writerFor` | 7 |
 | `passport already registered` | `registerPassport` | 2 |
 | `not an authorised registrar` | `registerPassport` | 2 |
 | `unknown passport` | `authoriseWriter` | 1 |
@@ -314,6 +317,11 @@ node scripts/mutate-guards.mjs          # delete each in turn, report the kills
 | `unknown passport` | `withdrawWriter` | 1 |
 | `not the registrar for this vehicle` | `withdrawWriter` | 1 |
 | `not a writer for this vehicle` | `withdrawWriter` | 1 |
+| `unknown passport` | `grantDisclosure` | 1 |
+| `not the registrar for this vehicle` | `grantDisclosure` | 1 |
+| `unknown passport` | `revokeDisclosure` | 1 |
+| `not the registrar for this vehicle` | `revokeDisclosure` | 1 |
+| `no grant for this identity on this vehicle` | `revokeDisclosure` | 1 |
 | `unknown passport` | `initialiseField` | 1 |
 | `field already initialised` | `initialiseField` | 2 |
 | `unknown passport` | `recordField` | 1 |
@@ -513,7 +521,7 @@ repository begins with no contract at all.
 |---|---|
 | **The contract** - five exported circuits at Wave 1's close, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
 | **Deployed to Midnight preprod**, 28 August, built and signed locally | [`deploy/preprod.json`](deploy/preprod.json) |
-| **404 tests today** - 138 contract, 242 application, 24 SDK assumption assertions; all thirty-two guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
+| **421 tests today** - 151 contract, 246 application, 24 SDK assumption assertions; all thirty-seven guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
 | **Three surfaces** - verification, intake console, proof explorer - all running the compiled circuits, not a mock | [passport.vin](https://passport.vin/) |
 | **On-chain runs from the browser, self-funded**, after a hosted sponsor turned out to be a single point of failure in a demo a judge runs unattended | [D24](docs/DECISIONS.md#settled) |
 | **The regulatory basis read from the Official Journal** rather than secondary analysis - which caught two wrong article citations that had survived months of work | [REGULATION.md](docs/REGULATION.md) |
@@ -566,8 +574,8 @@ line of comparison rather than two days of reading tag names.
 
 | Component | Status |
 |---|---|
-| Compact contract: 14 circuits, 11 exported, 8 of them proving | **Done.** Compiles clean, artifacts committed and reproducible from source |
-| Contract test suite | **Done.** 138 tests; every guard mutation-checked, 32 of 32 |
+| Compact contract: 17 circuits, 14 exported, 10 of them proving | **Done.** Compiles clean, artifacts committed and reproducible from source |
+| Contract test suite | **Done.** 151 tests; every guard mutation-checked, 37 of 37 |
 | SDK assumption guard | **Done.** 24 assertions against `@odatano/dpp-sdk` 0.2.0 |
 | Proving cost, the three circuits a verifier waits on | **Re-measured 14 Oct 2026 against the build deployed that day**, wasm in-process, no proof server, 32 cores, n=3 each. Build, prove and sign: `registerPassport` **17.5s** (5,229 B), `proveFieldAtMost` **27.6s** (5,567 B), `proveFieldAtLeast` **27.0s** (5,568 B). Within noise of the 13 October build (16.6s, 29.4s, 27.1s), so **the writer circuits and the two ledger collections they added cost these three nothing measurable**, which is the question re-measuring was there to answer. Registration is 3.7x Wave 1's 4.77s, the cost of the registrar identity derived in-circuit and the field commitments bound to the content root. **`initialiseField` was measured for the first time on 16 Oct and is the most expensive circuit here: 37.4s median (min 35.8 / max 53.2, n=5, 5,516 B).** It had never been timed because the three above are the ones a verifier's experience depends on, and it is the one an issuer runs most: a vehicle carrying the full 68-field registry is one registration and 68 of these, about **42.6 minutes of proving**. Batching does not reduce that, because batching removes block confirmations and not proofs. That number, rather than any wallet count, is the real ceiling on how many vehicles a day one writer can issue, and it is why [FIELDS.md](docs/FIELDS.md)'s whole-registry rule has never once been satisfied by a real vehicle. **These are the times to ISSUE a claim, paid once by whoever writes it.** A verifier reads the verdict off the ledger and waits on a query, never on a proof, which is why a proven claim is recorded rather than re-proven on demand ([D19](docs/DECISIONS.md#settled)). DUST cost per anchor and per proof was **measured on 14 Oct 2026** against the deployed contract with real proofs, and is published in [BUILD-SCOPE](docs/BUILD-SCOPE.md); latency is not cost |
 | Provable-field registry, 32 slots | **Settled** ([FIELDS.md](docs/FIELDS.md)). 26 in use, reserve 17 to 21, and 31. Slots 0 to 16 are wired end to end and provable; the rest are salted into the content root but carry no rule yet |
@@ -589,8 +597,8 @@ scripts/
   lib/scenario.mjs                   the 32-slot panel and its integrity rules
 test/
   passport-simulator.mjs             harness: compiled circuits + a local ledger
-  passport.test.mjs                  138 contract tests
-  app/                               242 tests on the paths around the circuits
+  passport.test.mjs                  151 contract tests
+  app/                               246 tests on the paths around the circuits
   sdk-assumptions.mjs                24 assertions pinning @odatano/dpp-sdk behaviour
 ```
 
@@ -602,7 +610,7 @@ test/
 | [`@odatano/dpp-sdk`](https://github.com/ODATANO) | Salted-Merkle field panel: key derivation, value scaling, tree construction |
 | [`@odatano/nightgate-tx`](https://github.com/ODATANO/NIGHTGATE) | Local transaction building, batch segment ordering, in-process wasm proving |
 
-**Where the line falls.** VINPassport's Compact contract is its own work: eleven exported circuits,
+**Where the line falls.** VINPassport's Compact contract is its own work: fourteen exported circuits,
 its own ledger, its own integrity rules. It is not a fork, and it does not extend NIGHTGATE's
 `attestation-vault`. The 32-slot field panel is ours too: the slot layout is a vehicle-domain
 design, built on `@odatano/dpp-sdk` for key derivation, value scaling and Merkle construction.
@@ -620,8 +628,9 @@ transaction was *already* built, proven and signed on our side. **NIGHTGATE neve
 it paid, and there is no witness to see now.**
 
 VINPassport does not use NIGHTGATE's CAP service, its OData layer, its `attestation-vault` contract,
-or its disclosure grants. Those are on the roadmap (disclosure grants are the piece Phase 1
-actually needs), not in this submission. See [D20](docs/DECISIONS.md#settled).
+or its disclosure grants. Phase 1 needed grants, and they were built into our own contract
+(`grantDisclosure`, [D26](docs/DECISIONS.md#settled)) rather than taken from NIGHTGATE. See
+[D20](docs/DECISIONS.md#settled).
 
 Thanks to **[ODATANO](https://github.com/ODATANO)** for the SDK, for the deployment grant, for
 review, and for the [reference integration](https://github.com/maxalexweber1/VINPassport-NIGHTGATE-DEMO)

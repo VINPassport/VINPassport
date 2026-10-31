@@ -49,6 +49,7 @@ export const DISCLOSURE_KIND = 'vinpassport-disclosure/v1';
 const U64 = new CompactTypeUnsignedInteger(18446744073709551615n, 8);
 const B32 = new CompactTypeBytes(32);
 const VEC4 = new CompactTypeVector(4, B32);
+const VEC3 = new CompactTypeVector(3, B32);
 
 // Web APIs only, no Buffer: /disclose/ runs this file in a browser, bundled
 // into the intake engine, and a stray Buffer would only fail there.
@@ -82,6 +83,18 @@ export function slotOf(vinHash, fieldKey, contentRoot) {
         unhex(vinHash), unhex(fieldKey), unhex(contentRoot)
     ]);
 }
+
+/**
+ * Where a (vehicle, grantee) pair lives in the contract's `grants` map.
+ * Mirrors `grantKeyOf` in the contract, tag included; a contract test holds
+ * the two equal.
+ */
+export function grantKeyOf(vinHash, granteeId) {
+    return hex(persistentHash(VEC3, [pad32('vinpassport:grant:v1'), unhex(vinHash), unhex(granteeId)]));
+}
+
+/** The contract's `Tier` enum, in declaration order. It has no public member. */
+export const GRANT_TIERS = Object.freeze(['trade', 'authority']);
 
 /** What the ledger stores for a field: a commitment, never the value. */
 export function commitmentOf(value, salt) {
@@ -245,6 +258,13 @@ export function verifyDisclosure(disclosure, onChain = () => null) {
 // and reports what the bundle actually opens, flagging anything above the
 // tier it declares. Such a bundle still verifies, because a holder may choose
 // to hand over more, but the reader is told.
+//
+// A bundle may name its audience by identity (`audienceId`). The reader then
+// asks the ledger whether the vehicle's registrar granted that identity this
+// tier (`grantDisclosure` in the contract) and reports the answer. A missing
+// grant does not fail the bundle, for the same reason: the values still open
+// their commitments, and the grant makes a disclosure auditable rather than
+// possible. The public tier needs no grant and is never looked up.
 
 export const BUNDLE_KIND = 'vinpassport-disclosure/v2';
 
@@ -262,7 +282,7 @@ const NAME_OF_KEY = new Map(Object.keys(FIELD_TIERS).map((n) => [hex(fieldKeyOf(
  * to point at what has already been proven. The builder checks names, not
  * claims: it is offline and holds no ledger.
  */
-export function buildBundle(receipt, tier, { fields: named, claims = [], audience } = {}) {
+export function buildBundle(receipt, tier, { fields: named, claims = [], audience, audienceId } = {}) {
     if (!TIERS.includes(tier)) throw new Error(`unknown tier '${tier}', expected one of ${TIERS.join(', ')}`);
     if (!receipt?.vin && !receipt?.vinHash) throw new Error('receipt has no vin or vinHash');
     if (!receipt?.contentRoot) throw new Error('receipt has no contentRoot');
@@ -278,6 +298,7 @@ export function buildBundle(receipt, tier, { fields: named, claims = [], audienc
     const keys = claims.map(bare);
     for (const k of keys) if (!HEX32.test(k)) throw new Error(`'${k}' is not a claim key`);
     if (!chosen.length && !keys.length) throw new Error('a bundle must open a field or reference a claim');
+    if (audienceId !== undefined && !HEX32.test(String(audienceId))) throw new Error(`'${audienceId}' is not an identity`);
 
     const opened = chosen.length ? buildDisclosure(receipt, chosen, { includeVin: false }).fields : [];
     const vinHash = receipt.vinHash ?? hex(vinHashOf(receipt.vin));
@@ -286,6 +307,7 @@ export function buildBundle(receipt, tier, { fields: named, claims = [], audienc
         policy: POLICY_VERSION,
         tier,
         ...(audience ? { audience: String(audience) } : {}),
+        ...(audienceId !== undefined ? { audienceId: bare(audienceId) } : {}),
         note: `A ${tier} disclosure. It opens only the fields listed here and carries no seed, `
             + 'so it cannot open any other field of this vehicle. Each claim listed was proven on the '
             + 'public ledger and reveals a bound, never a value.',
@@ -304,7 +326,9 @@ export function buildBundle(receipt, tier, { fields: named, claims = [], audienc
  * Read a bundle against the ledger.
  *
  * `commitmentAt(slot)` returns the commitment the ledger holds for a slot, or
- * null; `claimAt(key)` returns the ledger's claim record for a key, or null.
+ * null; `claimAt(key)` returns the ledger's claim record for a key, or null;
+ * `grantAt(key)` returns the `Tier` index the ledger holds for a grant key,
+ * or null.
  * Both are the caller's to supply, so this stays offline and synchronous: the
  * same code runs in a test, in the CLI and in a browser handed a file.
  *
@@ -314,7 +338,7 @@ export function buildBundle(receipt, tier, { fields: named, claims = [], audienc
  * superseded and does not count: under a rule like neverFalls, an old bound
  * can mislead about the current value.
  */
-export function verifyBundle(bundle, { commitmentAt = () => null, claimAt = () => null } = {}) {
+export function verifyBundle(bundle, { commitmentAt = () => null, claimAt = () => null, grantAt = () => null } = {}) {
     const problems = [];
     if (bundle?.kind !== BUNDLE_KIND) problems.push(`unknown kind '${bundle?.kind}', expected '${BUNDLE_KIND}'`);
     if (bundle?.policy !== POLICY_VERSION) problems.push(`unknown policy '${bundle?.policy}', expected '${POLICY_VERSION}'`);
@@ -359,6 +383,15 @@ export function verifyBundle(bundle, { commitmentAt = () => null, claimAt = () =
         };
     });
 
+    // Reported, never counted against `ok`; see the note above buildBundle.
+    let grant = null;
+    if (bundle?.audienceId && tier && tier !== 'public') {
+        const key = grantKeyOf(bundle.vinHash, bundle.audienceId);
+        const at = grantAt(key);
+        const held = at == null ? null : (GRANT_TIERS[Number(at)] ?? null);
+        grant = { key, audienceId: bare(bundle.audienceId), held, covers: held !== null && allows(held, tier) };
+    }
+
     return {
         ok: problems.length === 0 && fields.length + claims.length > 0
             && fields.every((f) => f.ok) && claims.every((c) => c.ok),
@@ -367,6 +400,7 @@ export function verifyBundle(bundle, { commitmentAt = () => null, claimAt = () =
         opened: fields.filter((f) => f.ok).map((f) => f.fieldName),
         overDisclosed,
         vinMatchesHash,
+        grant,
         fields,
         claims
     };

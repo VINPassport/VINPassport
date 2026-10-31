@@ -86,8 +86,9 @@ one tier per field, is in [FIELDS.md](FIELDS.md#who-sees-a-field-disclosure-tier
 EVP content sits in `public` and stays there: Annex V 4.2.3 of Reg (EU) 2025/1707 forbids asking
 for anything beyond the VIN to read it.
 
-An on-chain grant records that a vehicle's registrar entitled a grantee to a tier. It makes a
-disclosure auditable; it does not deliver data and cannot recall it. Grantee identities are
+An on-chain grant (`grantDisclosure` and `revokeDisclosure`, [D26](DECISIONS.md#settled)) records
+that a vehicle's registrar entitled a grantee to a tier. It makes a disclosure auditable; it does
+not deliver data and cannot recall it. Grantee identities are
 pseudonyms derived from the grantee's own secret, never PII.
 
 ## Predicates worth demonstrating

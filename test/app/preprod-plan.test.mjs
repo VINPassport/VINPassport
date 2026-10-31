@@ -29,8 +29,9 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
-    planCalls, CELL_UPDATING, makeWitnessHolder, MAX_CALLS_PER_TX, MAX_CALLS_PER_RUN
+    planCalls, CELL_UPDATING, makeWitnessHolder, MAX_CALLS_PER_TX, MAX_CALLS_PER_RUN, TIER_INDEX, stepLabel
 } from '../../scripts/lib/preprod-plan.mjs';
+import { Tier } from '../../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -83,6 +84,30 @@ test('a large field set costs transactions in batches, not one per field', () =>
     for (const stage of plan) {
         assert.ok(stage.steps.length <= MAX_CALLS_PER_TX);
     }
+});
+
+test('a grant is planned after the passport exists, batches, and carries the contract\'s tier index', () => {
+    // Registrar-only and a fresh insert, like authorising a writer, so it may
+    // not lead the run and need not close a transaction.
+    assert.deepEqual(TIER_INDEX, { trade: Tier.trade, authority: Tier.authority });
+    const plan = planCalls({
+        fields: { odometerKm: 10 },
+        authorise: [{ label: 'dealership', id: new Uint8Array(32) }],
+        grants: [{ label: 'dealership', id: new Uint8Array(32), tier: 'trade' }],
+        prove: { mileageUnder: 100 }
+    });
+    const flat = plan.flatMap((st) => st.steps);
+    const grant = flat.find((s) => s.kind === 'grant');
+    assert.equal(grant.circuit, 'grantDisclosure');
+    assert.equal(grant.tierIndex, Tier.trade);
+    assert.ok(flat.indexOf(grant) > flat.findIndex((s) => s.kind === 'register'));
+    assert.ok(!CELL_UPDATING.has('grantDisclosure'));
+    assert.equal(stepLabel(grant), 'grantDisclosure dealership: trade');
+});
+
+test('a grant for a tier the contract does not have is refused before anything runs', () => {
+    assert.throws(() => planCalls({ fields: {}, grants: [{ label: 'buyer', id: new Uint8Array(32), tier: 'public' }] }),
+        /unknown tier "public"/);
 });
 
 test('a claims-only intake is a single transaction', () => {

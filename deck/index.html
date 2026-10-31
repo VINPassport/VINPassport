@@ -216,7 +216,7 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
     <div class="box">
       <h3>Our own Compact contract</h3>
       <ul>
-        <li><strong>14 circuits, 11 exported</strong>: eight that prove (register, authorise and withdraw a writer, initialise, record, and three kinds of claim), plus three pure helpers that derive a field slot, a registrar identity and a writer key</li>
+        <li><strong>17 circuits, 14 exported</strong>: ten that prove (register, authorise and withdraw a writer, grant and revoke a view, initialise, record, and three kinds of claim), plus four pure helpers that derive a field slot, a registrar identity, a writer key and a grant key</li>
         <li>A commitment per (vehicle, field); values never reach the ledger</li>
         <li><strong>Claims ledger</strong>: every successful proof leaves a public, checkable record of the claim, never the value</li>
         <li>A claim is bound to the record version it proved; supersession is visible</li>
@@ -344,7 +344,7 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
       same assertions that reject a transaction on chain</p>
       <p><span class="big-num">+155</span> app tests · <span class="big-num">+24</span> SDK assumption assertions</p>
       <ul>
-        <li><strong>Mutation-checked</strong>: every guard deleted in turn, recompiled, re-run. <strong>32 of 32</strong> killed</li>
+        <li><strong>Mutation-checked</strong>: every guard deleted in turn, recompiled, re-run. <strong>37 of 37</strong> killed</li>
         <li>Reproduces <strong>byte-identically</strong> from source, toolchain pinned exact</li>
         <li><strong>Proving measured</strong>, wasm: register <strong>17.5s</strong> · at-most <strong>27.6s</strong> · at-least <strong>27.0s</strong> · initialise a field <strong>37.4s</strong>. Paid at issue, not at verification. Initialising is the most expensive and the most repeated, which is the ceiling Wave 3 goes after</li>
       </ul>
@@ -370,7 +370,7 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
     <div class="box">
       <h3>Ours</h3>
       <ul>
-        <li>The Compact contract: fourteen circuits, eight of which prove, its own ledger and three integrity rules. Not a fork of <code>attestation-vault</code></li>
+        <li>The Compact contract: seventeen circuits, ten of which prove, its own ledger and three integrity rules. Not a fork of <code>attestation-vault</code></li>
         <li>The 32-slot vehicle field panel: a vehicle-domain design</li>
         <li>All three surfaces, the demo fleet, the tests</li>
       </ul>
@@ -433,7 +433,7 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
     <tr><th>Wave 2<br><span style="font-weight:400;opacity:.65">deferred</span></th>
         <td><strong>The NIGHTGATE integration</strong>: tiered disclosure, disclosure grants, live browser reads, the CAP service layer. Named for Wave 2 and held back on purpose, because a passport that cannot tell one writer from another is not worth adding tiers to. <em>documentComparison</em> waits on more than one anchored root per vehicle</td></tr>
     <tr><th>Wave 3<br><span style="font-weight:400;opacity:.65">in progress</span></th>
-        <td><strong>Tiered disclosure, the Wave 2 deferral, first</strong>: a tier on every field, and bundles that a buyer, a dealer and an authority each check against the ledger, live at passport.vin/disclose on demo data. Then disclosure grants in the contract and one redeploy, so the sample bundles come from preprod. One real pilot conversation with a manufacturer</td></tr>
+        <td><strong>Tiered disclosure, the Wave 2 deferral, first</strong>: a tier on every field, and bundles that a buyer, a dealer and an authority each check against the ledger, live at passport.vin/disclose on demo data. Disclosure grants are in the contract and its tests; one redeploy puts them on preprod and the sample bundles on real chain data. One real pilot conversation with a manufacturer</td></tr>
     <tr><th>Horizon</th>
         <td><strong>Closing the trust gap</strong>: a proof inherits the trust of whoever wrote the value, so the open problem is provenance of the writer, not tamper resistance. Authoritative sources - registries, testers, insurers - writing under an accountable identity, and marking that lets a verifier tell an authoritative write from a self-declared one. That distinction becomes the product</td></tr>
   </table>

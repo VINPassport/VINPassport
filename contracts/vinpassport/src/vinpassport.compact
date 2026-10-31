@@ -52,6 +52,18 @@ export enum Rule {
   neverChanges  // the regulatory declarations, fixed for a document version
 }
 
+// ---------------------------------------------------------------- disclosure tiers
+
+// Which view of a vehicle a grant entitles its holder to (D26 in
+// docs/DECISIONS.md). There is no `public` member on purpose: the public view
+// needs no grant, and Euro 7 passport data may not be put behind one, because
+// reading it may require nothing beyond the VIN (Reg. (EU) 2025/1707, Annex V
+// 4.2.3). A grant for it could only ever be meaningless or unlawful.
+export enum Tier {
+  trade,      // dealer, recycler, insurer, lender: the history, every value exact
+  authority   // registry, police, notified body: every field, and the VIN
+}
+
 // ---------------------------------------------------------------- claims
 
 // What a verifier reads after the fact.
@@ -178,6 +190,22 @@ export ledger writers: Set<Bytes<32>>;
 // reveals. The value stays hidden. Who stood behind it does not.
 export ledger fieldWriter: Map<Bytes<32>, Bytes<32>>;
 
+// WHO HAS BEEN GIVEN WHICH VIEW OF ONE VEHICLE (D26). The disclosure itself
+// happens off chain: the holder hands a bundle over and the reader checks each
+// value against `fieldCommitment`. What this records is the entitlement, so
+// that who was given the trade or the authority view of a vehicle, and on
+// whose authority, sits on the same public record as who wrote to it. When it
+// was given is the transaction's place in the chain.
+//
+// IT RECALLS NOTHING. Revoking removes the entitlement from here; values
+// already handed over stay known to whoever holds them. A grant makes a
+// disclosure auditable, not reversible.
+//
+// Flat like `writers`: keyed on `grantKeyOf(vinHash, granteeId)`, so one map
+// holds every (vehicle, grantee) pair and no key can be confused with a slot,
+// a claim or a writer.
+export ledger grants: Map<Bytes<32>, Tier>;
+
 constructor(registrars: Vector<4, Bytes<32>>) {
   for (const id of registrars) {
     allowedRegistrars.insert(disclose(id));
@@ -268,6 +296,20 @@ export circuit writerKeyOf(
 ): Bytes<32> {
   return persistentHash<Vector<3, Bytes<32>>>(
     [pad(32, "vinpassport:writer:v1"), vinHash, writerId]
+  );
+}
+
+// Where a (vehicle, grantee) pair lives in `grants`. Domain-separated on its
+// own tag, like `writerKeyOf`, so a grant can never be read as a writer.
+//
+// Exported so a reader handed a bundle can ask whether its audience was
+// granted that view, which is a public question about public state.
+export circuit grantKeyOf(
+  vinHash: Bytes<32>,
+  granteeId: Bytes<32>
+): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>(
+    [pad(32, "vinpassport:grant:v1"), vinHash, granteeId]
   );
 }
 
@@ -389,6 +431,48 @@ export circuit withdrawWriter(
   const key = writerKeyOf(disclose(vinHash), disclose(writerId));
   assert(writers.member(key), "not a writer for this vehicle");
   writers.remove(key);
+}
+
+// Record that `granteeId` is entitled to the trade or the authority view of
+// this vehicle. Only the registrar that registered it may, the same authority
+// that admits writers, so one party answers for both who may write and who may
+// read beyond the public view.
+//
+// Granting again replaces the tier, so a dealer can be moved to the authority
+// view, or back, without a revoke in between. Each change is its own
+// transaction, so the history of a grant is as public as the grant.
+//
+// A grant is not permission to write. `writerFor` never reads `grants`.
+//
+// THE KEEPER IS NOT ASKED. The contract holds no keeper identity, so the
+// registrar decides; D26 states keeper consent as an open gap.
+export circuit grantDisclosure(
+  vinHash: Bytes<32>,
+  granteeId: Bytes<32>,
+  tier: Tier
+): [] {
+  assert(passports.member(disclose(vinHash)), "unknown passport");
+  assert(
+    registrar.lookup(disclose(vinHash)) == registrarIdOf(registrarSecret()),
+    "not the registrar for this vehicle"
+  );
+  grants.insert(grantKeyOf(disclose(vinHash), disclose(granteeId)), disclose(tier));
+}
+
+// Take a grant away. What was handed over while it stood stays handed over;
+// see `grants`.
+export circuit revokeDisclosure(
+  vinHash: Bytes<32>,
+  granteeId: Bytes<32>
+): [] {
+  assert(passports.member(disclose(vinHash)), "unknown passport");
+  assert(
+    registrar.lookup(disclose(vinHash)) == registrarIdOf(registrarSecret()),
+    "not the registrar for this vehicle"
+  );
+  const key = grantKeyOf(disclose(vinHash), disclose(granteeId));
+  assert(grants.member(key), "no grant for this identity on this vehicle");
+  grants.remove(key);
 }
 
 // Create a field and fix its integrity rule for good. The opening value is a

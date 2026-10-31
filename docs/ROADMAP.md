@@ -80,7 +80,7 @@ contract changes wait for the 27th. This week takes the work that is not contrac
       transaction there costs 1 SPECK. Figures are therefore quoted at the protocol
       reference price, and one block of mainnet parameters closes the rest
 - [x] **Build the mutation harness.** DONE: `scripts/mutate-guards.mjs` reverts each guard
-      in turn and records which tests die. 32 of 32 are load-bearing, and the kill table
+      in turn and records which tests die. 37 of 37 are load-bearing, and the kill table
       is published in the README, so Wave 2 reports *N of N* rather than a worked example
       on two
 
@@ -111,8 +111,9 @@ tiered disclosure**, as settled in [D26](DECISIONS.md#settled): the one promise 
    verifier reports)
 2. A browser check: one vehicle, three audiences, each view checked against the ledger. **Live at
    [`/disclose/`](https://passport.vin/disclose/) on demo data**, linked from `/verify/`
-3. `grantDisclosure` and `revokeDisclosure` in the contract, then one redeploy and a fresh run, so
-   the sample bundles on the site come from real chain data
+3. `grantDisclosure` and `revokeDisclosure` in the contract (**done 31 Oct**, compiled and tested;
+   the guided preprod run grants the dealership the trade view), then one redeploy and a fresh run,
+   so the sample bundles on the site come from real chain data
 
 ### Standing check
 
@@ -212,8 +213,9 @@ bundles the holder hands over, not redaction in a service, so the service-side i
 - [x] A `public` bundle opens nothing above `public`, held by a test against real ledger state
 - [x] Browser check of a bundle: one vehicle, three audiences, at `/disclose/` (linked from `/verify/`),
       against the demo ledger; sample bundles from a preprod run follow the redeploy
-- [ ] `grantDisclosure` and `revokeDisclosure`, registrar-only, with a guard test per assert and the
-      mutation harness re-run
+- [x] `grantDisclosure` and `revokeDisclosure`, registrar-only, with a guard test per assert and the
+      mutation harness re-run; a bundle may name its audience and the reader reports the grant.
+      On preprod after the redeploy
 - [ ] Consumer viewer: the buyer-facing scan
 - [ ] Remaining predicates: accident count, recycled content, battery health
 - [ ] Auth strategy and HTTP security middleware (NIGHTGATE provides neither)

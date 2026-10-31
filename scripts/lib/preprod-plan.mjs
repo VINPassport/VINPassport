@@ -35,6 +35,13 @@ import { CLAIM_CATALOGUE, boundFor, isCompare } from '../../site/assets/claim-ca
  */
 export const CELL_UPDATING = new Set(['recordField']);
 
+/**
+ * The contract's `Tier` enum, in declaration order. Kept here rather than
+ * imported so this module stays free of the compiled contract; a test holds
+ * the two equal.
+ */
+export const TIER_INDEX = Object.freeze({ trade: 0, authority: 1 });
+
 export const MAX_CALLS_PER_TX = 8;      // nightgate-tx batch ceiling
 // Bounds a run's WALL CLOCK. The chain imposes nothing like it; this is ours.
 //
@@ -113,6 +120,7 @@ export const stepLabel = (s) =>
     s.kind === 'register' ? 'registerPassport'
         : s.kind === 'withdraw' ? `withdrawWriter ${s.writerLabel}`
             : s.kind === 'authorise' ? `authoriseWriter ${s.writerLabel}`
+                : s.kind === 'grant' ? `grantDisclosure ${s.granteeLabel}: ${s.tier}`
                 : s.kind === 'init' ? `initialiseField ${s.name}`
                     : s.kind === 'update' ? `update ${s.round}: ${s.name} -> ${s.value}${s.by ? ` (by ${s.by})` : ''}`
                         : `prove ${s.claim}${s.claim === 'mileageUnder' ? ' ' + s.bound : ''}`;
@@ -150,6 +158,16 @@ export function planCalls(intake) {
     // field write it does not close a transaction.
     for (const w of intake.authorise ?? []) {
         steps.push({ kind: 'authorise', circuit: 'authoriseWriter', writerLabel: w.label, writerId: w.id });
+    }
+    // Who is given the trade or the authority view (D26). Registrar-only, like
+    // authorising, and a first grant inserts a fresh key, so it batches. A
+    // re-grant would overwrite a populated cell; a run never plans one.
+    for (const g of intake.grants ?? []) {
+        if (!(g.tier in TIER_INDEX)) throw new Error(`unknown tier "${g.tier}" for ${g.label}`);
+        steps.push({
+            kind: 'grant', circuit: 'grantDisclosure',
+            granteeLabel: g.label, granteeId: g.id, tier: g.tier, tierIndex: TIER_INDEX[g.tier]
+        });
     }
     (intake.updates ?? []).forEach((round, i) => {
         // `by` names an authorised writer instead of the registrar. It is not

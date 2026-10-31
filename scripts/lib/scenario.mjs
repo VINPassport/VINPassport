@@ -7,8 +7,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import {
-    PassportSimulator, Rule, fieldKey, bytes32, hex,
-    REGISTRAR_SECRET, DEALER_SECRET, DEALER_ID, GARAGE_SECRET, GARAGE_ID
+    PassportSimulator, Rule, Tier, fieldKey, bytes32, hex,
+    REGISTRAR_SECRET, DEALER_SECRET, DEALER_ID, GARAGE_SECRET, GARAGE_ID, AUTHORITY_ID
 } from '../../test/passport-simulator.mjs';
 import { buildTree, padToWidth } from '@odatano/dpp-sdk/merkle';
 import { CLAIM_CATALOGUE, CLAIM_GROUPS, boundFor, isCompare } from '../../site/assets/claim-catalogue.mjs';
@@ -49,6 +49,15 @@ export { CLAIM_CATALOGUE, CLAIM_GROUPS, boundFor, isCompare };
 export const DEMO_WRITERS = {
     dealership: { label: 'dealership', id: DEALER_ID, secret: DEALER_SECRET },
     'service garage': { label: 'service garage', id: GARAGE_ID, secret: GARAGE_SECRET }
+};
+
+/**
+ * The parties a registrar gives a view of a vehicle to, rather than the pen
+ * (D26). Identities only: a grantee never acts on chain to be granted.
+ */
+export const DEMO_GRANTEES = {
+    dealership: { label: 'dealership', id: DEALER_ID },
+    'registration authority': { label: 'registration authority', id: AUTHORITY_ID }
 };
 
 /** The identity the console itself acts as. */
@@ -407,6 +416,17 @@ export function applyIntake(sim, intake, salt, { keepOpenings = false } = {}) {
         attempt(`authoriseWriter ${w.label}`, () => sim.authoriseWriter(vin, w.id));
     }
 
+    // Who the registrar gives the trade or the authority view of this vehicle.
+    // A grant records an entitlement; the disclosure itself is a bundle the
+    // holder hands over off chain. The public view needs no grant.
+    for (const g of intake.grants ?? []) {
+        asRegistrar();
+        attempt(`grantDisclosure ${g.label}: ${g.tier}`, () => {
+            if (!(g.tier in Tier) || !Number.isNaN(Number(g.tier))) throw new Error(`unknown tier "${g.tier}"`);
+            sim.grantDisclosure(vin, g.id, Tier[g.tier]);
+        });
+    }
+
     for (const [i, update] of (intake.updates ?? []).entries()) {
         // `by` names which authorised party is writing this round. Without it
         // the registrar writes, which is what every existing intake expects.
@@ -494,6 +514,13 @@ export function buildDemoVehicles(sim, salt, options = {}) {
         writers: [
             { label: 'dealership', id: DEALER_ID, secret: DEALER_SECRET },
             { label: 'service garage', id: GARAGE_ID, secret: GARAGE_SECRET }
+        ],
+        // The dealership that takes the car in is given the trade view, and a
+        // registration authority the authority view. Each is one transaction,
+        // and the bundles on /disclose/ name these identities as their audience.
+        grants: [
+            { label: 'dealership', id: DEALER_ID, tier: 'trade' },
+            { label: 'registration authority', id: AUTHORITY_ID, tier: 'authority' }
         ],
         updates: [
             { odometerKm: 44_210, serviceCount: 2, lastServiceOdometerKm: 44_210, by: 'service garage' },
@@ -583,6 +610,10 @@ export function exportLedger(sim, sourceNote) {
         // nothing that was private and lets a reader see the custody chain.
         writers: [...l.writers].map(hex),
         fieldWriter: mapToObj(l.fieldWriter, hex),
+        // grantKeyOf(vehicle, grantee) -> tier index (0 trade, 1 authority). The
+        // grantee is hidden in the key; a reader who is told the identity, as a
+        // bundle's audienceId does, can recompute the key and look it up.
+        grants: mapToObj(l.grants, (t) => Number(t)),
         claims,
         relClaims
     };
