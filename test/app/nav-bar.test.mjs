@@ -127,3 +127,31 @@ test('one gap under the bar, on every page', () => {
     assert.match(css, /main#main\s*>\s*:first-child\{padding-top:var\(--main-top\)!important\}/,
         'the shared top gap is missing, so pages can set their own again');
 });
+
+test('the logo goes home from every page, the home page included', async () => {
+    // At home it used to be a plain span, so a reader far down the page had no
+    // way back to the top from the bar. A link to the page itself, with no
+    // fragment, reloads it there.
+    const { navMarkup, PAGES: NAV_PAGES } = await import('../../scripts/build-nav.mjs');
+    for (const page of NAV_PAGES) {
+        const nav = navMarkup(page);
+        const brand = nav.match(/<a href="([^"]*)"[^>]*>\s*<img[^>]*alt="VINPassport"/);
+        assert.ok(brand, `${page.file}: the logo is not a link`);
+        assert.equal(brand[1], page.depth ? '../' : './', `${page.file}: the logo does not go home`);
+    }
+});
+
+test('marking the current item does not move it', async () => {
+    // The mark was a 2px border plus 2px padding, which made the marked item
+    // 4px taller than its neighbours. The bar centres its items, so on every
+    // page whose current item is a link that item sat 2px higher than the rest,
+    // and in the phone menu its inline padding overrode the menu's own.
+    const { navMarkup, PAGES: NAV_PAGES } = await import('../../scripts/build-nav.mjs');
+    for (const page of NAV_PAGES.filter((p) => p.current)) {
+        const marked = navMarkup(page).match(/<span aria-current="page" style="([^"]*)">/);
+        assert.ok(marked, `${page.file}: nothing is marked`);
+        if (/display:inline-flex/.test(marked[1])) continue;          // a button keeps its own box
+        assert.ok(!/padding|border/.test(marked[1]),
+            `${page.file}: the mark adds height (${marked[1]})`);
+    }
+});

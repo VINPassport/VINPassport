@@ -63,8 +63,12 @@ export const PAGES = [
 ];
 
 const LINK = 'text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap';
-const LINK_HERE = 'font-size:14px;color:#004AAD;white-space:nowrap;'
-    + 'border-bottom:2px solid #004AAD;padding-bottom:2px';
+// The mark is a text decoration, not a border. A border and its padding made
+// the marked item 4px taller than its neighbours, so the bar centred it 2px
+// higher on every page whose current item is a link, and in the phone menu its
+// inline padding beat the menu's own and squeezed that one row.
+const LINK_HERE = 'font-size:14px;color:#004AAD;white-space:nowrap;text-decoration:underline;'
+    + 'text-decoration-thickness:2px;text-underline-offset:6px;text-decoration-skip-ink:none';
 const BTN = "display:inline-flex;align-items:center;justify-content:center;text-align:center;"
     + "line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;"
     + "font-weight:600;font-size:15px;letter-spacing:.06em;padding:9px 20px;white-space:nowrap;flex:none";
@@ -91,10 +95,11 @@ export function navMarkup(page) {
     const prefix = page.depth ? '../' : '';
     const img = `<img src="${prefix}assets/vinpassport-logo.png" alt="VINPassport" `
         + `width="546" height="102" style="height:32px;width:auto">`;
-    // The logo goes home, except at home, where it would link to itself.
-    const brand = page.depth
-        ? `<a href="${prefix}" style="display:flex;align-items:center;margin-right:auto;flex:none;text-decoration:none">\n      ${img}\n    </a>`
-        : `<span style="display:flex;align-items:center;margin-right:auto;flex:none">\n      ${img}\n    </span>`;
+    // The logo goes home from every page, home included. A reader far down the
+    // home page expects it to take them back to the top, and a link to the page
+    // itself, without any fragment, reloads it there.
+    const brand = `<a href="${page.depth ? prefix : './'}"${page.depth ? '' : ' aria-current="page"'} `
+        + `style="display:flex;align-items:center;margin-right:auto;flex:none;text-decoration:none">\n      ${img}\n    </a>`;
     const links = ITEMS.map((i) => `      ${itemMarkup(i, page)}`).join('\n');
     return `<nav class="nav-bar" style="display:flex;align-items:center;flex-wrap:wrap;gap:14px 26px;`
         + `padding:18px 0;min-height:75px;border-bottom:1px solid rgba(0,74,173,.26)">\n`
