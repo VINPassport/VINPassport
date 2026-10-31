@@ -16,8 +16,9 @@
  *   - The page you are on is MARKED, not linked. A text item gets the blue
  *     underline, a button keeps its shape but loses its fill. Both carry
  *     `aria-current="page"`, which the bars used to do only sometimes.
- *   - Anchors point at the home page's sections from everywhere, so
- *     `Honest limits` is `#limits` at the root and `../#limits` below it.
+ *   - Every item is a page. The bar carries no anchors into home page
+ *     sections: Watch, How it works and Honest limits were all dropped,
+ *     because a reader reaches each of them by scrolling the home page.
  *
  * Line endings are preserved per file: the site's pages are CRLF, while
  * /guide/ is generated with LF, and rewriting one in the other's style
@@ -32,11 +33,10 @@ import { dirname, join } from 'node:path';
 const SITE = join(dirname(fileURLToPath(import.meta.url)), '..', 'site');
 const CHECK = process.argv.includes('--check');
 
-/** The bar, in order. `anchor` items address a section of the home page. */
+/** The bar, in order. */
 const ITEMS = [
     { key: 'guide', label: 'Guide', href: 'guide/', kind: 'link' },
     { key: 'regulation', label: 'Regulation', href: 'regulation/', kind: 'link' },
-    { key: 'limits', label: 'Honest limits', href: '#limits', kind: 'link', anchor: true },
     { key: 'demo', label: 'Live demo', href: 'demo/', kind: 'link' },
     { key: 'manufacturers', label: 'For manufacturers', href: 'manufacturers/', kind: 'link' },
     { key: 'verify', label: 'SCAN A VEHICLE', href: 'verify/', kind: 'ghost' },
@@ -46,10 +46,8 @@ const ITEMS = [
 /**
  * `current` names the item this page IS, so the bar marks it instead of
  * offering a trip to where the reader already is. `/proofs/` has no item of
- * its own: it is reached from the pages that cite it. The bar holds seven
- * items; an eighth pushes it into a second row on a laptop. Watch and How it
- * works were dropped for exactly that budget, because both are sections a
- * reader reaches by scrolling the home page.
+ * its own: it is reached from the pages that cite it. The bar holds six
+ * items today; at eight it wrapped to a second row on a laptop.
  */
 export const PAGES = [
     { file: 'index.html', depth: 0, current: null },
@@ -78,7 +76,7 @@ const BTN_HERE = `${BTN};background:transparent;color:#004AAD;border:1px solid #
 
 const itemMarkup = (item, page) => {
     const prefix = page.depth ? '../' : '';
-    const href = item.anchor ? `${prefix}${item.href}` : `${prefix}${item.href}`;
+    const href = `${prefix}${item.href}`;
     const here = page.current === item.key;
     if (item.kind === 'link') {
         return here
