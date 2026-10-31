@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>For manufacturers · VINPassport</title>
+<meta name="description" content="Apply to onboard as a manufacturer. Euro 7 requires an Environmental Vehicle Passport for every new M1 and N1 type from 29 November 2026, with its data accessible for twenty years.">
+<link rel="icon" href="../favicon.ico" sizes="32x32">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="VINPassport">
+<meta property="og:title" content="VINPassport · For manufacturers">
+<meta property="og:description" content="Euro 7 Environmental Vehicle Passports, anchored so a reader can check the record is the one you issued. Apply to onboard.">
+<meta property="og:url" content="https://passport.vin/manufacturers/">
+<meta property="og:image" content="https://passport.vin/assets/vinpassport-og.png">
+<meta property="og:image:width" content="1340">
+<meta property="og:image:height" content="702">
+<meta property="og:image:alt" content="VINPassport: a Digital Circularity Vehicle Passport built on Midnight's zero-knowledge blockchain">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://passport.vin/assets/vinpassport-og.png">
+<meta name="twitter:image:alt" content="VINPassport: a Digital Circularity Vehicle Passport built on Midnight's zero-knowledge blockchain">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700&family=Barlow+Condensed:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../assets/site.css?v=13">
+<style>
+/* Form states need pseudo-classes, which inline styles cannot carry. Scoped to
+   this page so the shared sheet and its version key stay untouched. */
+.mf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:18px 22px}
+.mf-field{display:flex;flex-direction:column;gap:7px;min-width:0}
+.mf-field label,.mf-legend{font:600 13px Barlow,sans-serif;letter-spacing:.04em;color:#0E1726}
+.mf-opt{font-weight:400;color:rgba(14,23,38,.7)}
+.mf-input{width:100%;min-height:44px;padding:10px 12px;border:1px solid rgba(0,74,173,.32);border-radius:0;
+  background:#E6DCCE;color:#0E1726;font:15px/1.35 Barlow,sans-serif}
+.mf-input:focus-visible{outline:2px solid #004AAD;outline-offset:-2px}
+.mf-input:user-invalid{border-color:#8A1C1C}
+textarea.mf-input{min-height:132px;resize:vertical}
+.mf-set{border:1px solid rgba(0,74,173,.26);margin:0;padding:14px 16px 16px;min-width:0}
+.mf-set legend{padding:0 6px}
+.mf-checks{display:flex;flex-wrap:wrap;gap:4px 22px;margin-top:6px}
+.mf-check{display:flex;align-items:flex-start;gap:10px;min-height:44px;padding:10px 0;font-size:14.5px;line-height:1.45;cursor:pointer}
+.mf-check input{flex:none;width:20px;height:20px;margin:1px 0 0;accent-color:#004AAD}
+.mf-submit{min-height:48px;padding:12px 28px;border:1px solid #004AAD;background:#004AAD;color:#EDE4D8;cursor:pointer;
+  font:600 16px 'Barlow Condensed',sans-serif;letter-spacing:.06em}
+.mf-submit:hover{background:#003C8F;border-color:#003C8F}
+.mf-submit:focus-visible{outline:2px solid #0E1726;outline-offset:2px}
+.mf-submit[disabled]{cursor:not-allowed;background:transparent;color:rgba(14,23,38,.7);border-color:rgba(0,74,173,.32)}
+.mf-copy{min-height:48px;padding:12px 22px;border:1px solid rgba(0,74,173,.32);background:transparent;color:#0E1726;cursor:pointer;
+  font:600 16px 'Barlow Condensed',sans-serif;letter-spacing:.06em}
+.mf-copy:hover{border-color:#004AAD;color:#004AAD}
+.mf-copy:focus-visible{outline:2px solid #004AAD;outline-offset:2px}
+.mf-status{margin:0;font-size:14.5px;line-height:1.55}
+.mf-status:empty{display:none}
+.mf-status[data-tone="error"]{color:#8A1C1C}
+.mf-trap{display:none}
+</style>
+</head>
+<body>
+<div style="max-width:1200px;margin:0 auto;padding:0 var(--edge)">
+
+  <nav class="nav-bar" style="display:flex;align-items:center;flex-wrap:wrap;gap:14px 26px;padding:18px 0;min-height:75px;border-bottom:1px solid rgba(0,74,173,.26)">
+    <a class="nav-skip" href="#main">Skip to content</a>
+    <a href="../" style="display:flex;align-items:center;margin-right:auto;flex:none;text-decoration:none">
+      <img src="../assets/vinpassport-logo.png" alt="VINPassport" width="546" height="102" style="height:32px;width:auto">
+    </a>
+    <div class="nav-links" id="navmenu">
+      <a href="../guide/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Guide</a>
+      <a href="../#video" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Watch</a>
+      <a href="../#how" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">How it works</a>
+      <a href="../regulation/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Regulation</a>
+      <a href="../#limits" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Honest limits</a>
+      <a href="../demo/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Live demo</a>
+      <a href="../verify/" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;padding:9px 20px;white-space:nowrap;flex:none;background:transparent;color:#0E1726;border:1px solid rgba(0,74,173,.28)">SCAN A VEHICLE</a>
+      <a href="../intake/" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;padding:9px 20px;white-space:nowrap;flex:none;background:#004AAD;color:#EDE4D8;border:1px solid #004AAD">ADD PASSPORT</a>
+    </div>
+    <button class="nav-burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="navmenu"><i></i><i></i><i></i></button>
+  </nav>
+
+  <main id="main">
+  <section style="padding:clamp(48px,8vw,96px) 0 64px">
+    <span style="display:block;font:600 12px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:16px">For manufacturers · Euro 7</span>
+    <h1 style="margin:0;font-size:clamp(34px,5vw,58px);line-height:1.02;letter-spacing:.01em;text-transform:uppercase;max-width:20ch">Your vehicle passport has to outlive the website it sits on</h1>
+    <p style="margin:22px 0 0;font-size:17px;line-height:1.6;max-width:62ch;color:rgba(14,23,38,.8)">From <b>29 November 2026</b> every new M1 and N1 type needs an Environmental Vehicle Passport, issued by the manufacturer for each vehicle (<a href="../regulation/#euro7">Reg. (EU) 2024/1257, Art. 7(4) and Art. 21</a>). Its data must then stay accessible for <b>at least twenty years</b> after manufacture (Implementing Reg. (EU) 2025/1707, Art. 17(4)). VINPassport anchors that record on a public ledger, so anyone can check it is the one you issued, without relying on us.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:28px">
+      <a href="#apply" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.06em;background:#004AAD;color:#EDE4D8;border:1px solid #004AAD;padding:12px 26px">APPLY TO ONBOARD</a>
+      <a href="../verify/" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.06em;color:#0E1726;border:1px solid rgba(0,74,173,.28);padding:12px 22px">OPEN A TEST VEHICLE</a>
+    </div>
+  </section>
+
+  <section style="padding:0 0 72px" aria-labelledby="split">
+    <span style="display:block;font:600 13px Barlow,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#002E6E;margin-bottom:12px">01 · The division of labour</span>
+    <div style="height:1px;background:rgba(0,74,173,.26);margin-bottom:28px"></div>
+    <h2 id="split" style="margin:0 0 22px;font-size:clamp(24px,2.6vw,32px);line-height:1.1;letter-spacing:.02em;text-transform:uppercase;max-width:30ch">The content is yours. The delivery and the twenty years are ours.</h2>
+    <div style="display:flex;flex-wrap:wrap;gap:clamp(20px,3vw,36px);align-items:stretch">
+      <div style="flex:1 1 300px;min-width:0;padding:20px 22px;border:1px solid rgba(0,74,173,.26)">
+        <span style="font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E">You bring</span>
+        <ul style="margin:12px 0 0;padding-left:18px;font-size:15px;line-height:1.6;color:rgba(14,23,38,.85)">
+          <li>The certificate of conformity and the Appendix 1 values you already hold</li>
+          <li>The type approval</li>
+          <li>Your brand on the page a buyer opens</li>
+        </ul>
+      </div>
+      <div style="flex:1 1 300px;min-width:0;padding:20px 22px;border:1px solid #004AAD;background:#E6DCCE">
+        <span style="font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E">We bring</span>
+        <ul style="margin:12px 0 0;padding-left:18px;font-size:15px;line-height:1.6;color:rgba(14,23,38,.85)">
+          <li>A vehicle page that opens from the QR code with nothing to type, no app and no registration (Annex V 4.2.2, 4.2.3)</li>
+          <li>A record a third party can check was not edited after issue, which speaks to the anti-tampering duty in Art. 4(7)(j)</li>
+          <li>Commitments on a public ledger rather than on our servers, so the record stays checkable whether or not VINPassport is still around</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding:0 0 72px" aria-labelledby="status">
+    <div style="padding:clamp(22px,4vw,32px) clamp(20px,4vw,34px);background:#004AAD;color:#EDE4D8;display:flex;flex-wrap:wrap;gap:clamp(18px,4vw,56px);align-items:center">
+      <h2 id="status" style="flex:1 1 280px;min-width:0;margin:0;font-size:clamp(22px,2.4vw,30px);line-height:1.15;letter-spacing:.02em;text-transform:uppercase">Where it stands today</h2>
+      <p style="flex:2 1 380px;min-width:0;margin:0;font-size:15px;line-height:1.65;opacity:.9">VINPassport runs on Midnight's preprod test network. It has not been assessed by a technical service or an approval authority, and we do not describe it as compliant. A pilot on one vehicle type is how that changes, and this form is how a pilot starts. The full reading of the law behind it is on the <a href="../regulation/#euro7" style="color:#EDE4D8">regulation page</a>.</p>
+    </div>
+  </section>
+
+  <section style="padding:0 0 72px" aria-labelledby="steps">
+    <span style="display:block;font:600 13px Barlow,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#002E6E;margin-bottom:12px">02 · How onboarding works</span>
+    <div style="height:1px;background:rgba(0,74,173,.26);margin-bottom:28px"></div>
+    <h2 id="steps" style="margin:0 0 22px;font-size:clamp(24px,2.6vw,32px);line-height:1.1;letter-spacing:.02em;text-transform:uppercase">From application to pilot</h2>
+    <ol style="list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:18px">
+      <li style="padding:18px 20px;border:1px solid rgba(0,74,173,.26)"><span class="mono" style="font-size:11px;color:#002E6E">01</span><b style="display:block;margin:6px 0 6px;font-family:'Barlow Condensed',sans-serif;font-size:21px;letter-spacing:.02em;text-transform:uppercase">You apply</b><span style="font-size:14.5px;line-height:1.55;color:rgba(14,23,38,.8)">Who you are, which vehicle types are coming, and what you need. A few minutes.</span></li>
+      <li style="padding:18px 20px;border:1px solid rgba(0,74,173,.26)"><span class="mono" style="font-size:11px;color:#002E6E">02</span><b style="display:block;margin:6px 0 6px;font-family:'Barlow Condensed',sans-serif;font-size:21px;letter-spacing:.02em;text-transform:uppercase">We reply by email</b><span style="font-size:14.5px;line-height:1.55;color:rgba(14,23,38,.8)">A person reads every application. Nothing is automated beyond the delivery.</span></li>
+      <li style="padding:18px 20px;border:1px solid rgba(0,74,173,.26)"><span class="mono" style="font-size:11px;color:#002E6E">03</span><b style="display:block;margin:6px 0 6px;font-family:'Barlow Condensed',sans-serif;font-size:21px;letter-spacing:.02em;text-transform:uppercase">A twenty-minute call</b><span style="font-size:14.5px;line-height:1.55;color:rgba(14,23,38,.8)">How you meet Annex V point 4.2 and Article 17(4) today, and whether the twenty-year part is settled. Not a sales pitch.</span></li>
+      <li style="padding:18px 20px;border:1px solid rgba(0,74,173,.26)"><span class="mono" style="font-size:11px;color:#002E6E">04</span><b style="display:block;margin:6px 0 6px;font-family:'Barlow Condensed',sans-serif;font-size:21px;letter-spacing:.02em;text-transform:uppercase">A pilot on one type</b><span style="font-size:14.5px;line-height:1.55;color:rgba(14,23,38,.8)">If it fits, one vehicle type end to end on the test network with you, before anything goes near production.</span></li>
+    </ol>
+  </section>
+
+  <section id="apply" style="padding:0 0 72px" aria-labelledby="apply-title">
+    <span style="display:block;font:600 13px Barlow,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#002E6E;margin-bottom:12px">03 · Apply</span>
+    <div style="height:1px;background:rgba(0,74,173,.26);margin-bottom:28px"></div>
+    <h2 id="apply-title" style="margin:0;font-size:clamp(24px,2.6vw,32px);line-height:1.1;letter-spacing:.02em;text-transform:uppercase">Apply to onboard</h2>
+    <p style="margin:12px 0 26px;font-size:15px;line-height:1.6;max-width:64ch;color:rgba(14,23,38,.8)">Fields marked <span class="mf-opt">(optional)</span> can be left blank. Everything else we need to reply. The button opens your own email app with the application written out and addressed to <a href="mailto:info@passport.vin">info@passport.vin</a>, and you send it from there. How we handle it is set out <a href="#privacy">below the form</a>.</p>
+
+    <div id="apply-done" hidden tabindex="-1" style="padding:24px 26px;border:1px solid #004AAD;background:#E6DCCE;max-width:70ch">
+      <b style="display:block;font-family:'Barlow Condensed',sans-serif;font-size:24px;letter-spacing:.02em;text-transform:uppercase">Application received</b>
+      <p style="margin:10px 0 0;font-size:15px;line-height:1.6;color:rgba(14,23,38,.85)">Thank you. It has been delivered to our inbox, and we will reply to the email address you gave.</p>
+    </div>
+
+    <form id="apply-form" action="" method="POST" data-contact="info@passport.vin" style="display:flex;flex-direction:column;gap:22px;max-width:920px">
+      <input type="hidden" name="access_key" value="">
+      <input type="hidden" name="subject" value="VINPassport manufacturer application">
+      <input type="hidden" name="from_name" value="passport.vin">
+      <div class="mf-trap" aria-hidden="true"><label>Leave this unticked <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off"></label></div>
+
+      <div class="mf-grid">
+        <div class="mf-field"><label for="f-org">Organisation</label><input class="mf-input" id="f-org" name="Organisation" required maxlength="200" autocomplete="organization"></div>
+        <div class="mf-field"><label for="f-country">Country</label><input class="mf-input" id="f-country" name="Country" required maxlength="100" autocomplete="country-name"></div>
+        <div class="mf-field"><label for="f-role">Your organisation is</label>
+          <select class="mf-input" id="f-role" name="Organisation type" required>
+            <option value="">Choose one</option>
+            <option>Vehicle manufacturer</option>
+            <option>Small-volume manufacturer</option>
+            <option>Authorised representative or importer</option>
+            <option>Technical service or approval authority</option>
+            <option>Other</option>
+          </select></div>
+        <div class="mf-field"><label for="f-name">Your name</label><input class="mf-input" id="f-name" name="Name" required maxlength="120" autocomplete="name"></div>
+        <div class="mf-field"><label for="f-title">Job title <span class="mf-opt">(optional)</span></label><input class="mf-input" id="f-title" name="Job title" maxlength="120" autocomplete="organization-title"></div>
+        <div class="mf-field"><label for="f-email">Work email</label><input class="mf-input" id="f-email" name="email" type="email" required maxlength="200" autocomplete="email"></div>
+        <div class="mf-field"><label for="f-phone">Phone <span class="mf-opt">(optional)</span></label><input class="mf-input" id="f-phone" name="Phone" type="tel" maxlength="40" autocomplete="tel"></div>
+        <div class="mf-field"><label for="f-timing">When does Euro 7 reach you?</label>
+          <select class="mf-input" id="f-timing" name="Timing" required>
+            <option value="">Choose one</option>
+            <option>New M1/N1 types from 29 Nov 2026</option>
+            <option>All new M1/N1 from 29 Nov 2027</option>
+            <option>Heavy-duty, from 29 May 2028</option>
+            <option>Small-volume, from 1 Jul 2030</option>
+            <option>Not sure yet</option>
+          </select></div>
+        <div class="mf-field"><label for="f-volume">Vehicles a year for the EU market <span class="mf-opt">(optional)</span></label>
+          <select class="mf-input" id="f-volume" name="Annual EU volume">
+            <option value="">Prefer not to say</option>
+            <option>Under 1,000</option>
+            <option>1,000 to 10,000</option>
+            <option>10,000 to 100,000</option>
+            <option>Over 100,000</option>
+          </select></div>
+      </div>
+
+      <fieldset class="mf-set">
+        <legend class="mf-legend">Vehicle categories <span class="mf-opt">(optional, tick any)</span></legend>
+        <div class="mf-checks">
+          <label class="mf-check"><input type="checkbox" name="Category M1" value="Yes">M1 passenger cars</label>
+          <label class="mf-check"><input type="checkbox" name="Category N1" value="Yes">N1 light commercial</label>
+          <label class="mf-check"><input type="checkbox" name="Category M2/M3" value="Yes">M2, M3 buses</label>
+          <label class="mf-check"><input type="checkbox" name="Category N2/N3" value="Yes">N2, N3 trucks</label>
+        </div>
+      </fieldset>
+
+      <fieldset class="mf-set">
+        <legend class="mf-legend">What you want to talk about <span class="mf-opt">(optional, tick any)</span></legend>
+        <div class="mf-checks" style="flex-direction:column">
+          <label class="mf-check"><input type="checkbox" name="Interest: EVP delivery and the 20-year duty" value="Yes">Delivering the passport and keeping it reachable for twenty years (Art. 17(4))</label>
+          <label class="mf-check"><input type="checkbox" name="Interest: anti-tampering duty" value="Yes">Meeting the anti-tampering duty for the odometer and the passport (Art. 4(7)(d), (j))</label>
+          <label class="mf-check"><input type="checkbox" name="Interest: service and ownership history" value="Yes">Service and ownership history after sale</label>
+          <label class="mf-check"><input type="checkbox" name="Interest: battery passport" value="Yes">Readiness for the battery passport, February 2027</label>
+          <label class="mf-check"><input type="checkbox" name="Interest: pilot on one vehicle type" value="Yes">A pilot on one vehicle type</label>
+        </div>
+      </fieldset>
+
+      <div class="mf-field"><label for="f-msg">Anything else <span class="mf-opt">(optional)</span></label><textarea class="mf-input" id="f-msg" name="Message" maxlength="1500"></textarea></div>
+
+      <label class="mf-check" style="max-width:72ch"><input type="checkbox" name="Consent" value="Yes" required>I agree that VINPassport may use these details to reply to this application, as described in the privacy notice below.</label>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;flex-wrap:wrap;gap:12px">
+          <button class="mf-submit" type="submit" disabled>SEND APPLICATION</button>
+          <button id="apply-copy" class="mf-copy" type="button" hidden>COPY IT INSTEAD</button>
+        </div>
+        <p id="apply-status" class="mf-status" role="status" aria-live="polite" style="max-width:72ch"></p>
+        <noscript><p class="mf-status">This form needs JavaScript. You can also write to <a href="mailto:info@passport.vin">info@passport.vin</a>.</p></noscript>
+      </div>
+    </form>
+  </section>
+
+  <section id="privacy" style="padding:0 0 84px" aria-labelledby="privacy-title">
+    <span style="display:block;font:600 13px Barlow,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#002E6E;margin-bottom:12px">04 · Privacy notice</span>
+    <div style="height:1px;background:rgba(0,74,173,.26);margin-bottom:24px"></div>
+    <h2 id="privacy-title" style="margin:0 0 14px;font-size:22px;line-height:1.15;letter-spacing:.02em;text-transform:uppercase">What happens to what you send</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px 32px;font-size:14px;line-height:1.6;color:rgba(14,23,38,.8);max-width:1000px">
+      <p style="margin:0"><b>Who receives it.</b> VINPassport is responsible for your details. Write to <a href="mailto:info@passport.vin">info@passport.vin</a> about anything on this page.</p>
+      <p style="margin:0"><b>What and why.</b> Only what you type into the form, used only to reply to your application and, if you want one, to arrange a call or a pilot. We do not add you to a mailing list and we do not sell or share your details.</p>
+      <p style="margin:0"><b>On what basis.</b> Your consent, given by ticking the box, which you can withdraw at any time by writing to us (GDPR Art. 6(1)(a) and 7(3); POPIA s11(1)(a) and 11(2)(b)).</p>
+      <p style="margin:0"><b>How it reaches us.</b> This form sends nothing itself. It writes your application into an email in your own mail app, addressed to info@passport.vin, and you send it. No form service sits in between.</p>
+      <p style="margin:0"><b>How long.</b> We delete an application within twelve months of our last exchange if it does not lead to an agreement, or sooner if you ask.</p>
+      <p style="margin:0"><b>Your rights.</b> You can ask to see, correct or delete what we hold (GDPR Arts. 15 to 17; POPIA ss23 and 24), and complain to your data protection authority or, in South Africa, the Information Regulator. This notice is given under GDPR Art. 13 and POPIA s18.</p>
+    </div>
+  </section>
+  </main>
+
+  <footer style="padding:26px 0 48px;border-top:1px solid rgba(0,74,173,.26);display:flex;flex-wrap:wrap;gap:16px 32px;align-items:center;font-size:13px;color:rgba(14,23,38,.7)">
+    <img src="../assets/vinpassport-logo.png" alt="VINPassport" width="546" height="102" style="height:24px;width:auto">
+    <span>Proving a vehicle identity.</span>
+    <span class="ft-meta" style="margin-left:auto;min-width:0">Apache-2.0 · Reg (EU) 2026/1738 · Midnight Network</span>
+  </footer>
+
+</div>
+<script type="module" src="../assets/nav.mjs?v=1"></script>
+<script type="module" src="apply.js?v=1"></script>
+</body>
+</html>

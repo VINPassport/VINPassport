@@ -57,7 +57,10 @@ export const PAGES = [
     { file: 'demo/index.html', depth: 1, current: 'demo' },
     { file: 'verify/index.html', depth: 1, current: 'verify' },
     { file: 'intake/index.html', depth: 1, current: 'intake' },
-    { file: 'proofs/index.html', depth: 1, current: null }
+    { file: 'proofs/index.html', depth: 1, current: null },
+    // Like /proofs/, reached from the page that sends people to it (the home
+    // page's manufacturer section) rather than from an item of its own.
+    { file: 'manufacturers/index.html', depth: 1, current: null }
 ];
 
 const LINK = 'text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap';
