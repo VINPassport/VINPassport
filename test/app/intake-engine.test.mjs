@@ -39,6 +39,15 @@ test('the ledger it returns holds this vehicle and nothing else', () => {
     assert.deepEqual(Object.keys(out.ledger.passports), [out.vinHex]);
 });
 
+test('what the console gets back carries no salt', () => {
+    // applyIntake can keep every write's opening, for the demo export's sample
+    // bundles. The console forwards its result into the page, so that must
+    // stay off here: a salt opens its commitment, and it is the holder's.
+    const out = registerLocally(intake());
+    assert.equal('openings' in out, false);
+    assert.doesNotMatch(JSON.stringify(out), /"salt"/);
+});
+
 test('delegation survives the serverless path', () => {
     const out = registerLocally(intake({
         authorise: ['dealership'],

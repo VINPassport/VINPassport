@@ -19,6 +19,12 @@ import {
     DEMO_WRITERS, CONSOLE_REGISTRAR_SECRET
 } from './scenario.mjs';
 
+// The reading half, for /disclose/. A bundle is checked by recomputing slots
+// and commitments with the runtime's own primitives, which this bundle
+// already carries along with its wasm, so the page reuses it rather than
+// shipping a second 1.4 MB copy. Same code as the CLI and the tests.
+export { verifyBundle, fieldsOnLedger } from './disclosure.mjs';
+
 /**
  * Turn the labels a console sends into the identities a circuit needs.
  *

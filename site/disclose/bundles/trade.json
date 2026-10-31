@@ -1,0 +1,102 @@
+{
+  "kind": "vinpassport-disclosure/v2",
+  "policy": "vinpassport-tiers/v1",
+  "tier": "trade",
+  "audience": "a dealer taking the car in part exchange",
+  "note": "A trade disclosure. It opens only the fields listed here and carries no seed, so it cannot open any other field of this vehicle. Each claim listed was proven on the public ledger and reveals a bound, never a value.",
+  "network": "local-simulator",
+  "vinHashScheme": "blake2b-256",
+  "vinHash": "391ce048e0feacde85e7978c2c8320b3763a6c5ed5b2aacc7ca524469bafe357",
+  "contentRoot": "76d8e2b30ac2c1c3c615c0f73ad5dd35b9ea475d9281717111589f79a1a8d319",
+  "fields": [
+    {
+      "fieldName": "odometerKm",
+      "fieldKey": "2dd69ded11554ddb3306be039e80f3f82824b0d4af96b9bc287055558ea92fe7",
+      "slot": "a21f53589467f6f7df73387ce3e981ac462d6a6dba3cae8f49fedc9de330c170",
+      "writeIndex": 4,
+      "value": "83260",
+      "salt": "99e38678bf7020b739a279e7961079aee36ff972ce83f23a5b43164c1b732fe0"
+    },
+    {
+      "fieldName": "accidentCount",
+      "fieldKey": "aeb322aa379bd01ecb61ca57719f40e3c4a0368533dd62b1c7b5d2d995da98eb",
+      "slot": "2087a68d8170dc5b80e8426bae430c194ae5a1e730670ac9782f7cfd4fc0911b",
+      "writeIndex": 0,
+      "value": "0",
+      "salt": "3d3dadb7e15f71cd892c82f11d260e5f1921d6584d4ab6a15a53aead2f3a2ff1"
+    },
+    {
+      "fieldName": "ownerCount",
+      "fieldKey": "7567eb36429241cb257b43d05709400ac5e7400e088048071b387d7d0548b25c",
+      "slot": "67af0ba75f30c1aef627634e8617c4d4b1300e57c43091fe2d2a0e20ba91399b",
+      "writeIndex": 0,
+      "value": "1",
+      "salt": "55a091fbf77434d8d9c984a5e3111f0f03f4052135b035cdb45964eea4968e32"
+    },
+    {
+      "fieldName": "writeOffCategory",
+      "fieldKey": "177d70535ec71b35583722c2d5f1ec963e3b32b7553dce868e547c0c5140e3c0",
+      "slot": "753a34e8c6c4bd748d4798480db90bd7181bccc887ba49b3c1ae568b20da811a",
+      "writeIndex": 0,
+      "value": "0",
+      "salt": "4d5c1d7449c3acf8a573ed44d903cc2ca84d63f7a82e416b0e2605b2a986762b"
+    },
+    {
+      "fieldName": "serviceCount",
+      "fieldKey": "48bdd789ee03fb0debd23d7e156228d3233f0110d48ed2d7dda663fb22521aff",
+      "slot": "0a734c4f90ef07b567d4e68a56157ddd1747235e291840b112cc20461bef2c79",
+      "writeIndex": 3,
+      "value": "4",
+      "salt": "a2d05d2a5fe405c133c93617fc96f1b395970f74937cc790bfb03c0aa269266a"
+    },
+    {
+      "fieldName": "lastServiceOdometerKm",
+      "fieldKey": "b6239d97e7a609a21328561a13192631ead5b420e16044e3e498a6c20b77f824",
+      "slot": "836ff2dc0ee80e6dcec49c4947e92d7f07e47502048d3169f84e4fc9c129b7aa",
+      "writeIndex": 3,
+      "value": "79000",
+      "salt": "4c075783bdb1f819616b302a37f1c098a61bc509ed024a70fe37ad15a48b6761"
+    },
+    {
+      "fieldName": "recallIssuedCount",
+      "fieldKey": "76d5d0a3ab838de90920ccc554895be3b3f49400311f7c055012de1dc5cc21b8",
+      "slot": "d09c5bdd98e8384b67415e1906c791a8745eb59dfec84787fd275316703ee939",
+      "writeIndex": 0,
+      "value": "1",
+      "salt": "94189d7b8fa872373cb426836782e38817d41eb327e85d3a93126f9024a951b1"
+    },
+    {
+      "fieldName": "recallCompletedCount",
+      "fieldKey": "b9e7bcc0059b1382275ba3c4ffd09832de3254d424b9ba358a5e1002f3dbd64a",
+      "slot": "3315a647e75911d7481fab073ead1302b7845b2eb390b31dda6e1de42f79cba3",
+      "writeIndex": 1,
+      "value": "1",
+      "salt": "c616a13712c54a290cf14107af0d9ec4534271db10b302acfdf8b0051ae57381"
+    },
+    {
+      "fieldName": "co2FootprintKgCO2e",
+      "fieldKey": "6d89c56c909e2d9309a132ced2bea500b282d66aba30a3b7ec4f6abd9ae3624d",
+      "slot": "c3f5ae772d165136f0b8eea7667ed40bf8ae8e4c794565c3467f1fbb015f092a",
+      "writeIndex": 0,
+      "value": "8400",
+      "salt": "b5386fe2e4eba5712c9fca1f06bfbca3d053809ca46be97c6fa9cfb717ef35d2"
+    },
+    {
+      "fieldName": "enginePowerKw",
+      "fieldKey": "e68de521b8a35ebd319d4bfc94ff89fd7e7f342f0af508a3547955bab4094678",
+      "slot": "90e5b4d1f4146d6f48798b5e7f7ffdfb1cb3849bffe6871ff0bf22ffc3da6fce",
+      "writeIndex": 0,
+      "value": "100",
+      "salt": "ed7edd6c418d271fc820b2a8a2c99b6ddef4c5efd8f8a8cef7fe3f32b043553c"
+    },
+    {
+      "fieldName": "kerbWeightKg",
+      "fieldKey": "6c2a6a16a42080ec60b33d6a0e4cf9c8b72ab468c1afd283e56bc3f57a58ebb5",
+      "slot": "1d01caecc5b4fa5fb70bad46206486da2050b60f94829b7c65e05c60378e9846",
+      "writeIndex": 0,
+      "value": "1615",
+      "salt": "e38c7580c26ce1d50a79b3fe0e7b7997ed6e67b60122341f386ab8ea9f30efe0"
+    }
+  ],
+  "claims": []
+}

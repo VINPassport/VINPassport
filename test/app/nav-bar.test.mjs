@@ -20,7 +20,7 @@ const SITE = join(HERE, '..', '..', 'site');
 /** Every page that carries the shared bar. */
 const PAGES = ['index.html', 'verify/index.html', 'intake/index.html', 'proofs/index.html',
                'demo/index.html', 'regulation/index.html', 'guide/index.html',
-               'manufacturers/index.html'];
+               'manufacturers/index.html', 'disclose/index.html'];
 
 const navOf = (page) => {
     const html = readFileSync(join(SITE, page), 'utf8');

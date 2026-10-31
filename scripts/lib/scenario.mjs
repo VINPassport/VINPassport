@@ -349,12 +349,27 @@ export const saltStream = () => {
  * refused claim writes nothing, so it can never appear proven.
  *
  * Returns { vinHex, applied: [..], refused: [{step, reason}] }.
+ *
+ * With `{ keepOpenings: true }` it also returns `openings`: every accepted
+ * write's value and salt, per field, in the receipt shape disclosure.mjs
+ * reads. Off by default, because the salts are the holder's alone and a
+ * caller that forwards its result (the intake console does) must not carry
+ * them anywhere by accident. Only the demo export asks, to write the sample
+ * bundles /disclose/ checks.
  */
-export function applyIntake(sim, intake, salt) {
+export function applyIntake(sim, intake, salt, { keepOpenings = false } = {}) {
     const vin = vinHash(intake.vin);
     const vinHex = hex(vin);
     const applied = [];
     const refused = [];
+    const openings = {};
+    // Called only once the circuit has accepted the write, so a refused write
+    // leaves no opening behind for a commitment that does not exist.
+    const opened = (name, value, s) => {
+        if (!keepOpenings) return;
+        const writes = (openings[name] ??= []);
+        writes.push({ writeIndex: writes.length, value: String(value), salt: hex(s) });
+    };
     const attempt = (step, fn) => {
         try { fn(); applied.push(step); }
         catch (e) {
@@ -373,8 +388,11 @@ export function applyIntake(sim, intake, salt) {
 
     for (const [name, value] of Object.entries(intake.fields)) {
         if (!(name in FIELDS)) { refused.push({ step: `initialiseField ${name}`, reason: 'unknown field' }); continue; }
-        attempt(`initialiseField ${name}`, () =>
-            sim.initialiseField(vin, K[name], FIELDS[name].rule, BigInt(value), salt()));
+        attempt(`initialiseField ${name}`, () => {
+            const s = salt();
+            sim.initialiseField(vin, K[name], FIELDS[name].rule, BigInt(value), s);
+            opened(name, value, s);
+        });
     }
 
     // A vehicle outlives the party that registered it. The registrar may hand
@@ -400,7 +418,9 @@ export function applyIntake(sim, intake, salt) {
             const who = writer ? ` (by ${writer.label})` : '';
             attempt(`update ${i + 1}: ${name} -> ${value}${who}`, () => {
                 if (writer) sim.actAs(writer.secret); else asRegistrar();
-                sim.recordField(vin, K[name], BigInt(value), salt());
+                const s = salt();
+                sim.recordField(vin, K[name], BigInt(value), s);
+                opened(name, value, s);
             });
         }
     }
@@ -432,13 +452,13 @@ export function applyIntake(sim, intake, salt) {
             : sim.proveFieldAtLeast(vin, K[q.field], bound)));
     }
 
-    return { vinHex, applied, refused };
+    return keepOpenings ? { vinHex, applied, refused, openings } : { vinHex, applied, refused };
 }
 
 // ---------------------------------------------------------------- demo pair
 
 /** The two standing demonstration vehicles. Returns their vin hex hashes. */
-export function buildDemoVehicles(sim, salt) {
+export function buildDemoVehicles(sim, salt, options = {}) {
     const a = applyIntake(sim, {
         vin: 'WVWZZZ1JZXW000001',
         registrar: 'demo-authority',
@@ -452,7 +472,12 @@ export function buildDemoVehicles(sim, salt) {
             // And the pair behind "every recall has been carried out". One
             // recall is issued here and completed below, so the claim says
             // something: with both at zero it would be true but empty.
-            recallIssuedCount: 1, recallCompletedCount: 0
+            recallIssuedCount: 1, recallCompletedCount: 0,
+            // Declared once and committed one by one, so a buyer's bundle has
+            // values of its own to open (public tier, D26) ...
+            co2FootprintKgCO2e: 8_400, enginePowerKw: 100, kerbWeightKg: 1_615,
+            // ... and the records only an authority's bundle opens.
+            stolenRecordCount: 0, exportMarkerCount: 0
         },
         panel: {
             vehicleCategory: 'M1', fuelType: 'bev', emissionsClass: 'n/a',
@@ -492,7 +517,7 @@ export function buildDemoVehicles(sim, salt) {
             neverWrittenOff: true, noAccidents: true, oneKeeper: true, mileageUnder: 150_000,
             servicedWithin15000km: true, allRecallsDone: true
         }
-    }, salt);
+    }, salt, options);
 
     const b = applyIntake(sim, {
         vin: 'WAUZZZ8V5KA000002',
@@ -506,7 +531,7 @@ export function buildDemoVehicles(sim, salt) {
         panel: { vehicleCategory: 'M1', fuelType: 'diesel', emissionsClass: 'Euro 5', firstRegistrationDate: 15_910 },
         updates: [{ odometerKm: 112_040 }],
         prove: { mileageUnder: 200_000 }
-    }, salt);
+    }, salt, options);
 
     return { a, b };
 }

@@ -1,0 +1,43 @@
+{
+  "kind": "vinpassport-disclosure/v2",
+  "policy": "vinpassport-tiers/v1",
+  "tier": "public",
+  "audience": "a buyer",
+  "note": "A public disclosure. It opens only the fields listed here and carries no seed, so it cannot open any other field of this vehicle. Each claim listed was proven on the public ledger and reveals a bound, never a value.",
+  "network": "local-simulator",
+  "vinHashScheme": "blake2b-256",
+  "vinHash": "391ce048e0feacde85e7978c2c8320b3763a6c5ed5b2aacc7ca524469bafe357",
+  "contentRoot": "76d8e2b30ac2c1c3c615c0f73ad5dd35b9ea475d9281717111589f79a1a8d319",
+  "fields": [
+    {
+      "fieldName": "co2FootprintKgCO2e",
+      "fieldKey": "6d89c56c909e2d9309a132ced2bea500b282d66aba30a3b7ec4f6abd9ae3624d",
+      "slot": "c3f5ae772d165136f0b8eea7667ed40bf8ae8e4c794565c3467f1fbb015f092a",
+      "writeIndex": 0,
+      "value": "8400",
+      "salt": "b5386fe2e4eba5712c9fca1f06bfbca3d053809ca46be97c6fa9cfb717ef35d2"
+    },
+    {
+      "fieldName": "enginePowerKw",
+      "fieldKey": "e68de521b8a35ebd319d4bfc94ff89fd7e7f342f0af508a3547955bab4094678",
+      "slot": "90e5b4d1f4146d6f48798b5e7f7ffdfb1cb3849bffe6871ff0bf22ffc3da6fce",
+      "writeIndex": 0,
+      "value": "100",
+      "salt": "ed7edd6c418d271fc820b2a8a2c99b6ddef4c5efd8f8a8cef7fe3f32b043553c"
+    },
+    {
+      "fieldName": "kerbWeightKg",
+      "fieldKey": "6c2a6a16a42080ec60b33d6a0e4cf9c8b72ab468c1afd283e56bc3f57a58ebb5",
+      "slot": "1d01caecc5b4fa5fb70bad46206486da2050b60f94829b7c65e05c60378e9846",
+      "writeIndex": 0,
+      "value": "1615",
+      "salt": "e38c7580c26ce1d50a79b3fe0e7b7997ed6e67b60122341f386ab8ea9f30efe0"
+    }
+  ],
+  "claims": [
+    "8516f8d3f5492654b5e62b9ca91decbe15ef8e565cfb5ca1262e43ce5c9fe00c",
+    "c6a5906174098256956bdf4f9ad4e7971dc71b86591b0f0d38e2b509954bcf65",
+    "4a2ad806c3ec3abe1eaaa177b977f8c238c71b104c868d24626076de6db144d0",
+    "411e85a88488849c605af92ec214a833e8df8617313eaa44aa238f8a450a0576"
+  ]
+}

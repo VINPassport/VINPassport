@@ -578,6 +578,14 @@ stated gap, not a solved problem.
   (data protection by design and by default) point the same way as the bundle: hand over what the
   purpose needs.
 
+**Where a reader sees it.** [passport.vin/disclose](https://passport.vin/disclose/) checks three
+bundles for one demo vehicle in the browser, with the same `verifyBundle` the CLI and the tests
+call, reached through the intake engine because that already carries the runtime's commitment
+primitives. The bundles are written by `scripts/export-demo-state.mjs` in the same run as the demo
+ledger, because the salts that open those commitments exist in that process and nowhere else, and
+they say `local-simulator` so they cannot be read as preprod evidence. Bundles from a preprod run
+follow the redeploy.
+
 **What this costs, stated rather than discovered.** There is no query interface: a reader learns
 what a bundle answers and cannot ask a new question of it. And a bundle can be forwarded. A tier
 bounds what the holder hands over, not what a recipient does with it afterwards.

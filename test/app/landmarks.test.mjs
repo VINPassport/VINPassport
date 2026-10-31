@@ -25,7 +25,8 @@ const SITE = join(ROOT, 'site');
 /** Every page the site serves, including the redirect left at the old path. */
 const PAGES = ['index.html', 'verify/index.html', 'intake/index.html', 'proofs/index.html',
                'demo/index.html', 'regulation/index.html', 'guide/index.html',
-               'console/index.html', 'manufacturers/index.html'];
+               'console/index.html', 'manufacturers/index.html',
+               'disclose/index.html'];
 
 const read = (page) => readFileSync(join(SITE, page), 'utf8');
 

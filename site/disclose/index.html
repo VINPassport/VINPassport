@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Check a disclosure · VINPassport</title>
+<meta name="description" content="One vehicle, three audiences. A buyer, a dealer and an authority each receive a different bundle, and this page checks every value in it against the ledger, in your browser.">
+<link rel="icon" href="../favicon.ico" sizes="32x32">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="VINPassport">
+<meta property="og:title" content="VINPassport · Check a disclosure">
+<meta property="og:description" content="One vehicle, three audiences: each sees a different, provably bounded view of the same passport, checked in the browser.">
+<meta property="og:url" content="https://passport.vin/disclose/">
+<meta property="og:image" content="https://passport.vin/assets/vinpassport-og.png">
+<meta property="og:image:width" content="1340">
+<meta property="og:image:height" content="702">
+<meta property="og:image:alt" content="VINPassport: a Digital Circularity Vehicle Passport built on Midnight's zero-knowledge blockchain">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://passport.vin/assets/vinpassport-og.png">
+<meta name="twitter:image:alt" content="VINPassport: a Digital Circularity Vehicle Passport built on Midnight's zero-knowledge blockchain">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700&family=Barlow+Condensed:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../assets/site.css?v=13">
+<style>
+/* Tabs, row states and the try-it controls need pseudo-classes and state
+   selectors, which inline styles cannot carry. Scoped to this page so the
+   shared sheet and its version key stay untouched. */
+.ds-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.ds-tab{flex:1 1 180px;min-height:56px;padding:10px 16px;border:1px solid rgba(0,74,173,.32);background:transparent;color:#0E1726;
+  cursor:pointer;text-align:left;font:15px/1.3 Barlow,sans-serif}
+.ds-tab b{display:block;font:600 17px 'Barlow Condensed',sans-serif;letter-spacing:.05em;text-transform:uppercase}
+.ds-tab span{font-size:13px;color:rgba(14,23,38,.7)}
+.ds-tab[aria-selected="true"]{background:#004AAD;border-color:#004AAD;color:#EDE4D8}
+.ds-tab[aria-selected="true"] span{color:rgba(237,228,216,.86)}
+.ds-tab:focus-visible{outline:2px solid #0E1726;outline-offset:2px}
+.ds-panel{border:1px solid rgba(0,74,173,.26);padding:clamp(16px,3vw,26px)}
+.ds-panel:focus-visible{outline:2px solid #004AAD;outline-offset:2px}
+.ds-band{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:14px 16px;margin:0 0 20px;border:1px solid #004AAD;background:rgba(0,74,173,.07)}
+.ds-band[data-state="fail"]{border-color:#8A1C1C;background:rgba(138,28,28,.07)}
+.ds-band[data-state="pending"]{border-color:rgba(0,74,173,.32);background:transparent}
+.ds-band b{font:600 18px 'Barlow Condensed',sans-serif;letter-spacing:.04em;text-transform:uppercase}
+.ds-h3{margin:22px 0 10px;font:600 13px Barlow,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#002E6E}
+.ds-rows{list-style:none;margin:0;padding:0;border-top:1px solid rgba(0,74,173,.18)}
+.ds-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px;padding:11px 0;border-bottom:1px solid rgba(0,74,173,.18)}
+.ds-row .nm{flex:1 1 210px;min-width:0}
+.ds-row .nm b{display:block;font-size:15px}
+.ds-row .val{flex:0 1 150px;min-width:0;font:600 17px 'Barlow Condensed',sans-serif;letter-spacing:.02em}
+.ds-row .st{flex:1 1 230px;min-width:0;font-size:12.5px;line-height:1.45;color:rgba(14,23,38,.72)}
+.ds-row[data-state="ok"] .st b{color:#004AAD}
+.ds-row[data-state="fail"] .st b{color:#8A1C1C}
+.ds-chip{display:inline-block;padding:2px 8px;border:1px solid rgba(0,74,173,.32);font:600 11px Barlow,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#002E6E;white-space:nowrap}
+.ds-closed{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.ds-closed li{padding:6px 10px;border:1px dashed rgba(0,74,173,.4);font-size:13px;color:rgba(14,23,38,.78)}
+.ds-try{margin-top:24px;padding:16px 18px;background:#E6DCCE;border:1px solid rgba(0,74,173,.2)}
+.ds-try label{display:block;font:600 13px Barlow,sans-serif;letter-spacing:.04em;margin-bottom:7px}
+.ds-tryrow{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch}
+.ds-input{flex:0 1 200px;min-width:0;min-height:44px;padding:10px 12px;border:1px solid rgba(0,74,173,.32);border-radius:0;background:#EDE4D8;color:#0E1726;font:15px/1.35 Barlow,sans-serif}
+.ds-input:focus-visible{outline:2px solid #004AAD;outline-offset:-2px}
+.ds-btn{min-height:44px;padding:10px 18px;border:1px solid #004AAD;background:#004AAD;color:#EDE4D8;cursor:pointer;font:600 15px 'Barlow Condensed',sans-serif;letter-spacing:.06em}
+.ds-btn:hover{background:#003C8F;border-color:#003C8F}
+.ds-btn.ghost{background:transparent;color:#0E1726;border-color:rgba(0,74,173,.32)}
+.ds-btn.ghost:hover{border-color:#004AAD;color:#004AAD}
+.ds-btn:focus-visible{outline:2px solid #0E1726;outline-offset:2px}
+.ds-btn[disabled]{cursor:not-allowed;opacity:.6}
+.ds-out{margin:10px 0 0;font-size:14px;line-height:1.55}
+.ds-out:empty{display:none}
+.ds-out[data-state="fail"]{color:#8A1C1C}
+.ds-out[data-state="flag"]{color:#7A4B00}
+.ds-file{margin-top:20px}
+.ds-file summary{display:flex;align-items:center;min-height:44px;cursor:pointer;font:600 13px Barlow,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#004AAD}
+.ds-file pre{margin:8px 0 0;max-height:360px;overflow:auto;padding:12px 14px;background:#0E1726;color:#EDE4D8;font-size:11.5px;line-height:1.5}
+.ds-cmd{display:block;overflow-x:auto;padding:10px 12px;background:#0E1726;color:#EDE4D8;font-size:12px;line-height:1.5;white-space:pre}
+</style>
+</head>
+<body>
+<div style="max-width:1200px;margin:0 auto;padding:0 var(--edge)">
+
+  <nav class="nav-bar" style="display:flex;align-items:center;flex-wrap:wrap;gap:14px 26px;padding:18px 0;min-height:75px;border-bottom:1px solid rgba(0,74,173,.26)">
+    <a class="nav-skip" href="#main">Skip to content</a>
+    <a href="../" style="display:flex;align-items:center;margin-right:auto;flex:none;text-decoration:none">
+      <img src="../assets/vinpassport-logo.png" alt="VINPassport" width="546" height="102" style="height:32px;width:auto">
+    </a>
+    <div class="nav-links" id="navmenu">
+      <a href="../guide/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Guide</a>
+      <a href="../regulation/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Regulation</a>
+      <a href="../demo/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Live demo</a>
+      <a href="../manufacturers/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">For manufacturers</a>
+      <a href="../verify/" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;padding:9px 20px;white-space:nowrap;flex:none;background:transparent;color:#0E1726;border:1px solid rgba(0,74,173,.28)">SCAN A VEHICLE</a>
+      <a href="../intake/" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;padding:9px 20px;white-space:nowrap;flex:none;background:#004AAD;color:#EDE4D8;border:1px solid #004AAD">ADD PASSPORT</a>
+    </div>
+    <button class="nav-burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="navmenu"><i></i><i></i><i></i></button>
+  </nav>
+
+  <main id="main">
+  <section style="padding:clamp(40px,7vw,80px) 0 36px">
+    <span style="display:block;font:600 12px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin-bottom:16px">Disclosure tiers</span>
+    <h1 style="margin:0;font-size:clamp(34px,5vw,58px);line-height:1.02;letter-spacing:.01em;text-transform:uppercase;max-width:20ch">One vehicle, three audiences</h1>
+    <p style="margin:22px 0 0;font-size:17px;line-height:1.6;max-width:64ch;color:rgba(14,23,38,.8)">A buyer, a dealer and an authority are entitled to see different things about the same car. The holder of the passport hands each of them a <b>bundle</b>: a file that opens some of the vehicle's committed values and nothing that opens the rest. This page checks every value in each bundle against the commitment the ledger holds for it, <b>in your browser</b>, with the same code the command line and the tests run. No server decides what you see.</p>
+    <div style="margin-top:24px;padding:14px 18px;border-left:3px solid #002E6E;background:rgba(0,46,110,.06);max-width:76ch;font-size:14px;line-height:1.6;color:rgba(14,23,38,.82)">
+      <b>Which ledger this checks against.</b> The demo record: the compiled contract run locally by <code>scripts/export-demo-state.mjs</code>, the same record the <a href="../verify/" style="color:#004AAD">scan page</a> reads for the 2019 Golf. It is not preprod. The three bundles were written in the same run, because the salts that open these commitments exist nowhere else.
+    </div>
+  </section>
+
+  <section id="tiers" style="padding:0 0 64px" aria-labelledby="tiers-title">
+    <span style="display:block;font:600 13px Barlow,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#002E6E;margin-bottom:12px">01 · Choose who is asking</span>
+    <div style="height:1px;background:rgba(0,74,173,.26);margin-bottom:24px"></div>
+    <h2 id="tiers-title" style="margin:0 0 18px;font-size:clamp(24px,2.6vw,32px);line-height:1.1;letter-spacing:.02em;text-transform:uppercase">What each one receives, checked</h2>
+    <div class="ds-tabs" role="tablist" aria-label="Audience">
+      <button class="ds-tab" type="button" role="tab" id="tab-public" data-tier="public" aria-selected="true" aria-controls="tier-panel"><b>Buyer</b><span>public tier</span></button>
+      <button class="ds-tab" type="button" role="tab" id="tab-trade" data-tier="trade" aria-selected="false" aria-controls="tier-panel" tabindex="-1"><b>Dealer</b><span>trade tier</span></button>
+      <button class="ds-tab" type="button" role="tab" id="tab-authority" data-tier="authority" aria-selected="false" aria-controls="tier-panel" tabindex="-1"><b>Authority</b><span>authority tier</span></button>
+    </div>
+    <div class="ds-panel" id="tier-panel" role="tabpanel" aria-labelledby="tab-public" tabindex="0">
+      <p id="tier-loading" style="margin:0;font-size:14.5px;line-height:1.6;color:rgba(14,23,38,.78)">Loading the bundles and the demo ledger.</p>
+      <noscript><p style="margin:0;font-size:14.5px;line-height:1.6">Checking a bundle needs JavaScript: it runs the contract's own hashing in your browser. The files are still here to check another way: <a href="bundles/public.json">public</a>, <a href="bundles/trade.json">trade</a>, <a href="bundles/authority.json">authority</a>, against <a href="../verify/demo-data.json">the demo ledger</a>.</p></noscript>
+    </div>
+  </section>
+
+  <section style="padding:0 0 64px" aria-labelledby="bounded">
+    <span style="display:block;font:600 13px Barlow,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#002E6E;margin-bottom:12px">02 · Why a bundle cannot open more</span>
+    <div style="height:1px;background:rgba(0,74,173,.26);margin-bottom:24px"></div>
+    <h2 id="bounded" style="margin:0 0 22px;font-size:clamp(24px,2.6vw,32px);line-height:1.1;letter-spacing:.02em;text-transform:uppercase;max-width:30ch">Bounded by arithmetic, not by a promise</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px 24px">
+      <div style="padding:18px 20px;border:1px solid rgba(0,74,173,.26)">
+        <b style="display:block;font-family:'Barlow Condensed',sans-serif;font-size:19px;letter-spacing:.03em;text-transform:uppercase;margin-bottom:8px">Each salt stands alone</b>
+        <p style="margin:0;font-size:14px;line-height:1.6;color:rgba(14,23,38,.78)">Every committed value is hidden under its own salt, derived from a seed the holder never hands over. A bundle carries the salts for the fields it opens and no others, and one salt says nothing about the next, so the file itself is the proof of what it can open.</p>
+      </div>
+      <div style="padding:18px 20px;border:1px solid rgba(0,74,173,.26)">
+        <b style="display:block;font-family:'Barlow Condensed',sans-serif;font-size:19px;letter-spacing:.03em;text-transform:uppercase;margin-bottom:8px">The reader recomputes the tier</b>
+        <p style="margin:0;font-size:14px;line-height:1.6;color:rgba(14,23,38,.78)">A bundle names its tier, and the reader does not take its word for it. Every field's tier comes from the reader's own copy of the policy, and anything above the declared tier is flagged. The tool that builds bundles refuses such a field outright.</p>
+      </div>
+      <div style="padding:18px 20px;border:1px solid rgba(0,74,173,.26)">
+        <b style="display:block;font-family:'Barlow Condensed',sans-serif;font-size:19px;letter-spacing:.03em;text-transform:uppercase;margin-bottom:8px">A claim counts only if current</b>
+        <p style="margin:0;font-size:14px;line-height:1.6;color:rgba(14,23,38,.78)">The buyer's bundle cites claims already proven on the ledger, such as never written off, which reveal a bound and never a value. A claim is accepted only if it is about this vehicle and was proven against the value the ledger holds now.</p>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding:0 0 64px" aria-labelledby="limits">
+    <span style="display:block;font:600 13px Barlow,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#002E6E;margin-bottom:12px">03 · What this does not do</span>
+    <div style="height:1px;background:rgba(0,74,173,.26);margin-bottom:24px"></div>
+    <h2 id="limits" style="margin:0 0 18px;font-size:clamp(22px,2.4vw,30px);line-height:1.15;letter-spacing:.02em;text-transform:uppercase">Stated, so nobody has to find it</h2>
+    <ul style="margin:0;padding-left:20px;max-width:78ch;font-size:14.5px;line-height:1.65;color:rgba(14,23,38,.82)">
+      <li><b>A bundle cannot be recalled.</b> Once handed over, the values in it are known to whoever holds it. Recording on the ledger who was entitled to which tier is planned and not yet built; it would make a disclosure auditable, never reversible.</li>
+      <li><b>Which audience sees which field is our design for now.</b> The access conditions for a circularity passport are left to an implementing act under Reg (EU) 2026/1738 Art. 13(6)(d), due by 14 August 2030 and not yet adopted. The tiers will be revisited when it is.</li>
+      <li><b>Presence is not private.</b> Anyone can tell which fields this vehicle has on the ledger, because each field's slot follows from public anchors. That is how this page lists what a bundle leaves closed. The values stay hidden.</li>
+      <li><b>The registrar decides who is given a tier today.</b> The keeper's consent is not modelled in the contract yet.</li>
+    </ul>
+  </section>
+
+  <section style="padding:0 0 84px" aria-labelledby="yourself">
+    <span style="display:block;font:600 13px Barlow,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#002E6E;margin-bottom:12px">04 · Check it yourself</span>
+    <div style="height:1px;background:rgba(0,74,173,.26);margin-bottom:24px"></div>
+    <h2 id="yourself" style="margin:0 0 14px;font-size:clamp(22px,2.4vw,30px);line-height:1.15;letter-spacing:.02em;text-transform:uppercase">The same answer from the command line</h2>
+    <p style="margin:0 0 14px;max-width:72ch;font-size:14.5px;line-height:1.6;color:rgba(14,23,38,.8)">Clone the <a href="https://github.com/VINPassport/VINPassport" style="color:#004AAD">repository</a>, install, and check any of the three files against the same ledger:</p>
+    <code class="ds-cmd">node scripts/disclose.mjs --verify site/disclose/bundles/trade.json --against site/verify/demo-data.json</code>
+    <p style="margin:14px 0 0;max-width:72ch;font-size:14px;line-height:1.6;color:rgba(14,23,38,.72)">The policy is <code>scripts/lib/tiers.mjs</code>, one tier for each of the 68 fields, and the reasoning is decision D26 in <a href="https://github.com/VINPassport/VINPassport/blob/main/docs/DECISIONS.md" style="color:#004AAD">docs/DECISIONS.md</a>.</p>
+  </section>
+  </main>
+
+  <footer style="padding:26px 0 48px;border-top:1px solid rgba(0,74,173,.26);display:flex;flex-wrap:wrap;gap:16px 32px;align-items:center;font-size:13px;color:rgba(14,23,38,.7)">
+    <img src="../assets/vinpassport-logo.png" alt="VINPassport" width="546" height="102" style="height:24px;width:auto">
+    <span>Proving a vehicle identity.</span>
+    <span class="ft-meta" style="margin-left:auto;min-width:0">Apache-2.0 · Reg (EU) 2026/1738 · Midnight Network</span>
+  </footer>
+
+</div>
+<script type="module" src="../assets/nav.mjs?v=1"></script>
+<script type="module" src="disclose.js?v=1"></script>
+</body>
+</html>

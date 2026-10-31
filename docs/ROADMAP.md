@@ -209,7 +209,8 @@ bundles the holder hands over, not redaction in a service, so the service-side i
 - [x] Disclosure bundles by tier: the builder refuses a field above the tier, the verifier reports
       every field a bundle opens and flags any above its declared tier (`scripts/disclose.mjs --tier`)
 - [x] A `public` bundle opens nothing above `public`, held by a test against real ledger state
-- [ ] Browser check of a bundle on `/verify/`: one vehicle, three audiences
+- [x] Browser check of a bundle: one vehicle, three audiences, at `/disclose/` (linked from `/verify/`),
+      against the demo ledger; sample bundles from a preprod run follow the redeploy
 - [ ] `grantDisclosure` and `revokeDisclosure`, registrar-only, with a guard test per assert and the
       mutation harness re-run
 - [ ] Consumer viewer: the buyer-facing scan

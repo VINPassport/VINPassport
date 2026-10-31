@@ -50,9 +50,12 @@ const U64 = new CompactTypeUnsignedInteger(18446744073709551615n, 8);
 const B32 = new CompactTypeBytes(32);
 const VEC4 = new CompactTypeVector(4, B32);
 
+// Web APIs only, no Buffer: /disclose/ runs this file in a browser, bundled
+// into the intake engine, and a stray Buffer would only fail there.
 const utf8 = (s) => new TextEncoder().encode(s);
-const hex = (u) => Buffer.from(u).toString('hex');
-const unhex = (s) => Uint8Array.from(Buffer.from(String(s).replace(/^0x/, ''), 'hex'));
+const hex = (u) => Array.from(u, (b) => b.toString(16).padStart(2, '0')).join('');
+const unhex = (s) => Uint8Array.from(
+    String(s).replace(/^0x/, '').match(/../g) ?? [], (b) => parseInt(b, 16));
 const b2b = (d) => blake2b(d, { dkLen: 32 });
 
 /** `pad(32, s)` as the circuit means it: utf8, right-padded with zeros. */
@@ -367,6 +370,17 @@ export function verifyBundle(bundle, { commitmentAt = () => null, claimAt = () =
         fields,
         claims
     };
+}
+
+/**
+ * Which policy fields this vehicle has on the ledger, found from public
+ * anchors alone: each field's slot follows from (vinHash, fieldKey,
+ * contentRoot), so a reader can list what a bundle left closed without being
+ * handed anything. Presence was never private; values are.
+ */
+export function fieldsOnLedger(vinHash, contentRoot, commitmentAt = () => null) {
+    return Object.keys(FIELD_TIERS).filter((name) =>
+        commitmentAt(hex(slotOf(vinHash, hex(fieldKeyOf(name)), contentRoot))) != null);
 }
 
 /**
