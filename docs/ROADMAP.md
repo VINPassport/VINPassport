@@ -109,7 +109,8 @@ tiered disclosure**, as settled in [D26](DECISIONS.md#settled): the one promise 
 
 1. Field tiers in the registry, and disclosure bundles that are provably bounded (builder refuses,
    verifier reports)
-2. A browser check on `/verify/`: one vehicle, three audiences, each view checked against the ledger
+2. A browser check: one vehicle, three audiences, each view checked against the ledger. **Live at
+   [`/disclose/`](https://passport.vin/disclose/) on demo data**, linked from `/verify/`
 3. `grantDisclosure` and `revokeDisclosure` in the contract, then one redeploy and a fresh run, so
    the sample bundles on the site come from real chain data
 

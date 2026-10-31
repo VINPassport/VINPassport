@@ -344,7 +344,7 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
       same assertions that reject a transaction on chain</p>
       <p><span class="big-num">+155</span> app tests · <span class="big-num">+24</span> SDK assumption assertions</p>
       <ul>
-        <li><strong>Mutation-checked</strong>: every guard deleted in turn, recompiled, re-run. <strong>25 of 25</strong> killed</li>
+        <li><strong>Mutation-checked</strong>: every guard deleted in turn, recompiled, re-run. <strong>32 of 32</strong> killed</li>
         <li>Reproduces <strong>byte-identically</strong> from source, toolchain pinned exact</li>
         <li><strong>Proving measured</strong>, wasm: register <strong>17.5s</strong> · at-most <strong>27.6s</strong> · at-least <strong>27.0s</strong> · initialise a field <strong>37.4s</strong>. Paid at issue, not at verification. Initialising is the most expensive and the most repeated, which is the ceiling Wave 3 goes after</li>
       </ul>
@@ -397,10 +397,11 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
     <div class="box">
       <h3>The model</h3>
       <ul>
-        <li><strong>Who pays first:</strong> the manufacturer, who must issue a passport anyway: the question is whose. They are not buying the passport, which must be free, but the ability to meet the obligation without publishing what they would rather not</li>
-        <li><strong>Then it travels:</strong> franchised dealerships maintain it under the same agreement. Second-hand dealers extend and present it at resale, where a clean-history proof is a sales tool they cannot fake today</li>
-        <li><strong>What is free:</strong> verification, always. Every scanned QR is a buyer learning to demand proof: the adoption engine</li>
-        <li><strong>Every payment is fiat.</strong> No customer ever holds crypto, sees a wallet, or pays a gas fee: fees are sponsored from a VINPassport treasury</li>
+        <li><strong>Who pays first:</strong> the manufacturer, once per vehicle, at issue. Euro 7 Art. 7(4) obliges it to issue one, 2025/1707 Art. 17(4) to keep it reachable for 20 years. It buys a record anyone can check is the one it issued, reachable whether or not we are</li>
+        <li><strong>A second product:</strong> the service and ownership history the regulated passport does not hold, paid for by second-hand dealers, who also get the trade view. A hypothesis until a dealer says yes</li>
+        <li><strong>Who answers for a value:</strong> whoever wrote it. The ledger names the identity behind every write; the contract refuses a rollback but does not vouch for truth</li>
+        <li><strong>Reading is free, always:</strong> the law forbids asking a reader to register (Annex V 4.2.3). Every scanned QR is a buyer learning to demand proof</li>
+        <li><strong>Every payment is fiat.</strong> No customer holds crypto or pays a network fee: we pay in DUST from NIGHT we hold</li>
       </ul>
     </div>
     <div class="box">
@@ -413,7 +414,7 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
       <h3 style="margin-top:6px">Honest about pricing</h3>
       <p>Unit cost is <strong>measured, not assumed</strong>. On chain it is negligible: NIGHT is
       never consumed, so about <strong>USD 331</strong> of held NIGHT supports a thousand vehicles
-      a day. The real cost is <strong>proving</strong>, and that is what Wave 3 goes after.</p>
+      a day. The real cost is <strong>proving</strong>, paid once at issue and measured on the slide before.</p>
       <p><strong>Two products, not one.</strong> The regulated EVP is twenty static values, priced
       at issue. Provenance is voluntary and is where lifetime cost lives. Conflating them was the
       mistake the measurement caught.</p>
@@ -428,11 +429,11 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
   <h2>Each wave states its delta in advance, and reports it after</h2>
   <table style="flex:1">
     <tr><th style="width:130px">Wave 2<br><span style="font-weight:400;opacity:.65">shipped</span></th>
-        <td><strong>A second contract that closes the limits we named, live on preprod</strong>: register and initialise gated on a registrar identity derived in-circuit, an allowlist pinned at deploy, field commitments bound in-circuit to the content root, a third integrity rule with the field registry widened from 5 to 68, a circuit that compares two of a vehicle's own hidden fields and publishes neither, and every guard mutation-checked, 25 of 25. Deployed 16 Oct 2026, block 2999411. Cost measured with real proofs: <strong>0.81 DUST</strong> at the protocol reference price to register a vehicle and initialise the five fields the demo writes, and <strong>27.6s</strong> in wasm to issue a claim. A vehicle carrying the whole 68-field registry is a different and much larger number, which is the throughput work Wave 3 is about</td></tr>
+        <td><strong>A second contract that closes the limits we named, live on preprod</strong>: register and initialise gated on a registrar identity derived in-circuit, an allowlist pinned at deploy, field commitments bound in-circuit to the content root, a third integrity rule with the field registry widened from 5 to 68, a circuit that compares two of a vehicle's own hidden fields and publishes neither, and every guard mutation-checked, 32 of 32. Deployed 16 Oct 2026, block 2999411. Cost measured with real proofs: <strong>0.81 DUST</strong> at the protocol reference price to register a vehicle and initialise the five fields the demo writes, and <strong>27.6s</strong> in wasm to issue a claim. A vehicle carrying the whole 68-field registry is a different and much larger number, and bringing it down is still open</td></tr>
     <tr><th>Wave 2<br><span style="font-weight:400;opacity:.65">deferred</span></th>
         <td><strong>The NIGHTGATE integration</strong>: tiered disclosure, disclosure grants, live browser reads, the CAP service layer. Named for Wave 2 and held back on purpose, because a passport that cannot tell one writer from another is not worth adding tiers to. <em>documentComparison</em> waits on more than one anchored root per vehicle</td></tr>
-    <tr><th>Wave 3</th>
-        <td><strong>Composition &amp; commerce</strong>: the battery passport link exercised against NIGHTPASS end to end, cross-root integrity in the product flow, the dealer workflow, fleet view, and one real pilot conversation</td></tr>
+    <tr><th>Wave 3<br><span style="font-weight:400;opacity:.65">in progress</span></th>
+        <td><strong>Tiered disclosure, the Wave 2 deferral, first</strong>: a tier on every field, and bundles that a buyer, a dealer and an authority each check against the ledger, live at passport.vin/disclose on demo data. Then disclosure grants in the contract and one redeploy, so the sample bundles come from preprod. One real pilot conversation with a manufacturer</td></tr>
     <tr><th>Horizon</th>
         <td><strong>Closing the trust gap</strong>: a proof inherits the trust of whoever wrote the value, so the open problem is provenance of the writer, not tamper resistance. Authoritative sources - registries, testers, insurers - writing under an accountable identity, and marking that lets a verifier tell an authoritative write from a self-declared one. That distinction becomes the product</td></tr>
   </table>
