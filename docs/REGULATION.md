@@ -301,12 +301,16 @@ than an aspiration.
 **[Read the full text on EUR-Lex →](https://eur-lex.europa.eu/eli/reg/2024/1781/oj)**
 
 ESPR is the EU's general Digital Product Passport framework, and it is the one most people reach for
-when they hear "digital product passport". **It explicitly excludes vehicles.**
+when they hear "digital product passport". **It excludes vehicles, for what their own law covers.**
 
-Article 1(2) carves out vehicles within the scope of [Reg 167/2013](https://eur-lex.europa.eu/eli/reg/2013/167/oj),
+Article 1(2)(h) carves out vehicles within the scope of [Reg 167/2013](https://eur-lex.europa.eu/eli/reg/2013/167/oj),
 [Reg 168/2013](https://eur-lex.europa.eu/eli/reg/2013/168/oj) and
-[Reg 2018/858](https://eur-lex.europa.eu/eli/reg/2018/858/oj), on the basis that vehicles are covered
-by sector-specific law.
+[Reg 2018/858](https://eur-lex.europa.eu/eli/reg/2018/858/oj), and only *"in respect of
+those product aspects for which requirements are set under sector-specific Union legislative acts
+applicable to those vehicles"*. *Corrected 31 Oct 2026 from the operative
+text:* this section used to say ESPR "explicitly excludes vehicles", which is broader than the
+carve-out. Recreational craft are not among the vehicles it names; see
+[Other vehicle classes](#other-vehicle-classes-read-31-october-2026).
 
 **Do not cite ESPR as the basis for a vehicle passport.** It is a factual error, and an easy one for
 a regulator, investor or hackathon judge to catch. Regulation 2026/1738 is the correct and only
@@ -331,6 +335,33 @@ build **against**, not an adjacent regime to ignore. When correcting this sectio
 the tension by deleting the exclusion warning above: both halves are load-bearing.
 
 ---
+
+## Other vehicle classes, read 31 October 2026
+
+Read in full from EUR-Lex for the home page's "Beyond the car" section, which claims nothing these
+provisions do not support. **None of these classes is required to carry a vehicle passport today**,
+so a passport for them is sold on what it does at resale, not on a duty.
+
+| Class | Provision | What it says |
+|---|---|---|
+| Motorcycles, mopeds, quads | Reg (EU) 2026/1738 **Art. 2(1)(e)** | The regulation applies to L-category vehicles from 1 September 2031 |
+| | 2026/1738 **Art. 2(4)(f)** | Article 13, the Digital Circularity Vehicle Passport, does not apply to L-category vehicles |
+| | 2026/1738 **Art. 2(2)(b), (i)** | L-category vehicles produced in small series, and L1e-A and L1e-B cycles designed to pedal, are outside the regulation |
+| | 2026/1738 **Art. 56(2)(a)** | By 31 December 2035 the Commission evaluates extending Chapters II and III, and Chapter IV Section II, to L-category vehicles |
+| All-terrain quads, side-by-sides | Reg (EU) No 168/2013 **Art. 4(2)(g)(ii)** | L7e-B heavy all terrain quad: L7e-B1 all terrain quad and L7e-B2 side-by-side buggy. Art. 2(1) brings them, and enduro and trial motorcycles, into scope although Art. 2(2)(g) excludes other off-road vehicles |
+| Pedal-assist e-bikes | 168/2013 **Art. 2(2)(h)** | Pedal cycles with a motor of 250 W or less, cut off at 25 km/h, are not L-category vehicles |
+| E-bike and e-motorcycle batteries | Reg (EU) 2023/1542 **Art. 3(1)(11)** | LMT battery: sealed, 25 kg or less, traction for wheeled vehicles powered by a motor alone or with human power, including L-category |
+| | 2023/1542 **Art. 3(1)(14)** | Electric vehicle battery: includes L-category traction batteries over 25 kg |
+| | 2023/1542 **Art. 77(1), (2)** | Every LMT and electric vehicle battery placed on the market from 18 February 2027 has a battery passport, with information for the public, for authorities, and for persons with a legitimate interest |
+| Boats, jet skis | Directive 2013/53/EU **Art. 3(2), (3)** | Recreational craft: 2.5 to 24 m hull, sports and leisure. Personal watercraft: under 4 m, water-jet propelled, ridden on rather than in |
+| | 2013/53/EU **Annex I, Part A, point 2.1** | Each watercraft carries an identification number: manufacturer's country and code, serial number, month and year of production, model year |
+| | Reg (EU) 2024/1781 **Art. 1(2)(h)** | ESPR's vehicle carve-out names vehicles under 167/2013, 168/2013 and 2018/858 only; recreational craft are not among them |
+
+Two consequences for the product. The battery passport's access split (2023/1542 Art. 77(2)) is the
+same three-way split as our tiers ([D26](DECISIONS.md#settled)), so an e-bike passport can point at
+a battery passport rather than repeat it, as the car panel's `batteryPassportId` does. And "no EU
+law we have read requires a passport" for a boat is a statement about these texts, not a search of
+all Union law: an ecodesign delegated act could reach recreational craft, and none was looked for.
 
 ## Verification status
 
