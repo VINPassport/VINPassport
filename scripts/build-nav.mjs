@@ -16,8 +16,8 @@
  *   - The page you are on is MARKED, not linked. A text item gets the blue
  *     underline, a button keeps its shape but loses its fill. Both carry
  *     `aria-current="page"`, which the bars used to do only sometimes.
- *   - Anchors point at the home page's sections from everywhere, so `Watch`
- *     is `#video` at the root and `../#video` below it.
+ *   - Anchors point at the home page's sections from everywhere, so
+ *     `Honest limits` is `#limits` at the root and `../#limits` below it.
  *
  * Line endings are preserved per file: the site's pages are CRLF, while
  * /guide/ is generated with LF, and rewriting one in the other's style
@@ -35,11 +35,10 @@ const CHECK = process.argv.includes('--check');
 /** The bar, in order. `anchor` items address a section of the home page. */
 const ITEMS = [
     { key: 'guide', label: 'Guide', href: 'guide/', kind: 'link' },
-    { key: 'watch', label: 'Watch', href: '#video', kind: 'link', anchor: true },
-    { key: 'how', label: 'How it works', href: '#how', kind: 'link', anchor: true },
     { key: 'regulation', label: 'Regulation', href: 'regulation/', kind: 'link' },
     { key: 'limits', label: 'Honest limits', href: '#limits', kind: 'link', anchor: true },
     { key: 'demo', label: 'Live demo', href: 'demo/', kind: 'link' },
+    { key: 'manufacturers', label: 'For manufacturers', href: 'manufacturers/', kind: 'link' },
     { key: 'verify', label: 'SCAN A VEHICLE', href: 'verify/', kind: 'ghost' },
     { key: 'intake', label: 'ADD PASSPORT', href: 'intake/', kind: 'solid' }
 ];
@@ -47,8 +46,10 @@ const ITEMS = [
 /**
  * `current` names the item this page IS, so the bar marks it instead of
  * offering a trip to where the reader already is. `/proofs/` has no item of
- * its own: it is reached from the pages that cite it, and adding an eighth
- * item would push the bar into a second row on a laptop.
+ * its own: it is reached from the pages that cite it. The bar holds seven
+ * items; an eighth pushes it into a second row on a laptop. Watch and How it
+ * works were dropped for exactly that budget, because both are sections a
+ * reader reaches by scrolling the home page.
  */
 export const PAGES = [
     { file: 'index.html', depth: 0, current: null },
@@ -58,9 +59,7 @@ export const PAGES = [
     { file: 'verify/index.html', depth: 1, current: 'verify' },
     { file: 'intake/index.html', depth: 1, current: 'intake' },
     { file: 'proofs/index.html', depth: 1, current: null },
-    // Like /proofs/, reached from the page that sends people to it (the home
-    // page's manufacturer section) rather than from an item of its own.
-    { file: 'manufacturers/index.html', depth: 1, current: null }
+    { file: 'manufacturers/index.html', depth: 1, current: 'manufacturers' }
 ];
 
 const LINK = 'text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap';
