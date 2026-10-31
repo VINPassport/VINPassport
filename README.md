@@ -574,7 +574,8 @@ line of comparison rather than two days of reading tag names.
 | Deployment to Midnight preprod | **Done. The Wave 2 contract is live (16 Oct 2026), block 2999411.** Built, proven, signed and paid for locally: the fee came out of our own dust ([D24](docs/DECISIONS.md#settled)), not a sponsor. Address and the indexer-resolvable tx hash committed at [`deploy/preprod.json`](deploy/preprod.json), with a `buildId` fingerprinting the artefacts that address holds, so a working tree ahead of the chain is caught before a fee is spent. Earlier addresses kept alongside it as `preprod-superseded-*.json` |
 | Frontend: verification, intake console, proof explorer | **Done.** Three surfaces against the compiled circuits (`npm run app`), live for anyone at [passport.vin](https://passport.vin/) |
 | Live preprod runs from the browser | **Built, not currently hosted.** `/demo/` and the intake console write real transactions to the deployed contract, paying their own DUST ([D24](docs/DECISIONS.md#settled)), capped per UTC day, every hash linking to the [preprod explorer](https://preprod.midnightexplorer.com). The host that served them was cancelled on 10 Oct 2026, so the page now reports that preprod runs are unavailable rather than pretending otherwise. `npm run app` runs the same path locally |
-| CAP service layer, tier redaction | **Not in this submission, and not in Wave 2.** See [D20](docs/DECISIONS.md#settled) |
+| CAP service layer | **Not in this submission, and not in Wave 2.** See [D20](docs/DECISIONS.md#settled) |
+| Tiered disclosure | **Wave 3, in progress.** Not by redaction in a service, which was reversed before it was built ([R7](docs/DECISIONS.md#reversed)), but as bundles the holder hands over and the reader checks against the ledger ([D26](docs/DECISIONS.md#settled)) |
 
 ## Repository map
 

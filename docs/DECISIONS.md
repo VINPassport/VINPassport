@@ -509,6 +509,70 @@ and the server resolves that against identities it holds. A console that accepte
 secret over HTTP would hand every viewer the ability to write as that party, which is the
 opposite of what a per-vehicle writer list is for.
 
+### D26: A disclosure tier is a bundle the holder hands over, checked by the reader · 2026-10-31
+
+The plan inherited from NIGHTPASS ([ARCHITECTURE.md](ARCHITECTURE.md), "Disclosure tiers") put
+tiers in a service: `passport-service.ts` would hold each vehicle's record, shape every answer to
+the caller's tier, and refuse queries that probe columns the caller may not see. ROADMAP Phase 1
+listed both. **That design is reversed ([R7](#reversed)) before any of it was built.** Three
+reasons:
+
+1. **The service would see everything.** To redact a value it must hold the value, for every
+   vehicle, in the clear. That is the trust this project exists to remove, and it contradicts the
+   site's own account of a claim: "No server decided that; the arithmetic did."
+2. **There is nothing to run it on.** The site is static. A tier server would be a second
+   component the live site cannot host, and tiers that only exist on a laptop demonstrate nothing.
+3. **The primitive already exists.** `scripts/lib/disclosure.mjs` hands a reader one field's
+   opening, which anyone can check against `fieldCommitment` on the public ledger with no key, no
+   account and no proof server.
+
+**The decision.** A tier is a bundle. The holder builds it; the reader checks it.
+
+| Tier | Audience | The bundle carries | The reader learns |
+|---|---|---|---|
+| `public` | Buyer | References to claims already on the ledger. **No value and no salt** | That the stated bounds hold, and nothing else |
+| `trade` | Dealer, recycler, insurer, lender | Openings for the fields tagged `public` or `trade` | Those exact values, each checked against its commitment |
+| `authority` | Registry, police, notified body | Openings for every field, and the VIN | The whole panel, checked field by field |
+
+The field-to-tier assignment is the table in [ARCHITECTURE.md](ARCHITECTURE.md), carried into the
+field registry. The tool that builds a bundle **refuses** a field above the bundle's tier. The
+code that checks one reports exactly which fields it opens and **flags** any above its declared
+tier: such a bundle still verifies, because a holder may choose to give more, but the reader is
+told.
+
+**Why a bundle is provably bounded, not merely trimmed.** Each field's salt is derived on its own
+from a seed the holder never hands over, so an opening for one field carries no material for any
+other. A reader can confirm from the bundle alone which fields it opens and that it can open no
+others.
+
+**The on-chain half.** `grantDisclosure(vinHash, granteeId, tier)` and `revokeDisclosure`,
+callable only by the vehicle's registrar and keyed like `writerKeyOf` on a domain tag of their
+own. A grant records who was entitled to which tier, when, and on whose authority, which is the
+same chain of accountability as [D25](#settled). **It cannot recall data already handed over.**
+Disclosure is a one-way door; the grant makes the door auditable, not lockable.
+
+**Who grants: the registrar, for now.** The keeper is arguably the party whose consent matters,
+but the contract has no keeper identity and adding one is a larger change. Keeper consent is a
+stated gap, not a solved problem.
+
+**The provisions this answers to.**
+
+- Reg (EU) 2026/1738 **Art. 13(6)(d)**: the conditions for access to the passport, including the
+  right of access, are left to an implementing act due by 14 August 2030 and **not yet adopted**.
+  Until it is, which audience sees which field is our design, and it must be revisited when the
+  act lands. The same paragraph asks for "a high level of security and privacy", which a design
+  that keeps values off any server meets more simply than one that centralises them.
+- Reg (EU) 2025/1707 **Annex V 4.2.3**: EVP data needs nothing beyond the VIN to read. **EVP
+  content is therefore always `public` tier**, never behind a bundle or a grant.
+- Where vehicle data is personal data, which is an open question (EDPB Guidelines 01/2020 on
+  connected vehicles, not yet read), GDPR **Art. 5(1)(c)** (data minimisation) and **Art. 25**
+  (data protection by design and by default) point the same way as the bundle: hand over what the
+  purpose needs.
+
+**What this costs, stated rather than discovered.** There is no query interface: a reader learns
+what a bundle answers and cannot ask a new question of it. And a bundle can be forwarded. A tier
+bounds what the holder hands over, not what a recipient does with it afterwards.
+
 ## Reversed
 
 Recorded so they are not accidentally reinstated.
@@ -584,6 +648,13 @@ decline. This is regulation-led, and it does not reinstate the OEM *pitch* R3 th
 D7's reasoning about their liability and reachability holds there unchanged.
 
 ---
+
+### R7: Tier redaction in a service, with a query guard · REVERSED 2026-10-31
+Previously the enforcement model in [ARCHITECTURE.md](ARCHITECTURE.md), "Disclosure tiers", and
+two ROADMAP Phase 1 items: a `passport-service.ts` that shaped each answer to the caller's tier and
+refused queries probing columns the caller could not see. Never built. Superseded by
+[D26](#settled): the service would have held every value in the clear, and the site has nowhere to
+run it. **The tier table itself is not reversed**; it carries into D26 as the policy.
 
 ## Open
 

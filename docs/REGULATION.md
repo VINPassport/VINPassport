@@ -36,6 +36,20 @@ This is the legal basis for VINPassport. It establishes the **Digital Circularit
 | **Article 10** | Declaration on recycled content present in vehicles | The declaration itself, and one of the four items Art. 13(2) requires the passport to carry |
 | **Article 11** | Information on removal and replacement of parts, components and materials | Annex VI payload; the first item listed in Art. 13(2) |
 
+#### Two parts of Article 13(6) that shape the design
+
+Read from the Official Journal text on 2026-10-31. Article 13(6) orders implementing acts **by
+14 August 2030**. Neither act exists yet, so what follows is the brief the Commission has been
+given, not rules in force.
+
+| Provision | What the act must settle | What it means here |
+|---|---|---|
+| **13(6)(b)(iii)** | *"the availability of the Digital Circularity Vehicle Passport after the manufacturer responsible for the fulfilment of the obligations set out in paragraph 4 ceases to exist or ceases its activity in the Union"* | The legislator has seen the problem of a passport outliving its issuer, **for this passport only**. The Euro 7 EVP, which binds from 29 November 2026, has no equivalent (see [Article 17](#the-implementing-act) of 2025/1707) |
+| **13(6)(d)** | *"the conditions for access to the Digital Circularity Vehicle Passport, including the right of access and the relevant rules for the protection of data and the protection of intellectual property rights"* | The legal hook for **different audiences seeing different things**. Until the act is adopted, which audience sees which field is our design, recorded in [D26](DECISIONS.md#settled), and it must be revisited when the act lands |
+
+The same paragraph closes: *"When laying down the rules referred to in the first subparagraph, the
+Commission shall take into account the need to ensure a high level of security and privacy."*
+
 **Steel and aluminium are not yet mandated.** Recitals (33) and (34) empower the Commission to set
 minimum recycled shares for steel and for aluminium by delegated act. **No target exists today.**
 Slots 10 and 11 are held ready for those acts and must not be described as current obligations.
@@ -152,6 +166,18 @@ with the data and format of Annex V (17(2)), reachable off board by digital mean
 
 > 4. The manufacturer shall ensure that EVP data are **accessible for at least 20 years** after the
 > date of manufacture of the vehicle.
+
+Article 17 has a fifth paragraph, missing from this file until 2026-10-31:
+
+> 5. In the case of a multi-stage type-approval, the manufacturer referred to in paragraphs 1 to 4
+> shall be understood as the **manufacturer of the base vehicle**, and the EVP data shall refer to
+> the base vehicle.
+
+So a van finished by a body builder carries the base manufacturer's EVP, and the twenty years are
+the base manufacturer's to keep. **No paragraph names anyone else**: full-text searches of this act,
+of Reg (EU) 2024/1257 and of Reg (EU) 2018/858 find no provision for EVP data once the manufacturer
+stops providing it. The circularity passport is different, see
+[Article 13(6)](#two-parts-of-article-136-that-shape-the-design) of 2026/1738.
 
 **Annex V** is the specification. The points that decide an implementation:
 
@@ -318,11 +344,17 @@ summaries.
 **Commission Implementing Regulation (EU) 2025/1707 was read the same day**, after an automated
 fetch was refused: EUR-Lex returns `202` with an empty body to a script and the full text to a
 browser. Recital (14), Article 2(9), Article 17 and Annex V points 2.1 to 4.2.5 are quoted from the
-EUR-Lex HTML at `/eli/reg_impl/2025/1707/oj/eng`. **Appendix 1 to Annex V, the parameter table, has
-been seen but not worked through**, so no claim may rest on which of our 32 slots it covers.
+EUR-Lex HTML at `/eli/reg_impl/2025/1707/oj/eng`. Appendix 1 to Annex V, the parameter table, was
+worked through on 2026-10-18 (see [above](#appendix-1-to-annex-v-read-18-october-2026)).
 
-Dates for entry into force, general application, and the 2032 passport deadline come from secondary
-legal analysis rather than the operative articles. They are consistent across multiple independent
+**Read again on 2026-10-31, in a browser, from EUR-Lex:** Article 17 of 2025/1707 in full (which
+added 17(5)), Article 13 of 2026/1738 in full (13(1) confirms the 1 September 2032 date from the
+operative text, and 13(6)(b)(iii) and (d) are quoted above), and Article 75(2) of Reg (EU)
+2018/858. Full-text searches of 2025/1707, 2024/1257 and 2018/858 for cessation, insolvency and
+succession found nothing on EVP data.
+
+Dates for entry into force and general application of 2026/1738 come from secondary legal analysis
+rather than the operative articles. They are consistent across multiple independent
 sources, but **confirm against the final provisions before using them in anything that matters**, whether a
 submission, a partner conversation, or a compliance claim.
 

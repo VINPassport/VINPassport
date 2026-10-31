@@ -100,11 +100,18 @@ nothing worked end to end yet, and it was right then. The path now works, so wid
 scaffolding. It is the difference between a demo and a lifecycle. The principle still holds for
 anything *new*: do not wire a field whose predicate has never run.
 
-### Wave 3: 27 Oct to 16 Nov
+### Wave 3: from 31 Oct
 
-Not planned in detail; it depends on what Wave 2 judging says. The candidates are Phase 1 tiered
-disclosure and the first authoritative writer from Phase 2: the differentiator, and the one thing
-no other submission in this field has.
+Dates to be confirmed from the buildathon's published schedule; the 27 Oct to 16 Nov estimate
+written here earlier was a guess. **The headline is [Phase 1](#phase-1-tiered-disclosure-and-a-real-audience),
+tiered disclosure**, as settled in [D26](DECISIONS.md#settled): the one promise on the home page
+("reveal only what the asker is entitled to see") that Wave 2 openly deferred.
+
+1. Field tiers in the registry, and disclosure bundles that are provably bounded (builder refuses,
+   verifier reports)
+2. A browser check on `/verify/`: one vehicle, three audiences, each view checked against the ledger
+3. `grantDisclosure` and `revokeDisclosure` in the contract, then one redeploy and a fresh run, so
+   the sample bundles on the site come from real chain data
 
 ### Standing check
 
@@ -190,14 +197,20 @@ call each and they exercise the whole path: canonicalise, anchor, prove, submit,
 
 ## Phase 1: Tiered disclosure and a real audience
 
-**Done when:** three distinct viewers see three genuinely different views of the same vehicle, and a
-grant can elevate a viewer's tier on-chain.
+**Done when:** three distinct viewers see three genuinely different views of the same vehicle, each
+checked against the ledger, and a vehicle's registrar can record on-chain which tier a viewer was
+entitled to.
 
-- [ ] Tier redaction in `passport-service.ts`
-- [ ] **Query guard**: reject `$filter`/`$orderby`/`$apply` that probe invisible columns. Redaction
-      alone is bypassable; see [ARCHITECTURE.md](ARCHITECTURE.md)
-- [ ] Disclosure grant issue and revoke
-- [ ] Grantee identity binding: `sha256(did)`
+Rewritten 2026-10-31 by [D26](DECISIONS.md#settled) and [R7](DECISIONS.md#reversed): tiers are
+bundles the holder hands over, not redaction in a service, so the service-side items are gone.
+
+- [ ] A tier on every field in the registry ([FIELDS.md](FIELDS.md), `site/verify/fields.json`)
+- [ ] Disclosure bundles by tier: the builder refuses a field above the tier, the verifier reports
+      every field a bundle opens and flags any above its declared tier
+- [ ] A `public` bundle carries no value and no salt, held by a test
+- [ ] Browser check of a bundle on `/verify/`: one vehicle, three audiences
+- [ ] `grantDisclosure` and `revokeDisclosure`, registrar-only, with a guard test per assert and the
+      mutation harness re-run
 - [ ] Consumer viewer: the buyer-facing scan
 - [ ] Remaining predicates: accident count, recycled content, battery health
 - [ ] Auth strategy and HTTP security middleware (NIGHTGATE provides neither)

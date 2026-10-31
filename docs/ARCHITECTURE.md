@@ -26,7 +26,7 @@ surfaces.
 │  VINPassport (this repo)                                  │
 │                                                         │
 │  db/passport-schema.cds   vehicle domain model          │
-│  srv/passport-service.ts  tier redaction + query guard  │
+│  srv/passport-service.ts  read side; tiers per D26      │
 │  srv/lib/vehicle-anchor   canonicalise → hash → anchor  │
 │  app/                     producer cockpit, viewer      │
 └────────────────────────┬────────────────────────────────┘
@@ -60,7 +60,7 @@ three-level on-chain disclosure grants, async job orchestration, wallet and prov
 OData V4 query semantics over all of it, and transaction fee sponsoring.
 
 **Ours to build:** the passport contract itself, the vehicle domain model, the provable-field
-registry, tier redaction rules and their query guard, both UIs, document storage, the auth strategy,
+registry, the disclosure tiers ([D26](DECISIONS.md#settled)), both UIs, document storage, the auth strategy,
 and all HTTP security middleware. NIGHTGATE deliberately installs no global middleware: CORS, CSP
 and HSTS are the host's problem.
 
@@ -74,14 +74,20 @@ NIGHTGATE's three levels map onto vehicle stakeholders cleanly:
 | 1 | `trade` | Dealer, recycler, insurer, lender | + write-off category, accident count, owner count, service count, mileage |
 | 2 | `authority` | DMV, police, notified body, ELV facility | + VIN, supplier identities, full lineage, dismantling data |
 
-Two enforcement layers, and the second is not optional. Shaping the response is not sufficient on
-its own: the service must also **reject a query that probes a column the caller may not see**, not
-merely strip that column from the answer. Tier boundaries are therefore enforced at query
-admission as well as at response shaping. NIGHTPASS established the rule; we inherit it rather
-than rediscovering it.
+**The table is the policy. Enforcement is not a server.** Until 2026-10-31 this section planned a
+service that shaped each answer to the caller's tier and refused queries probing hidden columns, as
+NIGHTPASS does. That was reversed before it was built ([R7](DECISIONS.md#reversed)): to redact a
+value a service must hold it, for every vehicle, in the clear. Instead a tier is **a bundle the
+holder hands over** and the reader checks against the ledger ([D26](DECISIONS.md#settled)). A
+`public` bundle carries only references to claims already on the ledger; a `trade` or `authority`
+bundle carries openings for the fields its tier allows, and nothing that opens any other.
 
-On-chain grants can **elevate** a caller above their login role for a specific passport. Grantee
-identities are `sha256(did)`, a pseudonym, never PII.
+EVP content sits in `public` and stays there: Annex V 4.2.3 of Reg (EU) 2025/1707 forbids asking
+for anything beyond the VIN to read it.
+
+An on-chain grant records that a vehicle's registrar entitled a grantee to a tier. It makes a
+disclosure auditable; it does not deliver data and cannot recall it. Grantee identities are
+pseudonyms derived from the grantee's own secret, never PII.
 
 ## Predicates worth demonstrating
 
