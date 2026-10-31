@@ -145,14 +145,14 @@ npm install
 npm test
 ```
 
-Expected: **129 contract tests, 193 app tests and 24 SDK assertions, all passing**, in a couple of
+Expected: **129 contract tests, 209 app tests and 24 SDK assertions, all passing**, in a couple of
 seconds.
 
 ```
  Test Files  1 passed (1)
       Tests  129 passed (129)
 
-# pass 193
+# pass 209
 
 ================ 24 passed, 0 failed ================
 ```
@@ -162,7 +162,7 @@ seconds.
 | `npm test` | Everything below, in one run |
 | `npm run test:contract` | The 129 contract tests, against the compiled circuits |
 | `npm run test:watch` | The same, re-running on change |
-| `npm run test:app` | 193 tests on the application paths: verdicts, the deploy's registrar list, the submission path, the chain-sees panel and the QR encoder, via `node --test`. **Most import and run product code; a minority assert on what is written in the repository** (that every screenshot the guide names exists, that each page's bar carries the same links, that every page names its content with one `<main>` and offers a way past the bar, that the verify page cannot answer with a vehicle nobody asked for, that no text colour drops below the contrast floor). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
+| `npm run test:app` | 209 tests on the application paths: verdicts, the deploy's registrar list, the submission path, the chain-sees panel and the QR encoder, via `node --test`. **Most import and run product code; a minority assert on what is written in the repository** (that every screenshot the guide names exists, that each page's bar carries the same links, that every page names its content with one `<main>` and offers a way past the bar, that the verify page cannot answer with a vehicle nobody asked for, that no text colour drops below the contrast floor). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
 | `npm run test:sdk` | 24 assertions pinning our assumptions about `@odatano/dpp-sdk` |
 | `npm run app` | All three surfaces + the circuits, one dependency-free server |
 | `npm run serve:site` | The site statically, as GitHub Pages serves it: no circuits, demo state only |
@@ -513,7 +513,7 @@ repository begins with no contract at all.
 |---|---|
 | **The contract** - five exported circuits at Wave 1's close, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
 | **Deployed to Midnight preprod**, 28 August, built and signed locally | [`deploy/preprod.json`](deploy/preprod.json) |
-| **346 tests today** - 129 contract, 193 application, 24 SDK assumption assertions; all thirty-two guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
+| **362 tests today** - 129 contract, 209 application, 24 SDK assumption assertions; all thirty-two guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
 | **Three surfaces** - verification, intake console, proof explorer - all running the compiled circuits, not a mock | [passport.vin](https://passport.vin/) |
 | **On-chain runs from the browser, self-funded**, after a hosted sponsor turned out to be a single point of failure in a demo a judge runs unattended | [D24](docs/DECISIONS.md#settled) |
 | **The regulatory basis read from the Official Journal** rather than secondary analysis - which caught two wrong article citations that had survived months of work | [REGULATION.md](docs/REGULATION.md) |
@@ -537,7 +537,7 @@ tree at each wave's close, not from memory.
 | Fields carrying an integrity rule | 5 | **68** |
 | Of those, ever written on chain | 5 | **8** |
 | Contract tests | 67 | **129** |
-| Application tests | 50 | **193** |
+| Application tests | 50 | **209** |
 | SDK assumption assertions | 24 | 24 |
 | Guards checked by mutation | the two integrity rules | **32 of 32** |
 
@@ -589,7 +589,7 @@ scripts/
 test/
   passport-simulator.mjs             harness: compiled circuits + a local ledger
   passport.test.mjs                  129 contract tests
-  app/                               193 tests on the paths around the circuits
+  app/                               209 tests on the paths around the circuits
   sdk-assumptions.mjs                24 assertions pinning @odatano/dpp-sdk behaviour
 ```
 
