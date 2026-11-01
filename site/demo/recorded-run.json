@@ -1,105 +1,97 @@
 {
-  "note": "A recording of the guided run of 16 October 2026, kept so the page can still show a real run while no circuit server is answering. Every field below is already public on the preprod chain: the claims and their bounds are on the ledger, and no field reading appears here, because none was published.",
+  "note": "A recording of the guided run of 1 November 2026, kept so the page can still show a real run while no circuit server is answering. Every field below is already public on the preprod chain: the claims and their bounds are on the ledger, and no field reading appears here, because none was published.",
   "network": "preprod",
-  "contractAddress": "2f66c442f14ec98ca59372e14eaa08832f71de9d4aed74aa7bb48140e5d648f5",
-  "vinHash": "98182911a28c134f092156e14bc5b14d5a5aab030b3119ee7b441754f82b04f5",
+  "contractAddress": "c9a4733e3d9187e4487014e038a99af16cad0c29fb9fc9fcaa6b0f5350ad10ac",
+  "vinHash": "e8a25094272be32eb45eecc9ed9f0dc42da04b03abbee8f01b83befa9b04e23c",
   "registrarId": "9ecd472baaaa93fe3f1dd92b610c7ae4fff14bed398f3e48530402812a2938be",
-  "contentRoot": "fdf5375f99075b94bc62c8cc2ba3240778ab5f40e2b0a1ec8b905b56c6ea5539",
-  "finishedAt": "2026-10-16T03:09:15.441Z",
+  "contentRoot": "d47842c4ba066f42e6bbaa2e701e008c774e78e977eabced5d52b97af6816ab4",
+  "finishedAt": "2026-11-01T06:41:37.038Z",
   "stages": [
     {
-      "stage": 2,
-      "label": "registerPassport",
+      "stage": 1,
+      "label": "2 calls: registerPassport + initialiseField odometerKm",
       "calls": [
-        "registerPassport"
-      ],
-      "txHash": "2e4f6ad75282000707b70986ccbd0604a9bfc13052ecd22ebe96e78c8bf2de3c",
-      "blockHeight": 3000263,
-      "explorer": "https://preprod.midnightexplorer.com/transactions/2e4f6ad75282000707b70986ccbd0604a9bfc13052ecd22ebe96e78c8bf2de3c"
-    },
-    {
-      "stage": 3,
-      "label": "initialiseField odometerKm",
-      "calls": [
+        "registerPassport",
         "initialiseField odometerKm"
       ],
-      "txHash": "fc9226925e023100b92cff435956f5ce9f72c4bc1111900e6c8e93dc7f00f592",
-      "blockHeight": 3000278,
-      "explorer": "https://preprod.midnightexplorer.com/transactions/fc9226925e023100b92cff435956f5ce9f72c4bc1111900e6c8e93dc7f00f592"
+      "txHash": "b4b249fad0a207f31e4421e11112b51e2e9974aea99baed5d0dbcf5467530378",
+      "blockHeight": 3229920,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/b4b249fad0a207f31e4421e11112b51e2e9974aea99baed5d0dbcf5467530378"
     },
     {
-      "stage": 4,
+      "stage": 2,
       "label": "initialiseField accidentCount",
       "calls": [
         "initialiseField accidentCount"
       ],
-      "txHash": "d4f7e0450465348294d93836827e47727650bb23d993ef6afd0fa926e912016c",
-      "blockHeight": 3000291,
-      "explorer": "https://preprod.midnightexplorer.com/transactions/d4f7e0450465348294d93836827e47727650bb23d993ef6afd0fa926e912016c"
+      "txHash": "3f3ff4120a8a67d548f672ba9a689bdeed5c53679d25de2994bbaa8e16388d93",
+      "blockHeight": 3229933,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/3f3ff4120a8a67d548f672ba9a689bdeed5c53679d25de2994bbaa8e16388d93"
     },
     {
-      "stage": 5,
+      "stage": 3,
       "label": "initialiseField ownerCount",
       "calls": [
         "initialiseField ownerCount"
       ],
-      "txHash": "b52232c1dfa6b5ba7a4af999863e7b30ce232a295db15b1a15ca710a66b4423b",
-      "blockHeight": 3000305,
-      "explorer": "https://preprod.midnightexplorer.com/transactions/b52232c1dfa6b5ba7a4af999863e7b30ce232a295db15b1a15ca710a66b4423b"
+      "txHash": "18b7c5c7f478d13c674c367d4e1b380e41acae6ecadae7f7b98e18bdfc419ddf",
+      "blockHeight": 3229946,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/18b7c5c7f478d13c674c367d4e1b380e41acae6ecadae7f7b98e18bdfc419ddf"
     },
     {
-      "stage": 6,
+      "stage": 4,
       "label": "initialiseField serviceCount",
       "calls": [
         "initialiseField serviceCount"
       ],
-      "txHash": "6b0132873fa9b0d83722a6c46b256f1662b29260a88766a7d4c35bd2152cf4cc",
-      "blockHeight": 3000318,
-      "explorer": "https://preprod.midnightexplorer.com/transactions/6b0132873fa9b0d83722a6c46b256f1662b29260a88766a7d4c35bd2152cf4cc"
+      "txHash": "09805268a89e3d04fab70d3304cfab02e762094a1373379e416430f43c10f8bc",
+      "blockHeight": 3229959,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/09805268a89e3d04fab70d3304cfab02e762094a1373379e416430f43c10f8bc"
+    },
+    {
+      "stage": 5,
+      "label": "4 calls: initialiseField lastServiceOdometerKm + authoriseWriter dealership + grantDisclosure dealership: trade + update 1: odometerKm, new value committed (by dealership)",
+      "calls": [
+        "initialiseField lastServiceOdometerKm",
+        "authoriseWriter dealership",
+        "grantDisclosure dealership: trade",
+        "update 1: odometerKm, new value committed (by dealership)"
+      ],
+      "txHash": "a81335ca7008ca4b51db6e2170c068f8e6c5945ef5ccfc26afc2502f76a76750",
+      "blockHeight": 3229987,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/a81335ca7008ca4b51db6e2170c068f8e6c5945ef5ccfc26afc2502f76a76750"
+    },
+    {
+      "stage": 6,
+      "label": "2 calls: withdrawWriter dealership + prove mileageUnder 150000",
+      "calls": [
+        "withdrawWriter dealership",
+        "prove mileageUnder 150000"
+      ],
+      "txHash": "0053bbc9df6517405373f2540255ad223e31d1dd82f794e1bb655ee4b92a4d40",
+      "blockHeight": 3230002,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/0053bbc9df6517405373f2540255ad223e31d1dd82f794e1bb655ee4b92a4d40"
     },
     {
       "stage": 7,
-      "label": "initialiseField lastServiceOdometerKm",
+      "label": "prove noAccidents",
       "calls": [
-        "initialiseField lastServiceOdometerKm"
+        "prove noAccidents"
       ],
-      "txHash": "fd345ca0476378e8a9011656cbd4fd2386bf4ac6d258624d7d50c11a374b880b",
-      "blockHeight": 3000332,
-      "explorer": "https://preprod.midnightexplorer.com/transactions/fd345ca0476378e8a9011656cbd4fd2386bf4ac6d258624d7d50c11a374b880b"
+      "txHash": "b31919231ec4873f0c590415ead2cf883a28d09d798a255e1a17510895bcad8a",
+      "blockHeight": 3230014,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/b31919231ec4873f0c590415ead2cf883a28d09d798a255e1a17510895bcad8a"
     },
     {
       "stage": 8,
-      "label": "authoriseWriter dealership",
+      "label": "2 calls: prove fourServices + prove servicedWithin15000km",
       "calls": [
-        "authoriseWriter dealership"
-      ],
-      "txHash": "1a3c3be58ae7e3b98e00223377618aabe2dec2cce3ff33296ce4f87a56db5621",
-      "blockHeight": 3000343,
-      "explorer": "https://preprod.midnightexplorer.com/transactions/1a3c3be58ae7e3b98e00223377618aabe2dec2cce3ff33296ce4f87a56db5621"
-    },
-    {
-      "stage": 9,
-      "label": "update 1: odometerKm, new value committed (by dealership)",
-      "calls": [
-        "update 1: odometerKm, new value committed (by dealership)"
-      ],
-      "txHash": "4e6c2dd2ba9ae084a0bb27f759b9074bec7cced264c96da023e7720c39d52dca",
-      "blockHeight": 3000357,
-      "explorer": "https://preprod.midnightexplorer.com/transactions/4e6c2dd2ba9ae084a0bb27f759b9074bec7cced264c96da023e7720c39d52dca"
-    },
-    {
-      "stage": 10,
-      "label": "5 calls: withdrawWriter dealership + prove mileageUnder 150000 + prove noAccidents + prove fourServices + prove servicedWithin15000km",
-      "calls": [
-        "withdrawWriter dealership",
-        "prove mileageUnder 150000",
-        "prove noAccidents",
         "prove fourServices",
         "prove servicedWithin15000km"
       ],
-      "txHash": "cd7d92deb390f72919ca020035046300719ac85d7f097c932dc20dca3335c7f3",
-      "blockHeight": 3000384,
-      "explorer": "https://preprod.midnightexplorer.com/transactions/cd7d92deb390f72919ca020035046300719ac85d7f097c932dc20dca3335c7f3"
+      "txHash": "f8ce7500f32293da784535b28b59c7c3c5342d38a6e6d167ec2e6848ce7fb6e3",
+      "blockHeight": 3230032,
+      "explorer": "https://preprod.midnightexplorer.com/transactions/f8ce7500f32293da784535b28b59c7c3c5342d38a6e6d167ec2e6848ce7fb6e3"
     }
   ],
   "claims": [

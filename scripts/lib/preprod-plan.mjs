@@ -25,13 +25,17 @@ import { CLAIM_CATALOGUE, boundFor, isCompare } from '../../site/assets/claim-ca
  *
  * Only recordField writes a cell that already holds something, so it is the
  * only circuit that closes a transaction. Everything else inserts fresh keys
- * and batches freely.
+ * and batches with OTHER circuits; a second call to the same circuit starts a
+ * new transaction, for a different reason (see planCalls).
  *
  * initialiseField USED TO BE IN THIS SET, and not because of the field write:
  * it also incremented a global `updateCount` Counter, which is one cell and
  * always populated. That single line made a vehicle with sixty fields cost
  * sixty transactions. The counter was removed from the contract; nothing
  * needed the number, and an indexer can count field writes from the events.
+ * Sixty fields are sixty transactions again since 1 November, because of the
+ * one-call-per-circuit rule in planCalls, until nightgate-tx can match two
+ * calls to one circuit to the order they were built in.
  */
 export const CELL_UPDATING = new Set(['recordField']);
 
@@ -213,10 +217,21 @@ export function planCalls(intake) {
             { code: 'TOO_LARGE' });
     }
 
+    // One call per circuit per transaction. nightgate-tx puts a batch in
+    // order by matching each intent to a call through its circuit NAME, so
+    // two calls to one circuit can come out swapped. Each call's gas is
+    // costed against the state it was built on; swapped, a call can run
+    // against larger maps than it was costed for, and the node refuses the
+    // whole transaction as 1010/104. Replayed locally on 1 November, the
+    // ledger's own reason was "ran out of gas budget", for five
+    // initialisations in one batch, while register, one initialisation,
+    // authorise and grant together applied cleanly. With one call per
+    // circuit the name match is exact.
     const stages = [];
     let cur = [];
     const close = () => { if (cur.length) { stages.push(makeStage(cur)); cur = []; } };
     for (const s of steps) {
+        if (cur.some((c) => c.circuit === s.circuit)) close();
         cur.push(s);
         if (CELL_UPDATING.has(s.circuit) || cur.length >= MAX_CALLS_PER_TX) close();
     }

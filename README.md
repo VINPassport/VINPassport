@@ -16,26 +16,32 @@
 
 | | |
 |---|---|
-| **Contract address** | `2f66c442f14ec98ca59372e14eaa08832f71de9d4aed74aa7bb48140e5d648f5` |
-| **Deployed** | 16 October 2026, block **2999411** |
-| **Deploy transaction** | `6f4ce1692a1e1c115b4de63f3b7b6ed95f03540c9004926fb091a9bb20cebf69` |
-| **Exercised on chain** | full passport run, blocks 3000263 to 3000384, one claim refused in-circuit |
-| **Contract shape** | 14 circuits: 11 exported, 8 of them provable |
-| **This repository** | One build ahead of that address: 17 circuits, 14 exported, 10 provable. The disclosure grant circuits ([D26](docs/DECISIONS.md#settled)) reach preprod with the next deploy |
+| **Contract address** | `c9a4733e3d9187e4487014e038a99af16cad0c29fb9fc9fcaa6b0f5350ad10ac` |
+| **Deployed** | 1 November 2026, block **3228852** |
+| **Deploy transaction** | `7581acbc4822264fe2199f3de739ea11fc2fe283874fe77fc7911c5c149c248d` |
+| **Exercised on chain** | full passport run including a disclosure grant, blocks 3229920 to 3230032, one claim refused in-circuit |
+| **Contract shape** | 17 circuits: 14 exported, 10 of them provable |
+| **This repository** | The build at that address (`buildId` `a32cf3b309d8a4ac`), checked before anything submits |
 | **Check it yourself** | [`deploy/preprod.json`](deploy/preprod.json), and the indexer query under [Evaluating this repository](#evaluating-this-repository) |
 
 > **Status: pre-alpha, under active development.** The Compact contract is written, compiles and is
 > covered by tests, and the three application surfaces (verification, intake console, proof
 > explorer) run against the compiled circuits with one command (`npm run app`). The contract is
-> **deployed on Midnight preprod** (16 Oct 2026, block 2999411,
+> **deployed on Midnight preprod** (1 Nov 2026, block 3228852,
 > [`deploy/preprod.json`](deploy/preprod.json)) and has been **exercised end to end on chain**:
-> registration, five field initialisations, a delegated update and four proven claims, across
-> blocks 3000263 to 3000384, with a fifth claim refused in-circuit because the rule held. The run
+> registration, five field initialisations, a disclosure grant, a delegated update and four
+> proven claims, in eight transactions across blocks 3229920 to 3230032, with a fifth claim
+> refused in-circuit because the rule held. The run
 > **authorises a dealership to write that one vehicle, has the dealership write it, then takes
 > the authorisation back**, so a delegation's whole life cycle is on the public chain rather than
 > only in the test suite. The reading the dealership wrote stays written and stays stamped with
-> it, because revoking a grant cannot make it untrue that they wrote it. **Every circuit the
-> contract proves with has now run on a public ledger**, all eight of them.
+> it, because revoking a grant cannot make it untrue that they wrote it. The same dealership is
+> **granted the trade view** ([D26](docs/DECISIONS.md#settled)), and that grant outlives the
+> withdrawal, as the contract documents. **Nine of the ten circuits the contract proves with
+> have run on a public ledger**; `revokeDisclosure` has not yet.
+> [`scripts/chain-readback.mjs`](scripts/chain-readback.mjs) reads the address back from the
+> public indexer and checks it against the run's receipt: every field's latest commitment and
+> the grant are on chain, and neither the VIN nor any salt appears in the contract state.
 > The four proven claims cover **all three proof circuits**, including one that
 > compares two of the vehicle's own hidden fields and publishes only how far apart they are
 > allowed to be.
@@ -251,33 +257,32 @@ cat contracts/vinpassport/src/managed/vinpassport/compiler/contract-info.json
 > recompute them instead of trusting that we did.
 
 **2. The deploy is real.** The contract is live on Midnight preprod; address and transaction
-hash are committed at [`deploy/preprod.json`](deploy/preprod.json). That address holds the **Wave 2
-build of 16 October 2026**: eleven exported circuits, eight of them proved, with the registrar
-authority and the per-vehicle writer list ([D25](docs/DECISIONS.md#settled)). We paid the fee
-ourselves, out of dust this project's own wallet generates.
+hash are committed at [`deploy/preprod.json`](deploy/preprod.json). That address holds the
+**build of 1 November 2026**: fourteen exported circuits, ten of them proved, adding the
+disclosure grants ([D26](docs/DECISIONS.md#settled)) to the registrar authority and the
+per-vehicle writer list ([D25](docs/DECISIONS.md#settled)). We paid the fee ourselves, out of
+dust this project's own wallet generates.
 
-> **Whether the repository matches that address is checked, not asserted. Today it does not, on
-> purpose:** main carries the disclosure grant circuits, one build ahead of the 16 October
-> deploy, and they reach preprod with the next one.
+> **Whether the repository matches that address is checked, not asserted.**
 > `deploy/preprod.json` carries a `buildId`: a sha256 over the compiled `contract/index.js` and
-> every circuit `.bzkir`, here `0fdd47a77126b79c`. Anything about to submit compares its own
+> every circuit `.bzkir`, here `a32cf3b309d8a4ac`. Anything about to submit compares its own
 > build against it first. A circuit's verifier key is fixed at deployment, so a working tree
 > ahead of the chain produces calls the node refuses with nothing useful to say, and the check
 > turns that into one sentence before a fee is spent. Earlier addresses are kept at
 > `deploy/preprod-superseded-*.json` so they can be compared. Ask the public indexer yourself:
 
 ```bash
-curl -s -X POST https://midnight-preprod.blockfrost.io/api/v0   -H 'Content-Type: application/json'   -H "project_id: $BLOCKFROST_MIDNIGHT_PREPROD"   -d '{"query":"{ contractAction(address: \"2f66c442f14ec98ca59372e14eaa08832f71de9d4aed74aa7bb48140e5d648f5\", offset: { transactionOffset: { hash: \"6f4ce1692a1e1c115b4de63f3b7b6ed95f03540c9004926fb091a9bb20cebf69\" } }) { __typename transaction { hash block { height } } } }"}'
+curl -s -X POST https://midnight-preprod.blockfrost.io/api/v0   -H 'Content-Type: application/json'   -H "project_id: $BLOCKFROST_MIDNIGHT_PREPROD"   -d '{"query":"{ contractAction(address: \"c9a4733e3d9187e4487014e038a99af16cad0c29fb9fc9fcaa6b0f5350ad10ac\", offset: { transactionOffset: { hash: \"7581acbc4822264fe2199f3de739ea11fc2fe283874fe77fc7911c5c149c248d\" } }) { __typename transaction { hash block { height } } } }"}'
 ```
 
 > Returns a `ContractDeploy` whose transaction hash matches the committed record, in block
-> 2999411, which is what it returned when this command was last run on 16 October. The offset
+> 3228852, which is what it returned when this command was last run on 1 November. The offset
 > pins the query to that deployment; without it the indexer answers with the contract's *most
 > recent* action, which changes as the contract is called.
 >
 > **The hash in the record is the one the indexer resolves, which is not the one the
-> submitter returned.** Our submitter reported `0xc685604a...`, kept in the record as
-> `submitterReportedId`; the indexer resolves `6f4ce169...` for the same deployment. The
+> submitter returned.** Our submitter reported `0xa6b2cada...`, kept in the record as
+> `submitterReportedId`; the indexer resolves `7581acbc...` for the same deployment. The
 > Wave 1 deploy diverged the same way through ODATANO's sponsor, which returned a 33-byte
 > identifier the indexer rejects outright as not a transaction hash. Two different submission
 > paths, the same divergence, so it is the submission path and not the sponsor. Only the
@@ -579,7 +584,7 @@ line of comparison rather than two days of reading tag names.
 | SDK assumption guard | **Done.** 24 assertions against `@odatano/dpp-sdk` 0.2.0 |
 | Proving cost, the three circuits a verifier waits on | **Re-measured 14 Oct 2026 against the build deployed that day**, wasm in-process, no proof server, 32 cores, n=3 each. Build, prove and sign: `registerPassport` **17.5s** (5,229 B), `proveFieldAtMost` **27.6s** (5,567 B), `proveFieldAtLeast` **27.0s** (5,568 B). Within noise of the 13 October build (16.6s, 29.4s, 27.1s), so **the writer circuits and the two ledger collections they added cost these three nothing measurable**, which is the question re-measuring was there to answer. Registration is 3.7x Wave 1's 4.77s, the cost of the registrar identity derived in-circuit and the field commitments bound to the content root. **`initialiseField` was measured for the first time on 16 Oct and is the most expensive circuit here: 37.4s median (min 35.8 / max 53.2, n=5, 5,516 B).** It had never been timed because the three above are the ones a verifier's experience depends on, and it is the one an issuer runs most: a vehicle carrying the full 68-field registry is one registration and 68 of these, about **42.6 minutes of proving**. Batching does not reduce that, because batching removes block confirmations and not proofs. That number, rather than any wallet count, is the real ceiling on how many vehicles a day one writer can issue, and it is why [FIELDS.md](docs/FIELDS.md)'s whole-registry rule has never once been satisfied by a real vehicle. **These are the times to ISSUE a claim, paid once by whoever writes it.** A verifier reads the verdict off the ledger and waits on a query, never on a proof, which is why a proven claim is recorded rather than re-proven on demand ([D19](docs/DECISIONS.md#settled)). DUST cost per anchor and per proof was **measured on 14 Oct 2026** against the deployed contract with real proofs, and is published in [BUILD-SCOPE](docs/BUILD-SCOPE.md); latency is not cost |
 | Provable-field registry, 32 slots | **Settled** ([FIELDS.md](docs/FIELDS.md)). 26 in use, reserve 17 to 21, and 31. Slots 0 to 16 are wired end to end and provable; the rest are salted into the content root but carry no rule yet |
-| Deployment to Midnight preprod | **Done. The Wave 2 contract is live (16 Oct 2026), block 2999411.** Built, proven, signed and paid for locally: the fee came out of our own dust ([D24](docs/DECISIONS.md#settled)), not a sponsor. Address and the indexer-resolvable tx hash committed at [`deploy/preprod.json`](deploy/preprod.json), with a `buildId` fingerprinting the artefacts that address holds, so a working tree ahead of the chain is caught before a fee is spent. Earlier addresses kept alongside it as `preprod-superseded-*.json` |
+| Deployment to Midnight preprod | **Done. The contract with disclosure grants is live (1 Nov 2026), block 3228852**, exercised by a full run in blocks 3229920 to 3230032 and read back from the public indexer by [`scripts/chain-readback.mjs`](scripts/chain-readback.mjs). The Wave 2 contract of 16 Oct 2026 is archived as superseded. Built, proven, signed and paid for locally: the fee came out of our own dust ([D24](docs/DECISIONS.md#settled)), not a sponsor. Address and the indexer-resolvable tx hash committed at [`deploy/preprod.json`](deploy/preprod.json), with a `buildId` fingerprinting the artefacts that address holds, so a working tree ahead of the chain is caught before a fee is spent. Earlier addresses kept alongside it as `preprod-superseded-*.json` |
 | Frontend: verification, intake console, proof explorer | **Done.** Three surfaces against the compiled circuits (`npm run app`), live for anyone at [passport.vin](https://passport.vin/) |
 | Live preprod runs from the browser | **Built, not currently hosted.** `/demo/` and the intake console write real transactions to the deployed contract, paying their own DUST ([D24](docs/DECISIONS.md#settled)), capped per UTC day, every hash linking to the [preprod explorer](https://preprod.midnightexplorer.com). The host that served them was cancelled on 10 Oct 2026, so the page now reports that preprod runs are unavailable rather than pretending otherwise. `npm run app` runs the same path locally |
 | CAP service layer | **Not in this submission, and not in Wave 2.** See [D20](docs/DECISIONS.md#settled) |

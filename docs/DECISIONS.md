@@ -477,10 +477,11 @@ the receiving identity is wrong or its secret is lost, and nothing is recoverabl
 per-vehicle writer list gets the life cycle without that risk, and `allowedRegistrars` remains
 fixed at deployment as [D23](#settled) describes.
 
-**Status: deployed 14 October 2026, redeployed 16 October with the two-field circuit**, at
-`2f66c442f14ec98ca59372e14eaa08832f71de9d4aed74aa7bb48140e5d648f5`, block 2999411, fee paid from
-our own dust. The addresses before it, the seven-export build of 13 October and the ten-export build of 14
-October, are archived at
+**Status: deployed 14 October 2026, redeployed 16 October with the two-field circuit, and
+redeployed 1 November with the disclosure grants ([D26](#settled))**, at
+`c9a4733e3d9187e4487014e038a99af16cad0c29fb9fc9fcaa6b0f5350ad10ac`, block 3228852, fee paid from
+our own dust. The addresses before it, the seven-export build of 13 October, the ten-export build
+of 14 October and the eleven-export build of 16 October, are archived at
 `deploy/preprod-superseded-*.json`.
 
 Deploying meant a new address, a new guided run and re-measuring, which is why it was taken as its
@@ -565,8 +566,9 @@ and Annex V 4.2.3 rules one out. Granting again replaces the tier; revoking a gr
 exist is refused; a grant never confers write access, because `writerFor` never reads `grants`.
 A bundle may name its audience (`audienceId`), and the reader then reports whether the ledger
 shows that identity holding a grant that covers the bundle's tier. A missing grant is reported,
-not failed, for the reason over-disclosure is: the values still open their commitments. On preprod
-with the next deployment.
+not failed, for the reason over-disclosure is: the values still open their commitments. *On
+preprod 1 Nov*: the guided run granted the dealership the trade view in block 3229987, and the
+chain readback found that grant at `trade` after the dealership's write access was withdrawn.
 
 **Who grants: the registrar, for now.** The keeper is arguably the party whose consent matters,
 but the contract has no keeper identity and adding one is a larger change. Keeper consent is a

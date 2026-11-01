@@ -13,6 +13,9 @@
  *     removed. The counter was a single always-populated cell, so bumping it
  *     closed the transaction and a vehicle carrying sixty fields cost sixty
  *     transactions. Nothing read the number except a display.
+ *     And no transaction carries two calls to one circuit: the batch is put
+ *     in order by circuit name, so two such calls can be swapped, and the
+ *     swapped one runs out of the gas it was costed for (1010/104).
  *
  *  2. Arming. nightgate-tx runs per-call `before` hooks only for a BATCH; a
  *     single call is proven with the witnesses exactly as they stand. An
@@ -53,37 +56,61 @@ test('a cell-updating call is always last in its transaction', () => {
     }
 });
 
-test('initialisations batch with the register, and only an update breaks the run', () => {
+test('a second call to the same circuit starts a new transaction', () => {
     const plan = planCalls({
         fields: { odometerKm: 10, accidentCount: 0, ownerCount: 1 },
         updates: [{ odometerKm: 20 }],
         prove: { noAccidents: true, mileageUnder: 100 }
     });
     assert.deepEqual(kinds(plan), [
-        // Register, every initialisation AND the update now share one
-        // transaction. The update overwrites a commitment so it must come
-        // last, and here it already does. This was five transactions before
-        // the counter came out.
-        ['register', 'init', 'init', 'init', 'update'],
-        ['claim', 'claim']      // claims touch no populated cell either
+        // Different circuits still share a transaction, and the update still
+        // comes last in its own. Two initialisations, or two claims through
+        // the same circuit, never share one: nightgate-tx orders a batch by
+        // circuit name, so it could swap them, and a swapped call runs
+        // against state its gas was not costed for (1010/104).
+        ['register', 'init'],
+        ['init'],
+        ['init', 'update'],
+        ['claim'],
+        ['claim']
     ]);
 });
 
-test('a large field set costs transactions in batches, not one per field', () => {
-    // The reason the counter had to go. Sixty fields was sixty transactions;
-    // now it is however many MAX_CALLS_PER_TX allows, plus the register.
-    // Eleven keeps this well inside MAX_CALLS_PER_RUN whatever that is.
-    // That cap is ours, to bound the wall clock, and the chain has no such
-    // limit: the point here is the ratio, not the number.
+test('no transaction carries two calls to one circuit', () => {
+    const fields = {};
+    for (let i = 0; i < 11; i++) fields['f' + i] = i;
+    const intakes = [
+        { fields, prove: {} },
+        { fields: {}, prove: { noAccidents: true, neverWrittenOff: true, oneKeeper: true, mileageUnder: 9 } },
+        // The guided run's setup: five fields, a writer and a grant.
+        {
+            fields: { odometerKm: 1, accidentCount: 0, ownerCount: 2, serviceCount: 6, lastServiceOdometerKm: 1 },
+            authorise: [{ label: 'dealership', id: new Uint8Array(32) }],
+            grants: [{ label: 'dealership', id: new Uint8Array(32), tier: 'trade' }],
+            updates: [{ odometerKm: 2, by: 'dealership' }],
+            prove: { mileageUnder: 100, noAccidents: true }
+        }
+    ];
+    for (const intake of intakes) {
+        for (const stage of planCalls(intake)) {
+            const circuits = stage.steps.map((s) => s.circuit);
+            assert.equal(new Set(circuits).size, circuits.length, `two calls to one circuit in [${circuits.join(', ')}]`);
+            assert.ok(stage.steps.length <= MAX_CALLS_PER_TX);
+        }
+    }
+});
+
+test('a large field set costs one transaction per field, the first shared with the register', () => {
+    // The counter that once made this sixty transactions for sixty fields is
+    // gone, and batching them is unsafe for the reason above until
+    // nightgate-tx matches same-circuit calls to their build order.
+    // MAX_CALLS_PER_RUN was already sized for one call per transaction.
     const fields = {};
     for (let i = 0; i < 11; i++) fields['f' + i] = i;
     const plan = planCalls({ fields, prove: {} });
     const calls = plan.reduce((n, st) => n + st.steps.length, 0);
     assert.equal(calls, 12, 'one register plus eleven initialisations');
-    assert.equal(plan.length, 2, 'twelve calls is two transactions, not twelve');
-    for (const stage of plan) {
-        assert.ok(stage.steps.length <= MAX_CALLS_PER_TX);
-    }
+    assert.equal(plan.length, 11, 'the register rides with the first initialisation');
 });
 
 test('a grant is planned after the passport exists, batches, and carries the contract\'s tier index', () => {
@@ -110,10 +137,11 @@ test('a grant for a tier the contract does not have is refused before anything r
         /unknown tier "public"/);
 });
 
-test('a claims-only intake is a single transaction', () => {
+test('claims through one circuit take a transaction each', () => {
+    // All four are proveFieldAtMost, so only the first can ride with the register.
     const plan = planCalls({ fields: {}, prove: { noAccidents: true, neverWrittenOff: true, oneKeeper: true, mileageUnder: 9 } });
-    assert.equal(plan.length, 1, 'four claims and a register fit one transaction');
-    assert.equal(plan[0].steps.length, 5);
+    assert.equal(plan.length, 4);
+    assert.deepEqual(kinds(plan)[0], ['register', 'claim']);
 });
 
 test('the witness holder refuses to be read before a call arms it', () => {
