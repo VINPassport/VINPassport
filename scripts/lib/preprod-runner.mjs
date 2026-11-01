@@ -48,13 +48,14 @@ import { ZswapSecretKeys, DustSecretKey, Transaction } from '@midnight-ntwrk/led
 import { Contract } from '../../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
 import {
     PassportSimulator, hex,
-    FIELDS, K, vinHash as vinHashOf, contentRoot, PANEL
+    FIELDS, K, contentRoot, PANEL
 } from './scenario.mjs';
 import {
     CLAIM_DEFS, claimLabel, planCalls, makeStage, stepLabel, makeWitnessHolder, randomDemoVin
 } from './preprod-plan.mjs';
 import { dryRunStages } from './preprod-dryrun.mjs';
-import { preprodEndpoints, publicPreprodEndpoints, assertNoSecrets, guardLogs } from './endpoints.mjs';
+import { networkEndpoints, publicEndpoints, checkNetwork, assertNoSecrets, guardLogs } from './endpoints.mjs';
+import { loadVinKeys, vinKey, VINKEY_SCHEME } from './vin-key.mjs';
 
 // Before anything connects: the indexer credential travels in every URL,
 // and a library that logs a URL logs the credential.
@@ -84,18 +85,19 @@ export function proofReusable(atBuild, now) {
 }
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const NETWORK_ID = 'preprod';
+// Preprod unless mainnet is named explicitly, the same variable self-fund reads.
+const NETWORK_ID = checkNetwork(process.env.VINPASSPORT_NETWORK_ID ?? 'preprod');
 // Resolved on first use, not at import: this module is imported dynamically
 // by the app server, and a missing Blockfrost project id should fail on the
-// preprod path rather than take down a local run that never touches preprod.
+// network path rather than take down a local run that never touches a network.
 let _ep = null;
-const EP = () => (_ep ??= preprodEndpoints());
+const EP = () => (_ep ??= networkEndpoints(NETWORK_ID));
 const NODE_HTTP = () => EP().nodeHttpUrl;
 const NODE_WS = () => EP().nodeWsUrl;
 const INDEXER_HTTP = () => EP().indexerHttpUrl;
 // Reader-facing strings are built from these, never from EP(): see the receipt's
 // verify block, and assertNoSecrets() which enforces it.
-const PUBLIC_EP = publicPreprodEndpoints();
+const PUBLIC_EP = publicEndpoints(NETWORK_ID);
 const INDEXER_WS = () => EP().indexerWsUrl;
 const ZK_CONFIG_DIR = join(ROOT, 'contracts', 'vinpassport', 'src', 'managed', 'vinpassport');
 // Time budgets.
@@ -280,7 +282,7 @@ export async function createRunner({ log = console.log } = {}) {
     // is at it. A verifier key is fixed at deployment, so a call built from a
     // different build is rejected by the node with nothing that points at the
     // cause. Stop here instead, before a fee is spent.
-    const deployRecord = JSON.parse(readFileSync(join(ROOT, 'deploy', 'preprod.json'), 'utf8'));
+    const deployRecord = JSON.parse(readFileSync(join(ROOT, 'deploy', `${NETWORK_ID}.json`), 'utf8'));
     const contractAddress = deployRecord.contractAddress;
     const built = matchesDeployed(deployRecord);
     if (!built.ok) throw new Error(`this build is not the deployed contract:\n   ${built.reason}`);
@@ -948,9 +950,12 @@ export async function createRunner({ log = console.log } = {}) {
         const runSeed = randomBytes(32);
         const saltFn = (label) => b2b(Uint8Array.from([...runSeed, ...utf8(label)]));
         const vin = intake.vin;
-        const vinBytes = vinHashOf(vin);
+        // The ledger key is derived under this network's vin key, never a
+        // plain hash of the VIN, and there is no fallback: without the key
+        // this throws before anything is built or sent (scripts/lib/vin-key.mjs).
+        const vinBytes = vinKey(vin, loadVinKeys(NETWORK_ID));
         const regId = registrarIdBytes;
-        const croot = contentRoot(vin, intake.fields ?? {}, intake.panel ?? {}, saltFn);
+        const croot = contentRoot(vin, intake.fields ?? {}, intake.panel ?? {}, saltFn, hex(vinBytes));
 
         // Every write's value+salt, per field, in order; claims open the last.
         const writes = {};
@@ -1503,7 +1508,7 @@ export async function createRunner({ log = console.log } = {}) {
                 + 'handing over the rest, emit a disclosure: node scripts/disclose.mjs <this file> <field>',
             network: NETWORK_ID, contractAddress,
             kind: job.kind, finishedAt: new Date().toISOString(),
-            vin, vinHash: hex(vinBytes),
+            vin, vinHash: hex(vinBytes), vinHashScheme: VINKEY_SCHEME,
             registrar: { name: intake.registrar, id: hex(regId) },
             contentRoot: hex(croot),
             //

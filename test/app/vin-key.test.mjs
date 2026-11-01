@@ -12,8 +12,11 @@
  *     later, and both have to land on the same key.
  *  3. No keyless path. Without a key the module throws. It never returns a
  *     derivation of the VIN alone.
- *  4. The rule until the key is wired in: network runs write only fresh,
- *     server-generated demo VINs, never a VIN a caller supplied.
+ *  4. Network runs write only fresh, server-generated demo VINs, never a VIN
+ *     a caller supplied. The key is wired in now; real VINs wait for a writer.
+ *  5. The network write path is keyed: the runner derives every ledger key
+ *     with this module, names the scheme in its receipt, and readers that
+ *     cannot recompute a keyed hash say so instead of failing it.
  *
  * Tests marked REPOSITORY ASSERTION read source rather than run it. They are a
  * tripwire for paths that cannot run without a funded wallet, and they are a
@@ -28,10 +31,13 @@ import { join, extname, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ristretto255_oprf } from '@noble/curves/ed25519.js';
 import {
-    vinKey, vinKeyHex, vinKeyPair, loadVinKeys, evaluate, normaliseVin, NETWORKS
+    vinKey, vinKeyHex, vinKeyPair, loadVinKeys, evaluate, normaliseVin, NETWORKS, VINKEY_SCHEME
 } from '../../scripts/lib/vin-key.mjs';
 import { validateManualIntake, randomDemoVin } from '../../scripts/lib/preprod-runner.mjs';
-import { vinHash } from '../../scripts/lib/scenario.mjs';
+import { vinHash, contentRoot } from '../../scripts/lib/scenario.mjs';
+import {
+    buildBundle, verifyBundle, buildDisclosure, verifyDisclosure, PLAIN_VIN_SCHEME
+} from '../../scripts/lib/disclosure.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const hex = (u) => Array.from(u, (b) => b.toString(16).padStart(2, '0')).join('');
@@ -204,6 +210,67 @@ test('REPOSITORY ASSERTION: every VIN the preprod runner builds is a fresh demo 
     assert.ok(assignments.length >= 2, `expected the manual and guided routes, found ${assignments.length}`);
     for (const rhs of assignments) {
         assert.match(rhs, /^randomDemoVin\(\)/,
-            `a network run sets vin from "${rhs}"; it must be randomDemoVin() until vin-key.mjs is wired in`);
+            `a network run sets vin from "${rhs}"; it must be randomDemoVin() until a real writer is onboarded`);
     }
+});
+
+// ---------------------------------------------------------------- 5. the network write path is keyed
+
+const KEYS = vinKeyPair(SEED_A, 'preprod');
+const keyedReceipt = () => {
+    const key = vinKeyHex(VIN, KEYS);
+    return {
+        network: 'preprod', contractAddress: '00'.repeat(32),
+        vin: VIN, vinHash: key, vinHashScheme: VINKEY_SCHEME,
+        contentRoot: hex(contentRoot(VIN, { odometerKm: 1000 }, {}, undefined, key)),
+        fields: { odometerKm: [{ writeIndex: 0, value: '1000', salt: '33'.repeat(32) }] }
+    };
+};
+
+test('REPOSITORY ASSERTION: the runner keys every vehicle with the vin key and names the scheme', () => {
+    const src = readFileSync(join(ROOT, 'scripts/lib/preprod-runner.mjs'), 'utf8');
+    assert.match(src, /const vinBytes = vinKey\(vin, loadVinKeys\(NETWORK_ID\)\);/);
+    assert.match(src, /vinHash: hex\(vinBytes\), vinHashScheme: VINKEY_SCHEME/);
+    assert.match(src, /contentRoot\([^)]*, hex\(vinBytes\)\)/, 'the content root names a key other than the ledger\'s');
+    assert.ok(!/vinHash as vinHashOf/.test(src), 'the plain VIN hash is imported into the network runner again');
+});
+
+test('the content root names whichever vehicle key it is given', () => {
+    const key = vinKeyHex(VIN, KEYS);
+    const plain = hex(vinHash(VIN));
+    assert.equal(hex(contentRoot(VIN, { odometerKm: 1 })), hex(contentRoot(VIN, { odometerKm: 1 }, {}, undefined, plain)),
+        'the default changed: the simulator\'s roots would move');
+    assert.notEqual(hex(contentRoot(VIN, { odometerKm: 1 }, {}, undefined, key)), hex(contentRoot(VIN, { odometerKm: 1 })));
+});
+
+test('a keyed bundle names its scheme, and a reader reports the VIN unchecked rather than wrong', () => {
+    const bundle = buildBundle(keyedReceipt(), 'authority', { fields: ['odometerKm'] });
+    assert.equal(bundle.vinHashScheme, VINKEY_SCHEME);
+    assert.equal(bundle.vin, VIN);
+    const r = verifyBundle(bundle);
+    assert.equal(r.vinMatchesHash, null);
+    assert.ok(!r.problems.some((p) => /vin does not hash/.test(p)), 'a keyed VIN was failed as if it were a plain hash');
+});
+
+test('a plain receipt still names the plain scheme and is still checked', () => {
+    const plain = { ...keyedReceipt(), vinHash: hex(vinHash(VIN)) };
+    delete plain.vinHashScheme;
+    const bundle = buildBundle(plain, 'authority', { fields: ['odometerKm'] });
+    assert.equal(bundle.vinHashScheme, PLAIN_VIN_SCHEME);
+    assert.equal(verifyBundle(bundle).vinMatchesHash, true);
+    assert.equal(verifyBundle({ ...bundle, vin: 'WAUZZZF47GA067891' }).vinMatchesHash, false);
+});
+
+test('a keyed v1 disclosure carries its scheme and is not failed on the VIN', () => {
+    const d = buildDisclosure(keyedReceipt(), ['odometerKm']);
+    assert.equal(d.vinHashScheme, VINKEY_SCHEME);
+    const r = verifyDisclosure(d);
+    assert.ok(!r.problems.some((p) => /vin does not hash/.test(p)), 'a keyed VIN was failed as if it were a plain hash');
+});
+
+test('a keyed receipt without its vinHash is refused, never recomputed as a plain hash', () => {
+    const r = keyedReceipt();
+    delete r.vinHash;
+    assert.throws(() => buildBundle(r, 'authority', { fields: ['odometerKm'] }), /cannot be recomputed/);
+    assert.throws(() => buildDisclosure(r, ['odometerKm']), /cannot be recomputed/);
 });

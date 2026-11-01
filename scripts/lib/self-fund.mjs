@@ -40,7 +40,11 @@ import { UnshieldedWallet, createKeystore, PublicKey } from '@midnightntwrk/wall
 import { DustWallet } from '@midnightntwrk/wallet-sdk-dust-wallet';
 import { makeWasmProvingService } from '@midnightntwrk/wallet-sdk-capabilities';
 import { ZswapSecretKeys, DustSecretKey, Transaction } from '@midnight-ntwrk/ledger-v8';
-import { preprodEndpoints, guardLogs } from './endpoints.mjs';
+import { networkEndpoints, checkNetwork, guardLogs } from './endpoints.mjs';
+
+// One selector for the whole run: the deploy script sets it from --network,
+// and the endpoints and the wallet's network id must name the same network.
+const runNetwork = () => checkNetwork(process.env.VINPASSPORT_NETWORK_ID ?? 'preprod');
 
 // Before anything connects: the indexer credential travels in every URL,
 // and a library that logs a URL logs the credential.
@@ -150,8 +154,8 @@ export async function openFacade({
 } = {}) {
     if (!seedHex || seedHex.length !== 128) throw new Error('needs a 128-hex seed');
 
-    const EP = preprodEndpoints();
-    const NETWORK_ID = process.env.VINPASSPORT_NETWORK_ID ?? 'preprod';
+    const NETWORK_ID = runNetwork();
+    const EP = networkEndpoints(NETWORK_ID);
 
     const dustBlobPath = join(dustStateDir, 'dust.blob');
     if (!existsSync(dustBlobPath)) {
@@ -226,7 +230,7 @@ export async function payFromOwnDust({
 } = {}) {
     if (!finalizedTxB64) throw new Error('needs the finalized (bound) transaction as base64');
 
-    const EP = preprodEndpoints();
+    const EP = networkEndpoints(runNetwork());
     const { facade, zswapKeys, dustKey } = await openFacade({ seedHex, dustStateDir, log });
 
     try {

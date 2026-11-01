@@ -66,8 +66,25 @@ function pad32(s) {
     return out;
 }
 
-/** blake2b-256 of the VIN, which is how the ledger keys a passport. */
+/** blake2b-256 of the VIN, which is how the local simulator keys a passport. */
 export const vinHashOf = (vin) => b2b(utf8(String(vin)));
+
+/**
+ * The one scheme a reader can recompute offline from a VIN. A receipt that
+ * names no scheme predates the field and used this one. Network runs key
+ * vehicles with scripts/lib/vin-key.mjs instead, which needs the network key.
+ */
+export const PLAIN_VIN_SCHEME = 'blake2b-256';
+const schemeOf = (doc) => doc?.vinHashScheme ?? PLAIN_VIN_SCHEME;
+
+/** The receipt's vehicle key, recomputed from the VIN only where that is possible. */
+function vinHashOfReceipt(receipt) {
+    if (receipt.vinHash) return receipt.vinHash;
+    if (schemeOf(receipt) !== PLAIN_VIN_SCHEME) {
+        throw new Error(`receipt has no vinHash, and a ${schemeOf(receipt)} key cannot be recomputed from the VIN`);
+    }
+    return hex(vinHashOf(receipt.vin));
+}
 
 /** blake2b-256 of the field's name, which is how a slot names its field. */
 export const fieldKeyOf = (name) => b2b(utf8(String(name)));
@@ -117,7 +134,7 @@ export function buildDisclosure(receipt, fieldNames, { writeIndex = 'latest', in
     const wanted = Array.isArray(fieldNames) ? fieldNames : [fieldNames];
     if (!wanted.length) throw new Error('name at least one field to disclose');
 
-    const vinHash = receipt.vinHash ?? hex(vinHashOf(receipt.vin));
+    const vinHash = vinHashOfReceipt(receipt);
     const fields = [];
 
     for (const name of wanted) {
@@ -169,6 +186,7 @@ export function buildDisclosure(receipt, fieldNames, { writeIndex = 'latest', in
         // Pass `{ includeVin: false }` when the disclosure will travel further
         // than the person who asked for it.
         ...(includeVin && receipt.vin ? { vin: receipt.vin } : {}),
+        ...(schemeOf(receipt) !== PLAIN_VIN_SCHEME ? { vinHashScheme: schemeOf(receipt) } : {}),
         vinHash,
         contentRoot: receipt.contentRoot,
         fields
@@ -228,7 +246,8 @@ export function verifyDisclosure(disclosure, onChain = () => null) {
         if (disclosure && banned in disclosure) problems.push(`disclosure carries '${banned}', which it must not`);
     }
 
-    const vinOk = disclosure?.vin
+    // Only a plain hash can be recomputed here; a keyed one is reported unchecked.
+    const vinOk = disclosure?.vin && schemeOf(disclosure) === PLAIN_VIN_SCHEME
         ? hex(vinHashOf(disclosure.vin)) === String(disclosure.vinHash).replace(/^0x/, '')
         : null;
     if (vinOk === false) problems.push('vin does not hash to vinHash');
@@ -301,7 +320,7 @@ export function buildBundle(receipt, tier, { fields: named, claims = [], audienc
     if (audienceId !== undefined && !HEX32.test(String(audienceId))) throw new Error(`'${audienceId}' is not an identity`);
 
     const opened = chosen.length ? buildDisclosure(receipt, chosen, { includeVin: false }).fields : [];
-    const vinHash = receipt.vinHash ?? hex(vinHashOf(receipt.vin));
+    const vinHash = vinHashOfReceipt(receipt);
     return {
         kind: BUNDLE_KIND,
         policy: POLICY_VERSION,
@@ -313,7 +332,7 @@ export function buildBundle(receipt, tier, { fields: named, claims = [], audienc
             + 'public ledger and reveals a bound, never a value.',
         network: receipt.network ?? 'preprod',
         contractAddress: receipt.contractAddress,
-        vinHashScheme: 'blake2b-256',
+        vinHashScheme: schemeOf(receipt),
         ...(vinAllowed(tier) && receipt.vin ? { vin: receipt.vin } : {}),
         vinHash,
         contentRoot: receipt.contentRoot,
@@ -353,7 +372,7 @@ export function verifyBundle(bundle, { commitmentAt = () => null, claimAt = () =
     if (bundle?.vin) {
         if (tier && !vinAllowed(tier)) overDisclosed.push('VIN');
         // A scheme this reader cannot compute offline is reported, not guessed.
-        if (bundle.vinHashScheme === 'blake2b-256') {
+        if (bundle.vinHashScheme === PLAIN_VIN_SCHEME) {
             vinMatchesHash = hex(vinHashOf(bundle.vin)) === bare(bundle.vinHash);
             if (!vinMatchesHash) problems.push('vin does not hash to vinHash');
         }

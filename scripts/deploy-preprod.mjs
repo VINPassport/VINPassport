@@ -31,7 +31,7 @@
  *   NIGHTGATE_BASE_URL             optional, defaults to https://api.nightgate.dev
  *
  * On success the public record of the deployment is written to
- * `deploy/preprod.json` holds the address and transaction hash only, both public by
+ * `deploy/<network>.json` holds the address and transaction hash only, both public by
  * definition. Commit it: the scan page's live source and every verifier
  * instruction will point at it.
  *
@@ -45,14 +45,26 @@ import { connect, createTxBuilder } from '@odatano/nightgate-tx';
 import { Contract, pureCircuits } from '../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
 import { buildId } from './lib/build-id.mjs';
 import { readRegistrarSlots, REGISTRAR_ROLES } from './lib/registrar-slots.mjs';
-import { preprodEndpoints, redacted, guardLogs } from './lib/endpoints.mjs';
+import { networkEndpoints, checkNetwork, redacted, guardLogs } from './lib/endpoints.mjs';
+import { loadVinKeys } from './lib/vin-key.mjs';
 
 // Before anything connects: the indexer credential travels in every URL,
 // and a library that logs a URL logs the credential.
 guardLogs();
 import { localCredential, credentialPath } from './lib/local-credentials.mjs';
 
-const EP = preprodEndpoints();
+// Which network. Preprod unless mainnet is named, by `--network mainnet` or by
+// VINPASSPORT_NETWORK_ID, the variable the runner and self-fund also read, so
+// every step of one run agrees. The guards on mainnet are further down, once
+// the mode flags are known.
+const networkAt = process.argv.indexOf('--network');
+const NETWORK = checkNetwork(networkAt === -1
+    ? (process.env.VINPASSPORT_NETWORK_ID ?? 'preprod')
+    : process.argv[networkAt + 1]);
+process.env.VINPASSPORT_NETWORK_ID = NETWORK;
+const RECORD = `deploy/${NETWORK}.json`;
+
+const EP = networkEndpoints(NETWORK);
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const MANAGED = join(ROOT, 'contracts', 'vinpassport', 'src', 'managed', 'vinpassport');
@@ -115,7 +127,9 @@ const sponsorFileAt = process.argv.indexOf('--sponsor-file');
 const SPONSOR_FILE = sponsorFileAt === -1 ? null : process.argv[sponsorFileAt + 1];
 
 const REDEPLOY = process.argv.includes('--redeploy');
-const SECRETS = join(ROOT, '..', '_local-tracking', 'REGISTRAR-SECRETS.env');
+// Mainnet pins its own registrars: the preprod demo secrets are never read for it.
+const SECRETS = join(ROOT, '..', '_local-tracking',
+    NETWORK === 'mainnet' ? 'REGISTRAR-SECRETS.mainnet.env' : 'REGISTRAR-SECRETS.env');
 
 const fail = (msg) => { console.error(`\nSTOP: ${msg}`); process.exit(1); };
 
@@ -165,6 +179,20 @@ const sponsorSessionId = localCredential('NIGHTGATE_SPONSOR_SESSION_ID', 'ODATAN
 // a transaction locally would be asking for a secret that the work does not
 // use.
 const NEEDS_SPONSOR = (SUBMIT && !EMIT && !SELF_FUND) || Boolean(SPONSOR_FILE);
+
+// Mainnet is narrow on purpose. Only our own dust pays for it: NIGHTGATE does
+// not submit to mainnet, so a sponsored or emitted mode can only fail later and
+// less clearly. And a mainnet contract is not deployed until the vin key that
+// will key its vehicles exists, because a public ledger cannot unpublish and
+// the first write must already be keyed (scripts/lib/vin-key.mjs).
+if (NETWORK === 'mainnet') {
+    if (NEEDS_SPONSOR || EMIT || EMIT_BOUND) {
+        fail('mainnet is self-funded only. Pass --self-fund; no sponsor submits to mainnet.');
+    }
+    if (SUBMIT) {
+        try { loadVinKeys('mainnet'); } catch (e) { fail(`mainnet needs its vin key before a contract exists to write to. ${e.message}`); }
+    }
+}
 
 if (NEEDS_SPONSOR && !gatewayKey && !legacyAgentToken) {
     fail([
@@ -261,13 +289,13 @@ if (SPONSOR_FILE) {
     await recordConfirmedDeploy(landed, fileOut.txHash);
     console.log(`\nDEPLOYED  ${landed}`);
     console.log(`tx        ${fileOut.txHash}`);
-    console.log(`recorded  deploy/preprod.json - commit it.`);
+    console.log(`recorded  ${RECORD} - commit it.`);
     process.exit(0);
 }
 
-const outPath = join(ROOT, 'deploy', 'preprod.json');
+const outPath = join(ROOT, 'deploy', `${NETWORK}.json`);
 if (existsSync(outPath) && SUBMIT && !REDEPLOY) {
-    fail(`deploy/preprod.json already exists - a contract is already deployed. ` +
+    fail(`${RECORD} already exists - a contract is already deployed. ` +
         `The grant allows 2 deploys total and a redeploy is an EMPTY ledger. ` +
         `Pass --redeploy as well if that is genuinely intended; the existing ` +
         `record is archived rather than lost, so the old address stays quotable.`);
@@ -294,7 +322,7 @@ try {
 
 // ---------------------------------------------------------------- build
 
-console.log(`network   preprod`);
+console.log(`network   ${NETWORK}`);
 console.log(`sponsor   ${NEEDS_SPONSOR
     ? `${baseUrl} (${sponsorSessionId ? `session ${sponsorSessionId.slice(0, 8)}...` : 'treasury pool session, chosen by the server'}, ${gatewayKey ? 'gateway key' : 'legacy agent token'})`
     : 'none needed for this mode; nothing is sponsored here'}`);
@@ -399,7 +427,7 @@ function recordDeploy(contractAddress, txHash, confirmed = null) {
     // identifier is kept for traceability but never presented as the tx hash.
     const published = confirmed?.txHash ?? txHash;
     writeFileSync(outPath, JSON.stringify({
-        network: 'preprod',
+        network: NETWORK,
         contractAddress,
         txHash: published,
         ...(confirmed?.blockHeight ? { blockHeight: confirmed.blockHeight } : {}),
@@ -424,7 +452,7 @@ function recordDeploy(contractAddress, txHash, confirmed = null) {
 
 const builder = await createTxBuilder({
     seedHex: seed,
-    networkId: 'preprod',
+    networkId: NETWORK,
     indexerHttpUrl: EP.indexerHttpUrl,
     indexerWsUrl: EP.indexerWsUrl,
     nodeUrl: EP.nodeWsUrl,
@@ -516,7 +544,7 @@ try {
         console.log(`\nDEPLOYED  ${deploy.contractAddress}`);
         console.log(`tx        ${paid.txHash}`);
         console.log(`fee paid  from our own dust (${paid.dustBefore} before)`);
-        console.log(`recorded  deploy/preprod.json - commit it.`);
+        console.log(`recorded  ${RECORD} - commit it.`);
         process.exit(0);
     }
 
@@ -571,7 +599,7 @@ try {
 
     console.log(`\nDEPLOYED  ${deploy.contractAddress}`);
     console.log(`tx        ${out.txHash}`);
-    console.log(`recorded  deploy/preprod.json - commit it.`);
+    console.log(`recorded  ${RECORD} - commit it.`);
 } finally {
     await builder.close?.();
 }

@@ -1,5 +1,6 @@
 /**
- * Where preprod lives, in one place.
+ * Where each network lives, in one place: preprod, and mainnet when it is
+ * chosen explicitly. Nothing defaults to mainnet.
  *
  * Midnight decommissioned `indexer.preprod.midnight.network` on 2026-10-09
  * and moved the preprod and mainnet indexers to Blockfrost. The old host now
@@ -44,61 +45,97 @@ import { inspect } from 'node:util';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const TOKEN_FILE = join(HERE, '..', '..', '..', '_local-tracking', 'BLOCKFROST.env');
-const TOKEN_VAR = 'BLOCKFROST_MIDNIGHT_PREPROD';
 
 const MIGRATION = 'https://docs.midnight.network/guides/networks-and-environments';
 
 /**
- * The Blockfrost project id for Midnight Preprod.
+ * The networks this repository can reach. Each has its own Blockfrost project
+ * id, and the network id string is the one the wallet SDK expects
+ * (wallet-sdk-address-format maps 'mainnet' to its mainnet symbol).
+ */
+export const NETWORKS = Object.freeze(['preprod', 'mainnet']);
+
+/** Throws on anything but a known network, so a typo cannot pick a default. */
+export function checkNetwork(network) {
+    if (!NETWORKS.includes(network)) {
+        throw new Error(`unknown network "${network}", expected one of ${NETWORKS.join(', ')}`);
+    }
+    return network;
+}
+
+const tokenVar = (network) => `BLOCKFROST_MIDNIGHT_${checkNetwork(network).toUpperCase()}`;
+
+/**
+ * The Blockfrost project id for one Midnight network, preprod by default.
  *
  * A project id is scoped to one network, so the preprod id will not work
- * against mainnet and vice versa.
+ * against mainnet and vice versa, and each is read from its own variable.
  */
-export function blockfrostToken({ required = true } = {}) {
-    const fromEnv = process.env[TOKEN_VAR]?.trim();
+export function blockfrostToken({ required = true, network = 'preprod' } = {}) {
+    const name = tokenVar(network);
+    const fromEnv = process.env[name]?.trim();
     if (fromEnv) return fromEnv;
 
     if (existsSync(TOKEN_FILE)) {
         const line = readFileSync(TOKEN_FILE, 'utf8')
             .split(/\r?\n/)
-            .find((l) => l.startsWith(`${TOKEN_VAR}=`));
-        const value = line?.slice(TOKEN_VAR.length + 1).trim();
+            .find((l) => l.startsWith(`${name}=`));
+        const value = line?.slice(name.length + 1).trim();
         if (value) return value;
     }
 
     if (!required) return null;
     throw new Error(
-        `${TOKEN_VAR} is not set, and preprod cannot be reached without it.\n`
-        + `  Midnight retired its own preprod indexer on 2026-10-09; access is now through\n`
+        `${name} is not set, and ${network} cannot be reached without it.\n`
+        + `  Midnight retired its own indexers on 2026-10-09; access is now through\n`
         + `  Blockfrost, with one project per network. Put the project id in\n`
-        + `  ${TOKEN_FILE}\n  as ${TOKEN_VAR}=<id>, or set it in the environment.\n`
+        + `  ${TOKEN_FILE}\n  as ${name}=<id>, or set it in the environment.\n`
         + `  ${MIGRATION}`
     );
 }
 
+/** Every configured project id, whichever network it belongs to. */
+const allTokens = () => NETWORKS.map((network) => blockfrostToken({ required: false, network }))
+    .filter((t) => typeof t === 'string' && t.trim().length >= 8)
+    .map((t) => t.trim());
+
 /**
- * Preprod endpoints, authenticated. Throws if the project id is missing.
+ * Hosts per network, before the project id is attached.
  *
- * The RPC host takes a WebSocket upgrade on its root (verified 101) and has
- * no separate `/ws` path, unlike the indexer.
+ * The RPC host takes a WebSocket upgrade on its root (verified 101 on
+ * preprod) and has no separate `/ws` path, unlike the indexer. The mainnet
+ * hosts follow the same Blockfrost naming; nothing here has reached them yet.
  */
 const HOSTS = {
-    indexerHttpUrl: 'https://midnight-preprod.blockfrost.io/api/v0',
-    indexerWsUrl: 'wss://midnight-preprod.blockfrost.io/api/v0/ws',
-    nodeHttpUrl: 'https://rpc.midnight-preprod.blockfrost.io/',
-    nodeWsUrl: 'wss://rpc.midnight-preprod.blockfrost.io/'
+    preprod: {
+        indexerHttpUrl: 'https://midnight-preprod.blockfrost.io/api/v0',
+        indexerWsUrl: 'wss://midnight-preprod.blockfrost.io/api/v0/ws',
+        nodeHttpUrl: 'https://rpc.midnight-preprod.blockfrost.io/',
+        nodeWsUrl: 'wss://rpc.midnight-preprod.blockfrost.io/'
+    },
+    mainnet: {
+        indexerHttpUrl: 'https://midnight-mainnet.blockfrost.io/api/v0',
+        indexerWsUrl: 'wss://midnight-mainnet.blockfrost.io/api/v0/ws',
+        nodeHttpUrl: 'https://rpc.midnight-mainnet.blockfrost.io/',
+        nodeWsUrl: 'wss://rpc.midnight-mainnet.blockfrost.io/'
+    }
 };
 
-export function preprodEndpoints() {
-    const q = `?project_id=${encodeURIComponent(blockfrostToken())}`;
+/** A network's endpoints, authenticated. Throws if its project id is missing. */
+export function networkEndpoints(network) {
+    const hosts = HOSTS[checkNetwork(network)];
+    const q = `?project_id=${encodeURIComponent(blockfrostToken({ network }))}`;
     return {
-        networkId: 'preprod',
-        indexerHttpUrl: `${HOSTS.indexerHttpUrl}${q}`,
-        indexerWsUrl: `${HOSTS.indexerWsUrl}${q}`,
-        nodeHttpUrl: `${HOSTS.nodeHttpUrl}${q}`,
-        nodeWsUrl: `${HOSTS.nodeWsUrl}${q}`
+        networkId: network,
+        indexerHttpUrl: `${hosts.indexerHttpUrl}${q}`,
+        indexerWsUrl: `${hosts.indexerWsUrl}${q}`,
+        nodeHttpUrl: `${hosts.nodeHttpUrl}${q}`,
+        nodeWsUrl: `${hosts.nodeWsUrl}${q}`
     };
 }
+
+/** Preprod endpoints, authenticated: what every script used before mainnet. */
+export const preprodEndpoints = () => networkEndpoints('preprod');
 
 /**
  * The same endpoints with no credential attached.
@@ -109,9 +146,11 @@ export function preprodEndpoints() {
  * printed on a page. Those get this, and the reader supplies their own project
  * id. The endpoint is public; the credential is ours.
  */
-export function publicPreprodEndpoints() {
-    return { networkId: 'preprod', ...HOSTS };
+export function publicEndpoints(network) {
+    return { networkId: checkNetwork(network), ...HOSTS[network] };
 }
+
+export const publicPreprodEndpoints = () => publicEndpoints('preprod');
 
 /**
  * Refuse to let a value carrying the project id leave this process.
@@ -127,13 +166,13 @@ export function publicPreprodEndpoints() {
  * keeping the habit that produced it.
  */
 export function assertNoSecrets(value, what = 'value') {
-    const token = blockfrostToken({ required: false });
-    if (!token || token.trim().length < 8) return value;
+    const tokens = allTokens();
+    if (!tokens.length) return value;
     const text = typeof value === 'string' ? value : JSON.stringify(value);
-    if (text && text.includes(token.trim())) {
+    if (text && tokens.some((t) => text.includes(t))) {
         throw new Error(
-            `refusing to release ${what}: it contains the Blockfrost project id. `
-            + 'Build reader-facing strings from publicPreprodEndpoints(), not preprodEndpoints().'
+            `refusing to release ${what}: it contains a Blockfrost project id. `
+            + 'Build reader-facing strings from publicEndpoints(), not networkEndpoints().'
         );
     }
     return value;
@@ -181,7 +220,7 @@ export function redacted(url) {
  * to print credentials.
  */
 export function guardLogs({ alsoRedact = [], fatal = true } = {}) {
-    const secrets = [blockfrostToken({ required: false }), ...alsoRedact]
+    const secrets = [...allTokens(), ...alsoRedact]
         // A short or empty needle would match everywhere and rewrite the stream
         // character by character. Refuse rather than mangle: that exact mistake
         // destroyed a run log on 2026-10-13.

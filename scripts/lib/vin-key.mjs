@@ -49,6 +49,13 @@ const KEY_FILE = join(HERE, '..', '..', '..', '_local-tracking', 'VINKEY.env');
 /** Networks this module will derive for. Each has its own, unrelated key. */
 export const NETWORKS = Object.freeze(['preprod', 'mainnet']);
 
+/**
+ * How a receipt or bundle names a key made here. A reader without the network
+ * key cannot recompute it from a VIN, so it reports the VIN as unchecked
+ * rather than guessing (scripts/lib/disclosure.mjs).
+ */
+export const VINKEY_SCHEME = 'vinkey-voprf-ristretto255-sha512-v1';
+
 /** ISO 3779: seventeen characters, and I, O and Q are not among them. */
 const VIN_RE = /^[A-HJ-NPR-Z0-9]{17}$/;
 

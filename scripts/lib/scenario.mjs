@@ -308,9 +308,13 @@ const nodeHash = (l, r) => b2b(Uint8Array.from([...l, ...r]));
  * Leaf salts come from the secret SALT_SEED (see above), so the anchored root
  * does not leak its values to anyone who merely knows the VIN. Losing the seed
  * makes the root permanently unprovable - BUILD-SCOPE carries that risk by name.
+ *
+ * `vinKeyHex` is the vehicle's ledger key for the vinHash leaf. It defaults to
+ * the local simulator's plain hash; a network run passes its keyed derivation
+ * (scripts/lib/vin-key.mjs) so the root names the key the ledger uses.
  */
-export const contentRoot = (vin, fields, panel = {}, saltFn = saltFrom) => {
-    const values = { ...panel, ...fields, vinHash: hex(vinHash(vin)) };
+export const contentRoot = (vin, fields, panel = {}, saltFn = saltFrom, vinKeyHex = hex(vinHash(vin))) => {
+    const values = { ...panel, ...fields, vinHash: vinKeyHex };
     const leaves = [];
     for (let slot = 0; slot < 32; slot++) {
         const name = Object.keys(PANEL).find((n) => PANEL[n][0] === slot);
