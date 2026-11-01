@@ -364,6 +364,31 @@ a battery passport rather than repeat it, as the car panel's `batteryPassportId`
 law we have read requires a passport" for a boat is a statement about these texts, not a search of
 all Union law: an ecodesign delegated act could reach recreational craft, and none was looked for.
 
+## Pending, not law: odometer recording in the 2025 roadworthiness package, read 1 November 2026
+
+Proposal [COM(2025) 180](https://data.consilium.europa.eu/doc/document/ST-8255-2025-INIT/en/pdf),
+procedure [2025/0097(COD)](https://oeil.europarl.europa.eu/oeil/en/procedure-file?reference=2025/0097(COD)),
+amending Directives 2014/45/EU and 2014/47/EU. Trilogues are under way (the first on 2 July 2026,
+the second on 20 October 2026); no provisional agreement, adopted text or Official Journal
+publication was found. **Nothing in this section may be relied on as law**, and no decision rests
+on it.
+
+| Text | Provision | What it says |
+|---|---|---|
+| Commission proposal, 24 April 2025 | new **Art. 4a(1)** of 2014/45 | Member States record odometer readings in a national database or vehicle register: testing centres and *"any service provider who issues an invoice or other document in connection with any repair or maintenance work"*; manufacturers transmit the readings of connected vehicles *"every three months"* |
+| | **Art. 4a(2), (3)** | The history is available to inspectors, the holder of the registration certificate and competent authorities; potential buyers are informed *"about the availability"* of it |
+| [Council general approach](https://data.consilium.europa.eu/doc/document/ST-15613-2025-INIT/en/pdf), 4 December 2025 | **Art. 4a(1)** | Recording *"in connection with periodic roadworthiness tests of category M1 and N1 vehicles"* and when *"repairers authorised by vehicle manufacturers"* work on them |
+| [Parliament mandate](https://www.europarl.europa.eu/RegData/seance_pleniere/textes_deposes/rapports/2026/0139/P10_A(2026)0139_EN.pdf), A10-0139/2026, confirmed 21 May 2026 | amended Art. 4a and new Art. 4b | Repair work *"amounting to one hour or more on a vehicle of category M1 and N1"*; a website telling prospective buyers how to *"request and obtain, free of charge and prior to purchase, a record of the odometer history"* of a vehicle registered in any Member State |
+
+What follows from the texts, if any of them is adopted: passenger cars and vans (M1, N1) get a
+public odometer record in each Member State, applying two years (Commission, Parliament) or three
+years (Council) after entry into force. The Council and Parliament both limit the duty to M1 and
+N1, so motorcycles, quads and boats stay outside it, and the "Other vehicle classes" above stands.
+No text names dealers, requires a reading at the moment of sale, or mentions a ledger.
+
+**Open question:** once a national record exists, whether a passport's odometer field should cite
+it as an authoritative writer.
+
 ## Verification status
 
 Article numbers (46, 29), the repeals, and the OJ publication date were read from the EUR-Lex text
