@@ -352,6 +352,7 @@ so a passport for them is sold on what it does at resale, not on a duty.
 | Pedal-assist e-bikes | 168/2013 **Art. 2(2)(h)** | Pedal cycles with a motor of 250 W or less, cut off at 25 km/h, are not L-category vehicles |
 | E-bike and e-motorcycle batteries | Reg (EU) 2023/1542 **Art. 3(1)(11)** | LMT battery: sealed, 25 kg or less, traction for wheeled vehicles powered by a motor alone or with human power, including L-category |
 | | 2023/1542 **Art. 3(1)(14)** | Electric vehicle battery: includes L-category traction batteries over 25 kg |
+| | 2023/1542 **Art. 14(1), (2)** | From 18 August 2024 the battery management system of LMT and electric vehicle batteries holds up-to-date state-of-health and expected-lifetime data (Annex VII), with read-only access for whoever legally purchased the battery, among other purposes for evaluating its residual value or remaining lifetime (point (b)) |
 | | 2023/1542 **Art. 77(1), (2)** | Every LMT and electric vehicle battery placed on the market from 18 February 2027 has a battery passport, with information for the public, for authorities, and for persons with a legitimate interest |
 | Boats, jet skis | Directive 2013/53/EU **Art. 3(2), (3)** | Recreational craft: 2.5 to 24 m hull, sports and leisure. Personal watercraft: under 4 m, water-jet propelled, ridden on rather than in |
 | | 2013/53/EU **Annex I, Part A, point 2.1** | Each watercraft carries an identification number: manufacturer's country and code, serial number, month and year of production, model year |
