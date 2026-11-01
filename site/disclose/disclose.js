@@ -38,8 +38,39 @@ const TIERS = {
 };
 const ORDER = Object.keys(TIERS);
 
+/**
+ * The two ledgers a reader can check against. The preprod run wrote five
+ * readings, all trade fields, and granted only the trade view, so it has no
+ * authority bundle and its buyer's file carries claims and no value.
+ */
+const LEDGERS = {
+    demo: {
+        ledger: '../verify/demo-data.json',
+        base: 'bundles/',
+        tiers: ORDER,
+        intro: (tier) => TIERS[tier].intro,
+        edit: (tier) => TIERS[tier].edit
+    },
+    preprod: {
+        ledger: 'preprod/ledger.json',
+        run: 'preprod/run.json',
+        base: 'bundles/preprod/',
+        tiers: ['public', 'trade'],
+        intro: (tier) => ({
+            public: 'What a buyer receives from the preprod run: no value at all, only the claims already proven on chain about this vehicle. Every reading the run wrote is a trade field.',
+            trade: 'What the dealership receives: the five readings the run wrote, every one exact, and the grant the run recorded for it on the preprod ledger.'
+        })[tier],
+        edit: (tier) => (tier === 'trade' ? 'odometerKm' : null)
+    }
+};
+let ledgerName = 'demo';
+const loaded = {};
+
 const panel = document.getElementById('tier-panel');
 const tabs = [...document.querySelectorAll('.ds-tab')];
+const ledgerButtons = [...document.querySelectorAll('.ds-ledger button')];
+const note = document.getElementById('ledger-note');
+const demoNote = note.innerHTML;
 
 const getJson = async (url) => {
     const r = await fetch(url, { cache: 'no-store' });
@@ -47,8 +78,8 @@ const getJson = async (url) => {
     return r.json();
 };
 
-let ledger, byName, bundles, engine;
-const results = {};
+let ledger, byName, bundles, engine, run;
+let results = {};
 const commitmentAt = (slot) => ledger.fieldCommitment[slot] ?? null;
 const claimAt = (key) => ledger.claims.find((c) => c.key === key) ?? null;
 const grantAt = (key) => ledger.grants?.[key] ?? null;
@@ -109,6 +140,7 @@ function render(tier) {
     const bundle = bundles[tier];
     const r = results[tier];
     const t = TIERS[tier];
+    const L = LEDGERS[ledgerName];
     const onLedger = r ? engine.fieldsOnLedger(bundle.vinHash, bundle.contentRoot, commitmentAt) : null;
     const closed = onLedger ? onLedger.filter((n) => !r.opened.includes(n)) : [];
     const byField = new Map((r?.fields ?? []).map((x) => [x.fieldName, x]));
@@ -122,15 +154,18 @@ function render(tier) {
             ${bundle.vin ? `&middot; names the VIN, which hashes to the passport's key: ${r.vinMatchesHash ? 'yes' : 'no'}` : ''}${r.overDisclosed.length ? ` &middot; above its tier: ${esc(r.overDisclosed.join(', '))}` : ''}</span>
           </div>`;
 
-    const edit = bundle.fields.find((f) => f.fieldName === t.edit);
+    const editName = L.edit(tier);
+    const edit = editName ? bundle.fields.find((f) => f.fieldName === editName) : null;
     const odometer = bundles.trade.fields.find((f) => f.fieldName === 'odometerKm');
 
     panel.innerHTML = `
-      <p style="margin:0 0 16px;max-width:74ch;font-size:15px;line-height:1.6;color:rgba(14,23,38,.82)">${esc(t.intro)}</p>
+      <p style="margin:0 0 16px;max-width:74ch;font-size:15px;line-height:1.6;color:rgba(14,23,38,.82)">${esc(L.intro(tier))}</p>
       ${band}
       ${r ? `<p class="ds-grant" data-state="${tier === 'public' || r.grant?.covers ? 'ok' : 'none'}">${grantLine(tier, r)}</p>` : ''}
       <h3 class="ds-h3">Opened: ${bundle.fields.length} value${bundle.fields.length === 1 ? '' : 's'}</h3>
-      <ul class="ds-rows">${bundle.fields.map((f) => fieldRow(f, byField.get(f.fieldName))).join('')}</ul>
+      ${bundle.fields.length
+        ? `<ul class="ds-rows">${bundle.fields.map((f) => fieldRow(f, byField.get(f.fieldName))).join('')}</ul>`
+        : `<p style="margin:0;font-size:14px;line-height:1.6;color:rgba(14,23,38,.78)">None. This file opens no value; every field this vehicle has on the ledger is above the ${esc(tier)} tier.</p>`}
       ${r && r.claims.length ? `<h3 class="ds-h3">Cited: claims already proven on the ledger</h3>
       <ul class="ds-rows">${r.claims.map(claimRow).join('')}</ul>` : ''}
       <h3 class="ds-h3">Left closed${r ? `: ${closed.length}` : ''}</h3>
@@ -155,7 +190,7 @@ function render(tier) {
         <summary>Show the file ${esc(t.who)} receives</summary>
         <pre>${esc(JSON.stringify(bundle, null, 2))}</pre>
       </details>
-      <p style="margin:12px 0 0;font-size:13.5px"><a href="bundles/${tier}.json" download style="display:inline-flex;align-items:center;min-height:44px;color:#004AAD">Download ${tier}.json</a></p>`;
+      <p style="margin:12px 0 0;font-size:13.5px"><a href="${L.base}${tier}.json" download style="display:inline-flex;align-items:center;min-height:44px;color:#004AAD">Download ${tier}.json</a></p>`;
 
     wireTry(tier, edit, odometer);
 }
@@ -212,49 +247,102 @@ function select(tier, focus = false) {
 }
 
 const current = () => tabs.find((t) => t.getAttribute('aria-selected') === 'true')?.dataset.tier ?? 'public';
+const offered = () => LEDGERS[ledgerName].tiers;
 
 // A link to #trade followed from this page changes only the hash, so the
 // page has to listen for it rather than read it once on load.
 addEventListener('hashchange', () => {
     const t = location.hash.slice(1);
-    if (ORDER.includes(t) && t !== current()) select(t);
+    if (offered().includes(t) && t !== current()) select(t);
 });
 
 for (const tab of tabs) {
     tab.addEventListener('click', () => select(tab.dataset.tier));
     tab.addEventListener('keydown', (e) => {
-        const i = ORDER.indexOf(tab.dataset.tier);
-        const next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: ORDER.length - 1 }[e.key];
+        const order = offered();
+        const i = order.indexOf(tab.dataset.tier);
+        const next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: order.length - 1 }[e.key];
         if (next === undefined) return;
         e.preventDefault();
-        select(ORDER[(next + ORDER.length) % ORDER.length], true);
+        select(order[(next + order.length) % order.length], true);
     });
 }
 
+const fullDate = (iso) => new Date(`${iso}T00:00:00Z`)
+    .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+/** Where the ledger under the bundles came from, in one paragraph. */
+function provenance() {
+    if (ledgerName === 'demo') return demoNote;
+    return `<b>Real chain data.</b> The ledger state was read from the public preprod indexer at block ${esc(ledger.readAtBlock)},
+      contract <span class="mono">${esc(short(ledger.contractAddress))}</span>. The bundles come from the guided run of
+      ${esc(fullDate(run.date))}: ${esc(run.transactions)} transactions in blocks ${esc(run.firstBlock)} to ${esc(run.lastBlock)},
+      with the dealership's grant in block ${esc(run.grant.block)}
+      (<a href="${esc(run.grant.explorer)}" style="color:#004AAD">on the explorer</a>). There is no authority file:
+      the run granted nobody the authority view.`;
+}
+
+const checkAll = () => {
+    if (!engine) return;
+    for (const t of offered()) results[t] ??= check(bundles[t]);
+};
+
+async function useLedger(name) {
+    ledgerName = name;
+    for (const b of ledgerButtons) b.setAttribute('aria-pressed', String(b.dataset.ledger === name));
+    for (const tab of tabs) tab.hidden = !LEDGERS[name].tiers.includes(tab.dataset.tier);
+    const url = new URL(location.href);
+    if (name === 'demo') url.searchParams.delete('ledger'); else url.searchParams.set('ledger', name);
+    history.replaceState(null, '', url);
+    if (!offered().includes(current())) select('public');
+    if (!loaded[name]) {
+        panel.innerHTML = `<p style="margin:0;font-size:14.5px;line-height:1.6;color:rgba(14,23,38,.78)">Loading the bundles and the ${name === 'demo' ? 'demo ledger' : 'preprod snapshot'}.</p>`;
+        const L = LEDGERS[name];
+        try {
+            const [l, r, ...files] = await Promise.all([
+                getJson(L.ledger),
+                L.run ? getJson(L.run) : null,
+                ...L.tiers.map((t) => getJson(`${L.base}${t}.json`))
+            ]);
+            loaded[name] = { ledger: l, run: r, bundles: Object.fromEntries(L.tiers.map((t, i) => [t, files[i]])), results: {} };
+        } catch (e) {
+            if (ledgerName === name) panel.innerHTML = `<p style="margin:0;font-size:14.5px;color:#8A1C1C">Could not load the bundles: ${esc(e.message)}</p>`;
+            return;
+        }
+    }
+    if (ledgerName !== name) return;          // switched again while this loaded
+    ({ ledger, run, bundles, results } = loaded[name]);
+    note.innerHTML = provenance();
+    checkAll();
+    render(current());
+}
+
+for (const b of ledgerButtons) {
+    b.addEventListener('click', () => { if (b.dataset.ledger !== ledgerName) useLedger(b.dataset.ledger); });
+}
+
 (async () => {
+    const askedLedger = new URL(location.href).searchParams.get('ledger');
+    const start = askedLedger in LEDGERS ? askedLedger : 'demo';
     const asked = location.hash.slice(1);
-    if (ORDER.includes(asked)) select(asked);
+    if (LEDGERS[start].tiers.includes(asked)) select(asked);
     try {
-        const [l, vocab, ...files] = await Promise.all([
-            getJson('../verify/demo-data.json'),
-            getJson('../verify/fields.json'),
-            ...ORDER.map((t) => getJson(`bundles/${t}.json`))
-        ]);
-        ledger = l;
+        const vocab = await getJson('../verify/fields.json');
         byName = Object.fromEntries(Object.values(vocab.fields).map((f) => [f.name, f]));
-        bundles = Object.fromEntries(ORDER.map((t, i) => [t, files[i]]));
     } catch (e) {
         panel.innerHTML = `<p style="margin:0;font-size:14.5px;color:#8A1C1C">Could not load the bundles: ${esc(e.message)}</p>`;
         return;
     }
-    render(current());
+    await useLedger(start);
     try {
         engine = await import('../assets/intake-engine/intake-engine.js');
-        for (const t of ORDER) results[t] = check(bundles[t]);
     } catch (e) {
-        panel.querySelector('.ds-band').outerHTML =
+        const band = panel.querySelector('.ds-band');
+        if (band) band.outerHTML =
             `<div class="ds-band" data-state="fail" role="status"><b>Could not check</b><span style="font-size:14px">The contract runtime did not load: ${esc(e.message)}</span></div>`;
         return;
     }
+    if (!bundles) return;
+    checkAll();
     render(current());
 })();

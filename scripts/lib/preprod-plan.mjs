@@ -25,19 +25,38 @@ import { CLAIM_CATALOGUE, boundFor, isCompare } from '../../site/assets/claim-ca
  *
  * Only recordField writes a cell that already holds something, so it is the
  * only circuit that closes a transaction. Everything else inserts fresh keys
- * and batches with OTHER circuits; a second call to the same circuit starts a
- * new transaction, for a different reason (see planCalls).
+ * and batches with calls that grow OTHER maps; a second insert into the same
+ * map starts a new transaction, for a different reason (see planCalls).
  *
  * initialiseField USED TO BE IN THIS SET, and not because of the field write:
  * it also incremented a global `updateCount` Counter, which is one cell and
  * always populated. That single line made a vehicle with sixty fields cost
  * sixty transactions. The counter was removed from the contract; nothing
  * needed the number, and an indexer can count field writes from the events.
- * Sixty fields are sixty transactions again since 1 November, because of the
- * one-call-per-circuit rule in planCalls, until nightgate-tx can match two
- * calls to one circuit to the order they were built in.
+ * Sixty fields are sixty transactions again since 1 November, because each
+ * initialisation grows the same map and planCalls lets a map grow by one per
+ * transaction. Batching them is safe where no size is crossed, which needs
+ * the live map sizes; the planner works offline and does not have them.
  */
 export const CELL_UPDATING = new Set(['recordField']);
+
+/**
+ * The ledger map each circuit grows by one fresh key, read from the contract.
+ * Two circuits share an entry when they insert into the same map:
+ * proveFieldAtMost and proveFieldAtLeast both add a claim to `claims`.
+ * recordField overwrites and withdrawWriter and revokeDisclosure remove, so
+ * none of them grows a map. planCalls lets each map grow by one per
+ * transaction.
+ */
+export const GROWS = Object.freeze({
+    registerPassport: 'passports',
+    initialiseField: 'fieldCommitment',
+    authoriseWriter: 'writers',
+    grantDisclosure: 'grants',
+    proveFieldAtMost: 'claims',
+    proveFieldAtLeast: 'claims',
+    proveFieldAtMostField: 'relClaims'
+});
 
 /**
  * The contract's `Tier` enum, in declaration order. Kept here rather than
@@ -217,21 +236,23 @@ export function planCalls(intake) {
             { code: 'TOO_LARGE' });
     }
 
-    // One call per circuit per transaction. nightgate-tx puts a batch in
-    // order by matching each intent to a call through its circuit NAME, so
-    // two calls to one circuit can come out swapped. Each call's gas is
-    // costed against the state it was built on; swapped, a call can run
-    // against larger maps than it was costed for, and the node refuses the
-    // whole transaction as 1010/104. Replayed locally on 1 November, the
-    // ledger's own reason was "ran out of gas budget", for five
-    // initialisations in one batch, while register, one initialisation,
-    // authorise and grant together applied cleanly. With one call per
-    // circuit the name match is exact.
+    // At most one insert into any ledger map per transaction (GROWS above).
+    // Each call of a batch is budgeted against the state at build time, and a
+    // batch that grows a map past 1, 16 or 256 entries leaves its later calls
+    // short of gas: the node refuses the whole transaction as 1010/104, no fee
+    // (nightgate docs/txbuilder.md, "Map size"). Replayed locally on
+    // 1 November, five initialisations in one batch on a fresh contract gave
+    // the ledger's reason, "ran out of gas budget", while register, one
+    // initialisation, authorise and grant together applied cleanly. Growing
+    // each map by one per transaction crosses no size inside a batch. It also
+    // keeps two calls to one circuit apart, which nightgate-tx matches to
+    // segments by circuit name and so cannot keep in build order.
     const stages = [];
     let cur = [];
     const close = () => { if (cur.length) { stages.push(makeStage(cur)); cur = []; } };
+    const mapOf = (s) => GROWS[s.circuit] ?? s.circuit;
     for (const s of steps) {
-        if (cur.some((c) => c.circuit === s.circuit)) close();
+        if (cur.some((c) => mapOf(c) === mapOf(s))) close();
         cur.push(s);
         if (CELL_UPDATING.has(s.circuit) || cur.length >= MAX_CALLS_PER_TX) close();
     }

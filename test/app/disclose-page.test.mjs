@@ -13,7 +13,9 @@
  *  3. The two controls on the page demonstrate what they say: a changed value
  *     fails, and a trade field handed to the buyer still checks but is flagged.
  *  4. The page checks with the same code the tests run, reached through the
- *     engine bundle, and says plainly that its ledger is not preprod.
+ *     engine bundle, and names which ledger each set of files is checked against.
+ *  5. The preprod files check against a snapshot of the deployed address,
+ *     read from the indexer: no value for the buyer, the trade grant for the dealer.
  *
  * Tests marked REPOSITORY ASSERTION read source rather than run it: the page
  * needs a browser, and check:pages is what loads it.
@@ -172,8 +174,44 @@ test('the files say they come from the local demo, not preprod', () => {
         assert.equal(b.network, 'local-simulator', `${tier} could be read as preprod evidence`);
         assert.equal('contractAddress' in b, false);
     }
-    assert.match(html, /It is not preprod\./);
-    assert.match(html, /scripts\/export-demo-state\.mjs/);
+    // The demo ledger is named as the local run on the page itself.
+    assert.match(html, /The demo record: the compiled contract run locally by <code>scripts\/export-demo-state\.mjs<\/code>/);
+});
+
+// -- the preprod ledger: a guided run, checked against chain state read from the indexer
+const preprodLedger = json('disclose', 'preprod', 'ledger.json');
+const preprodRun = json('disclose', 'preprod', 'run.json');
+const preprodBundles = Object.fromEntries(['public', 'trade']
+    .map((t) => [t, json('disclose', 'bundles', 'preprod', `${t}.json`)]));
+const PREPROD = {
+    commitmentAt: (slot) => preprodLedger.fieldCommitment[slot] ?? null,
+    claimAt: (key) => preprodLedger.claims.find((c) => c.key === key) ?? null,
+    grantAt: (key) => preprodLedger.grants?.[key] ?? null
+};
+const deploy = JSON.parse(readFileSync(join(ROOT, 'deploy', 'preprod.json'), 'utf8'));
+
+test('the preprod bundles check against the preprod snapshot, for the deployed address', () => {
+    assert.equal(preprodLedger.contractAddress, deploy.contractAddress, 'snapshot is for another address');
+    assert.equal(preprodRun.contractAddress, deploy.contractAddress);
+    assert.ok(preprodLedger.readAtBlock >= preprodRun.lastBlock, 'snapshot read before the run ended');
+    for (const [tier, b] of Object.entries(preprodBundles)) {
+        assert.equal(b.network, 'preprod');
+        assert.equal(b.contractAddress, deploy.contractAddress, `${tier} names another address`);
+        const r = verifyBundle(b, PREPROD);
+        assert.equal(r.ok, true, `${tier}: ${JSON.stringify(r.problems)} ${JSON.stringify(r.fields.filter((f) => !f.ok))}`);
+        assert.deepEqual(r.overDisclosed, [], `${tier} opens above its tier`);
+    }
+});
+
+test('the preprod buyer opens no value and cites only current claims; the dealer holds the trade grant', () => {
+    const buyer = verifyBundle(preprodBundles.public, PREPROD);
+    assert.deepEqual(buyer.opened, []);
+    assert.ok(buyer.claims.length > 0 && buyer.claims.every((c) => c.current));
+    const dealer = verifyBundle(preprodBundles.trade, PREPROD);
+    assert.equal(dealer.grant?.held, 'trade');
+    assert.equal(dealer.grant?.covers, true);
+    for (const b of Object.values(preprodBundles)) assert.equal('vin' in b, false, 'a preprod bundle names the VIN');
+    assert.ok(preprodRun.grant?.txHash && preprodRun.grant.block >= preprodRun.firstBlock && preprodRun.grant.block <= preprodRun.lastBlock);
 });
 
 test('REPOSITORY ASSERTION: the page checks with the shared verifier, through the engine', () => {
@@ -192,9 +230,11 @@ test('REPOSITORY ASSERTION: the page checks with the shared verifier, through th
 });
 
 test('REPOSITORY ASSERTION: the bundles it loads are the committed files', () => {
-    assert.match(js, /getJson\('\.\.\/verify\/demo-data\.json'\)/);
-    assert.match(js, /getJson\(`bundles\/\$\{t\}\.json`\)/);
+    assert.match(js, /ledger: '\.\.\/verify\/demo-data\.json',\s+base: 'bundles\/'/);
+    assert.match(js, /ledger: 'preprod\/ledger\.json',\s+run: 'preprod\/run\.json',\s+base: 'bundles\/preprod\/'/);
+    assert.match(js, /getJson\(`\$\{L\.base\}\$\{t\}\.json`\)/);
     for (const tier of Object.keys(bundles)) assert.match(html, new RegExp(`href="bundles/${tier}\\.json"`));
+    for (const tier of Object.keys(preprodBundles)) assert.match(html, new RegExp(`href="bundles/preprod/${tier}\\.json"`));
 });
 
 test('the tabs are a labelled tablist and every control is touchable', () => {
@@ -207,7 +247,7 @@ test('the tabs are a labelled tablist and every control is touchable', () => {
     }
     assert.match(html, /role="tablist" aria-label="Audience"/);
     assert.match(html, /id="tier-panel" role="tabpanel"/);
-    for (const cls of ['ds-tab', 'ds-btn', 'ds-input']) {
+    for (const cls of ['ds-tab', 'ds-btn', 'ds-input', 'ds-ledger button']) {
         const rule = html.match(new RegExp(`\\.${cls}\\{[^}]*\\}`))?.[0] ?? '';
         const h = Number(rule.match(/min-height:(\d+)px/)?.[1] ?? 0);
         assert.ok(h >= 44, `.${cls} is ${h}px tall`);

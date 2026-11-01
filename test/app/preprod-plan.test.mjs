@@ -13,9 +13,10 @@
  *     removed. The counter was a single always-populated cell, so bumping it
  *     closed the transaction and a vehicle carrying sixty fields cost sixty
  *     transactions. Nothing read the number except a display.
- *     And no transaction carries two calls to one circuit: the batch is put
- *     in order by circuit name, so two such calls can be swapped, and the
- *     swapped one runs out of the gas it was costed for (1010/104).
+ *     And no transaction grows one ledger map twice: a batch's calls are
+ *     budgeted against the state at build time, so a batch that grows a map
+ *     past 1, 16 or 256 entries runs out of gas (1010/104, nightgate
+ *     docs/txbuilder.md "Map size").
  *
  *  2. Arming. nightgate-tx runs per-call `before` hooks only for a BATCH; a
  *     single call is proven with the witnesses exactly as they stand. An
@@ -32,7 +33,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import {
-    planCalls, CELL_UPDATING, makeWitnessHolder, MAX_CALLS_PER_TX, MAX_CALLS_PER_RUN, TIER_INDEX, stepLabel
+    planCalls, CELL_UPDATING, GROWS, makeWitnessHolder, MAX_CALLS_PER_TX, MAX_CALLS_PER_RUN, TIER_INDEX, stepLabel
 } from '../../scripts/lib/preprod-plan.mjs';
 import { Tier } from '../../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
 
@@ -56,18 +57,17 @@ test('a cell-updating call is always last in its transaction', () => {
     }
 });
 
-test('a second call to the same circuit starts a new transaction', () => {
+test('a second insert into the same map starts a new transaction', () => {
     const plan = planCalls({
         fields: { odometerKm: 10, accidentCount: 0, ownerCount: 1 },
         updates: [{ odometerKm: 20 }],
         prove: { noAccidents: true, mileageUnder: 100 }
     });
     assert.deepEqual(kinds(plan), [
-        // Different circuits still share a transaction, and the update still
-        // comes last in its own. Two initialisations, or two claims through
-        // the same circuit, never share one: nightgate-tx orders a batch by
-        // circuit name, so it could swap them, and a swapped call runs
-        // against state its gas was not costed for (1010/104).
+        // Calls that grow different maps still share a transaction, and the
+        // update still comes last in its own. Two initialisations, or two
+        // claims, never share one: each grows the same map, and a batch
+        // that grows a map past a size runs out of gas (1010/104).
         ['register', 'init'],
         ['init'],
         ['init', 'update'],
@@ -76,12 +76,14 @@ test('a second call to the same circuit starts a new transaction', () => {
     ]);
 });
 
-test('no transaction carries two calls to one circuit', () => {
+test('no transaction grows one map twice', () => {
     const fields = {};
     for (let i = 0; i < 11; i++) fields['f' + i] = i;
     const intakes = [
         { fields, prove: {} },
         { fields: {}, prove: { noAccidents: true, neverWrittenOff: true, oneKeeper: true, mileageUnder: 9 } },
+        // Two circuits that grow the same map: proveFieldAtMost and proveFieldAtLeast.
+        { fields: { accidentCount: 0, serviceCount: 6 }, prove: { noAccidents: true, fourServices: true } },
         // The guided run's setup: five fields, a writer and a grant.
         {
             fields: { odometerKm: 1, accidentCount: 0, ownerCount: 2, serviceCount: 6, lastServiceOdometerKm: 1 },
@@ -93,8 +95,9 @@ test('no transaction carries two calls to one circuit', () => {
     ];
     for (const intake of intakes) {
         for (const stage of planCalls(intake)) {
-            const circuits = stage.steps.map((s) => s.circuit);
-            assert.equal(new Set(circuits).size, circuits.length, `two calls to one circuit in [${circuits.join(', ')}]`);
+            const grown = stage.steps.map((s) => GROWS[s.circuit]).filter(Boolean);
+            assert.equal(new Set(grown).size, grown.length,
+                `one map grown twice in [${stage.steps.map((s) => s.circuit).join(', ')}]`);
             assert.ok(stage.steps.length <= MAX_CALLS_PER_TX);
         }
     }
@@ -102,8 +105,8 @@ test('no transaction carries two calls to one circuit', () => {
 
 test('a large field set costs one transaction per field, the first shared with the register', () => {
     // The counter that once made this sixty transactions for sixty fields is
-    // gone, and batching them is unsafe for the reason above until
-    // nightgate-tx matches same-circuit calls to their build order.
+    // gone, but every initialisation grows the same map, and the planner
+    // works offline, so it cannot tell which batches would cross a size.
     // MAX_CALLS_PER_RUN was already sized for one call per transaction.
     const fields = {};
     for (let i = 0; i < 11; i++) fields['f' + i] = i;
@@ -137,11 +140,36 @@ test('a grant for a tier the contract does not have is refused before anything r
         /unknown tier "public"/);
 });
 
-test('claims through one circuit take a transaction each', () => {
-    // All four are proveFieldAtMost, so only the first can ride with the register.
+test('claims take a transaction each, whichever circuit proves them', () => {
+    // All four grow `claims`, so only the first can ride with the register.
     const plan = planCalls({ fields: {}, prove: { noAccidents: true, neverWrittenOff: true, oneKeeper: true, mileageUnder: 9 } });
     assert.equal(plan.length, 4);
     assert.deepEqual(kinds(plan)[0], ['register', 'claim']);
+    // proveFieldAtMost then proveFieldAtLeast: two circuits, one map.
+    const mixed = planCalls({ fields: {}, prove: { noAccidents: true, fourServices: true } });
+    assert.deepEqual(mixed.map((st) => st.steps.map((s) => s.circuit)),
+        [['registerPassport', 'proveFieldAtMost'], ['proveFieldAtLeast']]);
+});
+
+test('GROWS names the map each inserting circuit grows, read from the contract', () => {
+    // A circuit that inserts into a map the table does not know would batch
+    // freely and could cross a size; this keeps the table in step.
+    const src = readFileSync(join(ROOT, 'contracts', 'vinpassport', 'src', 'vinpassport.compact'), 'utf8');
+    const grows = {};
+    let circuit = null;
+    for (const line of src.split(/\r?\n/)) {
+        const head = /^export circuit (\w+)/.exec(line);
+        if (head) circuit = head[1];
+        const ins = /(\w+)\.insert\(/.exec(line);
+        if (circuit && ins) (grows[circuit] ??= new Set()).add(ins[1]);
+    }
+    // recordField inserts over keys that must already exist (it asserts the
+    // field is initialised), so it overwrites and grows nothing.
+    delete grows.recordField;
+    for (const [c, maps] of Object.entries(grows)) {
+        assert.ok(c in GROWS, `${c} inserts into ${[...maps].join(', ')} but GROWS does not list it`);
+        assert.ok(maps.has(GROWS[c]), `GROWS says ${c} grows ${GROWS[c]}; the contract inserts into ${[...maps].join(', ')}`);
+    }
 });
 
 test('the witness holder refuses to be read before a call arms it', () => {

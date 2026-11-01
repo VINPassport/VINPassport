@@ -1,0 +1,47 @@
+{
+  "source": "the Midnight preprod indexer (Blockfrost), decoded with the contract's own ledger() reader",
+  "note": "Public chain state only: commitments, claims and grants. Regenerate it with node scripts/export-preprod-bundles.mjs and compare.",
+  "network": "preprod",
+  "contractAddress": "c9a4733e3d9187e4487014e038a99af16cad0c29fb9fc9fcaa6b0f5350ad10ac",
+  "readAtBlock": 3230032,
+  "latestTransaction": "f8ce7500f32293da784535b28b59c7c3c5342d38a6e6d167ec2e6848ce7fb6e3",
+  "fieldCommitment": {
+    "bee2fcabe269b058478911a62c1e3742a20858b465c7a6f44b99754ab652fbe8": "5e3669b4f088e662ba4107ccff6abac9ea68825a96eb17ea9327471e7bb599a2",
+    "1efc4c5e0d603d997bd4a8dcf3923f142609df1570d6334b5798c01b4ad2f93b": "470bc0fb69b9ba26b9476a373209182dce93f0e19a06ca2572dd1613315c6246",
+    "ac2fc288169cfdef7afebb43b39779b2fe1ee62acbad29c612a543d49215075b": "6990fcd9e85fa295cc6e576c1af0c210f7843e8778438a68aafe702e0c3c74af",
+    "4059d5a9c0b97060ed930a18c86e73f237fa03a59f140a00e4c3752db61e9626": "a68ea9131ab2c86d54fabc782da46d8de32913d821c353880f3f3e4a62247f7f",
+    "692f169e7e228714917a6f8c80c55ecfd5a49a47aa6adc96f2aaa5ffe5210b33": "efb5e63174b5cb8953a291feb6d6b24a2ff5603b2818f14d014401e2aa44852b"
+  },
+  "claims": [
+    {
+      "key": "8c2994156bdeab70730a739474ef02eed531bdc0e189f500b2efd78f2634a587",
+      "slot": "1efc4c5e0d603d997bd4a8dcf3923f142609df1570d6334b5798c01b4ad2f93b",
+      "vinHash": "e8a25094272be32eb45eecc9ed9f0dc42da04b03abbee8f01b83befa9b04e23c",
+      "fieldKey": "2dd69ded11554ddb3306be039e80f3f82824b0d4af96b9bc287055558ea92fe7",
+      "commitment": "470bc0fb69b9ba26b9476a373209182dce93f0e19a06ca2572dd1613315c6246",
+      "bound": "150000",
+      "atMost": true
+    },
+    {
+      "key": "c46582666da8ca1da643b858da1b12aa5a0e2fdd2c5550f1b4353601d110e6f0",
+      "slot": "692f169e7e228714917a6f8c80c55ecfd5a49a47aa6adc96f2aaa5ffe5210b33",
+      "vinHash": "e8a25094272be32eb45eecc9ed9f0dc42da04b03abbee8f01b83befa9b04e23c",
+      "fieldKey": "aeb322aa379bd01ecb61ca57719f40e3c4a0368533dd62b1c7b5d2d995da98eb",
+      "commitment": "efb5e63174b5cb8953a291feb6d6b24a2ff5603b2818f14d014401e2aa44852b",
+      "bound": "0",
+      "atMost": true
+    },
+    {
+      "key": "9cbdf4293eec381b6765cbb88465ce55453fcc03dd5c0cf7bae182dd56bc26c7",
+      "slot": "ac2fc288169cfdef7afebb43b39779b2fe1ee62acbad29c612a543d49215075b",
+      "vinHash": "e8a25094272be32eb45eecc9ed9f0dc42da04b03abbee8f01b83befa9b04e23c",
+      "fieldKey": "48bdd789ee03fb0debd23d7e156228d3233f0110d48ed2d7dda663fb22521aff",
+      "commitment": "6990fcd9e85fa295cc6e576c1af0c210f7843e8778438a68aafe702e0c3c74af",
+      "bound": "4",
+      "atMost": false
+    }
+  ],
+  "grants": {
+    "a0b517e30ab850ea53886a60b9ff686759150bc7d3f01a346de5ee97dd1a9c9b": 0
+  }
+}

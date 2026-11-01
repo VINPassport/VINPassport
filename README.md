@@ -169,11 +169,13 @@ seconds.
 | `npm test` | Everything below, in one run |
 | `npm run test:contract` | The 151 contract tests, against the compiled circuits |
 | `npm run test:watch` | The same, re-running on change |
-| `npm run test:app` | 246 tests on the application paths: verdicts, the deploy's registrar list, the submission path, the chain-sees panel and the QR encoder, via `node --test`. **Most import and run product code; a minority assert on what is written in the repository** (that every screenshot the guide names exists, that each page's bar carries the same links, that every page names its content with one `<main>` and offers a way past the bar, that the verify page cannot answer with a vehicle nobody asked for, that no text colour drops below the contrast floor). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
+| `npm run test:app` | 266 tests on the application paths: verdicts, the deploy's registrar list, the submission path, the chain-sees panel and the QR encoder, via `node --test`. **Most import and run product code; a minority assert on what is written in the repository** (that every screenshot the guide names exists, that each page's bar carries the same links, that every page names its content with one `<main>` and offers a way past the bar, that the verify page cannot answer with a vehicle nobody asked for, that no text colour drops below the contrast floor). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
 | `npm run test:sdk` | 24 assertions pinning our assumptions about `@odatano/dpp-sdk` |
 | `npm run app` | All three surfaces + the circuits, one dependency-free server |
 | `npm run serve:site` | The site statically, as GitHub Pages serves it: no circuits, demo state only |
 | `npm run demo:export` | Regenerate `site/verify/` demo ledger by running the compiled circuits, and the three sample bundles in `site/disclose/bundles/` that open it |
+| `node scripts/export-preprod-bundles.mjs` | Re-read the preprod contract from the public indexer into `site/disclose/preprod/ledger.json` (a Blockfrost project id is all it needs); with `--receipt`, also the preprod sample bundles |
+| `node scripts/chain-readback.mjs` | Read the deployed contract back from the public indexer; with `--receipt`, check a run against it |
 | `npm run deploy:preprod` | Build + prove the deploy locally; `--submit` hands it to the sponsor |
 | `npm run compile` | Recompile the Compact contract: **WSL2, macOS or Linux only**, see below |
 
@@ -588,7 +590,7 @@ line of comparison rather than two days of reading tag names.
 | Frontend: verification, intake console, proof explorer | **Done.** Three surfaces against the compiled circuits (`npm run app`), live for anyone at [passport.vin](https://passport.vin/) |
 | Live preprod runs from the browser | **Built, not currently hosted.** `/demo/` and the intake console write real transactions to the deployed contract, paying their own DUST ([D24](docs/DECISIONS.md#settled)), capped per UTC day, every hash linking to the [preprod explorer](https://preprod.midnightexplorer.com). The host that served them was cancelled on 10 Oct 2026, so the page now reports that preprod runs are unavailable rather than pretending otherwise. `npm run app` runs the same path locally |
 | CAP service layer | **Not in this submission, and not in Wave 2.** See [D20](docs/DECISIONS.md#settled) |
-| Tiered disclosure | **Wave 3, in progress.** Not by redaction in a service, which was reversed before it was built ([R7](docs/DECISIONS.md#reversed)), but as bundles the holder hands over and the reader checks against the ledger ([D26](docs/DECISIONS.md#settled)). **Try it: [passport.vin/disclose](https://passport.vin/disclose/)**, one demo vehicle and three audiences, each bundle checked in the browser against the demo ledger (not preprod) |
+| Tiered disclosure | **Wave 3, in progress.** Not by redaction in a service, which was reversed before it was built ([R7](docs/DECISIONS.md#reversed)), but as bundles the holder hands over and the reader checks against the ledger ([D26](docs/DECISIONS.md#settled)). **Try it: [passport.vin/disclose](https://passport.vin/disclose/)**, one demo vehicle and three audiences checked in the browser against the demo ledger, and, since 1 Nov 2026, a buyer's and a dealer's bundle from the preprod run checked against contract state read from the public indexer |
 
 ## Repository map
 
