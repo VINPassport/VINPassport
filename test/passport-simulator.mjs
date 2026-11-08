@@ -387,6 +387,18 @@ export class PassportSimulator {
     }
 
     /**
+     * Ask one of the read circuits: isRegistered, registrarOf, commitmentOf,
+     * holdsAtMost, holdsAtLeast, holdsGrant. They take no witness and write
+     * nothing; the context is carried forward anyway, exactly as a caller's
+     * would be, so a test can show the ledger did not move.
+     */
+    async read(name, ...args) {
+        const r = await this.contract.impureCircuits[name](this.ctx, ...args);
+        this.ctx = r.context;
+        return r.result;
+    }
+
+    /**
      * Every value the public ledger holds, collected by KIND rather than
      * flattened to text.
      *
@@ -431,6 +443,9 @@ export class PassportSimulator {
         // passing while no longer looking at where a value could leak.
         walk(l.writers);
         walk(l.fieldWriter);
+        // Added with the read circuits (2.2), whose "writes nothing" test
+        // compares snapshots: grants (D26) was the one collection not walked.
+        walk(l.grants);
         return { words, blobs };
     }
 }

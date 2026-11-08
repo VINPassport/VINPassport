@@ -1,0 +1,49 @@
+{
+  "version": { "major": 3, "minor": 1 },
+  "do_communications_commitment": true,
+  "inputs": [
+    { "name": "%vinHash.0", "type": "Scalar<BLS12-381>" },
+    { "name": "%vinHash.1", "type": "Scalar<BLS12-381>" },
+    { "name": "%fieldKey.2", "type": "Scalar<BLS12-381>" },
+    { "name": "%fieldKey.3", "type": "Scalar<BLS12-381>" }
+  ],
+  "outputs": [
+    "Scalar<BLS12-381>",
+    "Scalar<BLS12-381>"
+  ],
+  "instructions": [
+    { "op": "constrain_bits", "val": "%vinHash.0", "bits": 8 },
+    { "op": "constrain_bits", "val": "%vinHash.1", "bits": 248 },
+    { "op": "constrain_bits", "val": "%fieldKey.2", "bits": 8 },
+    { "op": "constrain_bits", "val": "%fieldKey.3", "bits": 248 },
+    { "op": "public_input", "type": "Scalar<BLS12-381>", "output": "%t.4", "guard": null },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x30"] },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x50", "0x01", "0x01", "0x00"] },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x10", "0x01", "0x01", "0x20", "%vinHash.0", "%vinHash.1"] },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x18"] },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x0d", "0x01", "0x01", "%t.4"] },
+    { "op": "assert", "cond": "%t.4" },
+    { "op": "public_input", "type": "Scalar<BLS12-381>", "output": "%contentRoot.5", "guard": null },
+    { "op": "public_input", "type": "Scalar<BLS12-381>", "output": "%contentRoot.6", "guard": null },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x30"] },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x50", "0x01", "0x01", "0x00"] },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x50", "0x01", "0x20", "%vinHash.0", "%vinHash.1"] },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x0c", "0x01", "0x20", "%contentRoot.5", "%contentRoot.6"] },
+    { "op": "persistent_hash", "output": "%bytes.7", "alignment": [{ "tag": "atom", "value": { "length": 32, "tag": "bytes" } }, { "tag": "atom", "value": { "length": 32, "tag": "bytes" } }, { "tag": "atom", "value": { "length": 32, "tag": "bytes" } }, { "tag": "atom", "value": { "length": 32, "tag": "bytes" } }], "inputs": ["0x00", "0x76696e70617373706f72743a6669656c643a7632", "%vinHash.0", "%vinHash.1", "%fieldKey.2", "%fieldKey.3", "%contentRoot.5", "%contentRoot.6"] },
+    { "op": "bytes_into_natives", "outputs": ["%slot.8", "%slot.9"], "bytes": "%bytes.7" },
+    { "op": "public_input", "type": "Scalar<BLS12-381>", "output": "%t.10", "guard": null },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x30"] },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x50", "0x01", "0x01", "0x02"] },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x10", "0x01", "0x01", "0x20", "%slot.9", "%slot.8"] },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x18"] },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x0d", "0x01", "0x01", "%t.10"] },
+    { "op": "assert", "cond": "%t.10" },
+    { "op": "public_input", "type": "Scalar<BLS12-381>", "output": "%t.11", "guard": null },
+    { "op": "public_input", "type": "Scalar<BLS12-381>", "output": "%t.12", "guard": null },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x30"] },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x50", "0x01", "0x01", "0x02"] },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x50", "0x01", "0x20", "%slot.9", "%slot.8"] },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x0c", "0x01", "0x20", "%t.11", "%t.12"] },
+    { "op": "output", "vals": ["%t.11", "%t.12"] }
+  ]
+}

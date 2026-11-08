@@ -686,9 +686,49 @@ could only carry a record that long by migrating it to a new address, and a migr
 point at which a record's history can be broken.
 
 **Rehearsed on Preview, 8 November 2026:** two Schnorr keys and one ECDSA key installed at counter 1;
-the chain reports threshold 2 of 3, matching the deploy record. **Not settled yet:** who holds the
-three mainnet keys ([Q8](#open)), and the tool that collects two signatures for a later update, which
-will be rehearsed by inserting a verifier key on Preview.
+the chain reports threshold 2 of 3, matching the deploy record.
+
+**Exercised the same day.** A later update travels as a proposal: a file stating the update in
+readable parts, which each member's tool rebuilds and signs over the ledger's own `dataToSign`
+(`scripts/maintenance.mjs propose|sign|submit`, `scripts/lib/maintenance9.mjs`). Nobody signs a
+blob someone else computed, and any edit after signing invalidates every signature. The first one
+inserted the six read circuits of [D33](#settled) into the live contract: signed by one Schnorr and
+one ECDSA member, counter 1 to 2, block 19822, 5.49 DUST. The executed proposal, signatures
+included, is at [`deploy/maintenance/preview/counter-1.json`](../deploy/maintenance/preview/counter-1.json),
+so anyone can re-verify it. Removing a key is refused by ledger 9 today
+([midnight-node#2375](https://github.com/midnightntwrk/midnight-node/issues/2375)), so the tool
+inserts and replaces the authority, and refuses removals until that is fixed.
+
+**Not settled yet:** who holds the three mainnet keys ([Q8](#open)).
+
+### D33: Read circuits, so other contracts can ask and a successor can carry a record forward · 2026-11-08
+
+Every answer in this contract's ledger is public, but a public ledger is not a callable one: another
+contract cannot read this one's state, only call its circuits. So the contract gains six circuits
+that only read: `isRegistered`, `registrarOf`, `commitmentOf`, `holdsAtMost`, `holdsAtLeast` and
+`holdsGrant`. None takes a witness and none writes.
+
+**Two rules in them.** "Holds" means a claim against the field's current commitment: a claim key
+binds the commitment it was proven against, so recomputing it from the current one finds only a
+claim that still holds, and a claim about an overwritten value is not found. And an unknown vehicle
+or field answers `false` rather than refusing, so a calling contract can branch on the answer.
+`holdsAtMost(v, f, 150000)` is true only for that exact proven claim; the contract does not infer
+"at most 200 000" from it.
+
+**Why now.** `commitmentOf` is how a record can move to a successor contract without anyone
+trusting a copy: the successor is handed a value and its salt and checks them against this
+contract's commitment in the same transaction. That serves the same access period as [D28](#settled):
+Implementing Regulation (EU) 2025/1707, Article 17(4), *"The manufacturer shall ensure that EVP data
+are accessible for at least 20 years after the date of manufacture of the vehicle."*
+([REGULATION.md](REGULATION.md#the-implementing-act)). The `holds` circuits let another application
+require a passport claim in its own transaction, which is the composability Midnight's ledger 9
+cross-contract calls open up.
+
+**Added in place.** The six circuits change no existing circuit: the ten proving circuits compile
+to byte-identical ZKIR and verifier keys, checked before anything was proposed. So the committee
+inserted their keys into the live Preview contract ([D28](#settled)), and that contract is now this
+build, with no redeploy and no record left behind. One call to `holdsAtMost` was then accepted by
+the chain, answering `true` for the recorded run's vehicle (block 19862, 0.29 DUST).
 
 ## Reversed
 

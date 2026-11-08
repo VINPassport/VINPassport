@@ -1,0 +1,37 @@
+{
+  "version": { "major": 3, "minor": 1 },
+  "do_communications_commitment": true,
+  "inputs": [
+    { "name": "%vinHash.0", "type": "Scalar<BLS12-381>" },
+    { "name": "%vinHash.1", "type": "Scalar<BLS12-381>" },
+    { "name": "%granteeId.2", "type": "Scalar<BLS12-381>" },
+    { "name": "%granteeId.3", "type": "Scalar<BLS12-381>" },
+    { "name": "%tier.4", "type": "Scalar<BLS12-381>" }
+  ],
+  "outputs": [
+    "Scalar<BLS12-381>"
+  ],
+  "instructions": [
+    { "op": "constrain_bits", "val": "%vinHash.0", "bits": 8 },
+    { "op": "constrain_bits", "val": "%vinHash.1", "bits": 248 },
+    { "op": "constrain_bits", "val": "%granteeId.2", "bits": 8 },
+    { "op": "constrain_bits", "val": "%granteeId.3", "bits": 248 },
+    { "op": "constrain_to_boolean", "val": "%tier.4" },
+    { "op": "persistent_hash", "output": "%bytes.5", "alignment": [{ "tag": "atom", "value": { "length": 32, "tag": "bytes" } }, { "tag": "atom", "value": { "length": 32, "tag": "bytes" } }, { "tag": "atom", "value": { "length": 32, "tag": "bytes" } }], "inputs": ["0x00", "0x76696e70617373706f72743a6772616e743a7631", "%vinHash.0", "%vinHash.1", "%granteeId.2", "%granteeId.3"] },
+    { "op": "bytes_into_natives", "outputs": ["%key.6", "%key.7"], "bytes": "%bytes.5" },
+    { "op": "public_input", "type": "Scalar<BLS12-381>", "output": "%t.8", "guard": null },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x30"] },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x50", "0x01", "0x01", "0x09"] },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x10", "0x01", "0x01", "0x20", "%key.7", "%key.6"] },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x18"] },
+    { "op": "impact", "guard": "0x01", "inputs": ["0x0d", "0x01", "0x01", "%t.8"] },
+    { "op": "public_input", "type": "Scalar<BLS12-381>", "output": "%t.9", "guard": "%t.8" },
+    { "op": "impact", "guard": "%t.8", "inputs": ["0x30"] },
+    { "op": "impact", "guard": "%t.8", "inputs": ["0x50", "0x01", "0x01", "0x09"] },
+    { "op": "impact", "guard": "%t.8", "inputs": ["0x50", "0x01", "0x20", "%key.7", "%key.6"] },
+    { "op": "impact", "guard": "%t.8", "inputs": ["0x0c", "0x01", "0x01", "%t.9"] },
+    { "op": "test_eq", "output": "%t.10", "a": "%t.9", "b": "%tier.4" },
+    { "op": "cond_select", "output": "%t.11", "bit": "%t.8", "a": "%t.10", "b": "0x00" },
+    { "op": "output", "vals": ["%t.11"] }
+  ]
+}

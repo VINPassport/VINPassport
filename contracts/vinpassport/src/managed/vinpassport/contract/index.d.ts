@@ -69,6 +69,25 @@ export type ImpureCircuits<PS> = {
                         fieldKeyHigh_0: Uint8Array,
                         fieldKeyLow_0: Uint8Array,
                         slack_0: bigint): Promise<__compactRuntime.CircuitResults<PS, []>>;
+  isRegistered(context: __compactRuntime.CircuitContext<PS>,
+               vinHash_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, boolean>>;
+  registrarOf(context: __compactRuntime.CircuitContext<PS>,
+              vinHash_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, Uint8Array>>;
+  commitmentOf(context: __compactRuntime.CircuitContext<PS>,
+               vinHash_0: Uint8Array,
+               fieldKey_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, Uint8Array>>;
+  holdsAtMost(context: __compactRuntime.CircuitContext<PS>,
+              vinHash_0: Uint8Array,
+              fieldKey_0: Uint8Array,
+              bound_0: bigint): Promise<__compactRuntime.CircuitResults<PS, boolean>>;
+  holdsAtLeast(context: __compactRuntime.CircuitContext<PS>,
+               vinHash_0: Uint8Array,
+               fieldKey_0: Uint8Array,
+               bound_0: bigint): Promise<__compactRuntime.CircuitResults<PS, boolean>>;
+  holdsGrant(context: __compactRuntime.CircuitContext<PS>,
+             vinHash_0: Uint8Array,
+             granteeId_0: Uint8Array,
+             tier_0: Tier): Promise<__compactRuntime.CircuitResults<PS, boolean>>;
 }
 
 export type ProvableCircuits<PS> = {
@@ -108,6 +127,25 @@ export type ProvableCircuits<PS> = {
                         fieldKeyHigh_0: Uint8Array,
                         fieldKeyLow_0: Uint8Array,
                         slack_0: bigint): Promise<__compactRuntime.CircuitResults<PS, []>>;
+  isRegistered(context: __compactRuntime.CircuitContext<PS>,
+               vinHash_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, boolean>>;
+  registrarOf(context: __compactRuntime.CircuitContext<PS>,
+              vinHash_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, Uint8Array>>;
+  commitmentOf(context: __compactRuntime.CircuitContext<PS>,
+               vinHash_0: Uint8Array,
+               fieldKey_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, Uint8Array>>;
+  holdsAtMost(context: __compactRuntime.CircuitContext<PS>,
+              vinHash_0: Uint8Array,
+              fieldKey_0: Uint8Array,
+              bound_0: bigint): Promise<__compactRuntime.CircuitResults<PS, boolean>>;
+  holdsAtLeast(context: __compactRuntime.CircuitContext<PS>,
+               vinHash_0: Uint8Array,
+               fieldKey_0: Uint8Array,
+               bound_0: bigint): Promise<__compactRuntime.CircuitResults<PS, boolean>>;
+  holdsGrant(context: __compactRuntime.CircuitContext<PS>,
+             vinHash_0: Uint8Array,
+             granteeId_0: Uint8Array,
+             tier_0: Tier): Promise<__compactRuntime.CircuitResults<PS, boolean>>;
 }
 
 export type PureCircuits = {
@@ -168,6 +206,25 @@ export type Circuits<PS> = {
                         fieldKeyHigh_0: Uint8Array,
                         fieldKeyLow_0: Uint8Array,
                         slack_0: bigint): Promise<__compactRuntime.CircuitResults<PS, []>>;
+  isRegistered(context: __compactRuntime.CircuitContext<PS>,
+               vinHash_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, boolean>>;
+  registrarOf(context: __compactRuntime.CircuitContext<PS>,
+              vinHash_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, Uint8Array>>;
+  commitmentOf(context: __compactRuntime.CircuitContext<PS>,
+               vinHash_0: Uint8Array,
+               fieldKey_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, Uint8Array>>;
+  holdsAtMost(context: __compactRuntime.CircuitContext<PS>,
+              vinHash_0: Uint8Array,
+              fieldKey_0: Uint8Array,
+              bound_0: bigint): Promise<__compactRuntime.CircuitResults<PS, boolean>>;
+  holdsAtLeast(context: __compactRuntime.CircuitContext<PS>,
+               vinHash_0: Uint8Array,
+               fieldKey_0: Uint8Array,
+               bound_0: bigint): Promise<__compactRuntime.CircuitResults<PS, boolean>>;
+  holdsGrant(context: __compactRuntime.CircuitContext<PS>,
+             vinHash_0: Uint8Array,
+             granteeId_0: Uint8Array,
+             tier_0: Tier): Promise<__compactRuntime.CircuitResults<PS, boolean>>;
 }
 
 export type Ledger = {

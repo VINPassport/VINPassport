@@ -110,6 +110,8 @@ since the price is a scalar these ratios hold whatever it is.
 | `registerPassport` | 0.590 |
 | `initialiseField`, `authoriseWriter`, `grantDisclosure`, `recordField`, `withdrawWriter` and the four claims | 0.307 to 0.311 each, with one `initialiseField` at 0.083 |
 | The whole 14-call guided run | 4.377 |
+| Committee update inserting six verifier keys (11.8 KB of keys) | 5.486 |
+| A call to a read circuit (`holdsAtMost`) | 0.286 |
 
 These are paid fees on a live chain, not estimates: Preview is a different network from preprod
 at a different price, so they are not a like-for-like comparison with the table above. The wallet's

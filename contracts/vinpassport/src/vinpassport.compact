@@ -694,3 +694,89 @@ export circuit proveFieldAtMostField(
     }
   );
 }
+
+// ---------------------------------------------------------------- read circuits
+
+// Questions another contract can ask this one in the same transaction, and
+// that a successor contract can use to carry a vehicle's record forward. Every
+// answer is already public in the ledger; these circuits only make it callable.
+// None of them writes, and none of them takes a witness.
+//
+// "Current" means against the field's commitment as it stands now. A claim
+// key binds the commitment it was proven against, so recomputing the key from
+// the current commitment and finding it in `claims` is exactly "a claim that
+// still holds". A claim about a value since overwritten is not found.
+
+// Is this vehicle registered?
+export circuit isRegistered(vinHash: Bytes<32>): Boolean {
+  return passports.member(disclose(vinHash));
+}
+
+// The authority that registered it. Refuses for an unregistered vehicle.
+export circuit registrarOf(vinHash: Bytes<32>): Bytes<32> {
+  assert(passports.member(disclose(vinHash)), "unknown passport");
+  return registrar.lookup(disclose(vinHash));
+}
+
+// The commitment to a field's current value. A successor contract given the
+// value and its salt checks persistentCommit(value, salt) against this, which
+// is how a record moves to a new contract without anyone trusting a copy.
+export circuit commitmentOf(vinHash: Bytes<32>, fieldKey: Bytes<32>): Bytes<32> {
+  assert(passports.member(disclose(vinHash)), "unknown passport");
+  const slot = slotOf(
+    disclose(vinHash), disclose(fieldKey), passports.lookup(disclose(vinHash))
+  );
+  assert(fieldCommitment.member(slot), "field not initialised");
+  return fieldCommitment.lookup(slot);
+}
+
+// Does the ledger hold a current "at most `bound`" claim for this field?
+// False, never a refusal, for an unknown vehicle or field, so a caller can
+// branch on the answer.
+export circuit holdsAtMost(
+  vinHash: Bytes<32>,
+  fieldKey: Bytes<32>,
+  bound: Uint<64>
+): Boolean {
+  return holdsClaim(pad(32, "vinpassport:claim:atmost:v1"), vinHash, fieldKey, bound);
+}
+
+// The mirror: a current "at least `bound`" claim.
+export circuit holdsAtLeast(
+  vinHash: Bytes<32>,
+  fieldKey: Bytes<32>,
+  bound: Uint<64>
+): Boolean {
+  return holdsClaim(pad(32, "vinpassport:claim:atleast:v1"), vinHash, fieldKey, bound);
+}
+
+// Has this vehicle's registrar given `granteeId` exactly this view?
+export circuit holdsGrant(
+  vinHash: Bytes<32>,
+  granteeId: Bytes<32>,
+  tier: Tier
+): Boolean {
+  const key = grantKeyOf(disclose(vinHash), disclose(granteeId));
+  if (!grants.member(key)) {
+    return false;
+  }
+  return grants.lookup(key) == disclose(tier);
+}
+
+circuit holdsClaim(
+  tag: Bytes<32>,
+  vinHash: Bytes<32>,
+  fieldKey: Bytes<32>,
+  bound: Uint<64>
+): Boolean {
+  if (!passports.member(disclose(vinHash))) {
+    return false;
+  }
+  const slot = slotOf(
+    disclose(vinHash), disclose(fieldKey), passports.lookup(disclose(vinHash))
+  );
+  if (!fieldCommitment.member(slot)) {
+    return false;
+  }
+  return claims.member(claimKey(tag, slot, disclose(bound), fieldCommitment.lookup(slot)));
+}

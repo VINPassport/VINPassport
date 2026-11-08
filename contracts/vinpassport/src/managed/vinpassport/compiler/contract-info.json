@@ -414,6 +414,163 @@
         "types": [
         ]
       }
+    },
+    {
+      "name": "isRegistered",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "vinHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Boolean"
+      }
+    },
+    {
+      "name": "registrarOf",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "vinHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
+      "name": "commitmentOf",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "vinHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "fieldKey",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
+      "name": "holdsAtMost",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "vinHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "fieldKey",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "bound",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 18446744073709551615
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Boolean"
+      }
+    },
+    {
+      "name": "holdsAtLeast",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "vinHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "fieldKey",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "bound",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 18446744073709551615
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Boolean"
+      }
+    },
+    {
+      "name": "holdsGrant",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "vinHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "granteeId",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "tier",
+          "type": {
+            "type-name": "Enum",
+            "name": "Tier",
+            "elements": [
+              "trade",
+              "authority"
+            ]
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Boolean"
+      }
     }
   ],
   "witnesses": [

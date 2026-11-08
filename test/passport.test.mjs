@@ -1815,3 +1815,100 @@ describe('proveFieldAtMostField', () => {
         await sim.proveFieldAtMostField(VIN_A, ODO, SERVICED_AT, 15_000n);
     });
 });
+
+// ---------------------------------------------------------------- read circuits
+
+describe('read circuits: what another contract can ask (2.2)', () => {
+    // Six circuits that only read, so a later contract can ask this one in
+    // the same transaction, or carry a vehicle's record forward. Every answer
+    // is already public; these make it callable. None takes a witness and
+    // none writes.
+    const snapshot = () => JSON.stringify(sim.ledgerValues(), (_, v) => (typeof v === 'bigint' ? v.toString() : v));
+
+    it('isRegistered answers for a registered and an unknown vehicle', async () => {
+        await registered();
+        expect(await sim.read('isRegistered', VIN_A)).toBe(true);
+        expect(await sim.read('isRegistered', VIN_B)).toBe(false);
+    });
+
+    it('registrarOf names the registering authority, and refuses an unknown vehicle', async () => {
+        await registered();
+        expect(hex(await sim.read('registrarOf', VIN_A))).toBe(hex(REGISTRAR_ID));
+        await expect(sim.read('registrarOf', VIN_B)).rejects.toThrow(rejects('unknown passport'));
+    });
+
+    it('commitmentOf returns the current commitment, and follows an update', async () => {
+        await registered();
+        const slot = pureCircuits.slotOf(VIN_A, ODO, ROOT);
+        expect(hex(await sim.read('commitmentOf', VIN_A, ODO))).toBe(hex(sim.ledger.fieldCommitment.lookup(slot)));
+        const before = hex(await sim.read('commitmentOf', VIN_A, ODO));
+        await sim.recordField(VIN_A, ODO, 20n, S2);
+        const after = hex(await sim.read('commitmentOf', VIN_A, ODO));
+        expect(after).not.toBe(before);
+        expect(after).toBe(hex(sim.ledger.fieldCommitment.lookup(slot)));
+        await expect(sim.read('commitmentOf', VIN_A, fieldKey('notAField'))).rejects.toThrow(rejects('field not initialised'));
+        await expect(sim.read('commitmentOf', VIN_B, ODO)).rejects.toThrow(rejects('unknown passport'));
+    });
+
+    it('holdsAtMost is true for the exact claim proven, and only that one', async () => {
+        await registered();
+        await sim.proveFieldAtMost(VIN_A, ODO, 150_000n);
+        expect(await sim.read('holdsAtMost', VIN_A, ODO, 150_000n)).toBe(true);
+        // A looser bound was never proven, so it is not held. A caller wanting
+        // "at most 200 000" asks for the claim it needs; the contract does not
+        // infer one claim from another.
+        expect(await sim.read('holdsAtMost', VIN_A, ODO, 200_000n)).toBe(false);
+        expect(await sim.read('holdsAtLeast', VIN_A, ODO, 150_000n)).toBe(false);
+    });
+
+    it('a claim about a value since overwritten is no longer held', async () => {
+        await registered();
+        await sim.proveFieldAtMost(VIN_A, ODO, 150_000n);
+        await sim.recordField(VIN_A, ODO, 20n, S2);
+        expect(await sim.read('holdsAtMost', VIN_A, ODO, 150_000n)).toBe(false);
+        // Re-proven against the new value, it holds again.
+        await sim.proveFieldAtMost(VIN_A, ODO, 150_000n);
+        expect(await sim.read('holdsAtMost', VIN_A, ODO, 150_000n)).toBe(true);
+    });
+
+    it('holdsAtLeast mirrors it', async () => {
+        await registered();
+        await sim.proveFieldAtLeast(VIN_A, OWNERS, 1n);
+        expect(await sim.read('holdsAtLeast', VIN_A, OWNERS, 1n)).toBe(true);
+        expect(await sim.read('holdsAtLeast', VIN_A, OWNERS, 2n)).toBe(false);
+        expect(await sim.read('holdsAtMost', VIN_A, OWNERS, 1n)).toBe(false);
+    });
+
+    it('an unknown vehicle or field is answered false, never refused, so a caller can branch', async () => {
+        await registered();
+        expect(await sim.read('holdsAtMost', VIN_B, ODO, 150_000n)).toBe(false);
+        expect(await sim.read('holdsAtMost', VIN_A, fieldKey('notAField'), 150_000n)).toBe(false);
+        expect(await sim.read('holdsAtLeast', VIN_B, ODO, 0n)).toBe(false);
+        expect(await sim.read('holdsGrant', VIN_B, DEALER_ID, Tier.trade)).toBe(false);
+    });
+
+    it('holdsGrant answers for exactly the view granted, and stops after a revoke', async () => {
+        await registered();
+        await sim.grantDisclosure(VIN_A, DEALER_ID, Tier.trade, REGISTRAR);
+        expect(await sim.read('holdsGrant', VIN_A, DEALER_ID, Tier.trade)).toBe(true);
+        expect(await sim.read('holdsGrant', VIN_A, DEALER_ID, Tier.authority)).toBe(false);
+        expect(await sim.read('holdsGrant', VIN_A, GARAGE_ID, Tier.trade)).toBe(false);
+        await sim.revokeDisclosure(VIN_A, DEALER_ID, REGISTRAR);
+        expect(await sim.read('holdsGrant', VIN_A, DEALER_ID, Tier.trade)).toBe(false);
+    });
+
+    it('no read writes anything, whoever asks', async () => {
+        await registered();
+        await sim.proveFieldAtMost(VIN_A, ODO, 150_000n);
+        await sim.grantDisclosure(VIN_A, DEALER_ID, Tier.trade, REGISTRAR);
+        const before = snapshot();
+        sim.actAs(OUTSIDER_SECRET);
+        await sim.read('isRegistered', VIN_A);
+        await sim.read('registrarOf', VIN_A);
+        await sim.read('commitmentOf', VIN_A, ODO);
+        await sim.read('holdsAtMost', VIN_A, ODO, 150_000n);
+        await sim.read('holdsAtLeast', VIN_A, ODO, 0n);
+        await sim.read('holdsGrant', VIN_A, DEALER_ID, Tier.trade);
+        expect(snapshot()).toBe(before);
+    });
+});
