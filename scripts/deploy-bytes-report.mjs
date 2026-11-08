@@ -1,9 +1,10 @@
 /**
  * Everything a sponsor needs to diagnose a transaction we built, in one report.
  *
- * Reads the bytes, prints the serialization header verbatim, says whether the
- * ledger and the builder can each read them, and reports the builder's own
- * configuration. Nothing here touches the network and nothing is submitted.
+ * Reads the bytes, prints the serialization header verbatim, and says which
+ * stage markers the ledger 9 Transaction reads them with. Nothing here
+ * touches the network and nothing is submitted. (The ledger 8 version, which
+ * also asked nightgate-tx's builder, is at the git tag ledger8-preprod.)
  *
  *   node scripts/deploy-bytes-report.mjs <file.b64> [more.b64 ...]
  *
@@ -15,7 +16,7 @@
  */
 import { readFileSync } from 'node:fs';
 import { basename } from 'node:path';
-import { Transaction } from '@midnight-ntwrk/ledger-v8';
+import { Transaction } from '@midnightntwrk/ledger-v9';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 
@@ -32,8 +33,8 @@ const TAG_SETS = [
 ];
 
 console.log('versions');
-for (const p of ['@midnight-ntwrk/ledger-v8', '@odatano/nightgate-tx',
-    '@midnight-ntwrk/compact-runtime', '@midnight-ntwrk/compact-js']) {
+for (const p of ['@midnightntwrk/ledger-v9', '@midnight-ntwrk/compact-runtime',
+    '@midnight-ntwrk/midnight-js-contracts', '@midnightntwrk/wallet-sdk-facade']) {
     let v = null;
     // Some of these do not export ./package.json, so fall back to reading it
     // off disk rather than reporting a version we could not confirm.
@@ -82,13 +83,4 @@ for (const f of files) {
         }
     }
 
-    // What the builder itself makes of the same bytes, in this same process.
-    try {
-        const { deserializeTransaction } = await import('@odatano/nightgate-tx/txbuilder');
-        const tx = await deserializeTransaction(b64);
-        console.log(`  builder reads    yes (${tx?.constructor?.name ?? typeof tx})`);
-        try { console.log(`  builder says     ${String(tx).slice(0, 200).replace(/\s+/g, ' ')}`); } catch { }
-    } catch (e) {
-        console.log(`  builder reads    NO: ${String(e.message ?? e).replace(/\s+/g, ' ').slice(0, 160)}`);
-    }
 }

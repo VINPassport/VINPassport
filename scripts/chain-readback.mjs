@@ -2,14 +2,17 @@
  * Read the deployed contract back from the public indexer and say what the
  * chain holds, decoded with the contract's own `ledger()` reader.
  *
- *   node scripts/chain-readback.mjs                      what is on chain
+ *   node scripts/chain-readback.mjs                      what is on chain (Preview)
  *   node scripts/chain-readback.mjs --receipt <file>     and check it against a receipt
  *   node scripts/chain-readback.mjs --network mainnet    another network's record
  *
  * Why it exists: a green simulator run does not show what a public chain
  * exposes, so the ledger is read from the indexer, as anyone can read it, and
- * not from our own process. It needs a Blockfrost project id for the network
- * (scripts/lib/endpoints.mjs) and nothing else; it signs and spends nothing.
+ * not from our own process. Preview's indexer is open; mainnet needs a
+ * Blockfrost project id (scripts/lib/endpoints.mjs). It signs and spends
+ * nothing. The state is read era-aware (scripts/lib/chain-state.mjs): this
+ * build decodes ledger 9 states, and the ledger 8 preprod readback is at the
+ * git tag ledger8-preprod.
  *
  * With a receipt it checks, and prints only yes or no and counts:
  *   - the receipt's vehicle key is a passport on chain, under the scheme it names
@@ -27,9 +30,9 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { ContractState } from '@midnight-ntwrk/compact-runtime';
-import { ledger, Tier } from '../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
-import { networkEndpoints, checkNetwork, guardLogs } from './lib/endpoints.mjs';
+import { Tier } from '../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
+import { checkNetwork, guardLogs } from './lib/endpoints.mjs';
+import { deployRecord, readContract } from './lib/chain-state.mjs';
 import { slotOf, fieldKeyOf, commitmentOf, grantKeyOf, vinHashOf, PLAIN_VIN_SCHEME } from './lib/disclosure.mjs';
 import { readRegistrarSlots } from './lib/registrar-slots.mjs';
 
@@ -37,30 +40,23 @@ guardLogs();
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const arg = (name) => { const i = process.argv.indexOf(name); return i === -1 ? null : process.argv[i + 1]; };
-const NETWORK = checkNetwork(arg('--network') ?? 'preprod');
+const NETWORK = checkNetwork(arg('--network') ?? 'preview');
 const RECEIPT = arg('--receipt');
 const hex = (u) => Buffer.from(u).toString('hex');
 const fail = (m) => { console.error(`\nSTOP: ${m}`); process.exit(1); };
 
-const record = JSON.parse(readFileSync(join(ROOT, 'deploy', `${NETWORK}.json`), 'utf8'));
+let record, chain;
+try {
+    record = deployRecord(NETWORK);
+    chain = await readContract(NETWORK, record.contractAddress);
+} catch (e) { fail(e.message); }
 const address = record.contractAddress;
+const stateBytes = chain.bytes;
+const L = chain.ledger;
 
-// -- the chain, as anyone can read it
-const res = await fetch(networkEndpoints(NETWORK).indexerHttpUrl, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ query: `{ contractAction(address: "${address}") { __typename state transaction { hash block { height } } } }` })
-});
-const body = await res.json();
-const action = body?.data?.contractAction;
-if (!action?.state) fail(`the indexer returned no state for ${address}: ${JSON.stringify(body?.errors ?? body).slice(0, 300)}`);
-
-const stateBytes = Buffer.from(action.state, 'hex');
-const L = ledger(ContractState.deserialize(stateBytes).data);
-
-console.log(`network      ${NETWORK}`);
+console.log(`network      ${NETWORK} (ledger ${chain.era})`);
 console.log(`contract     ${address}`);
-console.log(`latest       ${action.__typename} in block ${action.transaction?.block?.height}, tx ${action.transaction?.hash}`);
+console.log(`latest       ${chain.latest.kind} in block ${chain.latest.blockHeight}, tx ${chain.latest.txHash}`);
 console.log(`state        ${stateBytes.length} bytes\n`);
 
 const maps = ['passports', 'registrar', 'fieldCommitment', 'fieldRule', 'claims', 'relClaims', 'allowedRegistrars', 'writers', 'fieldWriter', 'grants'];

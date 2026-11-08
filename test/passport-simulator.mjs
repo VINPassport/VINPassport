@@ -150,13 +150,34 @@ export const AUTHORITY_SECRET = bytes32(0x33);
 export const AUTHORITY_ID = pureCircuits.registrarIdOf(AUTHORITY_SECRET);
 
 export class PassportSimulator {
+    static #token = Symbol('PassportSimulator.create');
+
     /**
+     * Build a simulator. Asynchronous because the contract is: compactc 0.36.0
+     * emits an async constructor and async circuits, so every circuit method
+     * below returns a promise of the ledger and callers await each call.
+     *
      * `allowed` is the deploy-pinned registrar list. It is fixed here exactly
      * as it is fixed on chain: the constructor is the only writer, so a test
      * cannot widen it later any more than a caller could.
      */
-    constructor(allowed = [REGISTRAR_ID]) {
+    static async create(allowed = [REGISTRAR_ID]) {
+        const sim = new PassportSimulator(PassportSimulator.#token);
+        await sim.#init(allowed);
+        return sim;
+    }
+
+    // A plain `new PassportSimulator()` would hand back an object with no
+    // ledger, and whatever read it would fail somewhere unhelpful. Refuse it
+    // here, so a caller not yet moved to `create` fails at once and says why.
+    constructor(token) {
+        if (token !== PassportSimulator.#token) {
+            throw new Error('use `await PassportSimulator.create(...)`: the contract is asynchronous since compactc 0.36.0');
+        }
         this.contract = new Contract(witnesses);
+    }
+
+    async #init(allowed) {
         const initial = {
             store: {},
             pending: { slot: null, value: 0n, salt: bytes32(0) },
@@ -167,25 +188,29 @@ export class PassportSimulator {
         // entry fills the vector without widening who is authorised.
         const slots = [...allowed];
         while (slots.length < 4) slots.push(slots[slots.length - 1]);
-        const init = this.contract.initialState(
+        const init = await this.contract.initialState(
             createConstructorContext(initial, '0'.repeat(64)),
             slots
         );
-        this.ctx = createCircuitContext(
-            sampleContractAddress(),
-            '0'.repeat(64),
-            init.currentContractState,
-            init.currentPrivateState
-        );
+        // One context carried from call to call, as before. `circuitId` names
+        // the circuit a context was made for; each generated circuit copies
+        // the context it is given and does not check the name.
+        this.ctx = createCircuitContext({
+            circuitId: 'simulator',
+            contractAddress: sampleContractAddress(),
+            coinPublicKeyOrZswapState: '0'.repeat(64),
+            contractState: init.currentContractState,
+            privateState: init.currentPrivateState
+        });
     }
 
     /** The public ledger, as any observer of the chain would read it. */
     get ledger() {
-        return ledger(this.ctx.currentQueryContext.state);
+        return ledger(this.ctx.callContext.currentQueryContext.state);
     }
 
     get privateState() {
-        return this.ctx.currentPrivateState;
+        return this.ctx.callContext.currentPrivateState;
     }
 
     /**
@@ -203,16 +228,16 @@ export class PassportSimulator {
 
     /** Act as the holder of `secret` from here on. */
     actAs(secret) {
-        this.ctx.currentPrivateState.actor = secret;
+        this.ctx.callContext.currentPrivateState.actor = secret;
         return this;
     }
 
     stage(vin, field, value, salt) {
-        this.ctx.currentPrivateState.pending = { slot: this.ref(vin, field), value, salt };
+        this.ctx.callContext.currentPrivateState.pending = { slot: this.ref(vin, field), value, salt };
     }
 
     commit(vin, field, value, salt) {
-        this.ctx.currentPrivateState.store[this.ref(vin, field)] = { value, salt };
+        this.ctx.callContext.currentPrivateState.store[this.ref(vin, field)] = { value, salt };
     }
 
     /**
@@ -220,11 +245,11 @@ export class PassportSimulator {
      * the identity from the acting secret, so `secret` chooses who is calling,
      * not what gets written.
      */
-    registerPassport(vin, contentRoot, secret) {
+    async registerPassport(vin, contentRoot, secret) {
         if (secret) this.actAs(secret);
-        this.ctx = this.contract.impureCircuits.registerPassport(
+        this.ctx = (await this.contract.impureCircuits.registerPassport(
             this.ctx, vin, contentRoot
-        ).context;
+        )).context;
         return this.ledger;
     }
 
@@ -232,20 +257,20 @@ export class PassportSimulator {
      * Let `writerId` write this vehicle's fields. Acting secret decides who is
      * asking; only the vehicle's registrar may.
      */
-    authoriseWriter(vin, writerId, secret) {
+    async authoriseWriter(vin, writerId, secret) {
         if (secret) this.actAs(secret);
-        this.ctx = this.contract.impureCircuits.authoriseWriter(
+        this.ctx = (await this.contract.impureCircuits.authoriseWriter(
             this.ctx, vin, writerId
-        ).context;
+        )).context;
         return this.ledger;
     }
 
     /** Take that permission away again. */
-    withdrawWriter(vin, writerId, secret) {
+    async withdrawWriter(vin, writerId, secret) {
         if (secret) this.actAs(secret);
-        this.ctx = this.contract.impureCircuits.withdrawWriter(
+        this.ctx = (await this.contract.impureCircuits.withdrawWriter(
             this.ctx, vin, writerId
-        ).context;
+        )).context;
         return this.ledger;
     }
 
@@ -254,29 +279,29 @@ export class PassportSimulator {
      * this vehicle (D26). Acting secret decides who is asking; only the
      * vehicle's registrar may.
      */
-    grantDisclosure(vin, granteeId, tier, secret) {
+    async grantDisclosure(vin, granteeId, tier, secret) {
         if (secret) this.actAs(secret);
-        this.ctx = this.contract.impureCircuits.grantDisclosure(
+        this.ctx = (await this.contract.impureCircuits.grantDisclosure(
             this.ctx, vin, granteeId, tier
-        ).context;
+        )).context;
         return this.ledger;
     }
 
     /** Take a grant away. Nothing already handed over comes back. */
-    revokeDisclosure(vin, granteeId, secret) {
+    async revokeDisclosure(vin, granteeId, secret) {
         if (secret) this.actAs(secret);
-        this.ctx = this.contract.impureCircuits.revokeDisclosure(
+        this.ctx = (await this.contract.impureCircuits.revokeDisclosure(
             this.ctx, vin, granteeId
-        ).context;
+        )).context;
         return this.ledger;
     }
 
-    initialiseField(vin, field, rule, value, salt, secret) {
+    async initialiseField(vin, field, rule, value, salt, secret) {
         if (secret) this.actAs(secret);
         this.stage(vin, field, value, salt);
-        this.ctx = this.contract.impureCircuits.initialiseField(
+        this.ctx = (await this.contract.impureCircuits.initialiseField(
             this.ctx, vin, field, rule
-        ).context;
+        )).context;
         this.commit(vin, field, value, salt);
         return this.ledger;
     }
@@ -288,46 +313,46 @@ export class PassportSimulator {
      * were, which is how the tests impersonate someone who does not actually
      * know them. Omitted, the simulator opens with what it genuinely recorded.
      */
-    recordField(vin, field, value, salt, openWith, secret) {
+    async recordField(vin, field, value, salt, openWith, secret) {
         if (secret) this.actAs(secret);
         const ref = this.ref(vin, field);
         const known = this.privateState.store[ref];
         const restore = known ? { ...known } : undefined;
-        if (openWith) this.ctx.currentPrivateState.store[ref] = openWith;
+        if (openWith) this.ctx.callContext.currentPrivateState.store[ref] = openWith;
         this.stage(vin, field, value, salt);
         try {
-            this.ctx = this.contract.impureCircuits.recordField(this.ctx, vin, field).context;
+            this.ctx = (await this.contract.impureCircuits.recordField(this.ctx, vin, field)).context;
         } finally {
             // A forged opening must never be left behind as if it were real,
             // whether the call was accepted or rejected.
-            if (openWith && restore) this.ctx.currentPrivateState.store[ref] = restore;
+            if (openWith && restore) this.ctx.callContext.currentPrivateState.store[ref] = restore;
         }
         this.commit(vin, field, value, salt);
         return this.ledger;
     }
 
-    #prove(name, vin, field, bound, openWith) {
+    async #prove(name, vin, field, bound, openWith) {
         const ref = this.ref(vin, field);
         const known = this.privateState.store[ref];
         const restore = known ? { ...known } : undefined;
-        if (openWith) this.ctx.currentPrivateState.store[ref] = openWith;
-        this.ctx.currentPrivateState.pending = { slot: ref, value: 0n, salt: bytes32(0) };
+        if (openWith) this.ctx.callContext.currentPrivateState.store[ref] = openWith;
+        this.ctx.callContext.currentPrivateState.pending = { slot: ref, value: 0n, salt: bytes32(0) };
         try {
-            this.ctx = this.contract.impureCircuits[name](this.ctx, vin, field, bound).context;
+            this.ctx = (await this.contract.impureCircuits[name](this.ctx, vin, field, bound)).context;
         } finally {
-            if (openWith && restore) this.ctx.currentPrivateState.store[ref] = restore;
+            if (openWith && restore) this.ctx.callContext.currentPrivateState.store[ref] = restore;
         }
         return this.ledger;
     }
 
     /** Prove the hidden value is at or below `bound`, disclosing neither. */
-    proveFieldAtMost(vin, field, bound, openWith) {
-        return this.#prove('proveFieldAtMost', vin, field, bound, openWith);
+    async proveFieldAtMost(vin, field, bound, openWith) {
+        return await this.#prove('proveFieldAtMost', vin, field, bound, openWith);
     }
 
     /** Prove the hidden value is at or above `bound`, disclosing neither. */
-    proveFieldAtLeast(vin, field, bound, openWith) {
-        return this.#prove('proveFieldAtLeast', vin, field, bound, openWith);
+    async proveFieldAtLeast(vin, field, bound, openWith) {
+        return await this.#prove('proveFieldAtLeast', vin, field, bound, openWith);
     }
 
     /**
@@ -338,25 +363,25 @@ export class PassportSimulator {
      * reads them through previousValue/previousSalt and otherValue/otherSalt
      * respectively.
      */
-    proveFieldAtMostField(vin, high, low, slack, openHigh, openLow) {
+    async proveFieldAtMostField(vin, high, low, slack, openHigh, openLow) {
         const refHigh = this.ref(vin, high);
         const refLow = this.ref(vin, low);
         const known = {
             high: this.privateState.store[refHigh],
             low: this.privateState.store[refLow]
         };
-        if (openHigh) this.ctx.currentPrivateState.store[refHigh] = openHigh;
-        if (openLow) this.ctx.currentPrivateState.store[refLow] = openLow;
-        this.ctx.currentPrivateState.pending = { slot: refHigh, value: 0n, salt: bytes32(0) };
-        this.ctx.currentPrivateState.other = refLow;
+        if (openHigh) this.ctx.callContext.currentPrivateState.store[refHigh] = openHigh;
+        if (openLow) this.ctx.callContext.currentPrivateState.store[refLow] = openLow;
+        this.ctx.callContext.currentPrivateState.pending = { slot: refHigh, value: 0n, salt: bytes32(0) };
+        this.ctx.callContext.currentPrivateState.other = refLow;
         try {
-            this.ctx = this.contract.impureCircuits.proveFieldAtMostField(
+            this.ctx = (await this.contract.impureCircuits.proveFieldAtMostField(
                 this.ctx, vin, high, low, slack
-            ).context;
+            )).context;
         } finally {
-            if (openHigh && known.high) this.ctx.currentPrivateState.store[refHigh] = known.high;
-            if (openLow && known.low) this.ctx.currentPrivateState.store[refLow] = known.low;
-            this.ctx.currentPrivateState.other = null;
+            if (openHigh && known.high) this.ctx.callContext.currentPrivateState.store[refHigh] = known.high;
+            if (openLow && known.low) this.ctx.callContext.currentPrivateState.store[refLow] = known.low;
+            this.ctx.callContext.currentPrivateState.other = null;
         }
         return this.ledger;
     }

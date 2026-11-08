@@ -43,23 +43,24 @@ const PORT = Number(process.env.PORT ?? 8790);
 
 // ---------------------------------------------------------------- state
 
-const sim = new PassportSimulator();
+const sim = await PassportSimulator.create();
 const salt = saltStream();
-const demo = buildDemoVehicles(sim, salt);
+const demo = await buildDemoVehicles(sim, salt);
 
-// ------------------------------------------------------------ preprod demo
+// ------------------------------------------------------------ chain demo
 // Off by default: `npm run app` stays the dependency-light judge path. With
-// VINPASSPORT_PREPROD=1 (plus the seed file and wallet snapshots the runner
-// documents), /api/demo/* runs REAL transactions against the deployed
-// contract - capped per UTC day, one at a time, fresh random VPD VINs.
-const DEMO_ENABLED = process.env.VINPASSPORT_PREPROD === '1';
+// VINPASSPORT_CHAIN=1 (`npm run app:chain` sets it), /api/demo/* runs REAL
+// transactions against the contract deployed on VINPASSPORT_NETWORK_ID
+// (default preview; ledger 9 runner, scripts/lib/runner9.mjs) - capped per UTC
+// day, one at a time, fresh random VPD VINs.
+const DEMO_ENABLED = process.env.VINPASSPORT_CHAIN === '1';
 let runner = null;
 let runnerError = null;
 if (DEMO_ENABLED) {
-    import('./lib/preprod-runner.mjs')
+    import('./lib/runner9.mjs')
         .then((m) => m.createRunner({ log: console.log }))
         .then((r) => { runner = r; })
-        .catch((e) => { runnerError = e; console.error('preprod demo failed to start:', e.message); });
+        .catch((e) => { runnerError = e; console.error('chain demo failed to start:', e.message); });
 }
 const vehicles = [
     { vinHash: demo.a.vinHex, title: 'Vehicle A', blurb: 'Full service history, claims proven' },
@@ -150,7 +151,7 @@ async function handleIntake(req, res) {
         return json(res, e.code ?? 400, { error: e.message });
     }
 
-    const result = applyIntake(
+    const result = await applyIntake(
         sim,
         { ...intake, writers, registrarSecret: CONSOLE_REGISTRAR_SECRET },
         salt

@@ -76,11 +76,11 @@ export function requireIntakeFields(intake) {
  * discard them cost about 200 ms for nothing. The caller merges the result
  * onto whatever record it already had.
  */
-export function registerLocally(intake) {
+export async function registerLocally(intake) {
     requireIntakeFields(intake);
     const writers = resolveWriters(intake);
-    const sim = new PassportSimulator();
-    const result = applyIntake(
+    const sim = await PassportSimulator.create();
+    const result = await applyIntake(
         sim,
         { ...intake, writers, registrarSecret: CONSOLE_REGISTRAR_SECRET },
         saltStream()

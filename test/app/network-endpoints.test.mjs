@@ -3,13 +3,14 @@
  *
  * Three things are held here.
  *
- *  1. Nothing defaults to mainnet. Preprod is the default everywhere, mainnet
- *     must be named, and an unknown name is refused rather than mapped.
+ *  1. Nothing defaults to mainnet. Mainnet must be named, and an unknown name
+ *     is refused rather than mapped. Preview is open and takes no credential.
  *  2. Credentials stay per network. Each network reads its own Blockfrost
  *     project id, and the guards that keep an id out of anything we hand over
  *     cover every configured id, not only preprod's.
- *  3. The deploy script's mainnet guards: self-funded only, its own registrar
- *     secrets, and no contract before the mainnet vin key exists.
+ *  3. The deploy script's mainnet guards: the network is always named, its own
+ *     registrar secrets, no contract before the mainnet vin key exists, and
+ *     no mainnet key read from a default location or a synced folder.
  *
  * Every credential used here is a fake set in the environment for one test
  * and restored after it. The real local file is never printed.
@@ -25,9 +26,10 @@ import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-    NETWORKS, checkNetwork, networkEndpoints, publicEndpoints, preprodEndpoints,
-    publicPreprodEndpoints, blockfrostToken, assertNoSecrets
+    NETWORKS, CREDENTIALED, isOpenNetwork, checkNetwork, networkEndpoints, publicEndpoints,
+    preprodEndpoints, publicPreprodEndpoints, blockfrostToken, assertNoSecrets
 } from '../../scripts/lib/endpoints.mjs';
+import { networks } from '@midnight-ntwrk/midnight-js-utils';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const FAKE = { preprod: 'preprodFAKEtoken0001', mainnet: 'mainnetFAKEtoken0002' };
@@ -50,9 +52,9 @@ function withTokens(tokens, fn) {
 
 // ---------------------------------------------------------------- 1. no default to mainnet
 
-test('the known networks are preprod and mainnet, and nothing else is accepted', () => {
-    assert.deepEqual([...NETWORKS], ['preprod', 'mainnet']);
-    for (const bad of ['Mainnet', 'MAINNET', 'testnet', 'preview', '', undefined, null]) {
+test('the known networks are preview, preprod and mainnet, and nothing else is accepted', () => {
+    assert.deepEqual([...NETWORKS], ['preview', 'preprod', 'mainnet']);
+    for (const bad of ['Mainnet', 'MAINNET', 'testnet', 'Preview', 'devnet', '', undefined, null]) {
         assert.throws(() => checkNetwork(bad), /unknown network/, `accepted ${bad}`);
     }
 });
@@ -62,9 +64,35 @@ test('public endpoints name their own network\'s hosts and carry no credential',
         const ep = publicEndpoints(net);
         assert.equal(ep.networkId, net);
         for (const url of [ep.indexerHttpUrl, ep.indexerWsUrl, ep.nodeHttpUrl, ep.nodeWsUrl]) {
-            assert.match(url, new RegExp(`midnight-${net}\\.blockfrost\\.io`));
+            assert.match(url, isOpenNetwork(net)
+                ? new RegExp(`\\.${net}\\.midnight\\.network`)
+                : new RegExp(`midnight-${net}\\.blockfrost\\.io`));
             assert.ok(!url.includes('project_id'), `${url} carries a credential`);
         }
+    }
+});
+
+test('Preview is open: no project id, and the endpoints a run uses are the public ones', () => {
+    assert.deepEqual([...CREDENTIALED], ['preprod', 'mainnet']);
+    assert.equal(isOpenNetwork('preview'), true);
+    withTokens(FAKE, () => {
+        assert.deepEqual(networkEndpoints('preview'), publicEndpoints('preview'));
+        assert.ok(!JSON.stringify(networkEndpoints('preview')).includes('project_id'));
+    });
+    assert.throws(() => blockfrostToken({ network: 'preview' }), /takes no Blockfrost project id/);
+});
+
+test('every network\'s hosts are the ones Midnight.js 5 ships as presets', () => {
+    // midnight-js-utils `networks` is what the SDK itself would connect to. A
+    // host moved upstream and not here, or the reverse, fails this test.
+    const strip = (u) => u.replace(/\?project_id=.*$/, '').replace(/\/$/, '');
+    for (const net of NETWORKS) {
+        const sdk = net === 'preview' ? networks.preview() : networks[net]('FAKEprojectid000');
+        const ours = publicEndpoints(net);
+        assert.equal(strip(ours.indexerHttpUrl), strip(sdk.indexer.queryURL), `${net} indexer`);
+        assert.equal(strip(ours.indexerWsUrl), strip(sdk.indexer.subscriptionURL), `${net} indexer socket`);
+        assert.equal(strip(ours.nodeHttpUrl), strip(sdk.nodeURL), `${net} node`);
+        assert.equal(strip(ours.nodeWsUrl), strip(sdk.nodeWsURL), `${net} node socket`);
     }
 });
 
@@ -102,42 +130,56 @@ test('a network with no project id is refused, and the error names the variable,
 
 test('assertNoSecrets refuses to hand over any network\'s project id', () => {
     withTokens(FAKE, () => {
-        for (const net of NETWORKS) {
+        for (const net of CREDENTIALED) {
             assert.throws(() => assertNoSecrets(networkEndpoints(net), 'endpoints'), /project id/);
             assert.doesNotThrow(() => assertNoSecrets(publicEndpoints(net), 'public endpoints'));
         }
+        // Preview carries nothing to hide, so its run endpoints pass as they are.
+        assert.doesNotThrow(() => assertNoSecrets(networkEndpoints('preview'), 'preview endpoints'));
     });
 });
 
 // ---------------------------------------------------------------- 3. the deploy script's mainnet guards
 
-const deploySrc = () => readFileSync(join(ROOT, 'scripts', 'deploy-preprod.mjs'), 'utf8');
+// The ledger 9 deploy (scripts/deploy.mjs) and the libraries it opens the
+// wallet and the custody key through. The ledger 8 deploy these assertions
+// used to read is at the git tag ledger8-preprod.
+const src = (...p) => readFileSync(join(ROOT, 'scripts', ...p), 'utf8');
+const deploySrc = () => src('deploy.mjs');
 
-test('REPOSITORY ASSERTION: the deploy script takes its network from one place and defaults to preprod', () => {
-    const src = deploySrc();
-    assert.match(src, /process\.env\.VINPASSPORT_NETWORK_ID \?\? 'preprod'/);
-    assert.match(src, /const EP = networkEndpoints\(NETWORK\)/);
-    assert.match(src, /networkId: NETWORK,/);
-    assert.match(src, /join\(ROOT, 'deploy', `\$\{NETWORK\}\.json`\)/);
-    assert.ok(!/networkId: 'preprod'/.test(src), 'a hard-coded preprod network id is back');
+test('REPOSITORY ASSERTION: the deploy script is told its network, with no default', () => {
+    const s = deploySrc();
+    assert.match(s, /const NETWORK = arg\('--network'\);\s*\n\s*if \(!NETWORK\) fail\(/);
+    assert.match(s, /const RECORD = recordPath\(NETWORK\);/);
+    assert.match(s, /await openWallet\(NETWORK,/);
+    assert.ok(!/networkId: '(preview|preprod|mainnet)'/.test(s), 'a hard-coded network id is back');
 });
 
-test('REPOSITORY ASSERTION: mainnet is self-funded only and needs its vin key before a deploy', () => {
-    const src = deploySrc();
-    const guard = src.slice(src.indexOf("if (NETWORK === 'mainnet') {"));
-    assert.ok(guard.length > 0, 'the mainnet guard is missing');
-    const block = guard.slice(0, guard.indexOf('\n}\n') + 2);
-    assert.match(block, /NEEDS_SPONSOR \|\| EMIT \|\| EMIT_BOUND/);
-    assert.match(block, /self-funded only/);
+test('REPOSITORY ASSERTION: a mainnet deploy needs its vin key first', () => {
+    const s = deploySrc();
+    const at = s.indexOf("if (NETWORK === 'mainnet' && SUBMIT) {");
+    assert.notEqual(at, -1, 'the mainnet guard is missing');
+    const block = s.slice(at, at + s.slice(at).indexOf('\n}\n') + 2);
     assert.match(block, /loadVinKeys\('mainnet'\)/);
+    assert.ok(!/sponsor/i.test(s.replace(/^\s*(\*|\/\/).*$/gm, '')), 'a sponsor path is back in the deploy code');
 });
 
-test('REPOSITORY ASSERTION: mainnet pins its own registrars, never the preprod demo secrets', () => {
+test('REPOSITORY ASSERTION: mainnet pins its own registrars, never the demo secrets', () => {
     assert.match(deploySrc(), /NETWORK === 'mainnet' \? 'REGISTRAR-SECRETS\.mainnet\.env' : 'REGISTRAR-SECRETS\.env'/);
 });
 
-test('REPOSITORY ASSERTION: self-fund reads endpoints for the same network as its wallet', () => {
-    const src = readFileSync(join(ROOT, 'scripts', 'lib', 'self-fund.mjs'), 'utf8');
-    assert.ok(!src.includes('preprodEndpoints'), 'self-fund still connects to preprod whatever the network');
-    assert.match(src, /const NETWORK_ID = runNetwork\(\);\s*\n\s*const EP = networkEndpoints\(NETWORK_ID\);/);
+test('REPOSITORY ASSERTION: mainnet keys have no default location and never sit in a synced folder', () => {
+    for (const [file, envVar] of [[['lib', 'wallet9.mjs'], 'VINPASSPORT_SEED_FILE'], [['lib', 'contract9.mjs'], 'VINPASSPORT_CUSTODY_KEY_FILE']]) {
+        const s = src(...file);
+        assert.match(s, new RegExp(`mainnet needs ${envVar}`), `${file.join('/')} lets mainnet fall back to a default`);
+        assert.match(s, /SYNCED_FOLDER = \/onedrive\|dropbox\|icloud\|google \?drive\/i/);
+        assert.match(s, /SYNCED_FOLDER\.test\(resolve\(/);
+    }
+});
+
+test('REPOSITORY ASSERTION: the wallet reads endpoints for the network it was opened on', () => {
+    const s = src('lib', 'wallet9.mjs');
+    assert.ok(!s.includes('preprodEndpoints'), 'the wallet connects to preprod whatever the network');
+    assert.match(s, /export function walletConfiguration\(network\) \{\s*\n\s*const ep = networkEndpoints\(network\);/);
+    assert.match(s, /requireBuildableNetwork\(network\);/);
 });

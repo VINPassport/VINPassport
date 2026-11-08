@@ -50,10 +50,10 @@ for (const req of ['vin', 'registrar', 'fields']) {
 // One simulator run holds the whole exported world: the two standing demo
 // vehicles plus this intake. Rebuilding from scratch keeps the export a pure
 // function of its inputs.
-const sim = new PassportSimulator();
+const sim = await PassportSimulator.create();
 const salt = saltStream();
-const { a, b } = buildDemoVehicles(sim, salt);
-const mine = applyIntake(sim, intake, salt);
+const { a, b } = await buildDemoVehicles(sim, salt);
+const mine = await applyIntake(sim, intake, salt);
 
 console.log(`\nvehicle ${intake.vin} -> vin hash ${mine.vinHex}`);
 for (const step of mine.applied) console.log(`  ok       ${step}`);

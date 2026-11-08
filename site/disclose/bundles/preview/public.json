@@ -1,0 +1,18 @@
+{
+  "kind": "vinpassport-disclosure/v2",
+  "policy": "vinpassport-tiers/v1",
+  "tier": "public",
+  "audience": "a buyer",
+  "note": "A public disclosure. It opens only the fields listed here and carries no seed, so it cannot open any other field of this vehicle. Each claim listed was proven on the public ledger and reveals a bound, never a value.",
+  "network": "preview",
+  "contractAddress": "68e25627e92e3e3809be1700d12ac77b32ffd946d2876a1ebe9a6f47bcec48f4",
+  "vinHashScheme": "vinkey-voprf-ristretto255-sha512-v1",
+  "vinHash": "29cb17756faf189944a9e1a667b3678b744d8f5221afc8e19b0a66a539db04cf",
+  "contentRoot": "1f2dbb0c06e53b8038c6d07dec78248acba4bbfa1f441f621fffec67a02f8259",
+  "fields": [],
+  "claims": [
+    "12c510b40920c4aead24d98c4af8a4915d6a6adfec82435bb2f130a7be27fd5f",
+    "5b86074800b041f06525ea334521a7a8addaef110611e9192cd499736313753e",
+    "9302712e7fc919118698486b83a8db748b51f1236e492cd67d10c8cd7c4ec8a1"
+  ]
+}

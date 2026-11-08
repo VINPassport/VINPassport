@@ -37,32 +37,32 @@ try {
 
     // ---- layer one: the circuits themselves --------------------------------
 
-    const sim = new PassportSimulator([REGISTRAR_ID]);
+    const sim = await PassportSimulator.create([REGISTRAR_ID]);
     sim.actAs(REGISTRAR_SECRET);
     const vin = fieldKey('VPDBROWSERSPIKE01');
     const odo = fieldKey('odometerKm');
     const root = bytes32(0x01);
 
     const t1 = performance.now();
-    sim.registerPassport(vin, root);
+    await sim.registerPassport(vin, root);
     say('registerPassport   ok');
 
     // The ratchet odometerKm carries in the shipped registry: a reading may
     // never fall. Taken from the contract's own enum, not written out as a
     // number here - the first pass passed 1 (neverRises) and the circuit
     // refused the increase, which is how we know it is really running.
-    sim.initialiseField(vin, odo, Rule.neverFalls, 40000n, bytes32(0x11));
+    await sim.initialiseField(vin, odo, Rule.neverFalls, 40000n, bytes32(0x11));
     say('initialiseField    ok');
 
-    sim.authoriseWriter(vin, DEALER_ID);
+    await sim.authoriseWriter(vin, DEALER_ID);
     say('authoriseWriter    ok');
 
     sim.actAs(DEALER_SECRET);
-    sim.recordField(vin, odo, 48000n, bytes32(0x12));
+    await sim.recordField(vin, odo, 48000n, bytes32(0x12));
     say('recordField        ok  (as the dealership)');
     sim.actAs(REGISTRAR_SECRET);
 
-    sim.proveFieldAtMost(vin, odo, 150000n);
+    await sim.proveFieldAtMost(vin, odo, 150000n);
     say('proveFieldAtMost   ok');
     const ms = Math.round(performance.now() - t1);
 
@@ -85,12 +85,12 @@ try {
     say(`scenario.mjs loaded in ${Math.round(performance.now() - t2)} ms`);
 
     const t3 = performance.now();
-    const sim2 = new PassportSimulator();
+    const sim2 = await PassportSimulator.create();
     const salt = saltStream();
-    buildDemoVehicles(sim2, salt);
+    await buildDemoVehicles(sim2, salt);
     say('buildDemoVehicles  ok');
 
-    const result = applyIntake(sim2, {
+    const result = await applyIntake(sim2, {
         vin: 'VPDBROWSERINTAKE1',
         registrar: 'browser',
         fields: { odometerKm: 40000, accidentCount: 0, serviceCount: 4 },

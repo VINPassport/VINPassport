@@ -47,7 +47,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const KEY_FILE = join(HERE, '..', '..', '..', '_local-tracking', 'VINKEY.env');
 
 /** Networks this module will derive for. Each has its own, unrelated key. */
-export const NETWORKS = Object.freeze(['preprod', 'mainnet']);
+export const NETWORKS = Object.freeze(['preview', 'preprod', 'mainnet']);
 
 /**
  * How a receipt or bundle names a key made here. A reader without the network

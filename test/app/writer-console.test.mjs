@@ -31,10 +31,10 @@ import {
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
 
-const run = (extra) => {
-    const sim = new PassportSimulator();
+const run = async (extra) => {
+    const sim = await PassportSimulator.create();
     const salt = saltStream();
-    const result = applyIntake(sim, {
+    const result = await applyIntake(sim, {
         vin: 'WVWZZZ1JZXW000099',
         registrar: 'demo-authority',
         registrarSecret: CONSOLE_REGISTRAR_SECRET,
@@ -45,8 +45,8 @@ const run = (extra) => {
     return { result, ledger: exportLedger(sim, 'test') };
 };
 
-test('an authorised dealership can write the vehicle, and the ledger says it was them', () => {
-    const { result, ledger } = run({
+test('an authorised dealership can write the vehicle, and the ledger says it was them', async () => {
+    const { result, ledger } = await run({
         writers: [DEMO_WRITERS.dealership],
         updates: [{ odometerKm: 35_000, by: 'dealership' }]
     });
@@ -61,8 +61,8 @@ test('an authorised dealership can write the vehicle, and the ledger says it was
         'no field on the ledger records the dealership as its writer');
 });
 
-test('the rule survives delegation: an authorised writer still cannot lower the odometer', () => {
-    const { result } = run({
+test('the rule survives delegation: an authorised writer still cannot lower the odometer', async () => {
+    const { result } = await run({
         writers: [DEMO_WRITERS.dealership],
         updates: [{ odometerKm: 35_000, by: 'dealership' }, { odometerKm: 100, by: 'dealership' }]
     });
@@ -72,13 +72,13 @@ test('the rule survives delegation: an authorised writer still cannot lower the 
         `refused for the wrong reason: ${lowering.reason}`);
 });
 
-test('a writer that was never authorised is refused', () => {
-    const { result } = run({ updates: [{ odometerKm: 35_000, by: 'dealership' }] });
+test('a writer that was never authorised is refused', async () => {
+    const { result } = await run({ updates: [{ odometerKm: 35_000, by: 'dealership' }] });
     assert.ok(result.refused.some((r) => /unknown writer/.test(r.reason)),
         `an unauthorised writer was not refused: ${JSON.stringify(result)}`);
 });
 
-test('the console sends a name, never a secret', () => {
+test('the console sends a name, never a secret', async () => {
     const page = readFileSync(join(ROOT, 'site', 'intake', 'intake.js'), 'utf8');
     assert.ok(!/secret/i.test(page.replace(/^\s*\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '')),
         'the intake page handles something called a secret');
@@ -87,7 +87,7 @@ test('the console sends a name, never a secret', () => {
 
 });
 
-test('a label nobody holds is refused, and refused the same way everywhere', () => {
+test('a label nobody holds is refused, and refused the same way everywhere', async () => {
     // This used to read the server's source for the two refusal messages,
     // which passed for the wrong reason: it proved the strings existed, not
     // that anything acted on them, and it broke the moment the rule moved to

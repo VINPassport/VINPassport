@@ -24,7 +24,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { validateManualIntake } from '../../scripts/lib/preprod-runner.mjs';
+import { validateManualIntake } from '../../scripts/lib/intake-rules.mjs';
 
 /** The shape createRunner builds from registrar C. Values are never used here. */
 const DEALER = { label: 'dealership', id: new Uint8Array(32), secret: new Uint8Array(32) };

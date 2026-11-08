@@ -47,11 +47,14 @@ import { makeStage, stepLabel } from './preprod-plan.mjs';
  * @param o.writes           per-field write log, filled in as it goes
  * @returns { stages, refused, writes }
  */
-export function dryRunStages(stages, { sim, registrarSecret, dealer, vinBytes, croot, saltOf, writes = {} }) {
+export async function dryRunStages(stages, { sim, registrarSecret, dealer, vinBytes, croot, saltOf, writes = {} }) {
     const refused = [];
     const saltFor = (name) => saltOf(name, writes[name]?.length ?? 0);
     for (const stage of stages) {
-        stage.steps = stage.steps.filter((s) => {
+        // A loop, not a filter: each circuit is async since compactc 0.36.0,
+        // and every step must see the ledger the previous one left.
+        const kept = [];
+        for (const s of stage.steps) {
             try {
                 // Act as whoever this step acts as, then put the registrar
                 // back. A delegated write that the chain would refuse must be
@@ -65,43 +68,43 @@ export function dryRunStages(stages, { sim, registrarSecret, dealer, vinBytes, c
                 // "nothing survived the dry-run", with no hint that the cause
                 // is a missing writer identity rather than the intake.
                 sim.actAs(dealer && s.by === dealer.label ? dealer.secret : registrarSecret);
-                if (s.kind === 'register') sim.registerPassport(vinBytes, croot);
-                else if (s.kind === 'authorise') sim.authoriseWriter(vinBytes, s.writerId);
-                else if (s.kind === 'withdraw') sim.withdrawWriter(vinBytes, s.writerId);
-                else if (s.kind === 'grant') sim.grantDisclosure(vinBytes, s.granteeId, s.tierIndex);
+                if (s.kind === 'register') await sim.registerPassport(vinBytes, croot);
+                else if (s.kind === 'authorise') await sim.authoriseWriter(vinBytes, s.writerId);
+                else if (s.kind === 'withdraw') await sim.withdrawWriter(vinBytes, s.writerId);
+                else if (s.kind === 'grant') await sim.grantDisclosure(vinBytes, s.granteeId, s.tierIndex);
                 else if (s.kind === 'init') {
                     if (!(s.name in FIELDS)) throw new Error('unknown field');
                     const salt = saltOf(s.name, 0);
-                    sim.initialiseField(vinBytes, K[s.name], FIELDS[s.name].rule, s.value, salt);
+                    await sim.initialiseField(vinBytes, K[s.name], FIELDS[s.name].rule, s.value, salt);
                     writes[s.name] = [{ value: s.value, salt }];
                     s.writeIndex = 0;
                 } else if (s.kind === 'update') {
                     if (!(s.name in FIELDS)) throw new Error('unknown field');
                     const salt = saltFor(s.name);
-                    sim.recordField(vinBytes, K[s.name], s.value, salt);
+                    await sim.recordField(vinBytes, K[s.name], s.value, salt);
                     s.writeIndex = ((writes[s.name] ??= []).push({ value: s.value, salt })) - 1;
                 } else if (s.kind === 'claim') {
                     // Direction comes from the catalogue: a floor is a
                     // different circuit, not a different bound.
                     if (s.circuit === 'proveFieldAtMostField') {
                         if (!(s.against in FIELDS)) throw new Error('unknown field');
-                        sim.proveFieldAtMostField(vinBytes, K[s.name], K[s.against], s.bound);
+                        await sim.proveFieldAtMostField(vinBytes, K[s.name], K[s.against], s.bound);
                         s.writeIndexAgainst = (writes[s.against]?.length ?? 0) - 1;
                     } else if (s.circuit === 'proveFieldAtLeast') {
-                        sim.proveFieldAtLeast(vinBytes, K[s.name], s.bound);
+                        await sim.proveFieldAtLeast(vinBytes, K[s.name], s.bound);
                     } else {
-                        sim.proveFieldAtMost(vinBytes, K[s.name], s.bound);
+                        await sim.proveFieldAtMost(vinBytes, K[s.name], s.bound);
                     }
                     // Claims run last, so the write they open is the field's
                     // final one - fixed here, not at call time.
                     s.writeIndex = (writes[s.name]?.length ?? 0) - 1;
                 }
-                return true;
+                kept.push(s);
             } catch (e) {
                 refused.push({ step: stepLabel(s), reason: String(e?.message ?? e).replace(/^.*failed assert: /, '') });
-                return false;
             }
-        });
+        }
+        stage.steps = kept;
     }
     // Relabel from what SURVIVED. A stage keeps the label it was planned with
     // otherwise, and would go on naming a claim the dry run refused and never

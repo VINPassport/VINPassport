@@ -1,6 +1,14 @@
 /**
- * Where each network lives, in one place: preprod, and mainnet when it is
- * chosen explicitly. Nothing defaults to mainnet.
+ * Where each network lives, in one place: Preview, preprod, and mainnet when
+ * it is chosen explicitly. Nothing defaults to mainnet.
+ *
+ * Preview is open: Midnight hosts it and it takes no credential (relaunched on
+ * Ledger 9 on 7 Nov 2026). Preprod and mainnet are behind Blockfrost, one
+ * project id per network. The hosts below match the presets Midnight.js 5
+ * ships (`networks.preview()` and friends in midnight-js-utils), and a test
+ * holds them equal, so a moved endpoint shows up as a failing test here.
+ * Which ledger each network runs, and so which of them this tree can deploy
+ * to, is in eras.mjs.
  *
  * Midnight decommissioned `indexer.preprod.midnight.network` on 2026-10-09
  * and moved the preprod and mainnet indexers to Blockfrost. The old host now
@@ -49,11 +57,17 @@ const TOKEN_FILE = join(HERE, '..', '..', '..', '_local-tracking', 'BLOCKFROST.e
 const MIGRATION = 'https://docs.midnight.network/guides/networks-and-environments';
 
 /**
- * The networks this repository can reach. Each has its own Blockfrost project
- * id, and the network id string is the one the wallet SDK expects
- * (wallet-sdk-address-format maps 'mainnet' to its mainnet symbol).
+ * The networks this repository can reach. The network id string is the one
+ * the wallet SDK and Midnight.js expect (wallet-sdk-address-format maps
+ * 'mainnet' to its mainnet symbol).
  */
-export const NETWORKS = Object.freeze(['preprod', 'mainnet']);
+export const NETWORKS = Object.freeze(['preview', 'preprod', 'mainnet']);
+
+/** Networks behind Blockfrost, each with its own project id. Preview needs none. */
+export const CREDENTIALED = Object.freeze(['preprod', 'mainnet']);
+
+/** True for a network reached without any credential. */
+export const isOpenNetwork = (network) => !CREDENTIALED.includes(checkNetwork(network));
 
 /** Throws on anything but a known network, so a typo cannot pick a default. */
 export function checkNetwork(network) {
@@ -63,7 +77,10 @@ export function checkNetwork(network) {
     return network;
 }
 
-const tokenVar = (network) => `BLOCKFROST_MIDNIGHT_${checkNetwork(network).toUpperCase()}`;
+const tokenVar = (network) => {
+    if (isOpenNetwork(network)) throw new Error(`${network} is open and takes no Blockfrost project id`);
+    return `BLOCKFROST_MIDNIGHT_${network.toUpperCase()}`;
+};
 
 /**
  * The Blockfrost project id for one Midnight network, preprod by default.
@@ -95,7 +112,7 @@ export function blockfrostToken({ required = true, network = 'preprod' } = {}) {
 }
 
 /** Every configured project id, whichever network it belongs to. */
-const allTokens = () => NETWORKS.map((network) => blockfrostToken({ required: false, network }))
+const allTokens = () => CREDENTIALED.map((network) => blockfrostToken({ required: false, network }))
     .filter((t) => typeof t === 'string' && t.trim().length >= 8)
     .map((t) => t.trim());
 
@@ -107,6 +124,12 @@ const allTokens = () => NETWORKS.map((network) => blockfrostToken({ required: fa
  * hosts follow the same Blockfrost naming; nothing here has reached them yet.
  */
 const HOSTS = {
+    preview: {
+        indexerHttpUrl: 'https://indexer.preview.midnight.network/api/v4/graphql',
+        indexerWsUrl: 'wss://indexer.preview.midnight.network/api/v4/graphql/ws',
+        nodeHttpUrl: 'https://rpc.preview.midnight.network',
+        nodeWsUrl: 'wss://rpc.preview.midnight.network'
+    },
     preprod: {
         indexerHttpUrl: 'https://midnight-preprod.blockfrost.io/api/v0',
         indexerWsUrl: 'wss://midnight-preprod.blockfrost.io/api/v0/ws',
@@ -121,9 +144,13 @@ const HOSTS = {
     }
 };
 
-/** A network's endpoints, authenticated. Throws if its project id is missing. */
+/**
+ * A network's endpoints, authenticated where the network needs it. Throws if
+ * a credentialed network's project id is missing. Preview comes back as is.
+ */
 export function networkEndpoints(network) {
     const hosts = HOSTS[checkNetwork(network)];
+    if (isOpenNetwork(network)) return { networkId: network, ...hosts };
     const q = `?project_id=${encodeURIComponent(blockfrostToken({ network }))}`;
     return {
         networkId: network,

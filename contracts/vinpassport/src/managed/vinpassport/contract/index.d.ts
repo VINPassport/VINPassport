@@ -35,79 +35,79 @@ export type Witnesses<PS> = {
 export type ImpureCircuits<PS> = {
   registerPassport(context: __compactRuntime.CircuitContext<PS>,
                    vinHash_0: Uint8Array,
-                   contentRoot_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+                   contentRoot_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
   authoriseWriter(context: __compactRuntime.CircuitContext<PS>,
                   vinHash_0: Uint8Array,
-                  writerId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+                  writerId_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
   withdrawWriter(context: __compactRuntime.CircuitContext<PS>,
                  vinHash_0: Uint8Array,
-                 writerId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+                 writerId_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
   grantDisclosure(context: __compactRuntime.CircuitContext<PS>,
                   vinHash_0: Uint8Array,
                   granteeId_0: Uint8Array,
-                  tier_0: Tier): __compactRuntime.CircuitResults<PS, []>;
+                  tier_0: Tier): Promise<__compactRuntime.CircuitResults<PS, []>>;
   revokeDisclosure(context: __compactRuntime.CircuitContext<PS>,
                    vinHash_0: Uint8Array,
-                   granteeId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+                   granteeId_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
   initialiseField(context: __compactRuntime.CircuitContext<PS>,
                   vinHash_0: Uint8Array,
                   fieldKey_0: Uint8Array,
-                  rule_0: Rule): __compactRuntime.CircuitResults<PS, []>;
+                  rule_0: Rule): Promise<__compactRuntime.CircuitResults<PS, []>>;
   recordField(context: __compactRuntime.CircuitContext<PS>,
               vinHash_0: Uint8Array,
-              fieldKey_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+              fieldKey_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
   proveFieldAtMost(context: __compactRuntime.CircuitContext<PS>,
                    vinHash_0: Uint8Array,
                    fieldKey_0: Uint8Array,
-                   bound_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+                   bound_0: bigint): Promise<__compactRuntime.CircuitResults<PS, []>>;
   proveFieldAtLeast(context: __compactRuntime.CircuitContext<PS>,
                     vinHash_0: Uint8Array,
                     fieldKey_0: Uint8Array,
-                    bound_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+                    bound_0: bigint): Promise<__compactRuntime.CircuitResults<PS, []>>;
   proveFieldAtMostField(context: __compactRuntime.CircuitContext<PS>,
                         vinHash_0: Uint8Array,
                         fieldKeyHigh_0: Uint8Array,
                         fieldKeyLow_0: Uint8Array,
-                        slack_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+                        slack_0: bigint): Promise<__compactRuntime.CircuitResults<PS, []>>;
 }
 
 export type ProvableCircuits<PS> = {
   registerPassport(context: __compactRuntime.CircuitContext<PS>,
                    vinHash_0: Uint8Array,
-                   contentRoot_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+                   contentRoot_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
   authoriseWriter(context: __compactRuntime.CircuitContext<PS>,
                   vinHash_0: Uint8Array,
-                  writerId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+                  writerId_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
   withdrawWriter(context: __compactRuntime.CircuitContext<PS>,
                  vinHash_0: Uint8Array,
-                 writerId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+                 writerId_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
   grantDisclosure(context: __compactRuntime.CircuitContext<PS>,
                   vinHash_0: Uint8Array,
                   granteeId_0: Uint8Array,
-                  tier_0: Tier): __compactRuntime.CircuitResults<PS, []>;
+                  tier_0: Tier): Promise<__compactRuntime.CircuitResults<PS, []>>;
   revokeDisclosure(context: __compactRuntime.CircuitContext<PS>,
                    vinHash_0: Uint8Array,
-                   granteeId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+                   granteeId_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
   initialiseField(context: __compactRuntime.CircuitContext<PS>,
                   vinHash_0: Uint8Array,
                   fieldKey_0: Uint8Array,
-                  rule_0: Rule): __compactRuntime.CircuitResults<PS, []>;
+                  rule_0: Rule): Promise<__compactRuntime.CircuitResults<PS, []>>;
   recordField(context: __compactRuntime.CircuitContext<PS>,
               vinHash_0: Uint8Array,
-              fieldKey_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+              fieldKey_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
   proveFieldAtMost(context: __compactRuntime.CircuitContext<PS>,
                    vinHash_0: Uint8Array,
                    fieldKey_0: Uint8Array,
-                   bound_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+                   bound_0: bigint): Promise<__compactRuntime.CircuitResults<PS, []>>;
   proveFieldAtLeast(context: __compactRuntime.CircuitContext<PS>,
                     vinHash_0: Uint8Array,
                     fieldKey_0: Uint8Array,
-                    bound_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+                    bound_0: bigint): Promise<__compactRuntime.CircuitResults<PS, []>>;
   proveFieldAtMostField(context: __compactRuntime.CircuitContext<PS>,
                         vinHash_0: Uint8Array,
                         fieldKeyHigh_0: Uint8Array,
                         fieldKeyLow_0: Uint8Array,
-                        slack_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+                        slack_0: bigint): Promise<__compactRuntime.CircuitResults<PS, []>>;
 }
 
 export type PureCircuits = {
@@ -123,51 +123,51 @@ export type Circuits<PS> = {
   slotOf(context: __compactRuntime.CircuitContext<PS>,
          vinHash_0: Uint8Array,
          fieldKey_0: Uint8Array,
-         contentRoot_0: Uint8Array): __compactRuntime.CircuitResults<PS, Uint8Array>;
+         contentRoot_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, Uint8Array>>;
   registrarIdOf(context: __compactRuntime.CircuitContext<PS>,
-                secret_0: Uint8Array): __compactRuntime.CircuitResults<PS, Uint8Array>;
+                secret_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, Uint8Array>>;
   writerKeyOf(context: __compactRuntime.CircuitContext<PS>,
               vinHash_0: Uint8Array,
-              writerId_0: Uint8Array): __compactRuntime.CircuitResults<PS, Uint8Array>;
+              writerId_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, Uint8Array>>;
   grantKeyOf(context: __compactRuntime.CircuitContext<PS>,
              vinHash_0: Uint8Array,
-             granteeId_0: Uint8Array): __compactRuntime.CircuitResults<PS, Uint8Array>;
+             granteeId_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, Uint8Array>>;
   registerPassport(context: __compactRuntime.CircuitContext<PS>,
                    vinHash_0: Uint8Array,
-                   contentRoot_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+                   contentRoot_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
   authoriseWriter(context: __compactRuntime.CircuitContext<PS>,
                   vinHash_0: Uint8Array,
-                  writerId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+                  writerId_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
   withdrawWriter(context: __compactRuntime.CircuitContext<PS>,
                  vinHash_0: Uint8Array,
-                 writerId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+                 writerId_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
   grantDisclosure(context: __compactRuntime.CircuitContext<PS>,
                   vinHash_0: Uint8Array,
                   granteeId_0: Uint8Array,
-                  tier_0: Tier): __compactRuntime.CircuitResults<PS, []>;
+                  tier_0: Tier): Promise<__compactRuntime.CircuitResults<PS, []>>;
   revokeDisclosure(context: __compactRuntime.CircuitContext<PS>,
                    vinHash_0: Uint8Array,
-                   granteeId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+                   granteeId_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
   initialiseField(context: __compactRuntime.CircuitContext<PS>,
                   vinHash_0: Uint8Array,
                   fieldKey_0: Uint8Array,
-                  rule_0: Rule): __compactRuntime.CircuitResults<PS, []>;
+                  rule_0: Rule): Promise<__compactRuntime.CircuitResults<PS, []>>;
   recordField(context: __compactRuntime.CircuitContext<PS>,
               vinHash_0: Uint8Array,
-              fieldKey_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+              fieldKey_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
   proveFieldAtMost(context: __compactRuntime.CircuitContext<PS>,
                    vinHash_0: Uint8Array,
                    fieldKey_0: Uint8Array,
-                   bound_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+                   bound_0: bigint): Promise<__compactRuntime.CircuitResults<PS, []>>;
   proveFieldAtLeast(context: __compactRuntime.CircuitContext<PS>,
                     vinHash_0: Uint8Array,
                     fieldKey_0: Uint8Array,
-                    bound_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+                    bound_0: bigint): Promise<__compactRuntime.CircuitResults<PS, []>>;
   proveFieldAtMostField(context: __compactRuntime.CircuitContext<PS>,
                         vinHash_0: Uint8Array,
                         fieldKeyHigh_0: Uint8Array,
                         fieldKeyLow_0: Uint8Array,
-                        slack_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+                        slack_0: bigint): Promise<__compactRuntime.CircuitResults<PS, []>>;
 }
 
 export type Ledger = {
@@ -241,10 +241,6 @@ export type Ledger = {
   };
 }
 
-export type ContractReferenceLocations = any;
-
-export declare const contractReferenceLocations : ContractReferenceLocations;
-
 export declare class Contract<PS = any, W extends Witnesses<PS> = Witnesses<PS>> {
   witnesses: W;
   circuits: Circuits<PS>;
@@ -252,8 +248,11 @@ export declare class Contract<PS = any, W extends Witnesses<PS> = Witnesses<PS>>
   provableCircuits: ProvableCircuits<PS>;
   constructor(witnesses: W);
   initialState(context: __compactRuntime.ConstructorContext<PS>,
-               registrars_0: Uint8Array[]): __compactRuntime.ConstructorResult<PS>;
+               registrars_0: Uint8Array[]): Promise<__compactRuntime.ConstructorResult<PS>>;
 }
 
 export declare function ledger(state: __compactRuntime.StateValue | __compactRuntime.ChargedState): Ledger;
 export declare const pureCircuits: PureCircuits;
+export declare const expectedVk: Record<string, string>;
+export declare const circuitSignatures: __compactRuntime.CircuitSignatures;
+export declare const declaredInterfaces: __compactRuntime.DeclaredInterfaces;

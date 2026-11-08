@@ -33,7 +33,7 @@ import { ristretto255_oprf } from '@noble/curves/ed25519.js';
 import {
     vinKey, vinKeyHex, vinKeyPair, loadVinKeys, evaluate, normaliseVin, NETWORKS, VINKEY_SCHEME
 } from '../../scripts/lib/vin-key.mjs';
-import { validateManualIntake, randomDemoVin } from '../../scripts/lib/preprod-runner.mjs';
+import { validateManualIntake, randomDemoVin } from '../../scripts/lib/intake-rules.mjs';
 import { vinHash, contentRoot } from '../../scripts/lib/scenario.mjs';
 import {
     buildBundle, verifyBundle, buildDisclosure, verifyDisclosure, PLAIN_VIN_SCHEME
@@ -125,7 +125,9 @@ test('each network has its own key, and so does each seed', () => {
         'one seed gave the same key on two networks');
     assert.notEqual(vinKeyHex(VIN, vinKeyPair(SEED_B, 'preprod')), pre,
         'two seeds gave the same key');
-    assert.deepEqual([...NETWORKS], ['preprod', 'mainnet']);
+    assert.notEqual(vinKeyHex(VIN, vinKeyPair(SEED_A, 'preview')), pre,
+        'one seed gave the same key on preview and preprod');
+    assert.deepEqual([...NETWORKS], ['preview', 'preprod', 'mainnet']);
     assert.throws(() => vinKeyPair(SEED_A, 'devnet'), /unknown network/);
 });
 
@@ -200,12 +202,11 @@ test('a manual preprod run never writes the VIN the caller supplied', () => {
     assert.match(out.vin, /^VPD[A-HJ-NPR-Z0-9]{14}$/);
 });
 
-test('REPOSITORY ASSERTION: every VIN the preprod runner builds is a fresh demo VIN', () => {
-    // The guided route builds its intake inside a closure that only runs with
-    // a funded wallet, so it cannot be executed here. This catches a new path,
-    // or an edited one, that sets `vin:` from anything other than
-    // randomDemoVin() before it can reach a network.
-    const src = readFileSync(join(ROOT, 'scripts/lib/preprod-runner.mjs'), 'utf8');
+test('REPOSITORY ASSERTION: every VIN a network run builds is a fresh demo VIN', () => {
+    // Both routes build their intake in intake-rules.mjs since the ledger 9
+    // port. This catches a new path, or an edited one, that sets `vin:` from
+    // anything other than randomDemoVin() before it can reach a network.
+    const src = readFileSync(join(ROOT, 'scripts/lib/intake-rules.mjs'), 'utf8');
     const assignments = [...src.matchAll(/^\s*vin:\s*([^,\n]+)/gm)].map((m) => m[1].trim());
     assert.ok(assignments.length >= 2, `expected the manual and guided routes, found ${assignments.length}`);
     for (const rhs of assignments) {
@@ -228,8 +229,8 @@ const keyedReceipt = () => {
 };
 
 test('REPOSITORY ASSERTION: the runner keys every vehicle with the vin key and names the scheme', () => {
-    const src = readFileSync(join(ROOT, 'scripts/lib/preprod-runner.mjs'), 'utf8');
-    assert.match(src, /const vinBytes = vinKey\(vin, loadVinKeys\(NETWORK_ID\)\);/);
+    const src = readFileSync(join(ROOT, 'scripts/lib/runner9.mjs'), 'utf8');
+    assert.match(src, /const vinBytes = vinKey\(vin, loadVinKeys\(network\)\);/);
     assert.match(src, /vinHash: hex\(vinBytes\), vinHashScheme: VINKEY_SCHEME/);
     assert.match(src, /contentRoot\([^)]*, hex\(vinBytes\)\)/, 'the content root names a key other than the ledger\'s');
     assert.ok(!/vinHash as vinHashOf/.test(src), 'the plain VIN hash is imported into the network runner again');

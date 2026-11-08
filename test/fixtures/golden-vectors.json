@@ -1,0 +1,230 @@
+{
+  "generatedFrom": {
+    "compiler": "0.31.1",
+    "language": "0.23.0",
+    "runtime": "0.16.0"
+  },
+  "pure": [
+    {
+      "slotOf": "1722bacadf8c6e2782d96b484a8f4ae445dab423bbcec962513423a83f9302ec",
+      "registrarIdOf": "501a28907e213c422b1456cc0789bcb5047b65a42c47d7d6eaeabca4ca559fd2",
+      "writerKeyOf": "63370b339e3b07142950f03453a0bc836f5567d0a45173f0dc629971c02cb603",
+      "grantKeyOf": "9bd0e6c5291a88cfc553683f759a61eeb39af0ee6fbd78c342fcca5b10db9535"
+    },
+    {
+      "slotOf": "942b7f62fb61897427c0b7135d6130ce8f71946b7b6860790763120abe2d8e26",
+      "registrarIdOf": "78a986e83e911923a419dcf29ad78cee6ec6f1735a34cdabe032d9fead0b9d29",
+      "writerKeyOf": "bf36f3c1d6b87e4e746d5b02c5035564a89f7028f6381176330efaf37395b344",
+      "grantKeyOf": "4b40697375686f7ad5d5c79269eb63cfd1a8df3079383629552ce62ce74d96fc"
+    },
+    {
+      "slotOf": "fe14cdde8a5c2383e46cbfc90aefd0f0f0b1e4bbb3b9d1aed755f8526f723deb",
+      "registrarIdOf": "3e0394e68d9b2afe223ff71d1246134b975774b6778c76d8eaf984e031ffc893",
+      "writerKeyOf": "82574f7f1f292c8e502470abe2cbc8adcc4ff644a99803665978f29204cf4880",
+      "grantKeyOf": "2bfd4b7ace831e57a36b7a2366b3ed97fa233ce8afd649d4ab4f0836f5c18f05"
+    },
+    {
+      "slotOf": "fdc03b1b7bcf11d43f4de4ef5d3cc764bd5c50e7ae5a387ffee044e20c08369f",
+      "registrarIdOf": "14fc2388ce702f9e563667acab76ea8cd9bfc4b10c763cc7aa028a9f2664a4b7",
+      "writerKeyOf": "5d4de7de1f9094bad4d3758ab4a37f1be2022254426057d4f785b7032a6bea06",
+      "grantKeyOf": "488db51ea047428df87ca323ab699f3876cc41db20744809c3a618797c7abf33"
+    },
+    {
+      "slotOf": "49c8d6bfb66c223818c4d1f26928016ad2f8500df48247f626cc9d49eccc0603",
+      "registrarIdOf": "db1f39932f7d0c85cf044b2474c14f57e537af2805eac45a0257e1df5211e4f2",
+      "writerKeyOf": "9b77b1ad08807d6709759beebcc3dd76450d43aed3b71b90b0fb5d2374eb68fc",
+      "grantKeyOf": "ab3ff692314ef79349d603e8cae377b707942912acd22f5fa5385613599c5b39"
+    },
+    {
+      "slotOf": "675c34e39cc0d1f9cdaa7bd1ef5fa1611d87e4df3c61f33aca078af38f1d68ea",
+      "registrarIdOf": "c25333104e0a76d1f83be615dc869474913a8810dfc989bc308a212496a960be",
+      "writerKeyOf": "042526c749968730d19b971f42105bdcbe1c70ae5bcc9fac3b19875d38fa747f",
+      "grantKeyOf": "38dca88fe18603f242fca8460a4db6849b0766c2dc68a23fab3b23182ca15bf0"
+    },
+    {
+      "slotOf": "8b5283b1d92b0d65a452c22ad90c2779811effbbe0fd36a2545c3ac53c6c1417",
+      "registrarIdOf": "a43ba68988d6c7d0d675d0623bf052e95293dd2e60615c624c5fed131f81e15c",
+      "writerKeyOf": "bb9d577e497e10b6295bdb49006543381a3757074acf07f457420e30e313f306",
+      "grantKeyOf": "9a73a4c474bbf005428221cddedd493a7594fd5d4168364823a7c1f1cfb0a2dd"
+    },
+    {
+      "slotOf": "f989d23b14aad024ad55f4cd3364724d2992b66199239005b01f7b7e84cfc82f",
+      "registrarIdOf": "50d12808a90b7f345d243966f56f59e06bb848da22877872a4568cabd8fc2398",
+      "writerKeyOf": "ae4477ceb76bb811b547903198bf61df08d092e6363759ec7d7fc38e040a15b5",
+      "grantKeyOf": "56e28f4edeccbd36b1ec2739ece496076e1cbd650804860f7ae06d95339be201"
+    }
+  ],
+  "offChain": {
+    "vinHash": "81c443a05e5bd6c3037f70a8e7385db0afc147e19a4ac450ae4078e66f058c34",
+    "fields": [
+      {
+        "name": "odometerKm",
+        "fieldKey": "2dd69ded11554ddb3306be039e80f3f82824b0d4af96b9bc287055558ea92fe7",
+        "slot": "ac0cfc183f65227399ba419d7d8a5eef1e055b40ebf2a0b209d9948ed14effe9",
+        "commitment": "f91ec7968dbf1e4334ecfc76fdefe310f1eb413e049eb707cefd9adec0ac3ccb"
+      },
+      {
+        "name": "accidentCount",
+        "fieldKey": "aeb322aa379bd01ecb61ca57719f40e3c4a0368533dd62b1c7b5d2d995da98eb",
+        "slot": "185e088b262992e6d234470f70df8a1dcd075e11ec992b452f2d0823f5e00de6",
+        "commitment": "788c51c5b7e109540e17f02b47f0422a1eb2da90ac82b4f2ccd2efb603551eb1"
+      },
+      {
+        "name": "ownerCount",
+        "fieldKey": "7567eb36429241cb257b43d05709400ac5e7400e088048071b387d7d0548b25c",
+        "slot": "7a4536f50bc3158d735c17b3bae243a9a7422fc213d70d14584270aa2d86298f",
+        "commitment": "28745622f1db14d4ad8e5aa46879df0af0b0e7b06780e294e3813d8f3b566714"
+      },
+      {
+        "name": "writeOffCategory",
+        "fieldKey": "177d70535ec71b35583722c2d5f1ec963e3b32b7553dce868e547c0c5140e3c0",
+        "slot": "e342717f3c8722e181bb383d7c2616b4d71d101b1c3628e6cdebfcfb2fe0714b",
+        "commitment": "645a105b37f8326c29368519b3b494624f5ee5c4d012f7dbe4b3eaa7ce6c793b"
+      },
+      {
+        "name": "reservedNumeric0",
+        "fieldKey": "4c47d6749b5fc970659980a2eb42a29d7fca5d05acc68d6b1c662fc351b41b27",
+        "slot": "7efb39c061fc84dbb456659b047a1a7153eec6af99daccaf61fcd1a1f1d21c2b",
+        "commitment": "c61e06167ae38cdcedb9fb014f3f2054cbea19757ff8564e16acb50068afe63a"
+      }
+    ],
+    "commitmentEdges": [
+      "3b9dfdf60ac146b1869bff6715162600bf94884e93d12803ef106d3c7be0c341",
+      "dd162676c4fa7e66e5350de1b971f16bc12a957502f987a70f9b26a653ee3f98",
+      "c1ef6cf1f5e3b67445aa22577dbe4eb141777ee39dbb33b762c35cace5093133"
+    ],
+    "grantKey": "729cc8946d4b0ee93150f43f811ecd942a2407147f4a823e13e8f40e1bfd28ec"
+  },
+  "ledger": {
+    "passports": [
+      [
+        "1111111111111111111111111111111111111111111111111111111111111111",
+        "9999999999999999999999999999999999999999999999999999999999999999"
+      ]
+    ],
+    "registrar": [
+      [
+        "1111111111111111111111111111111111111111111111111111111111111111",
+        "004b44e1a5aaa8e3ae49b53adb06234bf3cd442c76f1c6f3aeca24d242591b3d"
+      ]
+    ],
+    "fieldCommitment": [
+      [
+        "29c3bcf7113875a5b3dea47ef29e55b015ce0596ecb1599f6253824c5c9b2923",
+        "de7fe01a3d3686618d0b36f9a192d265964b7c49bf82fedacd729a3f2e471667"
+      ],
+      [
+        "4bbdce2b87eb60f429e083ee1e39136532f51c6796e7c1ee97ecf81ffa171408",
+        "0006e14efdca061bbc5d78e313cd5cd92026e0bb4921d1f9724ae7d9edf1c291"
+      ],
+      [
+        "8d33ffcfae4d827c6d70eafd63bee9160671d75c1b81c823d479a0d074f316e3",
+        "99a76db690366fb518db501b5dffcd002a30e3ef18a7573044dc4794c439e92f"
+      ],
+      [
+        "adf4628caef18166b713294f89f2b03a58e334d212560d31f3048556029b13a1",
+        "2f26d705f48a3531bbad51350a0cc159e608523eb139b8cf18987f8616a9f275"
+      ],
+      [
+        "f6797e00879b03a8dd73a3054ebb1eddd7a0eab34cfc797d28fe04640dfe4b24",
+        "963642459545a32f681cc1015c3b5d94ba5dcbbce14f19af603d991628246fb3"
+      ]
+    ],
+    "fieldRule": [
+      [
+        "29c3bcf7113875a5b3dea47ef29e55b015ce0596ecb1599f6253824c5c9b2923",
+        1
+      ],
+      [
+        "4bbdce2b87eb60f429e083ee1e39136532f51c6796e7c1ee97ecf81ffa171408",
+        0
+      ],
+      [
+        "8d33ffcfae4d827c6d70eafd63bee9160671d75c1b81c823d479a0d074f316e3",
+        0
+      ],
+      [
+        "adf4628caef18166b713294f89f2b03a58e334d212560d31f3048556029b13a1",
+        0
+      ],
+      [
+        "f6797e00879b03a8dd73a3054ebb1eddd7a0eab34cfc797d28fe04640dfe4b24",
+        0
+      ]
+    ],
+    "claims": [
+      [
+        "5de0b78996640b1e4fea47852e2dc59460b59a77c8d5086ba5427ded6bbe6caa",
+        {
+          "atMost": false,
+          "bound": "50000",
+          "commitment": "0006e14efdca061bbc5d78e313cd5cd92026e0bb4921d1f9724ae7d9edf1c291",
+          "fieldKey": "2dd69ded11554ddb3306be039e80f3f82824b0d4af96b9bc287055558ea92fe7",
+          "slot": "4bbdce2b87eb60f429e083ee1e39136532f51c6796e7c1ee97ecf81ffa171408",
+          "vinHash": "1111111111111111111111111111111111111111111111111111111111111111"
+        }
+      ],
+      [
+        "fa319e920a085016450345915004d6a2a4715d182de199493391f7e5848935f5",
+        {
+          "atMost": true,
+          "bound": "60000",
+          "commitment": "0006e14efdca061bbc5d78e313cd5cd92026e0bb4921d1f9724ae7d9edf1c291",
+          "fieldKey": "2dd69ded11554ddb3306be039e80f3f82824b0d4af96b9bc287055558ea92fe7",
+          "slot": "4bbdce2b87eb60f429e083ee1e39136532f51c6796e7c1ee97ecf81ffa171408",
+          "vinHash": "1111111111111111111111111111111111111111111111111111111111111111"
+        }
+      ]
+    ],
+    "relClaims": [
+      [
+        "f3f2bfd7a2258e88ebe31adbe453ceb126cf4ec1bbec7e6765c2fc668c1cbc58",
+        {
+          "commitmentHigh": "963642459545a32f681cc1015c3b5d94ba5dcbbce14f19af603d991628246fb3",
+          "commitmentLow": "0006e14efdca061bbc5d78e313cd5cd92026e0bb4921d1f9724ae7d9edf1c291",
+          "fieldKeyHigh": "aeb322aa379bd01ecb61ca57719f40e3c4a0368533dd62b1c7b5d2d995da98eb",
+          "fieldKeyLow": "2dd69ded11554ddb3306be039e80f3f82824b0d4af96b9bc287055558ea92fe7",
+          "slack": "0",
+          "slotHigh": "f6797e00879b03a8dd73a3054ebb1eddd7a0eab34cfc797d28fe04640dfe4b24",
+          "slotLow": "4bbdce2b87eb60f429e083ee1e39136532f51c6796e7c1ee97ecf81ffa171408",
+          "vinHash": "1111111111111111111111111111111111111111111111111111111111111111"
+        }
+      ]
+    ],
+    "allowedRegistrars": [
+      "004b44e1a5aaa8e3ae49b53adb06234bf3cd442c76f1c6f3aeca24d242591b3d",
+      "8430961a29116ae52ae93d0fe0fbcb248c43efe7dbe369cda9b4b42165a4cccd"
+    ],
+    "writers": [
+      "6d6289b1715784716e6d6855f5161c4f4cd14d19d085a06ccce8c5c1b8f89598"
+    ],
+    "fieldWriter": [
+      [
+        "29c3bcf7113875a5b3dea47ef29e55b015ce0596ecb1599f6253824c5c9b2923",
+        "004b44e1a5aaa8e3ae49b53adb06234bf3cd442c76f1c6f3aeca24d242591b3d"
+      ],
+      [
+        "4bbdce2b87eb60f429e083ee1e39136532f51c6796e7c1ee97ecf81ffa171408",
+        "004b44e1a5aaa8e3ae49b53adb06234bf3cd442c76f1c6f3aeca24d242591b3d"
+      ],
+      [
+        "8d33ffcfae4d827c6d70eafd63bee9160671d75c1b81c823d479a0d074f316e3",
+        "004b44e1a5aaa8e3ae49b53adb06234bf3cd442c76f1c6f3aeca24d242591b3d"
+      ],
+      [
+        "adf4628caef18166b713294f89f2b03a58e334d212560d31f3048556029b13a1",
+        "004b44e1a5aaa8e3ae49b53adb06234bf3cd442c76f1c6f3aeca24d242591b3d"
+      ],
+      [
+        "f6797e00879b03a8dd73a3054ebb1eddd7a0eab34cfc797d28fe04640dfe4b24",
+        "004b44e1a5aaa8e3ae49b53adb06234bf3cd442c76f1c6f3aeca24d242591b3d"
+      ]
+    ],
+    "grants": [
+      [
+        "7cceef9667040b7d127701d841e82ab6481a99261093376b8d7aa0a3fc6dd289",
+        1
+      ]
+    ]
+  }
+}

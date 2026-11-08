@@ -553,7 +553,7 @@ ppWrap.addEventListener('click', () => {
 async function registerInThisBrowser() {
     const engine = await import('../assets/intake-engine/intake-engine.js');
     const { saveLocalLedger, loadLocalLedger } = await import('../assets/local-ledger.mjs');
-    const out = engine.registerLocally(buildIntake());
+    const out = await engine.registerLocally(buildIntake());
 
     const held = loadLocalLedger();
     const base = held?.ledger

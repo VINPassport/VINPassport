@@ -370,7 +370,7 @@ export const saltStream = () => {
  * them anywhere by accident. Only the demo export asks, to write the sample
  * bundles /disclose/ checks.
  */
-export function applyIntake(sim, intake, salt, { keepOpenings = false } = {}) {
+export async function applyIntake(sim, intake, salt, { keepOpenings = false } = {}) {
     const vin = vinHash(intake.vin);
     const vinHex = hex(vin);
     const applied = [];
@@ -383,8 +383,10 @@ export function applyIntake(sim, intake, salt, { keepOpenings = false } = {}) {
         const writes = (openings[name] ??= []);
         writes.push({ writeIndex: writes.length, value: String(value), salt: hex(s) });
     };
-    const attempt = (step, fn) => {
-        try { fn(); applied.push(step); }
+    // Each circuit call is async since compactc 0.36.0, so each attempt is
+    // awaited in turn: a write must land before the next step reads the ledger.
+    const attempt = async (step, fn) => {
+        try { await fn(); applied.push(step); }
         catch (e) {
             refused.push({ step, reason: String(e.message ?? e).replace(/^.*failed assert: /, '') });
         }
@@ -392,7 +394,7 @@ export function applyIntake(sim, intake, salt, { keepOpenings = false } = {}) {
 
     // No registrar argument: whoever the simulator is acting as supplies the
      // secret, and the circuit derives the identity from it.
-    attempt('registerPassport', () =>
+    await attempt('registerPassport', () =>
         sim.registerPassport(vin,
             contentRoot(intake.vin, intake.fields, intake.panel ?? {})));
     if (intake.panel && Object.keys(intake.panel).length) {
@@ -401,9 +403,9 @@ export function applyIntake(sim, intake, salt, { keepOpenings = false } = {}) {
 
     for (const [name, value] of Object.entries(intake.fields)) {
         if (!(name in FIELDS)) { refused.push({ step: `initialiseField ${name}`, reason: 'unknown field' }); continue; }
-        attempt(`initialiseField ${name}`, () => {
+        await attempt(`initialiseField ${name}`, async () => {
             const s = salt();
-            sim.initialiseField(vin, K[name], FIELDS[name].rule, BigInt(value), s);
+            await sim.initialiseField(vin, K[name], FIELDS[name].rule, BigInt(value), s);
             opened(name, value, s);
         });
     }
@@ -417,7 +419,7 @@ export function applyIntake(sim, intake, salt, { keepOpenings = false } = {}) {
     const asRegistrar = () => { if (intake.registrarSecret) sim.actAs(intake.registrarSecret); };
     for (const w of writers.values()) {
         asRegistrar();
-        attempt(`authoriseWriter ${w.label}`, () => sim.authoriseWriter(vin, w.id));
+        await attempt(`authoriseWriter ${w.label}`, () => sim.authoriseWriter(vin, w.id));
     }
 
     // Who the registrar gives the trade or the authority view of this vehicle.
@@ -425,9 +427,9 @@ export function applyIntake(sim, intake, salt, { keepOpenings = false } = {}) {
     // holder hands over off chain. The public view needs no grant.
     for (const g of intake.grants ?? []) {
         asRegistrar();
-        attempt(`grantDisclosure ${g.label}: ${g.tier}`, () => {
+        await attempt(`grantDisclosure ${g.label}: ${g.tier}`, async () => {
             if (!(g.tier in Tier) || !Number.isNaN(Number(g.tier))) throw new Error(`unknown tier "${g.tier}"`);
-            sim.grantDisclosure(vin, g.id, Tier[g.tier]);
+            await sim.grantDisclosure(vin, g.id, Tier[g.tier]);
         });
     }
 
@@ -440,10 +442,10 @@ export function applyIntake(sim, intake, salt, { keepOpenings = false } = {}) {
         for (const [name, value] of Object.entries(values)) {
             if (!(name in FIELDS)) { refused.push({ step: `update ${i + 1} ${name}`, reason: 'unknown field' }); continue; }
             const who = writer ? ` (by ${writer.label})` : '';
-            attempt(`update ${i + 1}: ${name} -> ${value}${who}`, () => {
+            await attempt(`update ${i + 1}: ${name} -> ${value}${who}`, async () => {
                 if (writer) sim.actAs(writer.secret); else asRegistrar();
                 const s = salt();
-                sim.recordField(vin, K[name], BigInt(value), s);
+                await sim.recordField(vin, K[name], BigInt(value), s);
                 opened(name, value, s);
             });
         }
@@ -466,12 +468,12 @@ export function applyIntake(sim, intake, salt, { keepOpenings = false } = {}) {
         // A question comparing two of the vehicle's own fields publishes only
         // how far apart they may be, and opens both commitments.
         if (isCompare(q)) {
-            attempt(`prove ${q.id}`, () =>
+            await attempt(`prove ${q.id}`, () =>
                 sim.proveFieldAtMostField(vin, K[q.field], K[q.against], q.slack));
             continue;
         }
         const bound = q.bound === null ? BigInt(wanted) : boundFor(q);
-        attempt(`prove ${q.id}`, () => (q.atMost
+        await attempt(`prove ${q.id}`, () => (q.atMost
             ? sim.proveFieldAtMost(vin, K[q.field], bound)
             : sim.proveFieldAtLeast(vin, K[q.field], bound)));
     }
@@ -482,8 +484,8 @@ export function applyIntake(sim, intake, salt, { keepOpenings = false } = {}) {
 // ---------------------------------------------------------------- demo pair
 
 /** The two standing demonstration vehicles. Returns their vin hex hashes. */
-export function buildDemoVehicles(sim, salt, options = {}) {
-    const a = applyIntake(sim, {
+export async function buildDemoVehicles(sim, salt, options = {}) {
+    const a = await applyIntake(sim, {
         vin: 'WVWZZZ1JZXW000001',
         registrar: 'demo-authority',
         fields: {
@@ -550,7 +552,7 @@ export function buildDemoVehicles(sim, salt, options = {}) {
         }
     }, salt, options);
 
-    const b = applyIntake(sim, {
+    const b = await applyIntake(sim, {
         vin: 'WAUZZZ8V5KA000002',
         registrar: 'demo-authority',
         fields: {

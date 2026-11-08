@@ -1,0 +1,79 @@
+{
+  "network": "preview",
+  "contract": "vinpassport",
+  "contractAddress": "68e25627e92e3e3809be1700d12ac77b32ffd946d2876a1ebe9a6f47bcec48f4",
+  "txHash": "d2f7e19134790f82f55a0e5d003f3bd7064c4de46b70894cfd51a569aaeb0ce3",
+  "txId": "005e09f4645ba1649be3babff7e2df9ecdcaaf9f474e25b3306b3becba97b5e404",
+  "blockHeight": 17102,
+  "deployedAt": "2026-11-08T05:34:48.000Z",
+  "fees": {
+    "estimatedFees": "13629709485714286",
+    "paidFees": "13629709485714286"
+  },
+  "ledger": "v9",
+  "buildId": "2a217faf925623b2",
+  "build": {
+    "compiler": "0.36.0",
+    "language": "0.28.0",
+    "runtime": "0.21.0",
+    "manifestSha256": "ed7010c2e6a0a6b7d8821121d4bbbb5d734739a41c420820ef66982d821e53b2",
+    "verifierKeys": {
+      "registerPassport": "a9facc1664c74761ed0353bf2eb7cf6ddeb8df3593a7d7eb62147bbfe2fc09f0",
+      "authoriseWriter": "88fca0ed5d65d64bbead7f644d9caa230562cb4e4c29ded48f1e8f99277ce6a8",
+      "withdrawWriter": "f8170ac88252a7584c59ece4cb18ee778fd580604fe2e8744b85a31dc6c0ad65",
+      "grantDisclosure": "5c122ae46116918d00b0ee376493987ec3e8b50fbeb2eb2e149bf71a229a8b85",
+      "revokeDisclosure": "672761c19688b589fc131f296fa089ef6019cd85997a42a05cd05883988524df",
+      "initialiseField": "047f2a13d2df1666eecfc6663fa90618fef25d53ad427f4320bae413c95a31bf",
+      "recordField": "d38cfb57053b9816a51f0f828e135261f08db9b45338dc46d0b13ead650ff983",
+      "proveFieldAtMost": "f67915f3db2699b1b82815fb1e83bd4d9101c30fc5ade0f793025acc4c0b1acc",
+      "proveFieldAtLeast": "6008708dc28de2a304ba30f8049b36475d1cd2fd31491e60f39da0950423c101",
+      "proveFieldAtMostField": "6844dbc76addcb92fee72081012bfe610e121ab830a5d9545e56ab5d03783ca2"
+    }
+  },
+  "registrars": [
+    {
+      "label": "A",
+      "id": "9ecd472baaaa93fe3f1dd92b610c7ae4fff14bed398f3e48530402812a2938be"
+    },
+    {
+      "label": "B",
+      "id": "0fa7b6dd3596e2d971ce0b6d8c97b02ec053871e6b7d6928d31de7b594a09d0d"
+    },
+    {
+      "label": "C",
+      "id": "413eb23af7a1c4cd7c522b86d1bd7ee2be66683e167459f4e85d8761675ad04c"
+    },
+    {
+      "label": "D",
+      "id": "fc37e966de08806ce1333e3b45d34b131c9fdd9bdfcf8f97bd3b40d3e5e44b9a"
+    }
+  ],
+  "authority": {
+    "holder": "committee",
+    "threshold": 2,
+    "counter": 1,
+    "committee": [
+      {
+        "tag": "schnorr",
+        "value": "9cbde32ead9877a07b22dc9fcfe37e193fce70448986aa507fd1ff0d8174e185"
+      },
+      {
+        "tag": "schnorr",
+        "value": "3fb0f9dbb9295a5756756c8dc987c5928c44400a91f1144248d908f2370c5a39"
+      },
+      {
+        "tag": "ecdsa",
+        "value": "02d84ae6a9ceb6b4bd38f64d04f04eced2d2d0911bfb3906e6d4f56a1bc0d44804"
+      }
+    ],
+    "members": [
+      "rehearsal-1",
+      "rehearsal-2",
+      "rehearsal-3"
+    ],
+    "handoverTxId": "00e2cbf0076042f4b1e47c7c6cb4b2b299bc19fcdec8ce4ef9dbf2459c3e066d6f",
+    "handedOverAt": "2026-11-08T08:30:58.964Z",
+    "note": "Committee per DECISIONS D28. The custody key no longer has any power over this contract."
+  },
+  "note": "Public record of the deployment. Address, hashes and verifying keys are public by definition. build.manifestSha256 pins the compiler integrity manifest; build.verifierKeys are the SHA-256 hashes of the verifier keys this address holds."
+}

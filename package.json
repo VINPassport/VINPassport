@@ -10,15 +10,33 @@
     "url": "https://github.com/VINPassport/VINPassport"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12"
   },
-  "comment": "Compact has no Windows binary: run `npm run compile` in WSL2, macOS or Linux. Tests run anywhere. @odatano/* versions are pinned EXACTLY on purpose - see docs/DECISIONS.md D10. compact-runtime and @noble/hashes are RUNTIME deps, not dev: the app server runs the compiled circuits in-process through test/passport-simulator.mjs.",
+  "comment": "Ledger 9: Compact 0.36.0 (runtime 0.21.0), Midnight.js 5.0.0, Wallet SDK 2.0.0. Compact has no Windows binary: run `npm run compile` in WSL2, macOS or Linux. Tests run anywhere. Versions are pinned EXACTLY on purpose (docs/DECISIONS.md D10), and the overrides keep ONE copy of each WASM package: two copies reject each other's objects. The Ledger 8 preprod build and its nightgate-tx tooling are frozen at the git tag ledger8-preprod. compact-runtime and @noble/hashes are RUNTIME deps, not dev: the app server runs the compiled circuits in-process through test/passport-simulator.mjs.",
   "dependencies": {
-    "@midnight-ntwrk/compact-runtime": "0.16.0",
+    "@midnight-ntwrk/compact-runtime": "0.21.0",
+    "@midnight-ntwrk/midnight-js-contracts": "5.0.0",
+    "@midnight-ntwrk/midnight-js-http-client-proof-provider": "5.0.0",
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "5.0.0",
+    "@midnight-ntwrk/midnight-js-level-private-state-provider": "5.0.0",
+    "@midnight-ntwrk/midnight-js-node-zk-config-provider": "5.0.0",
+    "@midnight-ntwrk/midnight-js-protocol": "5.0.0",
+    "@midnight-ntwrk/midnight-js-types": "5.0.0",
+    "@midnight-ntwrk/midnight-js-utils": "5.0.0",
+    "@midnightntwrk/ledger-v9": "1.0.0",
+    "@midnightntwrk/wallet-sdk-abstractions": "3.0.0",
+    "@midnightntwrk/wallet-sdk-address-format": "4.0.0",
+    "@midnightntwrk/wallet-sdk-capabilities": "4.0.0",
+    "@midnightntwrk/wallet-sdk-dust-wallet": "5.0.0",
+    "@midnightntwrk/wallet-sdk-facade": "5.0.0",
+    "@midnightntwrk/wallet-sdk-hd": "4.0.0",
+    "@midnightntwrk/wallet-sdk-prover-client": "2.0.0",
+    "@midnightntwrk/wallet-sdk-shielded": "4.0.0",
+    "@midnightntwrk/wallet-sdk-unshielded-wallet": "4.0.0",
+    "@midnightntwrk/zkir-v3": "3.2.0",
     "@noble/curves": "2.4.0",
     "@noble/hashes": "^1.8.0",
     "@odatano/dpp-sdk": "0.2.0",
-    "@odatano/nightgate-tx": "0.11.0",
     "@polkadot/api": "16.5.6"
   },
   "devDependencies": {
@@ -30,13 +48,16 @@
     "test:contract": "vitest run",
     "test:watch": "vitest",
     "test:sdk": "node test/sdk-assumptions.mjs",
-    "compile": "compact compile contracts/vinpassport/src/vinpassport.compact contracts/vinpassport/src/managed/vinpassport",
+    "compile": "compact compile +0.36.0 contracts/vinpassport/src/vinpassport.compact contracts/vinpassport/src/managed/vinpassport",
     "test:app": "node --test \"test/app/*.test.mjs\"",
     "demo:export": "node scripts/export-demo-state.mjs",
     "serve:site": "npx serve site",
-    "deploy:preprod": "node scripts/deploy-preprod.mjs",
+    "deploy": "node scripts/deploy.mjs",
+    "dust": "node scripts/dust.mjs",
+    "chain:run": "node scripts/run.mjs",
+    "maintenance": "node scripts/maintenance.mjs",
     "app": "node scripts/app-server.mjs",
-    "app:preprod": "node scripts/app-preprod.mjs",
+    "app:chain": "node scripts/app-chain.mjs",
     "intake": "node scripts/intake.mjs",
     "disclose": "node scripts/disclose.mjs",
     "check:disclosure": "node scripts/check-disclosure.mjs --staged",
@@ -47,8 +68,6 @@
     "check:nav": "node scripts/build-nav.mjs --check",
     "check:engine": "node scripts/build-intake-engine.mjs --check",
     "check:video": "node scripts/check-video.mjs",
-    "check:dust": "node scripts/check-dust.mjs",
-    "warm:dust": "node scripts/sync-dust.mjs",
     "shots": "node scripts/capture-guide-shots.mjs",
     "record:run": "node scripts/record-run.mjs",
     "check:deck": "node scripts/check-deck.mjs",
@@ -56,7 +75,11 @@
     "check:browser": "node scripts/check-browser-circuits.mjs"
   },
   "overrides": {
-    "@midnight-ntwrk/ledger-v8": "8.1.3",
-    "@midnight-ntwrk/onchain-runtime-v3": "3.0.0"
+    "@midnightntwrk/ledger-v9": "1.0.0",
+    "@midnightntwrk/onchain-runtime-v4": "4.0.0",
+    "@midnight-ntwrk/platform-js": "3.0.0",
+    "@midnightntwrk/ledger-v8": "8.1.3",
+    "@midnight-ntwrk/onchain-runtime-v3": "3.1.2",
+    "effect": "3.22.4"
   }
 }

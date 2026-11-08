@@ -35,8 +35,8 @@ const BUNDLES = join(SITE, 'disclose', 'bundles');
 // vehicle the ledger does not hold.
 const VIN_A = 'WVWZZZ1JZXW000001';
 
-const sim = new PassportSimulator();
-const { a, b } = buildDemoVehicles(sim, saltStream(), { keepOpenings: true });
+const sim = await PassportSimulator.create();
+const { a, b } = await buildDemoVehicles(sim, saltStream(), { keepOpenings: true });
 
 for (const [name, r] of [['A', a], ['B', b]]) {
     if (name === 'A' && r.refused.length) {

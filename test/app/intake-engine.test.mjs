@@ -24,32 +24,32 @@ const intake = (over = {}) => ({
     ...over
 });
 
-test('a registration comes back as a ledger, not just a verdict', () => {
-    const out = registerLocally(intake());
+test('a registration comes back as a ledger, not just a verdict', async () => {
+    const out = await registerLocally(intake());
     assert.ok(out.applied.includes('registerPassport'));
     assert.deepEqual(out.refused, [], `refused: ${JSON.stringify(out.refused)}`);
     assert.ok(out.ledger.passports[out.vinHex], 'the vehicle is not in the ledger it returned');
     assert.ok(Object.keys(out.ledger.fieldCommitment).length >= 3);
 });
 
-test('the ledger it returns holds this vehicle and nothing else', () => {
+test('the ledger it returns holds this vehicle and nothing else', async () => {
     // The simulator is deliberately fresh: rebuilding the demo vehicles to
     // throw them away cost about 200 ms, and the caller merges anyway.
-    const out = registerLocally(intake());
+    const out = await registerLocally(intake());
     assert.deepEqual(Object.keys(out.ledger.passports), [out.vinHex]);
 });
 
-test('what the console gets back carries no salt', () => {
+test('what the console gets back carries no salt', async () => {
     // applyIntake can keep every write's opening, for the demo export's sample
     // bundles. The console forwards its result into the page, so that must
     // stay off here: a salt opens its commitment, and it is the holder's.
-    const out = registerLocally(intake());
+    const out = await registerLocally(intake());
     assert.equal('openings' in out, false);
     assert.doesNotMatch(JSON.stringify(out), /"salt"/);
 });
 
-test('delegation survives the serverless path', () => {
-    const out = registerLocally(intake({
+test('delegation survives the serverless path', async () => {
+    const out = await registerLocally(intake({
         authorise: ['dealership'],
         updates: [{ odometerKm: 48_000, by: 'dealership' }]
     }));
@@ -59,18 +59,18 @@ test('delegation survives the serverless path', () => {
         'every field has the same writer, so the delegated update was written by the registrar');
 });
 
-test('a refusal is a result, not a thrown error', () => {
+test('a refusal is a result, not a thrown error', async () => {
     // An odometer that falls breaks the ratchet. The registration still
     // happens; the update does not, and the page has to be able to say so.
-    const out = registerLocally(intake({ updates: [{ odometerKm: 10 }] }));
+    const out = await registerLocally(intake({ updates: [{ odometerKm: 10 }] }));
     assert.ok(out.applied.includes('registerPassport'));
     assert.equal(out.refused.length, 1, JSON.stringify(out.refused));
     assert.match(out.refused[0].reason, /decreased/);
 });
 
-test('an intake missing its basics is refused before any circuit runs', () => {
+test('an intake missing its basics is refused before any circuit runs', async () => {
     assert.throws(() => requireIntakeFields({ registrar: 'x', fields: {} }), /missing "vin"/);
-    assert.throws(() => registerLocally({ vin: 'X', fields: {} }), /missing "registrar"/);
+    await assert.rejects(registerLocally({ vin: 'X', fields: {} }), /missing "registrar"/);
 });
 
 // ---------------------------------------------------------------- merging
@@ -83,7 +83,7 @@ const led = (over = {}) => ({
     ...over
 });
 
-test('a second vehicle joins the first instead of replacing it', () => {
+test('a second vehicle joins the first instead of replacing it', async () => {
     const merged = mergeLedgers(led(), led({
         source: 'added', passports: { bb: 'r2' }, registrar: { bb: 'reg' },
         fieldCommitment: { s2: 'c2' }, fieldRule: { s2: 0 }, fieldWriter: { s2: 'reg' },
@@ -95,7 +95,7 @@ test('a second vehicle joins the first instead of replacing it', () => {
     assert.deepEqual(merged.claims.map((c) => c.key).sort(), ['k1', 'k2']);
 });
 
-test('registering the same vehicle twice keeps the newer write', () => {
+test('registering the same vehicle twice keeps the newer write', async () => {
     // Keys are hashes of (vehicle, field), so a repeat means the same vehicle
     // came round again and the later state is the right answer.
     const merged = mergeLedgers(led(), led({ fieldCommitment: { s1: 'NEWER' } }));
@@ -103,7 +103,7 @@ test('registering the same vehicle twice keeps the newer write', () => {
     assert.equal(Object.keys(merged.fieldCommitment).length, 1);
 });
 
-test('re-proving a claim does not accumulate copies of it', () => {
+test('re-proving a claim does not accumulate copies of it', async () => {
     // Idempotent on chain: the same key written twice. It must look
     // idempotent here, or the proof explorer counts one claim as two.
     const merged = mergeLedgers(led(), led({ claims: [{ key: 'k1', bound: '9' }] }));
@@ -111,7 +111,7 @@ test('re-proving a claim does not accumulate copies of it', () => {
     assert.equal(merged.claims[0].bound, '9');
 });
 
-test('merging onto nothing is the same as the thing being merged', () => {
+test('merging onto nothing is the same as the thing being merged', async () => {
     // The first registration in a tab has no base to fold into.
     const add = led({ source: 'added' });
     const merged = mergeLedgers(undefined, add);
@@ -120,24 +120,24 @@ test('merging onto nothing is the same as the thing being merged', () => {
     assert.equal(merged.source, 'added');
 });
 
-test('the merged record stops claiming it came from where the base did', () => {
+test('the merged record stops claiming it came from where the base did', async () => {
     const merged = mergeLedgers(led({ source: 'the committed demo export' }), led({ source: 'this browser' }));
     assert.equal(merged.source, 'this browser',
         'a record that now holds a locally added vehicle still says it was exported at build time');
 });
 
-test('a claim with no key is dropped rather than duplicated endlessly', () => {
+test('a claim with no key is dropped rather than duplicated endlessly', async () => {
     // Nothing should produce one, but a keyless entry merged repeatedly
     // would grow without bound, which is worse than losing it.
     const merged = mergeLedgers(led({ claims: [{ bound: '1' }] }), led({ claims: [{ bound: '1' }] }));
     assert.deepEqual(merged.claims, [], 'a keyless claim survived the merge and will accumulate');
 });
 
-test('a real registration merges onto a real one', () => {
+test('a real registration merges onto a real one', async () => {
     // The unit tests above use hand-made shapes; this proves the real export
     // shape survives the same path.
-    const first = registerLocally(intake({ vin: 'VPDENGINETEST0001' }));
-    const second = registerLocally(intake({ vin: 'VPDENGINETEST0002' }));
+    const first = await registerLocally(intake({ vin: 'VPDENGINETEST0001' }));
+    const second = await registerLocally(intake({ vin: 'VPDENGINETEST0002' }));
     const merged = mergeLedgers(first.ledger, second.ledger);
     assert.ok(merged.passports[first.vinHex], 'the first vehicle was lost');
     assert.ok(merged.passports[second.vinHex], 'the second vehicle never arrived');

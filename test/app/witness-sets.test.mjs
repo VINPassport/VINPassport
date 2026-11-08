@@ -44,13 +44,25 @@ const DECLARED = [...read('contracts', 'vinpassport', 'src', 'vinpassport.compac
  * definition.
  *
  * The spikes are gitignored, so they are checked only on a machine that has
- * them. The deploy script is not optional: a run where it silently vanished
- * from this list is a run that proves nothing about the thing that broke.
+ * them. The ledger 9 deploy does not write its set by hand: it builds it from
+ * a list of names in scripts/lib/contract9.mjs (refusingWitnesses), checked
+ * below against the contract and against the constructor itself.
  */
 const BY_HAND = [
-    { path: 'scripts/deploy-preprod.mjs', optional: false },
     { path: 'scripts/spike-call-build.mjs', optional: true }
 ];
+
+/** The witness set the deploy hands the constructor. */
+const deployWitnessNames = async () => {
+    const { refusingWitnesses } = await import(pathToFileURL(join(ROOT, 'scripts', 'lib', 'contract9.mjs')).href);
+    return Object.keys(refusingWitnesses());
+};
+
+test('the deploy\'s witness set (contract9.refusingWitnesses) lists every witness the contract declares', async () => {
+    const listed = await deployWitnessNames();
+    assert.deepEqual(DECLARED.filter((w) => !listed.includes(w)), [], 'the Contract constructor would refuse the deploy');
+    assert.deepEqual(listed.filter((w) => !DECLARED.includes(w)), [], 'the deploy lists a witness the contract no longer declares');
+});
 
 const keysOf = (src) => {
     const at = src.indexOf('const witnesses = {');
@@ -93,7 +105,7 @@ test('the constructor accepts the deploy script\'s set, and refuses a short one'
         ROOT, 'contracts', 'vinpassport', 'src', 'managed', 'vinpassport', 'contract', 'index.js')).href);
 
     const stub = (n) => () => { throw new Error(`witness ${n} was called`); };
-    const listed = keysOf(read('scripts', 'deploy-preprod.mjs'));
+    const listed = await deployWitnessNames();
 
     assert.doesNotThrow(() => new Contract(Object.fromEntries(listed.map((n) => [n, stub(n)]))));
 

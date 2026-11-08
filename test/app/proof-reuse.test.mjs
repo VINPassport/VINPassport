@@ -15,7 +15,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { proofReusable } from '../../scripts/lib/preprod-runner.mjs';
+import { proofReusable } from '../../scripts/lib/intake-rules.mjs';
 
 const action = (hash, height = 100) => ({ type: 'ContractCall', hash, height });
 const A = 'a'.repeat(64);
