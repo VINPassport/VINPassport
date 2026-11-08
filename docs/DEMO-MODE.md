@@ -1,5 +1,11 @@
 # Demo mode: real preprod runs, for anyone
 
+> **Ledger 8.** This page describes the ledger 8 engine, which packed calls into batches through
+> `@odatano/nightgate-tx` against the preprod contract. It is kept, with its scripts, at the git tag
+> `ledger8-preprod` ([D27](DECISIONS.md#settled)). On ledger 9 the engine is
+> `scripts/lib/runner9.mjs`: one call per transaction through Midnight.js 5, started with
+> `npm run app:chain` or `node scripts/run.mjs --network preview`.
+
 Wave 1 status: **shipped, public and live.** Engine, API and the visitor-facing
 UI all landed in Wave 1: anyone can start a real preprod run at
 [passport.vin/demo/](https://passport.vin/demo/), capped per UTC day. Everything

@@ -3,7 +3,7 @@
  * whenever the wallet holds two coins.
  *
  * WHY: listed in the Ledger 9 release notes as ledger issue #838 (section
- * "Known issues", https://docs.midnight.network/relnotes/ledger-9): "A
+ * "Known issues", https://docs.midnight.network/relnotes/ledger-9.md): "A
  * contract call whose fee is paid with exactly one DUST spend can be rejected
  * with `OutsideTimeToDismiss`. The same call is accepted with zero, two, or
  * more DUST spends. ... Pay the fee with two or more DUST spends."

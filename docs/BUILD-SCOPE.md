@@ -101,6 +101,21 @@ Figures in DUST at the protocol reference price, built against the deployed cont
 proofs and nothing submitted. A fee is cost multiplied by a price the ledger moves every block, and
 since the price is a scalar these ratios hold whatever it is.
 
+**Paid on ledger 9, measured 2026-11-08** on Preview, one call per transaction
+([D27](DECISIONS.md#settled)), as the chain recorded each fee:
+
+| Transaction | Paid, DUST |
+|---|---:|
+| Deploy (carries all ten verifier keys) | 13.630 |
+| `registerPassport` | 0.590 |
+| `initialiseField`, `authoriseWriter`, `grantDisclosure`, `recordField`, `withdrawWriter` and the four claims | 0.307 to 0.311 each, with one `initialiseField` at 0.083 |
+| The whole 14-call guided run | 4.377 |
+
+These are paid fees on a live chain, not estimates: Preview is a different network from preprod
+at a different price, so they are not a like-for-like comparison with the table above. The wallet's
+estimate before submitting runs above what is paid (0.733 estimated against 0.590 paid for
+`registerPassport`), so it is safe to budget against.
+
 **Batch anyway, for the reasons that survive.** One transaction means one submission to fail, one
 confirmation to wait for, less block space, and no window in which half an anchor is on chain. For
 a flow a customer watches, that matters more than a fraction of a DUST. What it does not do is pay
@@ -168,7 +183,7 @@ obligation with us. Decide when billing is actually built.
 >
 > ```
 > contracts/vinpassport/     the Compact contract and its compiled artefacts
-> scripts/                   app-server, preprod-runner, preprod-plan, scenario, deploy, export
+> scripts/                   app-server, runner9, preprod-plan, scenario, deploy, run, export
 > site/                      index, regulation, verify, proofs, intake, demo, assets
 > deck/                      the Wave 1 deck
 > test/                      passport.test.mjs (vitest), app/ (node --test), sdk-assumptions.mjs

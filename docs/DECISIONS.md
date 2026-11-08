@@ -85,8 +85,9 @@ A single `vinpassport` repo, not the eight-repo split of the previous build.
 management consumed effort that should have gone into the product. Split later only when something
 genuinely needs to ship on its own cadence.
 
-### D9: Preprod is the deployment target · 2026-08-21
+### D9: Preprod is the deployment target · 2026-08-21 · **AMENDED** 2026-11-08 by [D27](#settled)
 Not mainnet. NIGHTGATE hard-gates mainnet submission off pending an unresolved node issue.
+Since ledger 9, Preview is the rehearsal network and the preprod build is kept at a tag ([D27](#settled)).
 
 ### D10: Pin exact `@odatano/*` versions · 2026-08-21
 Never a `^` or `~` range on any ODATANO package.
@@ -429,6 +430,11 @@ holds too: no end user touches a wallet; this is our treasury paying, which is e
 **Where NIGHTGATE returns:** disclosure grants in Phase 1. Self-funding fees was a resilience
 decision for one demo, not a direction of travel.
 
+**Amended 2026-11-08 by [D27](#settled):** on ledger 9, transactions are built with Midnight.js 5,
+because `@odatano/nightgate-tx` targets ledger 8. The attribution above holds for the ledger 8
+preprod build at the tag `ledger8-preprod`; on ledger 9 the ODATANO package on every run is
+`@odatano/dpp-sdk`.
+
 ### D25: A vehicle's registrar admits other writers, per vehicle · 2026-10-14
 
 Until today one identity could write a passport for its whole life: the registrar that registered
@@ -600,6 +606,90 @@ follow the redeploy.
 what a bundle answers and cannot ask a new question of it. And a bundle can be forwarded. A tier
 bounds what the holder hands over, not what a recipient does with it afterwards.
 
+### D27: Ledger 9 is the main line; the ledger 8 preprod build is kept at a tag · 2026-11-08
+
+Midnight mainnet has run ledger 9 since 6 November 2026 and Preview since its relaunch on
+7 November; preprod is still on ledger 8
+([Ledger 9 release notes](https://docs.midnight.network/relnotes/ledger-9.md)). The repository moves
+to ledger 9 whole: Compact compiler 0.36.0 (language 0.28.0, runtime 0.21.0), Midnight.js 5.0.0 and
+Wallet SDK 2. The ledger 8 build deployed on preprod, and every script that drives it, stays at the
+git tag `ledger8-preprod`. **Amends [D9](#settled):** Preview is the rehearsal network, preprod is
+read from the tag, and mainnet follows when its gates are met.
+
+**Why a tag and not a legacy folder.** The first plan was a `legacy/ledger8/` folder with its own
+install beside the new one. Calling a ledger 8 contract needs compact-runtime 0.16 next to 0.21, and
+two copies of a WASM runtime in one install reject each other's objects; the [Midnight.js 5 migration
+guide](https://github.com/midnightntwrk/midnight-js/blob/main/docs/releases/v5.0.0/migration-guide.md) says of running both that there is "no official recipe for this yet". A tag keeps the deployed
+build reproducible exactly as it was, with none of that.
+
+**The contract did not change.** compactc 0.36.0 compiles `vinpassport.compact` unchanged, and the
+new build reproduces every hash, commitment and ledger state of the 0.31.1 build
+([`test/app/golden-vectors.test.mjs`](../test/app/golden-vectors.test.mjs), 13 of 13). Registrar
+identities, receipts, bundles and the browser verifier carry over. Verifier keys do change (ZKIR v3),
+which is why ledger 9 has its own deploy.
+
+**What changed around it.**
+- **One call per transaction.** Batching saved 0.3% at best ([BUILD-SCOPE](BUILD-SCOPE.md)), and a
+  single call is what Midnight.js 5 submits natively.
+- **Proving stays in this process.** `@midnightntwrk/zkir-v3` proves ZKIR v3 circuits in wasm; no
+  proof server and no Docker.
+- **`@odatano/nightgate-tx` is not in the ledger 9 path.** Its current release (0.20.2, checked
+  8 November 2026) targets ledger 8, so ledger 9 transactions are built with Midnight.js 5 directly.
+  **This amends [D24](#settled)'s attribution:** on ledger 9, what comes from ODATANO on every run is
+  `@odatano/dpp-sdk`; `@odatano/nightgate-tx` remains the ledger 8 path at the tag.
+- **Exact pins ([D10](#settled)) now cover the Midnight packages.** `@midnightntwrk/ledger-v9` is
+  pinned to the version Midnight.js 5 itself pins (1.0.0), and a test fails if any WASM package, or
+  `effect`, is installed twice.
+- **Fees are paid with at least two DUST spends** whenever the wallet holds two DUST coins. The
+  ledger 9 release notes list a contract call paid with exactly one DUST spend as one the node can
+  reject (ledger issue #838). The selection lives in one module so it can be removed when the ledger
+  changes.
+
+**Rehearsed in full on Preview, 8 November 2026.** Deploy at block 17102
+([`deploy/preview.json`](../deploy/preview.json)); a guided run of 14 transactions in blocks 17890 to
+18038; the readback checked 9 of 9 against the run's receipt; and the maintenance authority handed to
+the committee of [D28](#settled).
+
+### D28: The maintenance authority is a 2-of-3 committee, never a single key · 2026-11-08
+
+A Midnight contract's maintenance authority decides who may insert or replace its verifier keys,
+and that is the only way a deployed contract takes a new proving system's keys in place. Without
+it, a toolchain change means a redeploy, and a redeploy starts an empty ledger: every passport stays
+readable at the old address and can never be written again.
+
+**The decision.** Deploy with a custody key, because Midnight.js registers one key at threshold 1,
+then hand the authority straight to a committee of three keys with a threshold of two, through a
+`ReplaceAuthority` maintenance update signed by the custody key
+([`scripts/maintenance.mjs`](../scripts/maintenance.mjs)). The new authority's counter is the old one
+plus one, so the update cannot be replayed. Each member creates their own key and publishes only the
+verifying key ([`scripts/make-committee-key.mjs`](../scripts/make-committee-key.mjs),
+`deploy/committee.<network>.json`). A member may hold a Schnorr or an ECDSA (secp256k1) key: the
+ledger 9 authority accepts both, so a member can sign from a hardware module or a cloud key service.
+
+**Why not one key.** One key is one point of loss and one point of decision. Lost, the contract can
+never take new keys; held alone, one person can change what the contract verifies. Two of three
+survives the loss of any single key and needs two holders to agree to any change.
+
+**Regulatory basis.** The record has to outlive toolchains and issuers:
+- Implementing Regulation (EU) 2025/1707, Article 17(4): *"The manufacturer shall ensure that EVP
+  data are accessible for at least 20 years after the date of manufacture of the vehicle."*
+  ([REGULATION.md](REGULATION.md#the-implementing-act))
+- Regulation (EU) 2026/1738, Article 13(6)(b)(iii) asks the Commission's implementing act to settle
+  *"the availability of the Digital Circularity Vehicle Passport after the manufacturer responsible
+  for the fulfilment of the obligations set out in paragraph 4 ceases to exist or ceases its
+  activity in the Union"*. That act is due by 14 August 2030 and does not exist yet, so this is the
+  direction of travel, not a rule in force
+  ([REGULATION.md](REGULATION.md#two-parts-of-article-136-that-shape-the-design)).
+
+Twenty years will outlast many toolchain releases. A contract that cannot take new verifier keys
+could only carry a record that long by migrating it to a new address, and a migration is exactly the
+point at which a record's history can be broken.
+
+**Rehearsed on Preview, 8 November 2026:** two Schnorr keys and one ECDSA key installed at counter 1;
+the chain reports threshold 2 of 3, matching the deploy record. **Not settled yet:** who holds the
+three mainnet keys ([Q8](#open)), and the tool that collects two signatures for a later update, which
+will be rehearsed by inserting a verifier key on Preview.
+
 ## Reversed
 
 Recorded so they are not accidentally reinstated.
@@ -690,6 +780,8 @@ run it. **The tier table itself is not reversed**; it carries into D26 as the po
 | Q4 | Is SAP CAP acceptable as a permanent dependency? | Everything downstream | Us, inherited from D1, worth being deliberate about |
 | Q5 | Proving cost at width 32 versus 16 | Whether D15 holds under real cost | Phase 0 measurement |
 | Q6 | Fiat provider: merchant of record or direct? | Billing build | Deferred to Phase 1, turns on EU VAT |
+| Q7 | Mainnet DUST source (D31 when settled): DUST designated to our DUST address from a cNIGHT holder's rewards, NIGHTGATE fee sponsoring (needs `@odatano/nightgate-tx` on ledger 9), or our own NIGHT | The mainnet deploy | Us, with ODATANO |
+| Q8 | Who holds the three mainnet committee keys of [D28](#settled), on which devices, and with what recovery path | The mainnet deploy | Us |
 
 ### Resolved
 
