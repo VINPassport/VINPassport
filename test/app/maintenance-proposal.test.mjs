@@ -18,14 +18,23 @@ import {
     makeProposal, insertVerifierKey, removeVerifierKey, replaceAuthority, validateProposal, buildUpdate,
     fingerprint, describe, signProposal, checkSignatures, signedUpdate
 } from '../../scripts/lib/maintenance9.mjs';
-import { BUILD_DIR } from '../../scripts/lib/contract9.mjs';
+import { verifierKeyHashOf } from '@midnight-ntwrk/compact-runtime';
+import { expectedVk } from '../../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
 
 const members = [sampleSigningKey('schnorr'), sampleSigningKey('schnorr'), sampleSigningKey('ecdsa')];
 const authority = { committee: members.map(signatureVerifyingKey), threshold: 2, counter: 1n };
 const address = randomBytes(32).toString('hex');
-// A real ledger 9 verifier key from the committed build, so the ledger's own
-// parser accepts it.
-const vk = readFileSync(join(BUILD_DIR, 'keys', 'registerPassport.verifier'));
+// Real ledger 9 verifier keys, so the ledger's own parser accepts them. Keys
+// are gitignored under managed/, so two are committed as fixtures; the first
+// test ties each to the hash the committed contract records for it.
+const FIXTURES = join(import.meta.dirname, '..', 'fixtures', 'verifier-keys');
+const vk = readFileSync(join(FIXTURES, 'registerPassport.verifier'));
+const otherVk = readFileSync(join(FIXTURES, 'holdsAtMost.verifier'));
+
+test('the fixture keys are the keys this build compiles to', () => {
+    assert.equal(verifierKeyHashOf(vk), expectedVk.registerPassport);
+    assert.equal(verifierKeyHashOf(otherVk), expectedVk.holdsAtMost);
+});
 
 const proposal = (updates = [insertVerifierKey('passportOf', vk)]) =>
     makeProposal({ network: 'preview', contractAddress: address, authority, updates, title: 'test' });
@@ -74,8 +83,7 @@ test('a key outside the committee cannot sign', () => {
 
 test('editing the key after signing kills every signature', () => {
     let p = signProposal(signProposal(proposal(), members[0]), members[1]);
-    const other = readFileSync(join(BUILD_DIR, 'keys', 'recordField.verifier'));
-    const swapped = insertVerifierKey('passportOf', other);
+    const swapped = insertVerifierKey('passportOf', otherVk);
     p = { ...p, updates: [swapped] };
     const r = checkSignatures(p);
     assert.equal(r.valid.length, 0);

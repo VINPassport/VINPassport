@@ -6,7 +6,8 @@ VINPassport's own Compact contracts. Layout follows
 
 | Contract | Circuits | Purpose |
 |---|---|---|
-| `vinpassport` | `registerPassport`, `initialiseField`, `recordField`, `proveFieldAtMost`, `proveFieldAtLeast` | The vehicle passport: registration, and any panel field held as private state under its own integrity rule |
+| `vinpassport` | registration, field writes (`initialiseField`, `recordField`), writers and grants, three claim circuits, six read circuits, four pure helpers | The vehicle passport: registration, and any panel field held as private state under its own integrity rule. The read circuits (`isRegistered`, `registrarOf`, `commitmentOf`, `holdsAtMost`, `holdsAtLeast`, `holdsGrant`) let another contract ask it in the same transaction ([D33](../docs/DECISIONS.md#settled)) |
+| `listing` | `list` | Composability demo: lists a vehicle only if VINPassport holds a current claim meeting a rule fixed at deploy, asked through a cross-contract call. Deployed on Preview, see [`../deploy/listing.preview.json`](../deploy/listing.preview.json) |
 
 ## Building
 
@@ -14,14 +15,18 @@ VINPassport's own Compact contracts. Layout follows
 NTFS compression utility.** Always build in WSL2, macOS, or Linux.
 
 ```bash
-compact compile contracts/vinpassport/src/vinpassport.compact \
-                contracts/vinpassport/src/managed/vinpassport
+npm run compile            # compact compile +0.36.0 contracts/vinpassport/src/vinpassport.compact ...
+npm run compile:listing    # compact compile +0.36.0 contracts/listing/src/listing.compact ...
 ```
 
-Add `--skip-zk` for a fast syntax and type check that skips PLONK key generation.
+Both pin the compiler, because a different compiler version produces different verifier keys,
+and the keys on chain are what a build has to match. Add `--skip-zk` for a fast syntax and type
+check that skips key generation. Keys land in `src/managed/<name>/keys/`, which is gitignored;
+everything else the compiler writes is committed.
 
-Verified with **Compact CLI 0.5.2, compiler 0.31.1 (language 0.23, ledger 8)**, which is the stable line.
-The ledger-9 line (compiler 0.33+) is not deployed to any public network.
+Verified with **Compact CLI 0.5.2, compiler 0.36.0 (language 0.28.0, runtime 0.21.0, ledger 9)**,
+the toolchain of Preview and mainnet since 6 to 7 November 2026. The ledger 8 build (compiler
+0.31.1) for preprod is kept at the git tag `ledger8-preprod`.
 
 ## The private-state model
 

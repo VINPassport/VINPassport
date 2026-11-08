@@ -121,8 +121,18 @@ function statePassword(network) {
         `Encrypts the Midnight.js private state store for ${network}. Losing it loses the stored copy of the custody key.`);
 }
 
-/** All seven Midnight.js providers for this contract on `network`. */
-export async function contractProviders(w, state, { log = () => { } } = {}) {
+/**
+ * All seven Midnight.js providers for this contract on `network`.
+ *
+ * Defaults are VINPassport's own build. Another contract passes its own
+ * `buildDir` and `expectedManifestHash`; one that makes cross-contract calls
+ * also passes `proveFrom` (every build in the call tree) and
+ * `contractModuleProvider`, whose presence is what lets Midnight.js resolve
+ * callees during a call.
+ */
+export async function contractProviders(w, state, {
+    log = () => { }, buildDir = BUILD_DIR, expectedManifestHash, proveFrom, contractModuleProvider
+} = {}) {
     const network = w.network;
     const ep = networkEndpoints(network);
     const { walletProvider, midnightProvider, coinPublicKey } = midnightJsProviders(w, state, {
@@ -135,11 +145,13 @@ export async function contractProviders(w, state, { log = () => { } } = {}) {
 
     return {
         publicDataProvider: indexerPublicDataProvider({ queryURL: ep.indexerHttpUrl, subscriptionURL: ep.indexerWsUrl }),
-        zkConfigProvider: new NodeZkConfigProvider(BUILD_DIR, {
+        zkConfigProvider: new NodeZkConfigProvider(buildDir, {
             verify: 'require',
-            ...(record?.build?.manifestSha256 ? { expectedManifestHash: record.build.manifestSha256 } : {})
+            ...(buildDir === BUILD_DIR && record?.build?.manifestSha256 ? { expectedManifestHash: record.build.manifestSha256 } : {}),
+            ...(expectedManifestHash ? { expectedManifestHash } : {})
         }),
-        proofProvider: inProcessProofProvider(BUILD_DIR, { log }),
+        proofProvider: inProcessProofProvider(proveFrom ?? buildDir, { log }),
+        ...(contractModuleProvider ? { contractModuleProvider } : {}),
         privateStateProvider: levelPrivateStateProvider({
             midnightDbName: join(storeDir, 'midnight-level-db'),
             privateStoragePasswordProvider: () => password,

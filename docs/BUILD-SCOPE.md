@@ -112,6 +112,8 @@ since the price is a scalar these ratios hold whatever it is.
 | The whole 14-call guided run | 4.377 |
 | Committee update inserting six verifier keys (11.8 KB of keys) | 5.486 |
 | A call to a read circuit (`holdsAtMost`) | 0.286 |
+| Deploying the listing demo (one circuit) | 1.625 |
+| A cross-contract call: the listing's `list` and VINPassport's `holdsAtMost` in one transaction | 0.418 |
 
 These are paid fees on a live chain, not estimates: Preview is a different network from preprod
 at a different price, so they are not a like-for-like comparison with the table above. The wallet's

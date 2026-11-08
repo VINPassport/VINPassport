@@ -730,6 +730,14 @@ inserted their keys into the live Preview contract ([D28](#settled)), and that c
 build, with no redeploy and no record left behind. One call to `holdsAtMost` was then accepted by
 the chain, answering `true` for the recorded run's vehicle (block 19862, 0.29 DUST).
 
+**Called by another contract, 8 November 2026.** A demo listing contract
+([`contracts/listing`](../contracts/listing/src/listing.compact)) lists a vehicle only if this contract
+holds a current claim that the odometer is at most 150 000 km. It asks through a cross-contract
+call, so the answer and the listing are one transaction: on Preview, block 20774, two calls
+(`list` on the listing, `holdsAtMost` here), 0.42 DUST, proven in process. The Compact runtime
+checks that the module it calls is the code deployed at the address, by verifier key, which this
+contract passes because its build is exactly what the chain holds since the upgrade above.
+
 ## Reversed
 
 Recorded so they are not accidentally reinstated.

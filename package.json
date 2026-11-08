@@ -49,6 +49,7 @@
     "test:watch": "vitest",
     "test:sdk": "node test/sdk-assumptions.mjs",
     "compile": "compact compile +0.36.0 contracts/vinpassport/src/vinpassport.compact contracts/vinpassport/src/managed/vinpassport",
+    "compile:listing": "compact compile +0.36.0 contracts/listing/src/listing.compact contracts/listing/src/managed/listing",
     "test:app": "node --test \"test/app/*.test.mjs\"",
     "demo:export": "node scripts/export-demo-state.mjs",
     "serve:site": "npx serve site",

@@ -1,0 +1,54 @@
+// VINPassport listing: a composability demo (build plan 2.5, DECISIONS D33).
+//
+// A marketplace contract that lists a vehicle only if VINPassport, a
+// different contract, holds a current claim that meets the listing's rule.
+// It asks in the same transaction, through a cross-contract call, so there is
+// no oracle and no copy of the passport here: if the claim is not held at
+// that moment, the listing is refused in-circuit and nothing is written.
+//
+// What this contract learns is what the passport already made public: that a
+// claim with this bound is held against the field's current commitment. The
+// reading itself stays with the holder.
+//
+// Demo only. Anyone may list, there is no price and no delisting; the point is
+// the call, not a marketplace.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+pragma language_version >= 0.28;
+
+import CompactStandardLibrary;
+
+// The VINPassport circuit this contract calls. A declaration is a type, not a
+// deployment: at call time the runtime checks that the contract at the stored
+// address implements it, and that its verifier keys are the ones on chain.
+contract VinPassport {
+  circuit holdsAtMost(vinHash: Bytes<32>, fieldKey: Bytes<32>, bound: Uint<64>): Boolean;
+}
+
+// Which passport contract this listing trusts, fixed at deployment.
+export ledger passport: VinPassport;
+
+// The rule, fixed at deployment: a current claim that `ruleField` is at most
+// `ruleBound` (for example: the odometer, at most 150 000 km).
+export ledger ruleField: Bytes<32>;
+export ledger ruleBound: Uint<64>;
+
+// Listed vehicles, by VIN hash: the same public identifier VINPassport keys on.
+export ledger listed: Set<Bytes<32>>;
+
+constructor(p: VinPassport, field: Bytes<32>, bound: Uint<64>) {
+  passport = disclose(p);
+  ruleField = disclose(field);
+  ruleBound = disclose(bound);
+}
+
+// List a vehicle. Refused unless VINPassport holds the claim the rule asks for.
+export circuit list(vinHash: Bytes<32>): [] {
+  assert(!listed.member(disclose(vinHash)), "already listed");
+  assert(
+    passport.holdsAtMost(disclose(vinHash), ruleField, ruleBound),
+    "VINPassport holds no current claim that meets this listing's rule"
+  );
+  listed.insert(disclose(vinHash));
+}

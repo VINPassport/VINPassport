@@ -15,6 +15,11 @@
  * proven against a contract that holds other keys: the proof would be
  * refused on chain anyway, after a minute of proving and a fee.
  *
+ * A cross-contract call proves the caller's circuit and every callee's in one
+ * transaction, each from its own build, so the provider can take several
+ * build directories. A key is chosen by circuit name AND verifier key hash,
+ * so two contracts with a circuit of the same name cannot be confused.
+ *
  * SPDX-License-Identifier: Apache-2.0
  */
 import { readFileSync, existsSync } from 'node:fs';
@@ -25,37 +30,44 @@ import { WasmProver } from '@midnightntwrk/wallet-sdk-prover-client/effect';
 import { createLedger9ProofProvider } from '@midnight-ntwrk/midnight-js-types';
 import { parseContractKeyLocation } from '@midnight-ntwrk/midnight-js-protocol/v9/compact-js';
 
-/** A KeyMaterialProvider over a compiled contract directory plus Midnight's parameters. */
-export function keyMaterial(buildDir, { log = () => { } } = {}) {
+/** A KeyMaterialProvider over one or more compiled contract directories plus Midnight's parameters. */
+export function keyMaterial(buildDirs, { log = () => { } } = {}) {
+    const dirs = [buildDirs].flat();
     const upstream = WasmProver.makeV9KeyMaterialProvider();
     const cache = new Map();
-    const ours = (circuit) => {
-        if (cache.has(circuit)) return cache.get(circuit);
-        const prover = join(buildDir, 'keys', `${circuit}.prover`);
+    const load = (dir, circuit) => {
+        const id = `${dir}|${circuit}`;
+        if (cache.has(id)) return cache.get(id);
+        const prover = join(dir, 'keys', `${circuit}.prover`);
         if (!existsSync(prover)) return undefined;
         const km = {
             proverKey: new Uint8Array(readFileSync(prover)),
-            verifierKey: new Uint8Array(readFileSync(join(buildDir, 'keys', `${circuit}.verifier`))),
-            ir: new Uint8Array(readFileSync(join(buildDir, 'zkir', `${circuit}.bzkir`)))
+            verifierKey: new Uint8Array(readFileSync(join(dir, 'keys', `${circuit}.verifier`))),
+            ir: new Uint8Array(readFileSync(join(dir, 'zkir', `${circuit}.bzkir`)))
         };
-        cache.set(circuit, km);
+        cache.set(id, km);
         return km;
     };
+    const vkHashOf = (km) => createHash('sha256').update(km.verifierKey).digest('hex');
     return {
         async lookupKey(location) {
             const parsed = parseContractKeyLocation(location);
             if (parsed) {
-                const km = ours(parsed.circuitId);
-                if (!km) throw new Error(`no keys for circuit ${parsed.circuitId} in ${buildDir}`);
-                const vkHash = createHash('sha256').update(km.verifierKey).digest('hex');
-                if (vkHash !== parsed.verifierKeyHash) {
+                const found = dirs.map((d) => load(d, parsed.circuitId)).filter(Boolean);
+                if (!found.length) throw new Error(`no keys for circuit ${parsed.circuitId} in ${dirs.join(', ')}`);
+                const km = found.find((k) => vkHashOf(k) === parsed.verifierKeyHash);
+                if (!km) {
                     throw new Error(`verifier key for ${parsed.circuitId} does not match the one asked for `
-                        + `(build ${vkHash.slice(0, 12)}, asked ${parsed.verifierKeyHash.slice(0, 12)}). `
+                        + `(build ${found.map((k) => vkHashOf(k).slice(0, 12)).join('/')}, asked ${parsed.verifierKeyHash.slice(0, 12)}). `
                         + 'The build on disk is not the build this contract holds.');
                 }
                 return km;
             }
-            return ours(location) ?? upstream.lookupKey(location);
+            for (const d of dirs) {
+                const km = load(d, location);
+                if (km) return km;
+            }
+            return upstream.lookupKey(location);
         },
         async getParams(k) {
             const t = Date.now();
@@ -66,7 +78,7 @@ export function keyMaterial(buildDir, { log = () => { } } = {}) {
     };
 }
 
-/** The Midnight.js 5 proof provider, proving in this process. */
-export function inProcessProofProvider(buildDir, opts) {
-    return createLedger9ProofProvider(zkir.provingProvider(keyMaterial(buildDir, opts)));
+/** The Midnight.js 5 proof provider, proving in this process, from one or more build directories. */
+export function inProcessProofProvider(buildDirs, opts) {
+    return createLedger9ProofProvider(zkir.provingProvider(keyMaterial(buildDirs, opts)));
 }

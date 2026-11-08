@@ -52,3 +52,12 @@ test('preprod is refused with a sentence that says where the ledger 8 tooling we
         /preprod runs ledger 8/.test(e.message) && /ledger8-preprod/.test(e.message));
     assert.throws(() => requireBuildableNetwork('testnet'), /unknown network/);
 });
+
+test('the listing demo is built by the same pinned compiler', () => {
+    // It calls VINPassport across contracts, so the two builds must come from
+    // one toolchain: a callee is checked against the verifier keys on chain.
+    assert.match(pkg.scripts['compile:listing'], new RegExp(`^compact compile \\+${BUILD.compiler.replaceAll('.', '\\.')} `));
+    const listingInfo = JSON.parse(readFileSync(join(ROOT, 'contracts', 'listing', 'src', 'managed', 'listing', 'compiler', 'contract-info.json'), 'utf8'));
+    assert.equal(listingInfo['compiler-version'], BUILD.compiler);
+    assert.equal(listingInfo['runtime-version'], BUILD.runtime);
+});
