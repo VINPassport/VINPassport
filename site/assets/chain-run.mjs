@@ -1,11 +1,16 @@
 /**
- * The preprod run client: start a real run, follow it, render it.
+ * The chain run client: start a real run, follow it, render it.
  *
  * One module serves both surfaces, so the guided page and the intake console
  * cannot drift: /demo/ starts a run the server composes, /intake/ starts one
  * the registrar filled in, and from the first poll onwards the two are the
  * same thing - the same steps, the same receipt, the same honesty about a
  * refusal.
+ *
+ * The network is never assumed. The server names it (status, job and receipt
+ * all carry `network`), and networks.mjs says what that network's explorer
+ * and indexer are. Where a network has no explorer, hashes are printed, not
+ * linked: a link that 404s would be evidence against us.
  *
  * The rendering follows the site's grammar exactly: hairline rules, square
  * corners, monospace for anything a machine produced, periwinkle reserved for
@@ -14,13 +19,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import { resolveApiBase } from './sources.mjs?v=5';
+import { networkOf, explorerUrl } from './networks.mjs?v=1';
 
 const POLL_MS = 3000;
-// Preprod's block explorer. Paths verified against a real run's transaction on
-// 2026-08-31: /transactions/<hash>, /blocks/<height> and /contracts/<address>
-// all resolve, and all 404 on a value that does not exist - so a live link is
-// worth something. No trailing slash.
-const EXPLORER = 'https://preprod.midnightexplorer.com';
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const short = (h) => `${String(h).slice(0, 12)}…${String(h).slice(-8)}`;
@@ -46,7 +47,7 @@ async function call(base, path, init, timeoutMs = 15000) {
         });
     } catch (e) {
         throw Object.assign(
-            new Error(e?.name === 'AbortError' ? 'the preprod service did not answer in time' : 'could not reach the preprod service'),
+            new Error(e?.name === 'AbortError' ? 'the chain service did not answer in time' : 'could not reach the chain service'),
             { unreachable: true });
     } finally { clearTimeout(timer); }
     // Every response carries a server-generated Date; it is the only honest
@@ -141,18 +142,20 @@ const MARK = {
     failed: { glyph: '×', color: '#0E1726', border: '1px solid #8B95FF', bg: '#8B95FF' }
 };
 
-function stepRow(step) {
+const outLink = (href, text, style = 'color:#004AAD') =>
+    `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer" style="${style}">${text}</a>`;
+
+function stepRow(step, net) {
     const m = MARK[step.status] ?? MARK.pending;
     const running = step.status === 'running';
     // The confirm step's detail reads "tx <hash> in block <n>". Linking it as
     // it streams means a visitor can open the transaction while the run is
     // still going, rather than waiting for the receipt at the end. Escape
     // first, then linkify the escaped text, so this stays injection-safe.
-    const linkify = (s) => esc(s)
-        .replace(/\btx ([0-9a-f]{64})\b/gi,
-            (_, h) => `tx <a href="${EXPLORER}/transactions/${h}" target="_blank" rel="noopener noreferrer" style="color:#004AAD">${h}</a>`)
-        .replace(/\bblock (\d+)\b/g,
-            (_, n) => `block <a href="${EXPLORER}/blocks/${n}" target="_blank" rel="noopener noreferrer" style="color:#004AAD">${n}</a>`);
+    // Without an explorer the text stays as it is.
+    const linkify = (s) => !net.explorer ? esc(s) : esc(s)
+        .replace(/\btx ([0-9a-f]{64})\b/gi, (_, h) => `tx ${outLink(explorerUrl(net, 'transactions', h), h)}`)
+        .replace(/\bblock (\d+)\b/g, (_, n) => `block ${outLink(explorerUrl(net, 'blocks', n), n)}`);
     const detail = step.detail
         ? `<div class="mono" style="margin-top:3px;font-size:10.5px;line-height:1.5;color:rgba(14,23,38,.62);overflow-wrap:anywhere">${linkify(step.detail)}</div>`
         : '';
@@ -178,26 +181,35 @@ function stepRow(step) {
 
 // ---------------------------------------------------------------- receipt
 
-function receiptPanel(job, base) {
+function receiptPanel(job, base, net) {
     const r = job.receipt;
     if (!r) return '';
-    // Hashes are links now. They used to be inert text because preprod had no
-    // explorer to send anyone to; preprod.midnightexplorer.com covers preprod
-    // as of 2026-08-31, and every url below was checked against a real
-    // transaction from a real run - a hash that does not exist 404s there,
-    // so a link that resolves is evidence rather than decoration.
-    //
-    // The indexer query stays printed in full underneath regardless: an
-    // explorer is somebody else's website, and "check it yourself" should not
-    // depend on one staying up.
+    // Hashes link to the network's explorer when it has one that resolves
+    // them (networks.mjs says which), and are printed in full when it does
+    // not. The indexer query is the primary check either way: an explorer is
+    // somebody else's website, and "check it yourself" should not depend on
+    // one staying up.
+    const UNDER = 'text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px';
+    const txCell = (t) => {
+        const href = explorerUrl(net, 'transactions', t.txHash);
+        return href
+            ? `<a class="mono" href="${esc(href)}" target="_blank" rel="noopener noreferrer"
+                 style="flex:none;font-size:10.5px;color:#004AAD;${UNDER}"
+                 title="View ${esc(t.txHash)} on the ${esc(net.label)} explorer">${esc(short(t.txHash))}&#8239;<span aria-hidden="true">&#8599;</span></a>`
+            : `<span class="mono" style="flex:none;font-size:10.5px;color:rgba(14,23,38,.72)" title="${esc(t.txHash)}">tx ${esc(short(t.txHash))}</span>`;
+    };
+    const blockCell = (t) => {
+        const href = explorerUrl(net, 'blocks', t.blockHeight);
+        return href
+            ? `<a class="mono" href="${esc(href)}" target="_blank" rel="noopener noreferrer"
+                 style="flex:none;font-size:10.5px;color:rgba(14,23,38,.62);${UNDER}"
+                 title="View block ${esc(t.blockHeight)} on the ${esc(net.label)} explorer">block ${esc(t.blockHeight)}</a>`
+            : `<span class="mono" style="flex:none;font-size:10.5px;color:rgba(14,23,38,.62)">block ${esc(t.blockHeight)}</span>`;
+    };
     const txRows = (r.onChain ?? []).map((t) => `<div style="display:flex;flex-wrap:wrap;gap:3px 12px;padding:9px 15px;border-top:1px solid rgba(0,74,173,.12)">
         <span style="flex:1 1 200px;min-width:0;font-size:13px">${esc(t.label)}</span>
-        <a class="mono" href="${EXPLORER}/transactions/${encodeURIComponent(t.txHash)}" target="_blank" rel="noopener noreferrer"
-           style="flex:none;font-size:10.5px;color:#004AAD;text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px"
-           title="View ${esc(t.txHash)} on the preprod explorer">${esc(short(t.txHash))}&#8239;<span aria-hidden="true">&#8599;</span></a>
-        <a class="mono" href="${EXPLORER}/blocks/${encodeURIComponent(t.blockHeight)}" target="_blank" rel="noopener noreferrer"
-           style="flex:none;font-size:10.5px;color:rgba(14,23,38,.62);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px"
-           title="View block ${esc(t.blockHeight)} on the preprod explorer">block ${esc(t.blockHeight)}</a>
+        ${txCell(t)}
+        ${blockCell(t)}
       </div>`).join('');
 
     const claimRows = (r.claims ?? []).map((c) => {
@@ -223,7 +235,7 @@ function receiptPanel(job, base) {
     return `<section style="border:1px solid rgba(0,74,173,.26);margin-top:26px">
       <div style="padding:12px 15px;border-bottom:1px solid rgba(0,74,173,.26);display:flex;flex-wrap:wrap;align-items:baseline;gap:8px">
         <h3 style="margin:0;font-size:19px;letter-spacing:.02em;text-transform:uppercase">On the chain</h3>
-        <span class="mono" style="margin-left:auto;font-size:11px;color:rgba(14,23,38,.62)">${(r.onChain ?? []).length} transaction${(r.onChain ?? []).length === 1 ? '' : 's'} · preprod</span>
+        <span class="mono" style="margin-left:auto;font-size:11px;color:rgba(14,23,38,.62)">${(r.onChain ?? []).length} transaction${(r.onChain ?? []).length === 1 ? '' : 's'} · ${esc(net.label)}</span>
       </div>
       ${txRows}
       ${refusals}
@@ -250,10 +262,12 @@ function receiptPanel(job, base) {
  * out of order cannot leave the panel in a half-updated state.
  */
 export function renderJob(host, job, base) {
+    // The job names its network; the receipt does too, once there is one.
+    const net = networkOf(job.network ?? job.receipt?.network);
     const done = job.status === 'done' || job.status === 'done-with-refusals';
     const live = job.status === 'running' || job.status === 'queued';
     const headline = job.status === 'queued' ? 'Queued'
-        : job.status === 'running' ? 'Running on preprod'
+        : job.status === 'running' ? `Running on ${net.name}`
             : job.status === 'failed' ? 'Stopped'
                 : 'Complete';
     // A run out of dust is not a broken run: the wallet cannot pay a fee. Say
@@ -264,7 +278,7 @@ export function renderJob(host, job, base) {
             ? `${esc(job.error ?? '')} Dust pays the fees here and regenerates from NIGHT registered for it, so this is a wallet top-up rather than something wrong with the passport or the circuits.`
             : esc(job.error ?? 'the run did not finish'))
         : done
-            ? 'Every transaction below is on the public preprod chain.'
+            ? `Every transaction below is on the public ${net.name} chain.`
             : 'Real proving, real fees, real blocks. This takes a few minutes.';
 
     const total = live && job.startedAt
@@ -280,9 +294,9 @@ export function renderJob(host, job, base) {
         <span class="mono" style="margin-left:auto;font-size:11px;color:rgba(14,23,38,.62)">${esc(job.kind)} run · ${esc(job.id.slice(0, 8))}</span>
       </div>
       <p style="margin:0;padding:11px 15px;font-size:13px;line-height:1.55;color:rgba(14,23,38,.72);border-bottom:1px solid rgba(0,74,173,.12)">${sub}</p>
-      ${(job.steps ?? []).map(stepRow).join('')}
+      ${(job.steps ?? []).map((s) => stepRow(s, net)).join('')}
     </section>
-    ${receiptPanel(job, base)}`;
+    ${receiptPanel(job, base, net)}`;
 
     startTicker();
 }
@@ -338,8 +352,8 @@ function paintBusy(host, lastJob, base) {
 
 /** One line describing today's remaining capacity, for a status strip. */
 export function capacityLine(status) {
-    if (!status?.enabled) return 'Preprod runs are not enabled on this server.';
-    if (status.error) return `Preprod runs are unavailable: ${status.error}`;
+    if (!status?.enabled) return 'Chain runs are not enabled on this server.';
+    if (status.error) return `Runs on ${status.network ? networkOf(status.network).name : 'the chain'} are unavailable: ${status.error}`;
     if (!status.ready) return 'The signing wallet is catching up to the chain tip. Runs start once it is level.';
     const reset = status.resetsAtUtc ? new Date(status.resetsAtUtc) : null;
     const when = reset ? `${String(reset.getUTCHours()).padStart(2, '0')}:00 UTC` : '00:00 UTC';

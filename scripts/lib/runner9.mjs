@@ -331,7 +331,7 @@ export async function createRunner({ log = console.log, network = process.env.VI
     };
     const enqueue = (kind, intake) => {
         take();
-        const job = { id: randomUUID(), kind, status: 'queued', steps: [], receipt: null, intake: { ...intake, kind } };
+        const job = { id: randomUUID(), kind, network, status: 'queued', steps: [], receipt: null, intake: { ...intake, kind } };
         jobs.set(job.id, job);
         queue.push(job);
         pump();

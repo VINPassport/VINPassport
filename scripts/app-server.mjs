@@ -10,7 +10,7 @@
  *   /verify/     verification - scan a vehicle, see its verdicts
  *   /intake/     intake - fill in the fields, submit, watch the proofs land
  *   /proofs/     proof explorer - every claim on the ledger, with status
- *   /demo/       the guided run against the DEPLOYED preprod contract
+ *   /demo/       the guided run against the DEPLOYED contract (VINPASSPORT_NETWORK_ID, Preview by default)
  *   /console/    a redirect to /intake/, kept because the old url was shared
  *
  *   POST /api/intake   run an intake through the circuits (register, record,
@@ -212,7 +212,7 @@ function takeIpSlot(req) {
     return () => { cur.used -= 1; };   // give it back if the run never started
 }
 
-// The preprod demo API. Every route degrades honestly: disabled mode says so,
+// The chain demo API. Every route degrades honestly: disabled mode says so,
 // a warming wallet says so, a spent daily cap says so with the reset time.
 async function handleDemo(req, res, url) {
     const path = url.pathname;
@@ -222,9 +222,9 @@ async function handleDemo(req, res, url) {
         if (!runner) return json(res, 200, { enabled: true, ready: false, warming: true });
         return json(res, 200, runner.status());
     }
-    if (!DEMO_ENABLED) return json(res, 503, { error: 'preprod demo mode is not enabled on this server' });
-    if (runnerError) return json(res, 503, { error: 'preprod demo failed to start: ' + runnerError.message });
-    if (!runner) return json(res, 503, { error: 'preprod demo is still starting; try again shortly' });
+    if (!DEMO_ENABLED) return json(res, 503, { error: 'chain demo mode is not enabled on this server' });
+    if (runnerError) return json(res, 503, { error: 'the chain demo failed to start: ' + runnerError.message });
+    if (!runner) return json(res, 503, { error: 'the chain demo is still starting; try again shortly' });
 
     if ((path === '/api/demo/run' || path === '/api/demo/intake') && req.method === 'POST') {
         let body;
@@ -316,7 +316,7 @@ async function route(req, res) {
 // A busy port greets nobody with a stack trace: walk forward a few ports -
 // the previous run, or another tool, may still be holding the default.
 //
-// NOT in preprod mode. There a busy port means an instance is already
+// NOT in chain mode. There a busy port means an instance is already
 // running, and exactly one process may hold the wallet state. The
 // convenience is worth a stack trace; a second wallet is not.
 let port = PORT;
@@ -325,7 +325,7 @@ server.on('error', (e) => {
         console.log(`port ${port} is in use, trying ${port + 1}…`);
         server.listen(++port);
     } else if (e.code === 'EADDRINUSE' && DEMO_ENABLED) {
-        console.error(`port ${port} is already in use, and VINPASSPORT_PREPROD=1.`);
+        console.error(`port ${port} is already in use, and VINPASSPORT_CHAIN=1.`);
         console.error('Refusing to start a second instance against the same wallet state.');
         console.error('Stop the running instance first (systemctl stop vinpassport-demo).');
         process.exit(1);

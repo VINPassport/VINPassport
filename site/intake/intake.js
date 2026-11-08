@@ -27,6 +27,7 @@
 import { DEMO_VEHICLES } from '../assets/demo-vehicles.mjs';
 import { CLAIM_CATALOGUE, isCompare } from '../assets/claim-catalogue.mjs';
 import { qrPanel } from '../assets/passport-qr.mjs?v=1';
+import { networkOf } from '../assets/networks.mjs?v=1';
 
 const $ = (id) => document.getElementById(id);
 const sections = [...document.querySelectorAll('section')];
@@ -307,7 +308,7 @@ writerLabels.forEach((label) => {
 // Ticking it adds a call per writer, so the count has to follow it.
 withdrawBox?.addEventListener('change', paintCircuitCount);
 
-// What a preprod run is allowed to cost, mirroring MAX_CALLS_PER_RUN in
+// What a chain run is allowed to cost, mirroring MAX_CALLS_PER_RUN in
 // scripts/lib/preprod-plan.mjs. Exceeded, the server refuses the intake, so
 // the console says so before the button is pressed rather than after.
 const RUN_CAP = 24;
@@ -321,7 +322,7 @@ function paintCircuitCount() {
     const withdrawals = withdrawBox?.checked ? authorised.size : 0;
     const n = 1 + FORM_FIELDS.size + updates + authorised.size + withdrawals + ticked;
     circuitsNote.textContent = n > RUN_CAP
-        ? `${n} circuits will run, over the ${RUN_CAP} a preprod run allows`
+        ? `${n} circuits will run, over the ${RUN_CAP} a chain run allows`
         : `${n} circuits will run`;
     circuitsNote.style.color = n > RUN_CAP ? '#004AAD' : '';
     circuitsNote.style.fontWeight = n > RUN_CAP ? '700' : '';
@@ -485,39 +486,42 @@ function renderResult(result) {
     resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// ---------------------------------------------------------------- preprod
+// ---------------------------------------------------------------- chain
 
 // The same intake, aimed at the real chain instead of this process. The
-// toggle only offers itself when the server actually has preprod enabled and
-// a run left today, so switching it on cannot fail on click.
+// toggle only offers itself when the server actually has chain runs enabled
+// and a run left today, so switching it on cannot fail on click. Which chain
+// comes from the server's status; networks.mjs names it.
 const ppWrap = $('ppwrap');
 const ppBox = $('ppbox');
 const ppNote = $('ppnote');
+const ppLabel = $('pplabel');
 const ppRun = $('pprun');
-let preprod = false;
+let toChain = false;
 let ppReady = false;
+let chainNet = networkOf();
 
-const paintPreprod = () => {
-    ppWrap.style.border = preprod ? '1px solid #004AAD' : '1px solid rgba(0,74,173,.28)';
-    ppWrap.style.background = preprod ? 'rgba(0,74,173,.07)' : 'transparent';
-    ppBox.style.background = preprod ? '#004AAD' : 'transparent';
-    ppBox.style.color = preprod ? '#EDE4D8' : '';
-    ppBox.style.border = preprod ? 'none' : '1px solid rgba(0,74,173,.4)';
-    ppBox.querySelector('svg').style.visibility = preprod ? 'visible' : 'hidden';
+const paintChainToggle = () => {
+    ppWrap.style.border = toChain ? '1px solid #004AAD' : '1px solid rgba(0,74,173,.28)';
+    ppWrap.style.background = toChain ? 'rgba(0,74,173,.07)' : 'transparent';
+    ppBox.style.background = toChain ? '#004AAD' : 'transparent';
+    ppBox.style.color = toChain ? '#EDE4D8' : '';
+    ppBox.style.border = toChain ? 'none' : '1px solid rgba(0,74,173,.4)';
+    ppBox.querySelector('svg').style.visibility = toChain ? 'visible' : 'hidden';
     ppWrap.style.opacity = ppReady ? '' : '.55';
     ppWrap.style.cursor = ppReady ? 'pointer' : 'not-allowed';
-    registerBtn.textContent = preprod ? 'REGISTER & PROVE ON PREPROD' : 'REGISTER & PROVE';
+    registerBtn.textContent = toChain ? `REGISTER & PROVE ON ${chainNet.label.toUpperCase()}` : 'REGISTER & PROVE';
 };
 ppWrap.addEventListener('click', () => {
     if (!ppReady) return;
-    preprod = !preprod;
-    paintPreprod();
+    toChain = !toChain;
+    paintChainToggle();
 });
 
 (async () => {
     let status = null;
     try {
-        const { apiBase: resolveBase, getStatus } = await import('../assets/preprod-run.mjs?v=4');
+        const { apiBase: resolveBase, getStatus } = await import('../assets/chain-run.mjs?v=5');
         status = await getStatus(await resolveBase());
     } catch (e) {
         // Not answering is not the same as not offered: the engine restores a
@@ -525,19 +529,21 @@ ppWrap.addEventListener('click', () => {
         status = e?.unreachable ? 'unreachable' : null;
     }
 
+    if (status?.network) chainNet = networkOf(status.network);
+    if (ppLabel) ppLabel.textContent = `Submit to ${chainNet.name}`;
     ppReady = Boolean(status?.enabled && status?.ready && !status?.error && status.remaining > 0);
     if (ppReady) {
-        ppNote.textContent = `${status.remaining} of ${status.capacity} preprod runs left today. Switch this on and the fields below become real transactions on the deployed contract, funded from our wallet, ending in a receipt only you can open. The VIN is replaced with a generated demo one, so a real vehicle is never claimed on a test chain.`;
+        ppNote.textContent = `${status.remaining} of ${status.capacity} runs on ${chainNet.name} left today. Switch this on and the fields below become real transactions on the deployed contract, funded from our wallet, ending in a receipt only you can open. The VIN is replaced with a generated demo one, so a real vehicle is never claimed on a test chain.`;
     } else if (status?.enabled && !status?.ready) {
-        ppNote.textContent = 'The preprod signing wallet is catching up to the chain tip. Until it is level, the circuits below still run here.';
+        ppNote.textContent = 'The signing wallet is catching up to the chain tip. Until it is level, the circuits below still run here.';
     } else if (status?.enabled && status?.remaining <= 0) {
-        ppNote.textContent = "Today's preprod runs are used; the count resets at 00:00 UTC. The circuits below still run here.";
+        ppNote.textContent = "Today's chain runs are used; the count resets at 00:00 UTC. The circuits below still run here.";
     } else if (status === 'unreachable') {
-        ppNote.textContent = 'The preprod engine is not answering right now: it blocks while it restores its wallet, and again while it generates a proof for someone else. Reload shortly to submit to the chain. The circuits below run here either way.';
+        ppNote.textContent = 'The chain engine is not answering right now: it blocks while it restores its wallet, and again while it generates a proof for someone else. Reload shortly to submit to the chain. The circuits below run here either way.';
     } else {
-        ppNote.textContent = 'Preprod submission is not available from this server. The circuits below still run here, against an in-process ledger.';
+        ppNote.textContent = 'Chain submission is not available from this server. The circuits below still run here, against an in-process ledger.';
     }
-    paintPreprod();
+    paintChainToggle();
 })();
 
 /**
@@ -576,14 +582,14 @@ async function registerInThisBrowser() {
 registerBtn.addEventListener('click', async () => {
     registerBtn.disabled = true;
     const was = registerBtn.textContent;
-    registerBtn.textContent = preprod ? 'SUBMITTING…' : 'PROVING…';
+    registerBtn.textContent = toChain ? 'SUBMITTING…' : 'PROVING…';
     try {
         if (!serverMode) {
             renderResult(await registerInThisBrowser());
-        } else if (preprod) {
-            const { startManual, followJob } = await import('../assets/preprod-run.mjs?v=4');
+        } else if (toChain) {
+            const { startManual, followJob } = await import('../assets/chain-run.mjs?v=5');
             const started = await startManual(apiBase, buildIntake());
-            registerBtn.textContent = 'RUNNING ON PREPROD…';
+            registerBtn.textContent = `RUNNING ON ${chainNet.label.toUpperCase()}…`;
             ppRun.scrollIntoView({ behavior: 'smooth', block: 'start' });
             await followJob(apiBase, started.jobId, ppRun);
         } else {

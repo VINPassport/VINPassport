@@ -9,11 +9,40 @@
  * A run in flight survives a reload: the job id goes in the URL, so the
  * follower picks the same run back up instead of starting a second one.
  *
+ * Which chain the page talks about comes from the server's status, or from
+ * the recording when no server answers; networks.mjs supplies that chain's
+ * explorer and indexer. Nothing below names a network itself.
+ *
  * SPDX-License-Identifier: Apache-2.0
  */
-import { apiBase, getStatus, startGuided, followJob, capacityLine } from '../assets/preprod-run.mjs?v=4';
+import { apiBase, getStatus, startGuided, followJob, capacityLine } from '../assets/chain-run.mjs?v=5';
+import { networkOf, explorerUrl, indexerCurlLines } from '../assets/networks.mjs?v=1';
 
 const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/**
+ * Point the page's fixed parts at one network: the eyebrow, the line about
+ * where transactions go, the indexer query and the explorer sentence. Called
+ * with the server's network, or the recording's when nothing answered.
+ */
+function paintNetwork(net, address, mode) {
+    const eyebrow = $('eyebrow');
+    if (eyebrow) eyebrow.textContent = `${net.name}, ${mode}`;
+    const node = $('nodename');
+    if (node) node.textContent = `a ${net.label} node`;
+    const curl = $('curl');
+    if (curl && net.indexer) {
+        curl.innerHTML = indexerCurlLines(net, address ?? '…').map(esc).join(' \\<br>&nbsp;&nbsp;');
+    }
+    const note = $('explorernote');
+    if (!note) return;
+    const contract = explorerUrl(net, 'contracts', address);
+    note.innerHTML = contract
+        ? `Or read it in a browser: every transaction hash in the run above links to <a href="${esc(contract)}" target="_blank" rel="noopener noreferrer" style="color:#004AAD">the ${esc(net.label)} explorer</a>. The curl above stays the primary answer, because an explorer is somebody else's website, and checking our work should not depend on one staying up.`
+        : `No block explorer follows ${esc(net.name)} at the moment, so the hashes above are printed rather than linked, and the curl is the way to check them. It needs nothing from us: no account, no key, no project id.`;
+}
 const goBtn = $('go');
 const goNote = $('gonote');
 const runHost = $('run');
@@ -43,10 +72,10 @@ function paintStatus(status) {
     // feature being off, and the page must not confuse the two.
     if (status?.unreachable) {
         capDot.style.background = '#8B95FF';
-        capState.textContent = 'Preprod engine busy';
+        capState.textContent = 'Chain engine busy';
         capLine.textContent = 'Not answering right now: it blocks while it restores its wallet, and again while it generates a proof. This page enables itself once it replies.';
         if (!busy) {
-            disable('The preprod engine is not answering yet.');
+            disable('The chain engine is not answering yet.');
             goNote.textContent = 'checking again every 20 seconds';
         }
         return;
@@ -64,25 +93,22 @@ function paintStatus(status) {
     // no dust exactly like no runs left.
     const broke = ready && status.funds?.dust != null && BigInt(status.funds.dust) === 0n;
     capDot.style.background = live && !spent && !broke ? '#004AAD' : '#8B95FF';
-    capState.textContent = !status?.enabled ? 'Preprod runs are off here'
-        : status.error ? 'Preprod runs unavailable'
+    const net = networkOf(status?.network);
+    capState.textContent = !status?.enabled ? 'Chain runs are off here'
+        : status.error ? 'Chain runs unavailable'
             : idle ? 'Ready to run'
                 : !status.ready ? 'Wallet syncing'
                 : broke ? 'Out of dust'
                     : spent ? "Today's runs are used"
-                        : 'Connected to preprod';
-    if (status?.contractAddress) {
-        $('addr').textContent = status.contractAddress;
-        // Point the explorer link at THIS contract rather than the explorer's
-        // front page, so "read it in a browser" lands on our contract's calls.
-        const link = $('explorerlink');
-        if (link) link.href = `https://preprod.midnightexplorer.com/contracts/${encodeURIComponent(status.contractAddress)}`;
-    }
+                        : `Connected to ${net.name}`;
+    // The query and the explorer sentence name THIS contract, so "check it
+    // yourself" lands on our contract's calls, not on a front page.
+    if (status?.contractAddress && status?.network) paintNetwork(net, status.contractAddress, 'live');
 
     if (busy) return;
     if (!live) {
         disable(!status?.enabled
-            ? 'This server does not run preprod demos.'
+            ? 'This server does not run chain demos.'
             : status.error ? status.error
                 : 'The signing wallet is still catching up to the chain tip.');
         goNote.textContent = status?.enabled && !status.ready
@@ -162,12 +188,21 @@ goBtn.addEventListener('click', async () => {
     await follow(started.jobId);
 });
 
+
 /**
- * No server answering does not have to mean nothing to show. A guided run
- * really happened on preprod; render it from its public half, labelled as a
- * recording so nobody mistakes it for a live one. Everything in the file is
- * already on the chain, which is also the point: it is all a stranger can see.
+ * No server answering does not have to mean nothing to show. Guided runs
+ * really happened, on Preview (ledger 9) and earlier on preprod (ledger 8);
+ * render one from its public half, labelled as a recording so nobody mistakes
+ * it for a live one. Everything in the file is already on the chain, which is
+ * also the point: it is all a stranger can see.
+ *
+ * `?recorded=preprod` shows the older one. Each recording names its network,
+ * and the page takes its links and its indexer query from that.
  */
+const RECORDINGS = { preview: 'recorded-run.preview.json', preprod: 'recorded-run.preprod.json' };
+const askedRecording = new URLSearchParams(location.search).get('recorded');
+const recordingName = askedRecording in RECORDINGS ? askedRecording : 'preview';
+
 /** The refused step's own label, falling back to its identifier. */
 function refusedLabel(run) {
     const step = run.refused[0].step.replace(/^prove /, '');
@@ -176,27 +211,28 @@ function refusedLabel(run) {
 }
 
 async function showRecordedRun() {
-    if (!runHost || runHost.childElementCount) return;
+    if (!runHost || runHost.childElementCount) return null;
     let run;
     try {
-        const r = await fetch('recorded-run.json', { cache: 'no-store' });
-        if (!r.ok) return;
+        const r = await fetch(RECORDINGS[recordingName], { cache: 'no-store' });
+        if (!r.ok) return null;
         run = await r.json();
-    } catch { return; }
+    } catch { return null; }
 
-    const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
-        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const net = networkOf(run.network);
     const when = new Date(run.finishedAt).toLocaleDateString('en-GB',
         { day: 'numeric', month: 'long', year: 'numeric' });
     const short = (h) => esc(h.slice(0, 10)) + '…' + esc(h.slice(-6));
 
+    // With an explorer the hash is shortened and the row links to it; without
+    // one the full hash is printed, because then it is what a reader checks.
     const stages = run.stages.map((s) => `
       <div style="display:grid;grid-template-columns:28px 1fr;gap:10px;padding:11px 0;border-top:1px solid rgba(0,74,173,.16)">
-        <span class="mono" style="font-size:11px;color:rgba(14,23,38,.62);padding-top:2px">0${s.stage}</span>
-        <div>
+        <span class="mono" style="font-size:11px;color:rgba(14,23,38,.62);padding-top:2px">${esc(String(s.stage).padStart(2, '0'))}</span>
+        <div style="min-width:0">
           <b style="display:block;font-size:13px;color:#0E1726">${esc(s.label)}</b>
-          <span class="mono" style="display:block;margin-top:4px;font-size:10.5px;color:rgba(14,23,38,.62)">block ${s.blockHeight} &middot; tx ${short(s.txHash)}</span>
-          <a href="${esc(s.explorer)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:5px;font-size:12px;color:#004AAD">open in the preprod explorer &rarr;</a>
+          <span class="mono" style="display:block;margin-top:4px;font-size:10.5px;color:rgba(14,23,38,.62);overflow-wrap:anywhere">block ${esc(s.blockHeight)} &middot; tx ${s.explorer ? short(s.txHash) : esc(s.txHash)}</span>
+          ${s.explorer ? `<a href="${esc(s.explorer)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:5px;font-size:12px;color:#004AAD">open in the ${esc(net.label)} explorer &rarr;</a>` : ''}
         </div>
       </div>`).join('');
 
@@ -206,17 +242,21 @@ async function showRecordedRun() {
           <b style="color:#0E1726">${esc(c.label)}</b>: ${refused ? '<span style="color:#8B4A2B">' : '<span>'}${esc(c.outcome)}</span></li>`;
     }).join('');
 
+    const otherName = Object.keys(RECORDINGS).find((n) => n !== recordingName);
+    const other = networkOf(otherName);
+    const otherLink = `<a href="?recorded=${esc(otherName)}" style="color:#004AAD">the ${esc(other.ledger)} run on ${esc(other.name)}</a>`;
+
     runHost.innerHTML = `
     <section style="margin:26px 0 0;border:1px solid rgba(0,74,173,.3);background:#EDE4D8;padding:17px 19px">
       <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;justify-content:space-between">
         <b style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.06em;font-size:15px;color:#0E1726">A RUN THAT ALREADY HAPPENED</b>
-        <span style="font-size:12px;color:rgba(14,23,38,.62)">recorded ${esc(when)}, not live</span>
+        <span style="font-size:12px;color:rgba(14,23,38,.62)">recorded ${esc(when)} on ${esc(net.name)}${net.ledger ? ` (${esc(net.ledger)})` : ''}, not live</span>
       </div>
       <p style="margin:9px 0 0;font-size:13px;line-height:1.55;color:rgba(14,23,38,.78)">
         No circuit server is answering, so you cannot start a run from this page today. This one
-        was real: ${run.stages.length} transactions, proven and submitted to preprod, in blocks
-        ${run.stages[0].blockHeight} to ${run.stages[run.stages.length - 1].blockHeight}. Every hash below is
-        on the public chain and you can check any of them without us.
+        was real: ${run.stages.length} transactions, proven and submitted to ${esc(net.name)}, in blocks
+        ${esc(run.stages[0].blockHeight)} to ${esc(run.stages[run.stages.length - 1].blockHeight)}. Every hash below is
+        on the public chain and you can check any of them without us. Also recorded: ${otherLink}.
       </p>
       <div style="margin:13px 0 0">${stages}</div>
       <div style="margin:15px 0 0;padding-top:13px;border-top:1px solid rgba(0,74,173,.16)">
@@ -233,6 +273,8 @@ async function showRecordedRun() {
         contract ${esc(run.contractAddress)}<br>vin hash ${esc(run.vinHash)}
       </p>
     </section>`;
+    paintNetwork(net, run.contractAddress, 'recorded');
+    return run;
 }
 
 (async () => {
@@ -242,8 +284,8 @@ async function showRecordedRun() {
         /* Three things were wrong here and all three told the visitor
            something untrue.
 
-           "Preprod runs are off here" describes a server that answered and
-           said demos are switched off. Nothing answered at all, which is a
+           "Runs are off here" describes a server that answered and said
+           demos are switched off. Nothing answered at all, which is a
            different fact with a different remedy.
 
            "The manual console still runs the real circuits" was simply false
@@ -257,25 +299,24 @@ async function showRecordedRun() {
            Naming a host ages badly, so say what is missing, what still works
            here, and how to run it yourself. */
         capState.textContent = 'No circuit server here';
-        const eyebrow = $('eyebrow');
-        if (eyebrow) eyebrow.textContent = 'Midnight preprod, recorded';
         capLine.textContent = 'this static site has no backend, so no run can start from it';
         // paintStatus sets this to "the manual console still runs the
         // circuits locally", which is true when a server answered and said
-        // preprod is off, and false when nothing answered: /intake/ needs the
-        // same server and disables itself without it.
+        // chain runs are off, and false when nothing answered: /intake/ needs
+        // the same server and disables itself without it.
         goNote.textContent = 'the console needs the same server, so it cannot run here either';
+        const run = await showRecordedRun();
+        const net = networkOf(run?.network);
         const lede = $('lede');
         if (lede) {
             lede.textContent = 'The guided run needs a circuit server, and this static site has '
                 + 'none, so nothing here can start a run today. What follows is a real run that '
-                + 'already happened on the deployed preprod contract: real proofs, real fees, and '
+                + `already happened on the deployed ${net.name} contract: real proofs, real fees, and `
                 + 'blocks you can look up yourself. Clone the repository and start it with '
                 + 'npm run app to drive the same compiled circuits on your own machine. '
-                + 'Putting a passport on preprod as well needs a funded wallet, which is '
+                + `Putting a passport on ${net.name} as well needs a funded wallet, which is `
                 + 'the part a static site cannot hold.';
         }
-        await showRecordedRun();
         return;
     }
     const status = await refreshStatus();

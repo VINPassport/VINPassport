@@ -18,6 +18,7 @@
 import { esc, short } from '../assets/chain-sees.mjs?v=2';
 import { formatBound } from '../assets/verdict.mjs';
 import { CLAIM_CATALOGUE, isCompare } from '../assets/claim-catalogue.mjs';
+import { networkOf, explorerUrl } from '../assets/networks.mjs?v=1';
 
 const TIERS = {
     public: {
@@ -39,10 +40,27 @@ const TIERS = {
 const ORDER = Object.keys(TIERS);
 
 /**
- * The two ledgers a reader can check against. The preprod run wrote five
- * readings, all trade fields, and granted only the trade view, so it has no
- * authority bundle and its buyer's file carries claims and no value.
+ * The ledgers a reader can check against: the local demo record, and one
+ * guided run on each chain (Preview on ledger 9, preprod on ledger 8). Each
+ * run wrote five readings, all trade fields, and granted only the trade view,
+ * so neither has an authority bundle, and the buyer's file carries claims and
+ * no value. A chain entry's wording comes from its network (networks.mjs).
  */
+const chainLedger = (network) => {
+    const net = networkOf(network);
+    return {
+        network,
+        ledger: `${network}/ledger.json`,
+        run: `${network}/run.json`,
+        base: `bundles/${network}/`,
+        tiers: ['public', 'trade'],
+        intro: (tier) => ({
+            public: `What a buyer receives from the ${net.name} run: no value at all, only the claims already proven on chain about this vehicle. Every reading the run wrote is a trade field.`,
+            trade: `What the dealership receives: the five readings the run wrote, every one exact, and the grant the run recorded for it on the ${net.name} ledger.`
+        })[tier],
+        edit: (tier) => (tier === 'trade' ? 'odometerKm' : null)
+    };
+};
 const LEDGERS = {
     demo: {
         ledger: '../verify/demo-data.json',
@@ -51,17 +69,8 @@ const LEDGERS = {
         intro: (tier) => TIERS[tier].intro,
         edit: (tier) => TIERS[tier].edit
     },
-    preprod: {
-        ledger: 'preprod/ledger.json',
-        run: 'preprod/run.json',
-        base: 'bundles/preprod/',
-        tiers: ['public', 'trade'],
-        intro: (tier) => ({
-            public: 'What a buyer receives from the preprod run: no value at all, only the claims already proven on chain about this vehicle. Every reading the run wrote is a trade field.',
-            trade: 'What the dealership receives: the five readings the run wrote, every one exact, and the grant the run recorded for it on the preprod ledger.'
-        })[tier],
-        edit: (tier) => (tier === 'trade' ? 'odometerKm' : null)
-    }
+    preview: chainLedger('preview'),
+    preprod: chainLedger('preprod')
 };
 let ledgerName = 'demo';
 const loaded = {};
@@ -274,11 +283,18 @@ const fullDate = (iso) => new Date(`${iso}T00:00:00Z`)
 /** Where the ledger under the bundles came from, in one paragraph. */
 function provenance() {
     if (ledgerName === 'demo') return demoNote;
-    return `<b>Real chain data.</b> The ledger state was read from the public preprod indexer at block ${esc(ledger.readAtBlock)},
+    const net = networkOf(LEDGERS[ledgerName].network);
+    // The grant links to the explorer where one resolves it; otherwise the
+    // hash itself is the reference (networks.mjs explains why Preview has none).
+    const grantHref = run.grant.explorer ?? explorerUrl(net, 'transactions', run.grant.txHash);
+    const grantRef = grantHref
+        ? `(<a href="${esc(grantHref)}" style="color:#004AAD">on the explorer</a>)`
+        : `(transaction <span class="mono" title="${esc(run.grant.txHash)}">${esc(short(run.grant.txHash))}</span>)`;
+    return `<b>Real chain data.</b> The ledger state was read from the public ${esc(net.name)} indexer (${esc(net.ledger)}) at block ${esc(ledger.readAtBlock)},
       contract <span class="mono">${esc(short(ledger.contractAddress))}</span>. The bundles come from the guided run of
       ${esc(fullDate(run.date))}: ${esc(run.transactions)} transactions in blocks ${esc(run.firstBlock)} to ${esc(run.lastBlock)},
       with the dealership's grant in block ${esc(run.grant.block)}
-      (<a href="${esc(run.grant.explorer)}" style="color:#004AAD">on the explorer</a>). There is no authority file:
+      ${grantRef}. There is no authority file:
       the run granted nobody the authority view.`;
 }
 
@@ -296,7 +312,7 @@ async function useLedger(name) {
     history.replaceState(null, '', url);
     if (!offered().includes(current())) select('public');
     if (!loaded[name]) {
-        panel.innerHTML = `<p style="margin:0;font-size:14.5px;line-height:1.6;color:rgba(14,23,38,.78)">Loading the bundles and the ${name === 'demo' ? 'demo ledger' : 'preprod snapshot'}.</p>`;
+        panel.innerHTML = `<p style="margin:0;font-size:14.5px;line-height:1.6;color:rgba(14,23,38,.78)">Loading the bundles and the ${name === 'demo' ? 'demo ledger' : `${networkOf(name).label} snapshot`}.</p>`;
         const L = LEDGERS[name];
         try {
             const [l, r, ...files] = await Promise.all([

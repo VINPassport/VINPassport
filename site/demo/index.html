@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- NO vinpassport-api META TAG, DELIBERATELY.
-     The published site is static and can never hold a wallet, so a preprod
+     The published site is static and can never hold a wallet, so a chain
      engine would have to live elsewhere and be named here:
 
        <meta name="vinpassport-api" content="https://api.passport.vin">
@@ -19,8 +19,8 @@
      A host that is merely absent is cheap to probe. One that accepts
      packets and never answers is not. Put the tag back when something is
      actually listening, and not before. -->
-<title>Live preprod demo · VINPassport</title>
-<meta name="description" content="Run a real passport onto Midnight preprod: real proving, real fees, real blocks, and a receipt only you can open.">
+<title>Live chain demo · VINPassport</title>
+<meta name="description" content="Run a real passport onto Midnight Preview: real proving, real fees, real blocks, and a receipt only you can open.">
 <link rel="icon" href="../favicon.ico" sizes="32x32">
 <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png">
@@ -29,8 +29,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="VINPassport">
-<meta property="og:title" content="VINPassport · Live preprod demo">
-<meta property="og:description" content="Register a passport, record history and prove claims on the deployed Midnight preprod contract. A capped number of runs a day, real transactions.">
+<meta property="og:title" content="VINPassport · Live chain demo">
+<meta property="og:description" content="Register a passport, record history and prove claims on the deployed Midnight Preview contract. A capped number of runs a day, real transactions.">
 <meta property="og:url" content="https://passport.vin/demo/">
 <meta property="og:image" content="https://passport.vin/assets/vinpassport-og.png">
 <meta property="og:image:width" content="1340">
@@ -64,9 +64,9 @@
   <main id="main">
   <div style="display:flex;flex-wrap:wrap;align-items:flex-start;gap:10px 16px;padding:clamp(24px,4vw,40px) 0 18px">
     <div style="flex:1 1 380px;min-width:0">
-      <span id="eyebrow" style="display:block;font:600 11px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E">Midnight preprod, live</span>
+      <span id="eyebrow" style="display:block;font:600 11px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E">Midnight Preview, live</span>
       <h1 style="margin:4px 0 0;font-size:clamp(30px,4.4vw,48px);line-height:1.05;letter-spacing:.01em;text-transform:uppercase">Put a passport on the chain</h1>
-      <p id="lede" style="margin:12px 0 0;font-size:15px;line-height:1.6;max-width:76ch;color:rgba(14,23,38,.8)">Not a simulation. Press the button and this site registers a vehicle passport on the deployed preprod contract, records its history, and proves claims about values it never publishes. Real proofs, real fees, real blocks you can look up yourself.</p>
+      <p id="lede" style="margin:12px 0 0;font-size:15px;line-height:1.6;max-width:76ch;color:rgba(14,23,38,.8)">Not a simulation. Press the button and this site registers a vehicle passport on the deployed Preview contract, records its history, and proves claims about values it never publishes. Real proofs, real fees, real blocks you can look up yourself.</p>
     </div>
     <div id="cap" style="flex:0 1 300px;min-width:0;padding:12px 14px;border:1px solid rgba(0,74,173,.28)">
       <div style="display:flex;align-items:center;gap:8px;font-size:13px"><span id="capdot" style="width:7px;height:7px;background:#8B95FF;flex:none"></span><span id="capstate">Checking the chain</span></div>
@@ -95,7 +95,7 @@
         <p style="margin:5px 0 0;font-size:13px;line-height:1.55;color:rgba(14,23,38,.72)">Claims are proven in zero knowledge. One claim is chosen so the record cannot support it: watch it get refused in-circuit and write nothing.</p>
       </div>
     </div>
-    <p style="margin:12px 0 0;font-size:12px;color:rgba(14,23,38,.62)">The whole run takes a few minutes. Each transaction is proven on this server, funded from our own wallet, submitted to a preprod node, and then waited for until a block carries it.</p>
+    <p style="margin:12px 0 0;font-size:12px;color:rgba(14,23,38,.62)">The whole run takes a few minutes. Each transaction is proven on this server, funded from our own wallet, submitted to <span id="nodename">a Preview node</span>, and then waited for until a block carries it.</p>
   </section>
 
   <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:12px">
@@ -109,8 +109,8 @@
   <section style="margin-bottom:40px">
     <div class="sect"><span class="snum">02</span><h2 class="stitle">CHECKING IT YOURSELF</h2><span class="smeta">public indexer</span></div>
     <p style="margin:0 0 12px;font-size:13.5px;line-height:1.6;max-width:76ch;color:rgba(14,23,38,.8)">Nothing above has to be taken on trust. The contract is public, and so is every transaction the run makes. Ask the indexer what the contract's latest action is and compare it against the hashes in your receipt.</p>
-    <div class="mono" style="padding:12px 14px;background:#E6DCCE;border:1px solid rgba(0,74,173,.28);font-size:11.5px;line-height:1.7;overflow-wrap:anywhere">curl -s -X POST https://midnight-preprod.blockfrost.io/api/v0 \<br>&nbsp;&nbsp;-H 'Content-Type: application/json' \<br>&nbsp;&nbsp;-H 'project_id: YOUR_PROJECT_ID' \<br>&nbsp;&nbsp;-d '{"query":"{ contractAction(address: \"<span id="addr">…</span>\") { __typename transaction { hash block { height } } } }"}'</div>
-    <p style="margin:12px 0 0;font-size:13.5px;line-height:1.6;max-width:76ch;color:rgba(14,23,38,.8)">Or read it in a browser: every transaction hash in the run above links to <a id="explorerlink" href="https://preprod.midnightexplorer.com" target="_blank" rel="noopener noreferrer" style="color:#004AAD">the preprod explorer</a>. The curl above stays the primary answer, because an explorer is somebody else's website, and checking our work should not depend on one staying up.</p>
+    <div id="curl" class="mono" style="padding:12px 14px;background:#E6DCCE;border:1px solid rgba(0,74,173,.28);font-size:11.5px;line-height:1.7;overflow-wrap:anywhere">curl -s -X POST https://indexer.preview.midnight.network/api/v4/graphql \<br>&nbsp;&nbsp;-H 'Content-Type: application/json' \<br>&nbsp;&nbsp;-d '{"query":"{ contractAction(address: \"…\") { __typename transaction { hash block { height } } } }"}'</div>
+    <p id="explorernote" style="margin:12px 0 0;font-size:13.5px;line-height:1.6;max-width:76ch;color:rgba(14,23,38,.8)">No block explorer follows Midnight Preview at the moment, so the hashes above are printed rather than linked, and the curl is the way to check them. It needs nothing from us: no account, no key, no project id.</p>
   </section>
   </main>
 
@@ -121,7 +121,7 @@
   </footer>
 
 </div>
-<script type="module" src="demo.js?v=7"></script>
+<script type="module" src="demo.js?v=8"></script>
 <script type="module" src="../assets/nav.mjs?v=1"></script>
 </body>
 </html>

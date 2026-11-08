@@ -173,7 +173,7 @@ main#main > :first-child{padding-top:var(--main-top)!important}
   nav img{height:26px!important}
 }
 
-/* --- Preprod run: the step that is working ---------------------------------
+/* --- Chain run: the step that is working ---------------------------------
    A run spends tens of seconds inside a single proof, so a page with no
    moving part is indistinguishable from a page that has died. The bar is the
    design's own vocabulary: 2px, square, brand blue, no glow and no easing

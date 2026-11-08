@@ -28,7 +28,8 @@ dust fees from the project wallet, and walks away with two artifacts:
 The surfaces: **`/demo/`** runs the guided route and renders the stepper;
 **`/intake/`** carries a *Submit to Midnight preprod* toggle that sends the
 registrar's own intake down the same engine. Both share
-`site/assets/preprod-run.mjs`, so neither can drift from the other.
+`site/assets/preprod-run.mjs` (renamed `site/assets/chain-run.mjs` on the ledger 9 line, where it
+takes the network from the server instead of assuming preprod), so neither can drift from the other.
 
 | Route | Who drives | What happens |
 |---|---|---|

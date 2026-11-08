@@ -1,13 +1,16 @@
 /**
  * Turn a guided-run receipt into the recording the /demo/ page publishes.
  *
- *   node scripts/record-run.mjs ../_local-tracking/receipt.json
- *   node scripts/record-run.mjs receipt.json site/demo/recorded-run.json
+ *   node scripts/record-run.mjs ../_local-tracking/receipts/preview/<file>.json
+ *   node scripts/record-run.mjs receipt.json [out.json]
+ *
+ * The output defaults to site/demo/recorded-run.<network>.json, named after
+ * the network the receipt says it ran on.
  *
  * The receipt is written for the operator who ran it, so it carries the VIN,
  * the field values and the declaration panel. None of that may be published:
  * the whole design is that values stay with whoever holds them, and the page
- * says so. This copies only what the preprod chain already holds, strips the
+ * says so. This copies only what the chain already holds, strips the
  * readings out of the stage labels, and refuses to write if anything private
  * survived.
  *
@@ -16,32 +19,37 @@
  * in a stage label, and only the repository's own test caught it. A hand step
  * that must not be forgotten is a step that belongs in a script.
  *
- * Get a receipt by running the guided run and asking for its report:
- *
- *   VINPASSPORT_PREPROD=1 ... npm run app
- *   curl -s -X POST localhost:8790/api/demo/run -d '{}' -H 'content-type: application/json'
- *   curl -s "localhost:8790/api/demo/report?id=<jobId>" > receipt.json
+ * Get a receipt from a guided run: `node scripts/run.mjs --network preview
+ * --submit` saves one under _local-tracking/receipts/<network>/, and a run
+ * started from /demo/ under `npm run app:chain` offers it as a download.
  *
  * Keep the receipt outside the repository: it holds the values.
+ *
+ * Stage links come from site/assets/networks.mjs. A network with no explorer
+ * gets `explorer: null`, and the page points at the indexer query instead.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { networkOf, explorerUrl } from '../site/assets/networks.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const DEFAULT_OUT = join(ROOT, 'site', 'demo', 'recorded-run.json');
-const EXPLORER = 'https://preprod.midnightexplorer.com';
 
 const receiptPath = process.argv[2];
-const outPath = process.argv[3] ?? DEFAULT_OUT;
 if (!receiptPath) {
     console.error('usage: node scripts/record-run.mjs <receipt.json> [out.json]');
     process.exit(1);
 }
 
 const r = JSON.parse(readFileSync(receiptPath, 'utf8'));
+if (!r.network) {
+    console.error('REFUSING to write: the receipt does not say which network it ran on');
+    process.exit(1);
+}
+const net = networkOf(r.network);
+const outPath = process.argv[3] ?? join(ROOT, 'site', 'demo', `recorded-run.${r.network}.json`);
 
 /**
  * The runner writes stage labels for the operator, who is entitled to read
@@ -57,7 +65,7 @@ const day = new Date(r.finishedAt ?? Date.now()).toLocaleDateString('en-GB', {
 
 const out = {
     note: `A recording of the guided run of ${day}, kept so the page can still show a real run while no `
-        + 'circuit server is answering. Every field below is already public on the preprod chain: the claims '
+        + `circuit server is answering. Every field below is already public on the ${net.name} chain: the claims `
         + 'and their bounds are on the ledger, and no field reading appears here, because none was published.',
     network: r.network,
     contractAddress: r.contractAddress,
@@ -71,7 +79,7 @@ const out = {
         calls: (s.calls ?? []).map(readingFree),
         txHash: s.txHash,
         blockHeight: s.blockHeight,
-        explorer: `${EXPLORER}/transactions/${s.txHash}`
+        explorer: explorerUrl(net, 'transactions', s.txHash)
     })),
     claims: r.claims ?? [],
     refused: r.refused ?? []

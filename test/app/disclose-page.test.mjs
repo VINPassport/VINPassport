@@ -29,6 +29,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { verifyBundle, fieldsOnLedger, vinHashOf, grantKeyOf } from '../../scripts/lib/disclosure.mjs';
 import { tierOf, allows } from '../../scripts/lib/tiers.mjs';
+import { networkOf, explorerUrl } from '../../site/assets/networks.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const SITE = join(ROOT, 'site');
@@ -178,41 +179,51 @@ test('the files say they come from the local demo, not preprod', () => {
     assert.match(html, /The demo record: the compiled contract run locally by <code>scripts\/export-demo-state\.mjs<\/code>/);
 });
 
-// -- the preprod ledger: a guided run, checked against chain state read from the indexer
-const preprodLedger = json('disclose', 'preprod', 'ledger.json');
-const preprodRun = json('disclose', 'preprod', 'run.json');
-const preprodBundles = Object.fromEntries(['public', 'trade']
-    .map((t) => [t, json('disclose', 'bundles', 'preprod', `${t}.json`)]));
-const PREPROD = {
-    commitmentAt: (slot) => preprodLedger.fieldCommitment[slot] ?? null,
-    claimAt: (key) => preprodLedger.claims.find((c) => c.key === key) ?? null,
-    grantAt: (key) => preprodLedger.grants?.[key] ?? null
-};
-const deploy = JSON.parse(readFileSync(join(ROOT, 'deploy', 'preprod.json'), 'utf8'));
+// -- the chain ledgers: one guided run per chain, checked against chain state read from the indexer
+const CHAINS = ['preview', 'preprod'];
+for (const network of CHAINS) {
+    const chainLedger = json('disclose', network, 'ledger.json');
+    const chainRun = json('disclose', network, 'run.json');
+    const chainBundles = Object.fromEntries(['public', 'trade']
+        .map((t) => [t, json('disclose', 'bundles', network, `${t}.json`)]));
+    const AT = {
+        commitmentAt: (slot) => chainLedger.fieldCommitment[slot] ?? null,
+        claimAt: (key) => chainLedger.claims.find((c) => c.key === key) ?? null,
+        grantAt: (key) => chainLedger.grants?.[key] ?? null
+    };
+    const deploy = JSON.parse(readFileSync(join(ROOT, 'deploy', `${network}.json`), 'utf8'));
 
-test('the preprod bundles check against the preprod snapshot, for the deployed address', () => {
-    assert.equal(preprodLedger.contractAddress, deploy.contractAddress, 'snapshot is for another address');
-    assert.equal(preprodRun.contractAddress, deploy.contractAddress);
-    assert.ok(preprodLedger.readAtBlock >= preprodRun.lastBlock, 'snapshot read before the run ended');
-    for (const [tier, b] of Object.entries(preprodBundles)) {
-        assert.equal(b.network, 'preprod');
-        assert.equal(b.contractAddress, deploy.contractAddress, `${tier} names another address`);
-        const r = verifyBundle(b, PREPROD);
-        assert.equal(r.ok, true, `${tier}: ${JSON.stringify(r.problems)} ${JSON.stringify(r.fields.filter((f) => !f.ok))}`);
-        assert.deepEqual(r.overDisclosed, [], `${tier} opens above its tier`);
-    }
-});
+    test(`the ${network} bundles check against the ${network} snapshot, for the deployed address`, () => {
+        assert.equal(chainLedger.network, network);
+        assert.equal(chainLedger.contractAddress, deploy.contractAddress, 'snapshot is for another address');
+        assert.equal(chainRun.contractAddress, deploy.contractAddress);
+        assert.ok(chainLedger.readAtBlock >= chainRun.lastBlock, 'snapshot read before the run ended');
+        for (const [tier, b] of Object.entries(chainBundles)) {
+            assert.equal(b.network, network);
+            assert.equal(b.contractAddress, deploy.contractAddress, `${tier} names another address`);
+            const r = verifyBundle(b, AT);
+            assert.equal(r.ok, true, `${tier}: ${JSON.stringify(r.problems)} ${JSON.stringify(r.fields.filter((f) => !f.ok))}`);
+            assert.deepEqual(r.overDisclosed, [], `${tier} opens above its tier`);
+        }
+    });
 
-test('the preprod buyer opens no value and cites only current claims; the dealer holds the trade grant', () => {
-    const buyer = verifyBundle(preprodBundles.public, PREPROD);
-    assert.deepEqual(buyer.opened, []);
-    assert.ok(buyer.claims.length > 0 && buyer.claims.every((c) => c.current));
-    const dealer = verifyBundle(preprodBundles.trade, PREPROD);
-    assert.equal(dealer.grant?.held, 'trade');
-    assert.equal(dealer.grant?.covers, true);
-    for (const b of Object.values(preprodBundles)) assert.equal('vin' in b, false, 'a preprod bundle names the VIN');
-    assert.ok(preprodRun.grant?.txHash && preprodRun.grant.block >= preprodRun.firstBlock && preprodRun.grant.block <= preprodRun.lastBlock);
-});
+    test(`the ${network} buyer opens no value and cites only current claims; the dealer holds the trade grant`, () => {
+        const buyer = verifyBundle(chainBundles.public, AT);
+        assert.deepEqual(buyer.opened, []);
+        assert.ok(buyer.claims.length > 0 && buyer.claims.every((c) => c.current));
+        const dealer = verifyBundle(chainBundles.trade, AT);
+        assert.equal(dealer.grant?.held, 'trade');
+        assert.equal(dealer.grant?.covers, true);
+        for (const b of Object.values(chainBundles)) assert.equal('vin' in b, false, `a ${network} bundle names the VIN`);
+        assert.ok(chainRun.grant?.txHash && chainRun.grant.block >= chainRun.firstBlock && chainRun.grant.block <= chainRun.lastBlock);
+    });
+
+    test(`the ${network} grant links to an explorer only where one follows the chain`, () => {
+        const net = networkOf(network);
+        const expected = explorerUrl(net, 'transactions', chainRun.grant.txHash);
+        assert.equal(chainRun.grant.explorer ?? null, expected);
+    });
+}
 
 test('REPOSITORY ASSERTION: the page checks with the shared verifier, through the engine', () => {
     assert.match(js, /import\('\.\.\/assets\/intake-engine\/intake-engine\.js'\)/);
@@ -231,10 +242,14 @@ test('REPOSITORY ASSERTION: the page checks with the shared verifier, through th
 
 test('REPOSITORY ASSERTION: the bundles it loads are the committed files', () => {
     assert.match(js, /ledger: '\.\.\/verify\/demo-data\.json',\s+base: 'bundles\/'/);
-    assert.match(js, /ledger: 'preprod\/ledger\.json',\s+run: 'preprod\/run\.json',\s+base: 'bundles\/preprod\/'/);
+    assert.match(js, /ledger: `\$\{network\}\/ledger\.json`,\s+run: `\$\{network\}\/run\.json`,\s+base: `bundles\/\$\{network\}\/`/);
+    assert.match(js, /preview: chainLedger\('preview'\),\s+preprod: chainLedger\('preprod'\)/);
     assert.match(js, /getJson\(`\$\{L\.base\}\$\{t\}\.json`\)/);
     for (const tier of Object.keys(bundles)) assert.match(html, new RegExp(`href="bundles/${tier}\\.json"`));
-    for (const tier of Object.keys(preprodBundles)) assert.match(html, new RegExp(`href="bundles/preprod/${tier}\\.json"`));
+    for (const network of CHAINS) {
+        assert.match(html, new RegExp(`data-ledger="${network}"`));
+        for (const tier of ['public', 'trade']) assert.match(html, new RegExp(`href="bundles/${network}/${tier}\\.json"`));
+    }
 });
 
 test('the tabs are a labelled tablist and every control is touchable', () => {

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- NO vinpassport-api META TAG, DELIBERATELY.
-     The published site is static and can never hold a wallet, so a preprod
+     The published site is static and can never hold a wallet, so a chain
      engine would have to live elsewhere and be named here:
 
        <meta name="vinpassport-api" content="https://api.passport.vin">
@@ -202,10 +202,10 @@
   </section>
 
   <section style="margin-bottom:30px">
-    <div class="sect"><span class="snum">07</span><h2 class="stitle">WHERE THIS RUNS</h2><span class="smeta">local circuits, or Midnight preprod</span></div>
+    <div class="sect"><span class="snum">07</span><h2 class="stitle">WHERE THIS RUNS</h2><span class="smeta">local circuits, or a Midnight test chain</span></div>
     <label id="ppwrap" style="display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid rgba(0,74,173,.28);cursor:pointer">
       <span id="ppbox" style="flex:none;width:16px;height:16px;border:1px solid rgba(0,74,173,.4);display:grid;place-items:center;margin-top:2px"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" style="visibility:hidden"><path d="M20 6L9 17l-5-5"></path></svg></span>
-      <span style="flex:1 1 260px;min-width:0"><b style="font-size:14px">Submit to Midnight preprod</b><small id="ppnote" style="display:block;margin-top:3px;font-size:12px;line-height:1.55;color:rgba(14,23,38,.62)">Off: the compiled circuits run here and the result is local. On: the fields below become real transactions on the deployed contract, funded from our wallet, ending in a receipt only you can open. The VIN is replaced with a generated demo one, so a real vehicle is never claimed on a test chain.</small></span>
+      <span style="flex:1 1 260px;min-width:0"><b id="pplabel" style="font-size:14px">Submit to Midnight Preview</b><small id="ppnote" style="display:block;margin-top:3px;font-size:12px;line-height:1.55;color:rgba(14,23,38,.62)">Off: the compiled circuits run here and the result is local. On: the fields below become real transactions on the deployed contract, funded from our wallet, ending in a receipt only you can open. The VIN is replaced with a generated demo one, so a real vehicle is never claimed on a test chain.</small></span>
     </label>
   </section>
 
@@ -237,7 +237,7 @@
   </footer>
 
 </div>
-<script type="module" src="intake.js?v=10"></script>
+<script type="module" src="intake.js?v=11"></script>
 <script type="module" src="../assets/nav.mjs?v=1"></script>
 </body>
 </html>
