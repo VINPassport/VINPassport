@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="site/assets/vinpassport-banner.png" alt="VINPassport, proving a vehicle identity" width="700"/>
+  <img src="site/assets/vinpassport-header.png" alt="VINPassport" width="750"/>
   <p><strong>A Digital Circularity Vehicle Passport built on Midnight's zero-knowledge blockchain.</strong></p>
   <p>Prove what a vehicle is. Reveal only what the asker is entitled to see.</p>
   <p><em>Euro 7 binds new M1 and N1 types on <strong>29 November 2026</strong>. The circularity passport follows in 2032.</em></p>
