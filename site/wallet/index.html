@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your wallet, the live contract · VINPassport</title>
+<meta name="description" content="Ask the deployed VINPassport contract a question with your own Midnight wallet, which proves, pays and submits the call.">
+<link rel="icon" href="../favicon.ico" sizes="32x32">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="VINPassport">
+<meta property="og:title" content="VINPassport · Your wallet, the live contract">
+<meta property="og:description" content="One call to the deployed contract, proven, paid and submitted by your own Midnight wallet.">
+<meta property="og:url" content="https://passport.vin/wallet/">
+<meta property="og:image" content="https://passport.vin/assets/vinpassport-og.png">
+<meta property="og:image:width" content="1340">
+<meta property="og:image:height" content="702">
+<meta property="og:image:alt" content="VINPassport: a Digital Circularity Vehicle Passport built on Midnight's zero-knowledge blockchain">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://passport.vin/assets/vinpassport-og.png">
+<meta name="twitter:image:alt" content="VINPassport: a Digital Circularity Vehicle Passport built on Midnight's zero-knowledge blockchain">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700&family=Barlow+Condensed:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../assets/site.css?v=13">
+</head>
+<body>
+<div style="max-width:1200px;margin:0 auto;padding:0 var(--edge)">
+
+  <nav class="nav-bar" style="display:flex;align-items:center;flex-wrap:wrap;gap:14px 26px;padding:18px 0;min-height:75px;border-bottom:1px solid rgba(0,74,173,.26)">
+    <a class="nav-skip" href="#main">Skip to content</a>
+    <a href="../" style="display:flex;align-items:center;margin-right:auto;flex:none;text-decoration:none">
+      <img src="../assets/vinpassport-logo.png" alt="VINPassport" width="546" height="102" style="height:32px;width:auto">
+    </a>
+    <div class="nav-links" id="navmenu">
+      <a href="../guide/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Guide</a>
+      <a href="../regulation/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Regulation</a>
+      <a href="../demo/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Live demo</a>
+      <a href="../manufacturers/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">For manufacturers</a>
+      <a href="../verify/" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;padding:9px 20px;white-space:nowrap;flex:none;background:transparent;color:#0E1726;border:1px solid rgba(0,74,173,.28)">SCAN A VEHICLE</a>
+      <a href="../intake/" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;padding:9px 20px;white-space:nowrap;flex:none;background:#004AAD;color:#EDE4D8;border:1px solid #004AAD">ADD PASSPORT</a>
+    </div>
+    <button class="nav-burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="navmenu"><i></i><i></i><i></i></button>
+  </nav>
+
+  <main id="main">
+  <header style="padding:clamp(24px,4vw,40px) 0 20px">
+    <span style="display:block;font:600 11px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E">Midnight Preview · your own wallet</span>
+    <h1 style="margin:4px 0 0;font-size:clamp(30px,4.4vw,48px);line-height:1.05;letter-spacing:.01em;text-transform:uppercase">Ask the live contract yourself</h1>
+    <p style="margin:12px 0 0;font-size:15px;line-height:1.6;max-width:66ch;color:rgba(14,23,38,.8)">This page asks the deployed contract one question: is this vehicle registered? Your wallet proves the call, pays its fee in your own DUST, and submits it. Nothing passes through a server of ours, and the page never sees a key.</p>
+  </header>
+
+  <section aria-labelledby="w-h" style="border:1px solid rgba(0,74,173,.26);padding:18px 20px;margin-bottom:22px">
+    <h2 id="w-h" style="margin:0 0 8px;font-size:20px;text-transform:uppercase;letter-spacing:.02em">1. Your wallet</h2>
+    <p id="walletstatus" style="margin:0 0 12px;font-size:14.5px;line-height:1.6;color:rgba(14,23,38,.84)">Looking for a Midnight wallet on this page…</p>
+    <div id="walletlist" style="display:flex;flex-wrap:wrap;gap:10px"></div>
+    <p style="margin:12px 0 0;font-size:13px;line-height:1.6;color:rgba(14,23,38,.72)">You need a Midnight wallet that speaks the DApp Connector (1AM or Lace), set to the Preview network, holding DUST. 1AM proves in the page; Lace proves through a proof server running on your own machine.</p>
+  </section>
+
+  <section aria-labelledby="q-h" style="border:1px solid rgba(0,74,173,.26);padding:18px 20px;margin-bottom:22px">
+    <h2 id="q-h" style="margin:0 0 8px;font-size:20px;text-transform:uppercase;letter-spacing:.02em">2. The question</h2>
+    <label for="vehiclekey" style="display:block;font-size:14px;margin-bottom:6px">Vehicle key (the keyed hash the chain holds, 64 hex characters)</label>
+    <input id="vehiclekey" type="text" spellcheck="false" autocomplete="off" style="width:100%;max-width:640px;box-sizing:border-box;font:14px ui-monospace,Consolas,monospace;padding:9px 10px;border:1px solid rgba(0,74,173,.4);background:#F6F0E8;color:#0E1726">
+    <p style="margin:8px 0 14px;font-size:13px;line-height:1.6;color:rgba(14,23,38,.72)">Filled in with the vehicle from the recorded run on <a href="../demo/">the live demo</a>. The circuit is <code>isRegistered</code>: it reads, writes nothing, and takes no secret.</p>
+    <button id="askbtn" type="button" disabled style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;padding:10px 22px;background:#004AAD;color:#EDE4D8;border:1px solid #004AAD;cursor:pointer">ASK THE CHAIN</button>
+  </section>
+
+  <section aria-labelledby="r-h" aria-live="polite" style="border:1px solid rgba(0,74,173,.26);padding:18px 20px;margin-bottom:30px">
+    <h2 id="r-h" style="margin:0 0 8px;font-size:20px;text-transform:uppercase;letter-spacing:.02em">3. What the chain answered</h2>
+    <div id="result" style="font-size:14.5px;line-height:1.7;color:rgba(14,23,38,.84)">Nothing asked yet.</div>
+  </section>
+  </main>
+
+  <footer style="padding:26px 0 48px;border-top:1px solid rgba(0,74,173,.26);display:flex;flex-wrap:wrap;gap:16px 32px;align-items:center;font-size:13px;color:rgba(14,23,38,.7)">
+    <img src="../assets/vinpassport-logo.png" alt="VINPassport" width="546" height="102" style="height:24px;width:auto">
+    <span>Proving a vehicle identity.</span>
+    <span class="ft-meta" style="margin-left:auto;min-width:0">Apache-2.0 · Reg (EU) 2026/1738 · Midnight Network</span>
+  </footer>
+
+</div>
+<script type="module" src="wallet.js?v=1"></script>
+<script type="module" src="../assets/nav.mjs?v=1"></script>
+</body>
+</html>

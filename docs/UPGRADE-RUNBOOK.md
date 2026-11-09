@@ -98,6 +98,8 @@ complete run.
 ```bash
 node scripts/record-run.mjs <receipt file>                        # the site's recorded run
 node scripts/export-bundles.mjs --network preview --receipt <receipt file>
+npm run build:wallet                                               # /wallet/ names the new address and manifest
+npm run check:wallet-path                                          # its path against the new contract, read only
 npm test && npm run check:pages                                    # the disclose page checks the new bundles
 ```
 

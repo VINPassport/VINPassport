@@ -888,6 +888,54 @@ for the whole build. Mainnet's limits are read the same way when it deploys, not
 **Basis.** A ledger rule, not a regulatory one: the block limits in the ledger parameters, which the
 node enforces on every transaction.
 
+### D35: A visitor's own wallet calls the contract, starting with the circuit whose keys the site can serve · 2026-11-09
+
+The hosted chain demo has needed a server holding a funded wallet since [D24](#settled), and that
+host is gone. Midnight.js 5 and the DApp Connector API 4 let a page hand a transaction to the
+visitor's own wallet instead.
+
+**The decision.** [`/wallet/`](../site/wallet/) finds the Midnight wallets on the page (1AM, Lace),
+connects to the one the visitor picks, and asks the deployed contract one question,
+`isRegistered`. The wallet proves the call when it can (`getProvingProvider`; the page hands it the
+circuit's keys and ZKIR on request), balances it, pays the fee in the visitor's DUST and submits
+it. No server of ours is involved, and the page never holds a key, a seed or a credential. Every
+artifact the page serves is checked in the browser against the compiler manifest whose hash the
+deploy record pins, so a key that is not the deployed one is refused before any wallet sees it.
+
+**Why one read circuit first.** A circuit can be offered only if the site serves its prover key,
+and the wallet receives that key with every proof:
+
+| Circuits | Prover key each |
+|---|---:|
+| `isRegistered`, `isRegistrar`, `registrarOf` | 224 KB |
+| `commitmentOf`, `holdsGrant` | 11 MB |
+| `holdsAtMost`, `holdsAtLeast`, `registerPassport` | 22 MB |
+| the other writing circuits | 45 to 90 MB |
+
+GitHub Pages does not serve Git LFS files, git refuses files over 100 MB, and a published site is
+capped at 1 GB ([LFS](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage),
+[Pages limits](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits)).
+This site deploys from a workflow artifact, so larger keys can be added there later without
+entering git; the 224 KB key ships now. Lace proves through a proof server on the visitor's own
+machine, 1AM in the page or through its own service
+([Midnight's wallet integration notes](https://docs.midnight.network/sdks/community/wallets/community-wallets-integration)).
+
+**Checked so far.** In Node, against the live Preview indexer, with a stand-in wallet that proves
+from the page's key material and stops at balancing: the page builds a proven `isRegistered` call to
+the contract, 4,278 bytes, nothing submitted ([`scripts/check-wallet-path.mjs`](../scripts/check-wallet-path.mjs),
+weekly in CI). In Brave: the engine loads (the Ledger 9 runtime only, about 13 MB), reads the
+contract from the indexer, runs the circuit and serves the wallet the key, verifier key and ZKIR,
+each verified against the manifest. Not yet checked: a real wallet extension submitting the call,
+which needs a visitor with 1AM or Lace on Preview and DUST.
+
+**Found on the way.** A browser's native `fetch` refuses to run as another object's method, and
+the Midnight.js artifact provider calls it that way; the page always hands it a bound wrapper. A
+wallet's bech32m keys are decoded with `Buffer`, which browsers lack; the engine sets it before
+Midnight.js loads. The provider fetches each artifact three times per call: harmless at 224 KB,
+to be cached before a 45 MB key is offered.
+
+**Basis.** No provision asks for it; it removes the server [D24](#settled) depended on.
+
 ## Reversed
 
 Recorded so they are not accidentally reinstated.

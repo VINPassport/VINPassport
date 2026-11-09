@@ -45,8 +45,8 @@ const ITEMS = [
 
 /**
  * `current` names the item this page IS, so the bar marks it instead of
- * offering a trip to where the reader already is. `/proofs/` and `/disclose/`
- * have no item of their own: they are reached from the pages that cite them.
+ * offering a trip to where the reader already is. `/proofs/`, `/disclose/` and
+ * `/wallet/` have no item of their own: they are reached from the pages that cite them.
  * The bar holds six items today; at eight it wrapped to a second row on a
  * laptop.
  */
@@ -59,7 +59,8 @@ export const PAGES = [
     { file: 'intake/index.html', depth: 1, current: 'intake' },
     { file: 'proofs/index.html', depth: 1, current: null },
     { file: 'manufacturers/index.html', depth: 1, current: 'manufacturers' },
-    { file: 'disclose/index.html', depth: 1, current: null }
+    { file: 'disclose/index.html', depth: 1, current: null },
+    { file: 'wallet/index.html', depth: 1, current: null }
 ];
 
 const LINK = 'text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap';

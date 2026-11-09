@@ -209,6 +209,9 @@ if (mode === '--install') {
 if (process.env.SKIP_DISCLOSURE_CHECK === '1') process.exit(0);
 
 let hits = [];
+/** Build output the scan skips; see the loop below for why. */
+const GENERATED = /^site\/assets\/[a-z0-9-]+-engine\//;
+const generatedSkipped = new Set();
 if (mode === '--msg') {
     const f = args[1];
     if (!f || !existsSync(f)) { console.error('--msg needs a message file'); process.exit(2); }
@@ -242,11 +245,23 @@ if (mode === '--msg') {
         // purpose, one named file, not a pattern that would cover test/ at
         // large.
         if (/test[\\/]app[\\/]disclosure-guard\.test\.mjs$/.test(file)) continue;
+        // Generated browser bundles (site/assets/<name>-engine/): minified
+        // third-party code, not prose of ours. Their SOURCES are scanned like
+        // any other file, and CI's check:engine and check:wallet prove each
+        // bundle is byte for byte what those sources build, so nothing can
+        // enter here that did not pass as source. Agreed with the owner on
+        // 9 Nov 2026, after Midnight.js's own error text tripped the scan.
+        // Reported, never silent.
+        if (GENERATED.test(file)) { generatedSkipped.add(file); continue; }
         if (isExempt(file, line)) continue;
         hits.push(...scan(text, file).map((h) => ({ ...h, line })));
     }
 }
 
 reportWaived();
+if (generatedSkipped.size) {
+    console.error(`  disclosure check: skipped ${generatedSkipped.size} generated bundle file(s) under site/assets/*-engine/ `
+        + '(sources scanned; drift checked by check:engine and check:wallet)');
+}
 if (hits.length) { report(hits); process.exit(1); }
 console.log(`disclosure check: clean (${mode})`);
