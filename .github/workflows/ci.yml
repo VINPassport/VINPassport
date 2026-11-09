@@ -1,0 +1,57 @@
+# Every push and pull request: the test suites, the generated-file checks, and
+# the disclosure rule over what the push adds.
+#
+# The contract tests run the COMPILED circuits (contracts/*/src/managed/), which
+# are committed, so no Compact toolchain is needed here. Whether those committed
+# artifacts are what the pinned compiler produces is a separate, slower job:
+# .github/workflows/compile.yml.
+#
+# Browser checks (check:pages, check:browser, check:deck) need a local Brave and
+# stay local.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # the disclosure check reads the pushed range
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Contract tests, application tests, SDK assumptions
+        run: npm test
+      - name: The committed intake engine is built from its sources
+        run: npm run check:engine
+      - name: Every page carries the same navigation bar
+        run: npm run check:nav
+      - name: Disclosure rule over the commits and lines this push adds
+        env:
+          BEFORE: ${{ github.event.before }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          # A pull request is checked from its base; a push from the commit before
+          # it. A new branch or a force push has no usable "before", so the last
+          # commit is checked on its own.
+          if [ -n "$BASE" ]; then FROM="$BASE"
+          elif [ -n "$BEFORE" ] && [ "$BEFORE" != "0000000000000000000000000000000000000000" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then FROM="$BEFORE"
+          else FROM="$HEAD_SHA~1"; fi
+          node scripts/check-disclosure.mjs --diff "$FROM..$HEAD_SHA"

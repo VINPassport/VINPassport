@@ -144,7 +144,9 @@ test('assertNoSecrets refuses to hand over any network\'s project id', () => {
 // The ledger 9 deploy (scripts/deploy.mjs) and the libraries it opens the
 // wallet and the custody key through. The ledger 8 deploy these assertions
 // used to read is at the git tag ledger8-preprod.
-const src = (...p) => readFileSync(join(ROOT, 'scripts', ...p), 'utf8');
+// Line endings normalised: a Windows checkout (core.autocrlf) has CRLF, and an
+// assertion that slices on '\n}\n' then reads one character and fails.
+const src = (...p) => readFileSync(join(ROOT, 'scripts', ...p), 'utf8').replace(/\r\n/g, '\n');
 const deploySrc = () => src('deploy.mjs');
 
 test('REPOSITORY ASSERTION: the deploy script is told its network, with no default', () => {

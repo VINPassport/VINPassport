@@ -14,7 +14,8 @@
  * Usage:
  *   node scripts/check-disclosure.mjs --staged          # pre-commit
  *   node scripts/check-disclosure.mjs --msg <file>      # commit-msg
- *   node scripts/check-disclosure.mjs --range A..B      # audit a range
+ *   node scripts/check-disclosure.mjs --range A..B      # audit a range's commit messages
+ *   node scripts/check-disclosure.mjs --diff A..B       # CI: a range's messages and added lines
  *   node scripts/check-disclosure.mjs --install         # install both hooks
  *
  * Deliberately blunt. A false positive costs a reword; a false negative costs
@@ -79,8 +80,10 @@ const scan = (text, where) => {
 
 const git = (...args) => execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
 
-function stagedAdditions() {
-    const diff = git('diff', '--cached', '--unified=0', '--no-color');
+function stagedAdditions(range = null) {
+    // With a range, the lines that range adds (CI, `--diff A..B`); without, the
+    // lines staged for the next commit (the pre-commit hook).
+    const diff = range ? git('diff', '--unified=0', '--no-color', range) : git('diff', '--cached', '--unified=0', '--no-color');
     const out = [];
     let file = '?';
     let lineNo = 0;
@@ -218,7 +221,16 @@ if (mode === '--msg') {
         hits.push(...scan(git('log', '-1', '--format=%B', sha), `commit ${sha.slice(0, 8)}`));
     }
 } else {
-    for (const { file, text, line } of stagedAdditions()) {
+    // `--diff A..B` (CI): every commit message in the range, then every line
+    // the range adds, under the same exemptions as a local commit.
+    const range = mode === '--diff' ? args[1] : null;
+    if (mode === '--diff') {
+        if (!range) { console.error('--diff needs A..B'); process.exit(2); }
+        for (const sha of git('rev-list', range).split(/\r?\n/).filter(Boolean)) {
+            hits.push(...scan(git('log', '-1', '--format=%B', sha), `commit ${sha.slice(0, 8)}`));
+        }
+    }
+    for (const { file, text, line } of stagedAdditions(range)) {
         // The local notes file is where this material belongs, and this file
         // has to spell the vocabulary out to look for it. Everything else is
         // fair game.

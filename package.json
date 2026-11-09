@@ -73,7 +73,8 @@
     "record:run": "node scripts/record-run.mjs",
     "check:deck": "node scripts/check-deck.mjs",
     "check:pages": "node scripts/check-pages.mjs",
-    "check:browser": "node scripts/check-browser-circuits.mjs"
+    "check:browser": "node scripts/check-browser-circuits.mjs",
+    "check:upstream": "node scripts/check-upstream.mjs"
   },
   "overrides": {
     "@midnightntwrk/ledger-v9": "1.0.0",

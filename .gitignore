@@ -28,9 +28,13 @@ zk-artifacts/
 
 # Compiled Compact output: contract/, compiler/ and zkir/ ARE committed, so
 # judges and consumers can inspect the build without a Compact toolchain,
-# NIGHTGATE's own convention. PLONK prover/verifier keys are large and fully
-# regenerable, so those stay out.
-**/managed/**/keys/
+# NIGHTGATE's own convention. PLONK prover keys are large (hundreds of MB) and
+# fully regenerable, so they stay out. Verifier keys are committed: about 2 KB
+# each, public by definition (every one is on chain), and what the deploy
+# record's hashes and the deploy-fit tests refer to.
+**/managed/**/keys/*.prover
+# Keys of a build from before the rename, kept locally, never part of this tree.
+contracts/vinpassport/src/managed/shieldvin-passport/
 
 # ── Salt seeds ────────────────────────────────────────────────────────────────
 # These are proof openings. Publishing one undoes leaf salting; losing one makes

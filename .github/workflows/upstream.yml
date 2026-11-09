@@ -1,0 +1,25 @@
+# Weekly: what moved upstream (scripts/check-upstream.mjs). A newer package or
+# compiler is reported, never acted on. The run fails only when an issue that a
+# workaround in this tree depends on has closed, which is the signal to follow
+# that issue's removal steps in scripts/lib/known-issues.mjs.
+name: Upstream
+
+on:
+  schedule:
+    - cron: '41 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  upstream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Pinned versions, compiler release and known issues
+        run: node scripts/check-upstream.mjs --strict | tee -a "$GITHUB_STEP_SUMMARY"

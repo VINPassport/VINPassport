@@ -31,8 +31,9 @@ const sha = (bytes) => createHash('sha256').update(bytes).digest('hex');
 
 /**
  * The files that decide what a node will accept: the compiled contract and
- * every circuit's binary intermediate representation. Prover and verifier keys
- * are deliberately not committed, so they are not part of this.
+ * every circuit's binary intermediate representation. Keys are not part of
+ * this: prover keys are not committed, and the verifier keys (committed since
+ * 9 November 2026) are pinned one by one in the deploy record instead.
  */
 export function buildFiles(managed = MANAGED) {
     const files = [['contract/index.js', join(managed, 'contract', 'index.js')]];

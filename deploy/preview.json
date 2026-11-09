@@ -16,7 +16,7 @@
     "compiler": "0.36.0",
     "language": "0.28.0",
     "runtime": "0.21.0",
-    "manifestSha256": "13013561c4ac3e251e13d43614d78f52568a2862b592d6cffd7b5499802f02a9",
+    "manifestSha256": "0b9570a9c0b2797a68469d0740e3087525acc53647f0d688a893d51ed26415b7",
     "verifierKeys": {
       "registerPassport": "9feb1030e9416415bb21352d253d270b83d7bfd9a97f03c6d679d639b763cb13",
       "authoriseWriter": "03e76c15468585e1716e4ee97da3c0008261a4d5898cbe131e5c3fcc6f03d84f",
@@ -36,7 +36,9 @@
       "holdsGrant": "badf9bda939625e7622927635521701f692722de6b524d3b8a2363db87fe5f3c",
       "isRegistrar": "829057490f93e1695f963da55d9b68ee9ff8c9cc22f9b601c73574e90cdae4e2",
       "approveRegistrarChange": "af47f2c76dd6a269f97f2d97215327632b6d59825468fb02f72c7aaee1d7c930"
-    }
+    },
+    "previousManifestSha256": "13013561c4ac3e251e13d43614d78f52568a2862b592d6cffd7b5499802f02a9",
+    "manifestNote": "Re-hashed 9 Nov 2026 after recompiling with the documented command (package.json compile) instead of a copy in a work directory: only the source map path fields changed. Every verifier key, ZKIR file and contract/index.js is byte-identical, so the contract at this address is unchanged."
   },
   "deployedInSteps": {
     "why": "all 18 verifier keys in one deploy exceed the block's bytes-written budget once the fee is added (scripts/lib/deploy-fit.mjs)",

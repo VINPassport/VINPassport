@@ -1,0 +1,68 @@
+# The committed build is exactly what the pinned compiler produces.
+#
+# contracts/*/src/managed/ is committed so that anyone can read and test the
+# compiled contract without a Compact toolchain. This job is what makes that
+# safe: it downloads compactc from its GitHub release, checks the download
+# against the sha256 recorded below, compiles both contracts with the commands
+# in package.json, and fails if a single committed byte changes, verifier keys
+# included. Key generation is deterministic, so the verifier keys whose hashes
+# the deploy records pin are reproduced here from source.
+#
+# It runs when the contracts or this file change, weekly (so a vanished
+# release or a changed download is noticed), and on demand.
+name: Reproducible build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'contracts/**'
+      - 'package.json'
+      - '.github/workflows/compile.yml'
+  pull_request:
+    paths:
+      - 'contracts/**'
+      - 'package.json'
+      - '.github/workflows/compile.yml'
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      COMPACTC_VERSION: 0.36.0
+      # sha256 of compactc_v0.36.0_x86_64-unknown-linux-musl.zip, recorded 9 Nov 2026.
+      COMPACTC_SHA256: 7017b6121ebb9d53a562984bca616d143ef84fc7ee18b4da6c3a0a6615cb5e97
+    steps:
+      - uses: actions/checkout@v4
+      # Key generation reads Midnight's public parameters (about 120 MB),
+      # downloaded on first use.
+      - name: Cache the public parameters
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/midnight/zk-params
+          key: zk-params-compactc-${{ env.COMPACTC_VERSION }}
+      - name: Install compactc ${{ env.COMPACTC_VERSION }}, checked by sha256
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/compactc.zip" \
+            "https://github.com/midnightntwrk/compact/releases/download/compactc-v${COMPACTC_VERSION}/compactc_v${COMPACTC_VERSION}_x86_64-unknown-linux-musl.zip"
+          echo "${COMPACTC_SHA256}  $RUNNER_TEMP/compactc.zip" | sha256sum -c -
+          unzip -q "$RUNNER_TEMP/compactc.zip" -d "$RUNNER_TEMP/compactc"
+          chmod +x "$RUNNER_TEMP/compactc/"*
+          echo "$RUNNER_TEMP/compactc" >> "$GITHUB_PATH"
+      - run: compactc --version
+      - name: Compile both contracts with the commands in package.json
+        run: |
+          compactc contracts/vinpassport/src/vinpassport.compact contracts/vinpassport/src/managed/vinpassport
+          compactc contracts/listing/src/listing.compact contracts/listing/src/managed/listing
+      - name: Not one committed byte changed, and nothing new appeared
+        run: |
+          git status --porcelain --untracked-files=all -- contracts
+          git diff --stat --exit-code -- contracts
+          test -z "$(git status --porcelain --untracked-files=all -- contracts)"
