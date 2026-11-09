@@ -11,6 +11,7 @@
  *              holdsAtMost  <vinHash> <field> <bound>
  *              holdsAtLeast <vinHash> <field> <bound>
  *              holdsGrant   <vinHash> <granteeId> trade|authority
+ *              isRegistrar  <registrarId>
  *
  * Without --submit it runs the compiled circuit here, against the contract
  * state the public indexer holds now, and prints the answer: no wallet, no
@@ -59,7 +60,8 @@ const SHAPES = {
     commitmentOf: (a) => [bytes32(a[0], 'vinHash'), field(a[1])],
     holdsAtMost: (a) => [bytes32(a[0], 'vinHash'), field(a[1]), uint(a[2])],
     holdsAtLeast: (a) => [bytes32(a[0], 'vinHash'), field(a[1]), uint(a[2])],
-    holdsGrant: (a) => [bytes32(a[0], 'vinHash'), bytes32(a[1], 'granteeId'), tier(a[2])]
+    holdsGrant: (a) => [bytes32(a[0], 'vinHash'), bytes32(a[1], 'granteeId'), tier(a[2])],
+    isRegistrar: (a) => [bytes32(a[0], 'registrarId')]
 };
 if (!network || !SHAPES[circuit]) fail(`usage: node scripts/ask.mjs --network preview <${Object.keys(SHAPES).join('|')}> <args> [--submit]`);
 try { requireBuildableNetwork(network); } catch (e) { fail(e.message); }

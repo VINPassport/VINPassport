@@ -9,7 +9,8 @@
  *
  * What a deploy fixes for the contract's lifetime, printed before anything is
  * built so it can be read first:
- *   - the registrar allowlist (constructor argument; it can never be added to);
+ *   - the initial registrar allowlist (constructor argument; afterwards it changes
+ *     only when two current registrars approve, `scripts/govern.mjs`, D32);
  *   - the verifier keys of this build (pinned in the record by hash, with the
  *     integrity manifest's own hash);
  *   - the maintenance authority: the custody key, at threshold 1, until

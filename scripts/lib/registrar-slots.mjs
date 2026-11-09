@@ -2,10 +2,11 @@
  * The registrar allowlist that gets pinned into the contract at deploy.
  *
  * Separate from the deploy script on purpose. `allowedRegistrars` is written
- * in the constructor and nowhere else, so this list is fixed for the
- * contract's lifetime: there is no circuit that adds to it and no second
- * chance. That makes it the one input worth testing on its own, away from
- * anything that needs a network, a seed or a sponsor.
+ * in the constructor, and afterwards only by `approveRegistrarChange`, which
+ * needs two current registrars to agree, one transaction each (DECISIONS D32).
+ * A wrong list at deploy can therefore be corrected, but only by registrars on
+ * that list, at two fees per change. That makes it the one input worth testing
+ * on its own, away from anything that needs a network, a seed or a sponsor.
  *
  * Identities only. The secrets behind them are never read here, because a
  * deploy does not act as a registrar; it only states which registrars will be
@@ -37,8 +38,8 @@ export const REGISTRAR_ROLES = {
 export function readRegistrarSlots(secretsPath, labels = REGISTRAR_LABELS) {
     if (!existsSync(secretsPath)) {
         throw new Error(`no registrar identities at ${secretsPath}. `
-            + 'Run `node scripts/make-registrar-secrets.mjs` first. The list is fixed '
-            + 'at deploy and cannot be added to later, so it has to be right now.');
+            + 'Run `node scripts/make-registrar-secrets.mjs` first. The list is pinned '
+            + 'at deploy, and changing it later takes two registrars and two transactions.');
     }
     const text = readFileSync(secretsPath, 'utf8');
     const lines = text.split(/\r?\n/);
@@ -54,8 +55,8 @@ export function readRegistrarSlots(secretsPath, labels = REGISTRAR_LABELS) {
     });
 
     // The ledger holds the allowlist in a Set, so a repeated id is kept once
-    // and the duplicate slot is spent for nothing. Since the list can never be
-    // added to, a slot filled with a duplicate is a slot given away.
+    // and the duplicate slot is spent for nothing. Winning it back later takes
+    // two registrars' approvals, so a duplicate here is a slot given away.
     const distinct = new Set(regs.map((r) => r.hex));
     if (distinct.size !== labels.length) {
         throw new Error('two registrars share an identity, which would silently shrink '

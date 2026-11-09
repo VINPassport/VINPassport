@@ -19,7 +19,8 @@
  *   - no passport is keyed by the plain hash of the receipt's VIN
  *   - every field's latest commitment is the one the ledger holds
  *   - the plaintext VIN and every salt are absent from the serialized state
- *   - the registrar identities pinned at deploy are the allowlist on chain
+ *   - the registrar set on chain is the one pinned at deploy, with every change
+ *     the deploy record says was carried out applied (DECISIONS D32)
  *   - each grant the run made is on chain at the tier it names
  * The receipt never leaves this process and none of its values are printed.
  * Registrar identities are read from the local registrar file; the secrets
@@ -35,6 +36,7 @@ import { checkNetwork, guardLogs } from './lib/endpoints.mjs';
 import { deployRecord, readContract } from './lib/chain-state.mjs';
 import { slotOf, fieldKeyOf, commitmentOf, grantKeyOf, vinHashOf, PLAIN_VIN_SCHEME } from './lib/disclosure.mjs';
 import { readRegistrarSlots } from './lib/registrar-slots.mjs';
+import { expectedRegistrars, sameMembers } from './lib/governance.mjs';
 
 guardLogs();
 
@@ -59,8 +61,9 @@ console.log(`contract     ${address}`);
 console.log(`latest       ${chain.latest.kind} in block ${chain.latest.blockHeight}, tx ${chain.latest.txHash}`);
 console.log(`state        ${stateBytes.length} bytes\n`);
 
-const maps = ['passports', 'registrar', 'fieldCommitment', 'fieldRule', 'claims', 'relClaims', 'allowedRegistrars', 'writers', 'fieldWriter', 'grants'];
+const maps = ['passports', 'registrar', 'fieldCommitment', 'fieldRule', 'claims', 'relClaims', 'allowedRegistrars', 'writers', 'fieldWriter', 'grants', 'registrarApprovals', 'registrarBallots'];
 for (const m of maps) console.log(`${m.padEnd(18)} ${L[m].size()}`);
+console.log(`${'registrarEpoch'.padEnd(18)} ${L.registrarEpoch}`);
 
 const passportKeys = [...L.passports].map(([k]) => hex(k));
 const grants = new Map([...L.grants].map(([k, t]) => [hex(k), Number(t)]));
@@ -106,9 +109,14 @@ const registrarFile = process.env.VINPASSPORT_REGISTRAR_FILE
     ?? join(ROOT, '..', '_local-tracking', NETWORK === 'mainnet' ? 'REGISTRAR-SECRETS.mainnet.env' : 'REGISTRAR-SECRETS.env');
 const { regs } = readRegistrarSlots(registrarFile);
 const onChainAllow = new Set([...L.allowedRegistrars].map(hex));
-check(`the pinned registrar identities are the allowlist on chain (${regs.length})`,
-    onChainAllow.size === regs.length && regs.every((g) => onChainAllow.has(g.hex)));
-check('the receipt\'s registrar is one of them', regs.some((g) => g.hex === r.registrar?.id));
+const pinnedIds = (record.registrars ?? regs.map((g) => ({ id: g.hex }))).map((g) => g.id);
+check('the local registrar file names the identities the deploy record pinned',
+    sameMembers(new Set(pinnedIds), new Set(regs.map((g) => g.hex))));
+const changes = record.registrarChanges ?? [];
+const expected = expectedRegistrars(pinnedIds, changes);
+check(`the registrar set on chain is the pinned set with ${changes.filter((c) => c.executed).length} recorded change(s) applied (${expected.size})`,
+    sameMembers(expected, onChainAllow));
+check('the receipt\'s registrar is one of the pinned ones', regs.some((g) => g.hex === r.registrar?.id));
 
 const made = (r.onChain ?? []).flatMap((st) => [...String(st.label).matchAll(/grantDisclosure (\w+): (\w+)/g)]);
 for (const [, label, tier] of made) {

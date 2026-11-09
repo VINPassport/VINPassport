@@ -8,8 +8,8 @@
  * reimplemented, so the value written to `allowedRegistrars` at deploy is the
  * same value the circuit will compute at call time.
  *
- * Four registrars, because the constructor pins exactly four and the list can
- * never be added to afterwards:
+ * Four registrars, because the constructor pins exactly four; afterwards the
+ * set changes only when two of them approve (`scripts/govern.mjs`, D32):
  *
  *   A  the demo registrar, which registers vehicles
  *   B  a second listed authority that registers nothing. It exists so that

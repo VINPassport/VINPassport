@@ -175,14 +175,14 @@ npm install
 npm test
 ```
 
-Expected: **176 contract tests, 321 app tests and 24 SDK assertions, all passing**, in about fifteen
+Expected: **176 contract tests, 325 app tests and 24 SDK assertions, all passing**, in about fifteen
 seconds.
 
 ```
- Test Files  1 passed (1)
+ Test Files  2 passed (2)
       Tests  176 passed (176)
 
-ℹ pass 321
+ℹ pass 325
 
 ================ 24 passed, 0 failed ================
 ```
@@ -192,7 +192,7 @@ seconds.
 | `npm test` | Everything below, in one run |
 | `npm run test:contract` | The 176 contract tests, against the compiled circuits, including a cross-contract call tree run in memory |
 | `npm run test:watch` | The same, re-running on change |
-| `npm run test:app` | 321 tests on the application paths: verdicts, the deploy's registrar list and witness set, the runner's per-call wiring, the committee handover and committee proposals, DUST coin selection, hash parity with the ledger 8 build, the chain-sees panel and the QR encoder, via `node --test`. **Most import and run product code; a minority assert on what is written in the repository** (that every screenshot the guide names exists, that each page's bar carries the same links, that every page names its content with one `<main>` and offers a way past the bar, that the verify page cannot answer with a vehicle nobody asked for, that no text colour drops below the contrast floor). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
+| `npm run test:app` | 325 tests on the application paths: verdicts, the deploy's registrar list and witness set, the runner's per-call wiring, the committee handover and committee proposals, registrar governance bookkeeping against the compiled contract, DUST coin selection, hash parity with the ledger 8 build, the chain-sees panel and the QR encoder, via `node --test`. **Most import and run product code; a minority assert on what is written in the repository** (that every screenshot the guide names exists, that each page's bar carries the same links, that every page names its content with one `<main>` and offers a way past the bar, that the verify page cannot answer with a vehicle nobody asked for, that no text colour drops below the contrast floor). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
 | `npm run test:sdk` | 24 assertions pinning our assumptions about `@odatano/dpp-sdk` |
 | `npm run app` | All three surfaces + the circuits, one dependency-free server |
 | `npm run serve:site` | The site statically, as GitHub Pages serves it: no circuits, demo state only |
@@ -216,6 +216,7 @@ On a chain, with a funded deploy wallet (see [Running it on the real chain](#run
 | `node scripts/maintenance.mjs propose\|sign\|submit` | A committee update: `propose` writes a proposal against the chain's counter, each member `sign`s it on their own machine (the tool rebuilds the update from its readable parts and prints its fingerprint), `submit` checks the signatures and the counter and sends it |
 | `node scripts/listing.mjs list --network preview <vinHash>` | The composability demo: runs the listing's call tree against the live states (`--submit` sends it); `deploy` deploys a listing |
 | `node scripts/ask.mjs --network preview holdsAtMost <vinHash> odometerKm 150000` | Ask the contract one of its read circuits: computed against the indexer's state, or with `--submit` checked by the chain |
+| `node scripts/govern.mjs --network preview --remove D --as A` | One registrar's approval of a change to the registrar set ([D32](docs/DECISIONS.md#settled)): the dry run shows whether the contract would refuse it, count it, or carry the change out; `--submit` sends it and records it in the deploy record. A second registrar's approval carries the change |
 | `npm run app:chain` | The app with the chain demo on, against the deployed Preview contract |
 
 ### The app: every surface, one command
@@ -618,7 +619,7 @@ repository begins with no contract at all.
 |---|---|
 | **The contract** - five exported circuits at Wave 1's close, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
 | **Deployed to Midnight preprod**, 28 August, built and signed locally | [`deploy/preprod.json`](deploy/preprod.json) |
-| **521 tests today** - 176 contract, 321 application, 24 SDK assumption assertions; all forty-three guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
+| **525 tests today** - 176 contract, 325 application, 24 SDK assumption assertions; all forty-three guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
 | **Three surfaces** - verification, intake console, proof explorer - all running the compiled circuits, not a mock | [passport.vin](https://passport.vin/) |
 | **On-chain runs from the browser, self-funded**, after a hosted sponsor turned out to be a single point of failure in a demo a judge runs unattended | [D24](docs/DECISIONS.md#settled) |
 | **The regulatory basis read from the Official Journal** rather than secondary analysis - which caught two wrong article citations that had survived months of work | [REGULATION.md](docs/REGULATION.md) |
@@ -701,6 +702,7 @@ scripts/
   deploy.mjs, run.mjs, dust.mjs      ledger 9: deploy, guided run, DUST (dry run unless --submit)
   maintenance.mjs                    the maintenance authority: status, handover, propose/sign/submit
   ask.mjs                            ask the contract a read circuit, locally or on chain
+  govern.mjs                         one registrar's approval of a registrar-set change (D32)
   listing.mjs                        deploy the listing demo and list a vehicle through it
   chain-readback.mjs                 read a deployed contract back and check a receipt against it
   mutate-guards.mjs                  deletes each guard in turn, reports the kills
@@ -711,7 +713,7 @@ scripts/
 test/
   passport-simulator.mjs             harness: compiled circuits + a local ledger
   passport.test.mjs, listing.test.mjs 176 contract tests
-  app/                               321 tests on the paths around the circuits
+  app/                               325 tests on the paths around the circuits
   fixtures/golden-vectors.json       what the ledger 8 build computed, checked against this one
   sdk-assumptions.mjs                24 assertions pinning @odatano/dpp-sdk behaviour
 ```
