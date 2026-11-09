@@ -22,6 +22,8 @@ export type RelClaim = { slotHigh: Uint8Array;
                          slack: bigint
                        };
 
+export type PassportEvent = { schema: Uint8Array; kind: Uint8Array };
+
 export type Witnesses<PS> = {
   newValue(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint];
   previousValue(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint];
@@ -88,6 +90,11 @@ export type ImpureCircuits<PS> = {
              vinHash_0: Uint8Array,
              granteeId_0: Uint8Array,
              tier_0: Tier): Promise<__compactRuntime.CircuitResults<PS, boolean>>;
+  isRegistrar(context: __compactRuntime.CircuitContext<PS>,
+              registrarId_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, boolean>>;
+  approveRegistrarChange(context: __compactRuntime.CircuitContext<PS>,
+                         add_0: boolean,
+                         registrarId_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
 }
 
 export type ProvableCircuits<PS> = {
@@ -146,6 +153,11 @@ export type ProvableCircuits<PS> = {
              vinHash_0: Uint8Array,
              granteeId_0: Uint8Array,
              tier_0: Tier): Promise<__compactRuntime.CircuitResults<PS, boolean>>;
+  isRegistrar(context: __compactRuntime.CircuitContext<PS>,
+              registrarId_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, boolean>>;
+  approveRegistrarChange(context: __compactRuntime.CircuitContext<PS>,
+                         add_0: boolean,
+                         registrarId_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
 }
 
 export type PureCircuits = {
@@ -155,6 +167,7 @@ export type PureCircuits = {
   registrarIdOf(secret_0: Uint8Array): Uint8Array;
   writerKeyOf(vinHash_0: Uint8Array, writerId_0: Uint8Array): Uint8Array;
   grantKeyOf(vinHash_0: Uint8Array, granteeId_0: Uint8Array): Uint8Array;
+  proposalKeyOf(add_0: boolean, registrarId_0: Uint8Array, epoch_0: bigint): Uint8Array;
 }
 
 export type Circuits<PS> = {
@@ -225,6 +238,15 @@ export type Circuits<PS> = {
              vinHash_0: Uint8Array,
              granteeId_0: Uint8Array,
              tier_0: Tier): Promise<__compactRuntime.CircuitResults<PS, boolean>>;
+  isRegistrar(context: __compactRuntime.CircuitContext<PS>,
+              registrarId_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, boolean>>;
+  proposalKeyOf(context: __compactRuntime.CircuitContext<PS>,
+                add_0: boolean,
+                registrarId_0: Uint8Array,
+                epoch_0: bigint): Promise<__compactRuntime.CircuitResults<PS, Uint8Array>>;
+  approveRegistrarChange(context: __compactRuntime.CircuitContext<PS>,
+                         add_0: boolean,
+                         registrarId_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
 }
 
 export type Ledger = {
@@ -296,6 +318,20 @@ export type Ledger = {
     lookup(key_0: Uint8Array): Tier;
     [Symbol.iterator](): Iterator<[Uint8Array, Tier]>
   };
+  registrarApprovals: {
+    isEmpty(): boolean;
+    size(): bigint;
+    member(key_0: Uint8Array): boolean;
+    lookup(key_0: Uint8Array): bigint;
+    [Symbol.iterator](): Iterator<[Uint8Array, bigint]>
+  };
+  registrarBallots: {
+    isEmpty(): boolean;
+    size(): bigint;
+    member(elem_0: Uint8Array): boolean;
+    [Symbol.iterator](): Iterator<Uint8Array>
+  };
+  readonly registrarEpoch: bigint;
 }
 
 export declare class Contract<PS = any, W extends Witnesses<PS> = Witnesses<PS>> {

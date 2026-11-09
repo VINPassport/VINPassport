@@ -148,10 +148,18 @@ function whichCompact() {
     catch { return ''; }
 }
 
-/** The failing tests, by full name. */
+/**
+ * The failing tests, by full name.
+ *
+ * Only the passport suite: every guard is in vinpassport.compact, and that is
+ * where they are exercised. The listing demo's tests make a cross-contract
+ * call, and the runtime refuses a callee whose module records no verifier-key
+ * fingerprints, which is exactly what a --skip-zk build is; they would fail
+ * for every mutation and for none of the reasons this harness measures.
+ */
 function runSuite(reportPath) {
     try {
-        execFileSync('npx', ['vitest', 'run', '--reporter=json', `--outputFile=${reportPath}`],
+        execFileSync('npx', ['vitest', 'run', 'test/passport.test.mjs', '--reporter=json', `--outputFile=${reportPath}`],
             { cwd: ROOT, stdio: 'pipe', shell: process.platform === 'win32' });
     } catch { /* a non-zero exit is the normal case here */ }
     if (!existsSync(reportPath)) return null;
@@ -189,6 +197,14 @@ const restore = () => {
     cpSync(join(work, 'managed'), MANAGED, { recursive: true });
 };
 process.on('SIGINT', () => { restore(); console.log('\nrestored; stopping.'); process.exit(130); });
+// Every other way out, too. `process.exit()` skips `finally`, and both the
+// compiler check and the red-baseline refusal below exit from inside the try:
+// on 8 November 2026 that left a --skip-zk build in place of the keyed one.
+// restore() is synchronous, so it runs inside an exit handler.
+process.on('exit', () => {
+    restore();
+    rmSync(work, { recursive: true, force: true });
+});
 
 const results = [];
 try {

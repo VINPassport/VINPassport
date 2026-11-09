@@ -1912,3 +1912,162 @@ describe('read circuits: what another contract can ask (2.2)', () => {
         expect(snapshot()).toBe(before);
     });
 });
+
+// ---------------------------------------------------------------- events (D29)
+
+describe('events: every state change says which record changed, and how (D29)', () => {
+    /** Run one call and return the single event it emitted. */
+    const one = async (fn, on = sim) => {
+        const n = on.events.length;
+        await fn();
+        const emitted = on.eventsSince(n);
+        expect(emitted).toHaveLength(1);
+        return emitted[0];
+    };
+
+    it('every vehicle circuit announces its kind, with the vehicle as the subject', async () => {
+        const vin = hex(VIN_A);
+        expect(await one(() => sim.registerPassport(VIN_A, ROOT, REGISTRAR))).toMatchObject({ kind: 'registered', subject: vin });
+        expect(await one(() => sim.initialiseField(VIN_A, ODO, Rule.neverFalls, 12n, S1))).toMatchObject({ kind: 'fieldInitialised', subject: vin });
+        await sim.initialiseField(VIN_A, OWNERS, Rule.neverFalls, 1n, S1);
+        expect(await one(() => sim.recordField(VIN_A, ODO, 20n, S2))).toMatchObject({ kind: 'fieldRecorded', subject: vin });
+        expect(await one(() => sim.authoriseWriter(VIN_A, DEALER_ID, REGISTRAR))).toMatchObject({ kind: 'writerAuthorised', subject: vin });
+        expect(await one(() => sim.grantDisclosure(VIN_A, DEALER_ID, Tier.trade, REGISTRAR))).toMatchObject({ kind: 'granted', subject: vin });
+        expect(await one(() => sim.revokeDisclosure(VIN_A, DEALER_ID, REGISTRAR))).toMatchObject({ kind: 'revoked', subject: vin });
+        expect(await one(() => sim.withdrawWriter(VIN_A, DEALER_ID, REGISTRAR))).toMatchObject({ kind: 'writerWithdrawn', subject: vin });
+        expect(await one(() => sim.proveFieldAtMost(VIN_A, ODO, 150_000n))).toMatchObject({ kind: 'claimAtMost', subject: vin });
+        expect(await one(() => sim.proveFieldAtLeast(VIN_A, OWNERS, 1n))).toMatchObject({ kind: 'claimAtLeast', subject: vin });
+        expect(await one(() => sim.proveFieldAtMostField(VIN_A, ODO, OWNERS, 20n))).toMatchObject({ kind: 'relClaim', subject: vin });
+    });
+
+    it('a refused call announces nothing, and neither does a read', async () => {
+        await registered();
+        const n = sim.events.length;
+        await expect(sim.recordField(VIN_A, ODO, 5n, S2)).rejects.toThrow(rejects('value decreased'));
+        await sim.read('holdsAtMost', VIN_A, ODO, 150_000n);
+        await sim.read('isRegistrar', REGISTRAR_ID);
+        expect(sim.events.length).toBe(n);
+    });
+
+    it('THE RULE: no event carries anything the ledger did not hold at that moment', async () => {
+        // Snapshot the ledger's byte strings around every call; the subject of
+        // the event that call emitted must be among them. That is what "an
+        // event carries only what the ledger already shows" means, checked
+        // rather than asserted. The kind is a constant of the contract.
+        const two = await PassportSimulator.create([REGISTRAR_ID, SECOND_ID]);
+        const blobs = () => new Set(two.ledgerValues().blobs);
+        const calls = [
+            () => two.registerPassport(VIN_A, ROOT, REGISTRAR),
+            () => two.initialiseField(VIN_A, ODO, Rule.neverFalls, 91_234n, S1),
+            () => two.initialiseField(VIN_A, OWNERS, Rule.neverFalls, 1n, S1),
+            () => two.authoriseWriter(VIN_A, DEALER_ID, REGISTRAR),
+            () => two.recordField(VIN_A, ODO, 93_210n, S2, undefined, DEALER_SECRET),
+            () => two.grantDisclosure(VIN_A, DEALER_ID, Tier.trade, REGISTRAR),
+            () => two.proveFieldAtMost(VIN_A, ODO, 150_000n),
+            () => two.proveFieldAtLeast(VIN_A, OWNERS, 1n),
+            () => two.revokeDisclosure(VIN_A, DEALER_ID, REGISTRAR),
+            () => two.withdrawWriter(VIN_A, DEALER_ID, REGISTRAR),
+            () => two.approveRegistrarChange(true, GARAGE_ID, REGISTRAR),
+            () => two.approveRegistrarChange(true, GARAGE_ID, SECOND_SECRET)
+        ];
+        for (const call of calls) {
+            const before = blobs();
+            const n = two.events.length;
+            await call();
+            const after = blobs();
+            for (const e of two.eventsSince(n)) {
+                expect(before.has(e.subject) || after.has(e.subject), `${e.kind} subject ${e.subject} is not on the ledger`).toBe(true);
+            }
+        }
+        // No reading, salt or third-party identity anywhere in any event.
+        const all = JSON.stringify(two.events);
+        for (const reading of ['91234', '93210']) expect(all).not.toContain(reading);
+        for (const b of [S1, S2, DEALER_ID, GARAGE_ID]) expect(all).not.toContain(hex(b));
+    });
+});
+
+// ---------------------------------------------------------------- registrar governance (D32)
+
+describe('registrar governance: two current registrars change the set (D32)', () => {
+    const THIRD_SECRET = bytes32(0x99);
+    const THIRD_ID = pureCircuits.registrarIdOf(THIRD_SECRET);
+    let gov;
+    beforeEach(async () => {
+        gov = await PassportSimulator.create([REGISTRAR_ID, SECOND_ID]);
+    });
+    const isRegistrar = (id) => gov.ledger.allowedRegistrars.member(id);
+
+    it('one approval proposes, the second distinct approval adds', async () => {
+        await gov.approveRegistrarChange(true, THIRD_ID, REGISTRAR_SECRET);
+        expect(isRegistrar(THIRD_ID)).toBe(false);
+        const n = gov.events.length;
+        await gov.approveRegistrarChange(true, THIRD_ID, SECOND_SECRET);
+        expect(isRegistrar(THIRD_ID)).toBe(true);
+        expect(gov.ledger.registrarEpoch).toBe(1n);
+        expect(gov.eventsSince(n).map((e) => e.kind)).toEqual(['registrarApproval', 'registrarAdded']);
+        const proposal = hex(pureCircuits.proposalKeyOf(true, THIRD_ID, 0n));
+        for (const e of gov.eventsSince(n)) expect(e.subject).toBe(proposal);
+        // The new registrar registers a vehicle at once.
+        await gov.registerPassport(VIN_A, ROOT, THIRD_SECRET);
+        expect(hex(gov.ledger.registrar.lookup(VIN_A))).toBe(hex(THIRD_ID));
+    });
+
+    it('nobody approves twice, and nobody outside the set approves at all', async () => {
+        await gov.approveRegistrarChange(true, THIRD_ID, REGISTRAR_SECRET);
+        await expect(gov.approveRegistrarChange(true, THIRD_ID, REGISTRAR_SECRET)).rejects.toThrow(rejects('already approved by this registrar'));
+        await expect(gov.approveRegistrarChange(true, THIRD_ID, OUTSIDER_SECRET)).rejects.toThrow(rejects('not an authorised registrar'));
+        await expect(gov.approveRegistrarChange(true, THIRD_ID, THIRD_SECRET)).rejects.toThrow(rejects('not an authorised registrar'));
+        expect(isRegistrar(THIRD_ID)).toBe(false);
+    });
+
+    it('adding a registrar twice, or removing a stranger, is refused', async () => {
+        await expect(gov.approveRegistrarChange(true, SECOND_ID, REGISTRAR_SECRET)).rejects.toThrow(rejects('already a registrar'));
+        await expect(gov.approveRegistrarChange(false, THIRD_ID, REGISTRAR_SECRET)).rejects.toThrow(rejects('not a registrar'));
+    });
+
+    it('the set never drops below two, so it can always change again', async () => {
+        await expect(gov.approveRegistrarChange(false, SECOND_ID, REGISTRAR_SECRET))
+            .rejects.toThrow(rejects('removing it would leave fewer than two registrars'));
+    });
+
+    it('a removed registrar keeps its name on what it registered and loses the power to act', async () => {
+        await gov.approveRegistrarChange(true, THIRD_ID, REGISTRAR_SECRET);
+        await gov.approveRegistrarChange(true, THIRD_ID, SECOND_SECRET);
+        await gov.registerPassport(VIN_A, ROOT, SECOND_SECRET);
+        await gov.initialiseField(VIN_A, ODO, Rule.neverFalls, 12n, S1, SECOND_SECRET);
+        await gov.authoriseWriter(VIN_A, DEALER_ID, SECOND_SECRET);
+
+        await gov.approveRegistrarChange(false, SECOND_ID, REGISTRAR_SECRET);
+        await gov.approveRegistrarChange(false, SECOND_ID, THIRD_SECRET);
+        expect(isRegistrar(SECOND_ID)).toBe(false);
+        expect(hex(gov.ledger.registrar.lookup(VIN_A))).toBe(hex(SECOND_ID));
+
+        await expect(gov.registerPassport(VIN_B, ROOT, SECOND_SECRET)).rejects.toThrow(rejects('not an authorised registrar'));
+        await expect(gov.recordField(VIN_A, ODO, 20n, S2, undefined, SECOND_SECRET))
+            .rejects.toThrow(rejects('not the registrar for this vehicle, and not authorised to write it'));
+        await expect(gov.authoriseWriter(VIN_A, GARAGE_ID, SECOND_SECRET)).rejects.toThrow(rejects('no longer an authorised registrar'));
+        await expect(gov.grantDisclosure(VIN_A, GARAGE_ID, Tier.trade, SECOND_SECRET)).rejects.toThrow(rejects('no longer an authorised registrar'));
+        // The dealer it admitted is another party, admitted while it was entitled to.
+        await gov.recordField(VIN_A, ODO, 20n, S2, undefined, DEALER_SECRET);
+    });
+
+    it('approvals given before a change do not count after it', async () => {
+        const FOURTH_ID = pureCircuits.registrarIdOf(bytes32(0x98));
+        await gov.approveRegistrarChange(true, FOURTH_ID, REGISTRAR_SECRET);   // epoch 0, one approval
+        await gov.approveRegistrarChange(true, THIRD_ID, REGISTRAR_SECRET);
+        await gov.approveRegistrarChange(true, THIRD_ID, SECOND_SECRET);       // carried out: epoch 1
+        expect(gov.ledger.registrarEpoch).toBe(1n);
+        await gov.approveRegistrarChange(true, FOURTH_ID, SECOND_SECRET);      // a fresh proposal in epoch 1
+        expect(isRegistrar(FOURTH_ID)).toBe(false);
+        await gov.approveRegistrarChange(true, FOURTH_ID, THIRD_SECRET);
+        expect(isRegistrar(FOURTH_ID)).toBe(true);
+    });
+
+    it('the proposal key is recomputable off chain, and isRegistrar answers for the set', async () => {
+        await gov.approveRegistrarChange(true, THIRD_ID, REGISTRAR_SECRET);
+        const key = pureCircuits.proposalKeyOf(true, THIRD_ID, 0n);
+        expect(gov.ledger.registrarApprovals.lookup(key)).toBe(1n);
+        expect(await gov.read('isRegistrar', REGISTRAR_ID)).toBe(true);
+        expect(await gov.read('isRegistrar', THIRD_ID)).toBe(false);
+    });
+});

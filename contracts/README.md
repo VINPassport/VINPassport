@@ -6,7 +6,7 @@ VINPassport's own Compact contracts. Layout follows
 
 | Contract | Circuits | Purpose |
 |---|---|---|
-| `vinpassport` | registration, field writes (`initialiseField`, `recordField`), writers and grants, three claim circuits, six read circuits, four pure helpers | The vehicle passport: registration, and any panel field held as private state under its own integrity rule. The read circuits (`isRegistered`, `registrarOf`, `commitmentOf`, `holdsAtMost`, `holdsAtLeast`, `holdsGrant`) let another contract ask it in the same transaction ([D33](../docs/DECISIONS.md#settled)) |
+| `vinpassport` | registration, field writes (`initialiseField`, `recordField`), writers and grants, three claim circuits, registrar governance (`approveRegistrarChange`), seven read circuits, five pure helpers | The vehicle passport: registration, and any panel field held as private state under its own integrity rule. Every write emits an event naming the vehicle and the kind of change ([D29](../docs/DECISIONS.md#settled)); two registrars change the registrar set ([D32](../docs/DECISIONS.md#settled)); the read circuits (`isRegistered`, `registrarOf`, `commitmentOf`, `holdsAtMost`, `holdsAtLeast`, `holdsGrant`, `isRegistrar`) let another contract ask it in the same transaction ([D33](../docs/DECISIONS.md#settled)) |
 | `listing` | `list` | Composability demo: lists a vehicle only if VINPassport holds a current claim meeting a rule fixed at deploy, asked through a cross-contract call. Deployed on Preview, see [`../deploy/listing.preview.json`](../deploy/listing.preview.json) |
 
 ## Building

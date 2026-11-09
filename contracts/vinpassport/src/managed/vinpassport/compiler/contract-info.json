@@ -571,6 +571,79 @@
       "result-type": {
         "type-name": "Boolean"
       }
+    },
+    {
+      "name": "isRegistrar",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "registrarId",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Boolean"
+      }
+    },
+    {
+      "name": "proposalKeyOf",
+      "pure": true,
+      "proof": false,
+      "arguments": [
+        {
+          "name": "add",
+          "type": {
+            "type-name": "Boolean"
+          }
+        },
+        {
+          "name": "registrarId",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "epoch",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 18446744073709551615
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
+      "name": "approveRegistrarChange",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "add",
+          "type": {
+            "type-name": "Boolean"
+          }
+        },
+        {
+          "name": "registrarId",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
     }
   ],
   "witnesses": [
@@ -882,6 +955,36 @@
           "authority"
         ]
       }
+    },
+    {
+      "name": "registrarApprovals",
+      "index": 10,
+      "exported": true,
+      "storage": "Map",
+      "key": {
+        "type-name": "Bytes",
+        "length": 32
+      },
+      "value": {
+        "type-name": "Uint",
+        "maxval": 255
+      }
+    },
+    {
+      "name": "registrarBallots",
+      "index": 11,
+      "exported": true,
+      "storage": "Set",
+      "type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
+      "name": "registrarEpoch",
+      "index": 12,
+      "exported": true,
+      "storage": "Counter"
     }
   ]
 }

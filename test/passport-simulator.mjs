@@ -31,6 +31,7 @@ import {
     sampleContractAddress
 } from '@midnight-ntwrk/compact-runtime';
 import { blake2b } from '@noble/hashes/blake2';
+import { decodeEvents } from '../scripts/lib/events.mjs';
 import {
     Contract,
     Rule,
@@ -287,6 +288,33 @@ export class PassportSimulator {
         return this.ledger;
     }
 
+    /**
+     * Every VINPassport event emitted so far on this simulator, decoded (D29).
+     * The runtime threads one event list through the carried context, so a
+     * test takes `events.length` before a call and slices after it.
+     */
+    get events() {
+        return decodeEvents(this.ctx.events);
+    }
+
+    /** The events emitted since the list held `count` of them. */
+    eventsSince(count) {
+        return this.events.slice(count);
+    }
+
+    /**
+     * Approve adding (`add` true) or removing a registrar (D32). The acting
+     * secret decides who approves; the second distinct approval carries the
+     * change out.
+     */
+    async approveRegistrarChange(add, registrarId, secret) {
+        if (secret) this.actAs(secret);
+        this.ctx = (await this.contract.impureCircuits.approveRegistrarChange(
+            this.ctx, add, registrarId
+        )).context;
+        return this.ledger;
+    }
+
     /** Take a grant away. Nothing already handed over comes back. */
     async revokeDisclosure(vin, granteeId, secret) {
         if (secret) this.actAs(secret);
@@ -446,6 +474,9 @@ export class PassportSimulator {
         // Added with the read circuits (2.2), whose "writes nothing" test
         // compares snapshots: grants (D26) was the one collection not walked.
         walk(l.grants);
+        // Registrar governance (D32): proposal hashes, ballot hashes, counts.
+        walk(l.registrarApprovals);
+        walk(l.registrarBallots);
         return { words, blobs };
     }
 }

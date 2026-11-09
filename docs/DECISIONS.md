@@ -701,6 +701,100 @@ inserts and replaces the authority, and refuses removals until that is fixed.
 
 **Not settled yet:** who holds the three mainnet keys ([Q8](#open)).
 
+### D29: Every state change emits one light event: which record, and what kind of change · 2026-11-08
+
+Ledger 9 contracts can emit events, which the indexer serves with each contract call. Without them, a
+reader following a vehicle has to diff contract states between transactions to find out what moved.
+
+**The decision.** Every circuit that changes state emits one standard `Misc` event. Its 32-byte name
+is the subject, the vehicle's VIN hash (for registrar governance, the proposal key), and its payload
+is two constants: the schema `vinpassport.v1` and the kind of change (`registered`,
+`fieldRecorded`, `granted`, and so on; [`scripts/lib/events.mjs`](../scripts/lib/events.mjs) lists
+them). The emitting contract comes with the event and the circuit with the call, so a subscriber
+filters one vehicle's history by name and reads the details from the ledger at that block. Reads emit
+nothing, and a refused call writes nothing and so announces nothing.
+
+**Why so little: measured on 8 November 2026.** A Compact event's bytes are repacked one by one
+in-circuit. The first design carried six fields (kind, vehicle, ledger key, value, extra, actor);
+proving one writing circuit four ways, in process, on one machine:
+
+| Event | Prover key | Proof time |
+|---|---:|---:|
+| None | 11 MB | 16.9 s |
+| One variable value, in the name (adopted) | 14 MB | 21.7 s |
+| Two variable values in the payload | 90 MB | 113.6 s |
+| Five variable values in the payload | 180 MB | 228.1 s |
+
+Six fields would have made every write about four minutes to prove, and the keyed build of the whole
+contract did not finish in twenty minutes. Constants cost nothing, and the name slot costs about a
+third of a payload field. The adopted event adds a few seconds per write.
+
+**The rule: an event carries only what the ledger state already shows.** The subject is a ledger key
+(`passports`, or `registrarApprovals`) and the kind is a constant of the contract. No writer or
+grantee identity, no value, no salt. The first design had printed the raw writer and grantee
+identities, which the ledger deliberately keys per vehicle so that one party's writes and grants
+cannot be linked across vehicles; a test now snapshots the ledger around every call of a full run and
+checks every event's subject against it.
+
+**Basis.** No provision asks for an event stream; it is a reading aid over records the contract
+already keeps. The rule is data minimisation, Regulation (EU) 2016/679 (GDPR), Article 5(1)(c):
+personal data shall be *"adequate, relevant and limited to what is necessary in relation to the
+purposes for which they are processed ('data minimisation')"*
+([EUR-Lex](https://eur-lex.europa.eu/eli/reg/2016/679/oj)). An event that adds nothing to the ledger
+adds no processing.
+
+**Cost.** Events change every writing circuit, so this version deploys fresh: ledger 9 refuses the
+key removal an in-place change would need ([D28](#settled)). The fee per call is to be measured on
+Preview.
+
+### D30: Registrar authentication stays knowledge of a secret; in-circuit ECDSA is deferred · 2026-11-08
+
+ECDSA (secp256k1) verification in-circuit would let a registrar's key sit in an HSM or a cloud key
+service, with the prover never holding it. Measured on 8 November 2026 by proving the same
+registration both ways, in process, on one machine:
+
+| | Secret (today) | ECDSA signature |
+|---|---:|---:|
+| Circuit size | k = 13 | k = 16 |
+| Prover key | 11 MB | 117 MB |
+| Proof time | 23.8 s | 166.7 s |
+| Proof size | 5.4 KB | 6.4 KB |
+
+The signature check is about seven times slower. The benefit only holds if every registrar action
+is signed (register, authorise, withdraw, grant, revoke, and the registrar's own field writes), which
+is about ten heavier circuits and close to three minutes of proving per registrar write.
+
+**The decision.** Keep knowledge of a secret. Revisit when a manufacturer requires HSM-held keys, or
+when proving gets cheaper (a native proof server instead of wasm). The measurement also confirmed the
+path works: a `@noble/curves` signature over the circuit's own SHA-256 digest of the action verifies
+in-circuit. No regulatory basis is claimed either way; this is a cost decision.
+
+### D32: Registrars change their own set, two approvals per change · 2026-11-08
+
+The registrar set used to be fixed at deployment, so adding or removing one meant a new contract,
+whose ledger starts empty.
+
+**The decision.** `approveRegistrarChange(add, registrarId)`: a current registrar approves adding or
+removing one, proving its identity by its own secret, in a transaction of its own. The second
+distinct approval of the same change carries it out. Proposals are named for an epoch that moves on
+every change, so approvals given before a change cannot be spent after it. The set may not drop below
+two, or it could never change again. Nobody hands a secret to anyone.
+
+**Two powers, two sets of hands.** The maintenance committee ([D28](#settled)) controls what the
+contract verifies; the registrars control who registers. Neither can do the other's job.
+
+**What removal means.** A removed registrar keeps its name on the vehicles it registered (that is
+the record) and loses the power to act for them: it can no longer write their fields, admit writers
+or grant views. Writers it admitted while it was entitled to keep their access. Handing a removed
+registrar's vehicles to a successor is not built yet ([Q9](#open)).
+
+**Basis.** Regulation (EU) 2026/1738, Article 13(6)(b)(iii) asks the Commission's implementing act to
+settle *"the availability of the Digital Circularity Vehicle Passport after the manufacturer
+responsible for the fulfilment of the obligations set out in paragraph 4 ceases to exist or ceases
+its activity in the Union"* ([REGULATION.md](REGULATION.md#two-parts-of-article-136-that-shape-the-design)).
+A registrar that ceases has to be replaceable without abandoning the ledger. That act does not exist
+yet, so this is the direction of travel, not a rule in force.
+
 ### D33: Read circuits, so other contracts can ask and a successor can carry a record forward · 2026-11-08
 
 Every answer in this contract's ledger is public, but a public ledger is not a callable one: another
@@ -830,6 +924,7 @@ run it. **The tier table itself is not reversed**; it carries into D26 as the po
 | Q6 | Fiat provider: merchant of record or direct? | Billing build | Deferred to Phase 1, turns on EU VAT |
 | Q7 | Mainnet DUST source (D31 when settled): DUST designated to our DUST address from a cNIGHT holder's rewards, NIGHTGATE fee sponsoring (needs `@odatano/nightgate-tx` on ledger 9), or our own NIGHT | The mainnet deploy | Us, with ODATANO |
 | Q8 | Who holds the three mainnet committee keys of [D28](#settled), on which devices, and with what recovery path | The mainnet deploy | Us |
+| Q9 | How a removed or ceased registrar's vehicles pass to a successor ([D32](#settled)): approved by the registrars, by the vehicle's keeper, or both; 2026/1738 Art. 13(6)(b)(iii) leaves it to an implementing act not yet adopted | A registrar leaving with vehicles registered | Us, with counsel |
 
 ### Resolved
 

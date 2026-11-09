@@ -55,7 +55,9 @@ export const GROWS = Object.freeze({
     grantDisclosure: 'grants',
     proveFieldAtMost: 'claims',
     proveFieldAtLeast: 'claims',
-    proveFieldAtMostField: 'relClaims'
+    proveFieldAtMostField: 'relClaims',
+    // Every approval inserts a ballot; the second also adds to the set (D32).
+    approveRegistrarChange: 'registrarBallots'
 });
 
 /**

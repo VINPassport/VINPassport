@@ -23,7 +23,7 @@
 | **Maintenance authority** | a 2-of-3 committee (two Schnorr keys, one ECDSA), handed over from the deploy key ([D28](docs/DECISIONS.md#settled)) |
 | **Upgraded in place** | 8 November 2026, block **19822**: the committee added six read circuits ([D33](docs/DECISIONS.md#settled)) with a proposal signed by one Schnorr and one ECDSA member, 5.49 DUST. Every existing verifier key was unchanged, so no redeploy and no record lost; the signed proposal is at [`deploy/maintenance/preview/counter-1.json`](deploy/maintenance/preview/counter-1.json) |
 | **Called by another contract** | A demo listing contract (`ca44281f9667b21c3023ed30de01d21f31a6699cecf2b9cb5f2eaaf8c7532e70`) lists a vehicle only if VINPassport holds a current mileage claim for it, asking through a cross-contract call. One transaction, two calls (`list`, then `holdsAtMost` here), block **20774**, 0.42 DUST ([`deploy/listing.preview.json`](deploy/listing.preview.json)) |
-| **This repository** | The build at that address since the upgrade (`buildId` `c3e6e0e8ab4468d6`, compactc 0.36.0; deployed as `2a217faf925623b2`); the deploy record pins its integrity manifest and verifier-key hashes |
+| **This repository** | That address holds `buildId` `c3e6e0e8ab4468d6` (commit `194183c`, compactc 0.36.0). This tree is the next version: events ([D29](docs/DECISIONS.md#settled)) and registrar governance ([D32](docs/DECISIONS.md#settled)) change existing circuits, so it deploys to a new address, which this box will name; the deploy record pins each build's integrity manifest and verifier-key hashes |
 | **Check it yourself** | [`deploy/preview.json`](deploy/preview.json); Preview's indexer is open, so the query under [Evaluating this repository](#evaluating-this-repository) needs no key |
 
 ### Deployed on Midnight preprod (ledger 8)
@@ -175,12 +175,12 @@ npm install
 npm test
 ```
 
-Expected: **166 contract tests, 321 app tests and 24 SDK assertions, all passing**, in about fifteen
+Expected: **176 contract tests, 321 app tests and 24 SDK assertions, all passing**, in about fifteen
 seconds.
 
 ```
  Test Files  1 passed (1)
-      Tests  166 passed (166)
+      Tests  176 passed (176)
 
 ℹ pass 321
 
@@ -190,7 +190,7 @@ seconds.
 | Command | What it does |
 |---|---|
 | `npm test` | Everything below, in one run |
-| `npm run test:contract` | The 166 contract tests, against the compiled circuits, including a cross-contract call tree run in memory |
+| `npm run test:contract` | The 176 contract tests, against the compiled circuits, including a cross-contract call tree run in memory |
 | `npm run test:watch` | The same, re-running on change |
 | `npm run test:app` | 321 tests on the application paths: verdicts, the deploy's registrar list and witness set, the runner's per-call wiring, the committee handover and committee proposals, DUST coin selection, hash parity with the ledger 8 build, the chain-sees panel and the QR encoder, via `node --test`. **Most import and run product code; a minority assert on what is written in the repository** (that every screenshot the guide names exists, that each page's bar carries the same links, that every page names its content with one `<main>` and offers a way past the bar, that the verify page cannot answer with a vehicle nobody asked for, that no text colour drops below the contrast floor). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
 | `npm run test:sdk` | 24 assertions pinning our assumptions about `@odatano/dpp-sdk` |
@@ -309,10 +309,12 @@ cat contracts/vinpassport/src/managed/vinpassport/compiler/contract-info.json
 ```
 
 > `"compiler-version": "0.36.0"`, `"language-version": "0.28.0"`, `"runtime-version": "0.21.0"`,
-> the ledger 9 line ([D27](docs/DECISIONS.md#settled)). Twenty exported circuits: sixteen proving
-> ones, plus four pure helpers. Six of the proving ones only read (`isRegistered`, `registrarOf`,
-> `commitmentOf`, `holdsAtMost`, `holdsAtLeast`, `holdsGrant`), so another contract can ask this one
-> in the same transaction ([D33](docs/DECISIONS.md#settled)). `registrarIdOf` derives a registrar's public identity from a
+> the ledger 9 line ([D27](docs/DECISIONS.md#settled)). Twenty-three exported circuits: eighteen
+> proving ones, plus five pure helpers. Seven of the proving ones only read (`isRegistered`,
+> `registrarOf`, `commitmentOf`, `holdsAtMost`, `holdsAtLeast`, `holdsGrant`, `isRegistrar`), so
+> another contract can ask this one in the same transaction ([D33](docs/DECISIONS.md#settled)); every
+> one that writes emits an event naming the record it changed ([D29](docs/DECISIONS.md#settled)), and
+> `approveRegistrarChange` lets two registrars change the registrar set ([D32](docs/DECISIONS.md#settled)). `registrarIdOf` derives a registrar's public identity from a
 > secret the chain never sees, `slotOf` derives where a field lives from the
 > vehicle, the field and the document root, `writerKeyOf` derives the entry that says a
 > given party may write a given vehicle, and `grantKeyOf` the entry that records which view a
@@ -388,7 +390,7 @@ code. So every guard in the contract is checked by mutation: it is deleted, the 
 recompiled, and the suite is run against the compiled circuits to see what notices. A guard that
 can be removed with the suite still green is a guard nothing depends on.
 
-**37 of 37 guards are load-bearing.** Reproduce it yourself:
+**43 of 43 guards are load-bearing** (run on 8 November 2026, against this tree). Reproduce it yourself:
 
 ```bash
 node scripts/mutate-guards.mjs --list   # the guards, no changes made
@@ -397,26 +399,24 @@ node scripts/mutate-guards.mjs          # delete each in turn, report the kills
 
 | Guard deleted | Circuit | Tests that fail |
 |---|---|---|
-| `not the registrar for this vehicle, and not authorised to write it` | `writerFor` | 7 |
+| `not the registrar for this vehicle, and not authorised to write it` | `writerFor` | 8 |
+| `not the registrar for this vehicle` | `actingRegistrar` | 5 |
+| `no longer an authorised registrar` | `actingRegistrar` | 1 |
 | `passport already registered` | `registerPassport` | 2 |
-| `not an authorised registrar` | `registerPassport` | 2 |
+| `not an authorised registrar` | `registerPassport` | 3 |
 | `unknown passport` | `authoriseWriter` | 1 |
-| `not the registrar for this vehicle` | `authoriseWriter` | 2 |
 | `the registrar already writes this vehicle` | `authoriseWriter` | 1 |
 | `unknown passport` | `withdrawWriter` | 1 |
-| `not the registrar for this vehicle` | `withdrawWriter` | 1 |
 | `not a writer for this vehicle` | `withdrawWriter` | 1 |
 | `unknown passport` | `grantDisclosure` | 1 |
-| `not the registrar for this vehicle` | `grantDisclosure` | 1 |
 | `unknown passport` | `revokeDisclosure` | 1 |
-| `not the registrar for this vehicle` | `revokeDisclosure` | 1 |
 | `no grant for this identity on this vehicle` | `revokeDisclosure` | 1 |
 | `unknown passport` | `initialiseField` | 1 |
 | `field already initialised` | `initialiseField` | 2 |
 | `unknown passport` | `recordField` | 1 |
 | `field not initialised` | `recordField` | 1 |
 | `previous value does not open the stored commitment` | `recordField` | 5 |
-| `value decreased` | `recordField` | 9 |
+| `value decreased` | `recordField` | 10 |
 | `value increased` | `recordField` | 3 |
 | `value changed` | `recordField` | 3 |
 | `unknown passport` | `proveFieldAtMost` | 1 |
@@ -434,6 +434,14 @@ node scripts/mutate-guards.mjs          # delete each in turn, report the kills
 | `first value does not open the stored commitment` | `proveFieldAtMostField` | 1 |
 | `second value does not open the stored commitment` | `proveFieldAtMostField` | 1 |
 | `the two values are further apart than the claimed slack` | `proveFieldAtMostField` | 3 |
+| `unknown passport` | `registrarOf` | 1 |
+| `unknown passport` | `commitmentOf` | 1 |
+| `field not initialised` | `commitmentOf` | 1 |
+| `not an authorised registrar` | `approveRegistrarChange` | 1 |
+| `already a registrar` | `approveRegistrarChange` | 1 |
+| `not a registrar` | `approveRegistrarChange` | 1 |
+| `removing it would leave fewer than two registrars` | `approveRegistrarChange` | 1 |
+| `already approved by this registrar` | `approveRegistrarChange` | 1 |
 
 The harness restores the tree afterwards, including the prover keys, so a run leaves the repository
 byte-identical to how it found it. It is also the reason two tests exist. Twice now a full sweep has
@@ -610,7 +618,7 @@ repository begins with no contract at all.
 |---|---|
 | **The contract** - five exported circuits at Wave 1's close, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
 | **Deployed to Midnight preprod**, 28 August, built and signed locally | [`deploy/preprod.json`](deploy/preprod.json) |
-| **421 tests today** - 151 contract, 246 application, 24 SDK assumption assertions; all thirty-seven guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
+| **521 tests today** - 176 contract, 321 application, 24 SDK assumption assertions; all forty-three guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
 | **Three surfaces** - verification, intake console, proof explorer - all running the compiled circuits, not a mock | [passport.vin](https://passport.vin/) |
 | **On-chain runs from the browser, self-funded**, after a hosted sponsor turned out to be a single point of failure in a demo a judge runs unattended | [D24](docs/DECISIONS.md#settled) |
 | **The regulatory basis read from the Official Journal** rather than secondary analysis - which caught two wrong article citations that had survived months of work | [REGULATION.md](docs/REGULATION.md) |
@@ -663,8 +671,11 @@ line of comparison rather than two days of reading tag names.
 
 | Component | Status |
 |---|---|
-| Compact contract: 24 circuits, 20 exported, 16 of them proving | **Done.** Compiles clean, artifacts committed and reproducible from source. The six read circuits were added on 8 Nov 2026 without changing any existing verifier key ([D33](docs/DECISIONS.md#settled)) |
-| Contract test suite | **Done.** 166 tests; every guard mutation-checked, 37 of 37 |
+| Compact contract: 29 circuits, 23 exported, 18 of them proving | **Done.** Compiles clean, artifacts committed and reproducible from source. The six read circuits were added on 8 Nov 2026 without changing any existing verifier key ([D33](docs/DECISIONS.md#settled)) |
+| Events | **Built, deploying next** ([D29](docs/DECISIONS.md#settled)). Every write emits one event naming the vehicle and the kind of change. Measured first: a six-field event made each write about four minutes to prove, the adopted one adds a few seconds |
+| Registrar governance | **Built, deploying next** ([D32](docs/DECISIONS.md#settled)). Two current registrars add or remove one, each in their own transaction; a removed registrar keeps its name on what it registered and loses the power to act for it. Passing its vehicles to a successor is open ([Q9](docs/DECISIONS.md#open)) |
+| ECDSA registrar keys | **Measured, deferred** ([D30](docs/DECISIONS.md#settled)). In-circuit secp256k1 verification works but proves about seven times slower than today's check (167 s against 24 s); revisited when a manufacturer needs HSM-held keys |
+| Contract test suite | **Done.** 176 tests; every guard mutation-checked, 43 of 43 |
 | SDK assumption guard | **Done.** 24 assertions against `@odatano/dpp-sdk` 0.2.0 |
 | Proving cost, the three circuits a verifier waits on | **Re-measured 14 Oct 2026 against the build deployed that day**, wasm in-process, no proof server, 32 cores, n=3 each. Build, prove and sign: `registerPassport` **17.5s** (5,229 B), `proveFieldAtMost` **27.6s** (5,567 B), `proveFieldAtLeast` **27.0s** (5,568 B). Within noise of the 13 October build (16.6s, 29.4s, 27.1s), so **the writer circuits and the two ledger collections they added cost these three nothing measurable**, which is the question re-measuring was there to answer. Registration is 3.7x Wave 1's 4.77s, the cost of the registrar identity derived in-circuit and the field commitments bound to the content root. **`initialiseField` was measured for the first time on 16 Oct and is the most expensive circuit here: 37.4s median (min 35.8 / max 53.2, n=5, 5,516 B).** It had never been timed because the three above are the ones a verifier's experience depends on, and it is the one an issuer runs most: a vehicle carrying the full 68-field registry is one registration and 68 of these, about **42.6 minutes of proving**. Batching does not reduce that, because batching removes block confirmations and not proofs. That number, rather than any wallet count, is the real ceiling on how many vehicles a day one writer can issue, and it is why [FIELDS.md](docs/FIELDS.md)'s whole-registry rule has never once been satisfied by a real vehicle. **These are the times to ISSUE a claim, paid once by whoever writes it.** A verifier reads the verdict off the ledger and waits on a query, never on a proof, which is why a proven claim is recorded rather than re-proven on demand ([D19](docs/DECISIONS.md#settled)). DUST cost per anchor and per proof was **measured on 14 Oct 2026** against the deployed contract with real proofs, and is published in [BUILD-SCOPE](docs/BUILD-SCOPE.md); latency is not cost |
 | Provable-field registry, 32 slots | **Settled** ([FIELDS.md](docs/FIELDS.md)). 26 in use, reserve 17 to 21, and 31. Slots 0 to 16 are wired end to end and provable; the rest are salted into the content root but carry no rule yet |
@@ -699,7 +710,7 @@ scripts/
   lib/maintenance9.mjs               committee proposals: build, sign, check, submit
 test/
   passport-simulator.mjs             harness: compiled circuits + a local ledger
-  passport.test.mjs, listing.test.mjs 166 contract tests
+  passport.test.mjs, listing.test.mjs 176 contract tests
   app/                               321 tests on the paths around the circuits
   fixtures/golden-vectors.json       what the ledger 8 build computed, checked against this one
   sdk-assumptions.mjs                24 assertions pinning @odatano/dpp-sdk behaviour
@@ -714,7 +725,7 @@ test/
 | [`@odatano/dpp-sdk`](https://github.com/ODATANO) | Salted-Merkle field panel: key derivation, value scaling, tree construction |
 | [`@odatano/nightgate-tx`](https://github.com/ODATANO/NIGHTGATE) | Ledger 8: local transaction building, batch segment ordering, in-process wasm proving (at the tag) |
 
-**Where the line falls.** VINPassport's Compact contract is its own work: twenty exported circuits,
+**Where the line falls.** VINPassport's Compact contract is its own work: twenty-three exported circuits,
 its own ledger, its own integrity rules. It is not a fork, and it does not extend NIGHTGATE's
 `attestation-vault`. The 32-slot field panel is ours too: the slot layout is a vehicle-domain
 design, built on `@odatano/dpp-sdk` for key derivation, value scaling and Merkle construction.
