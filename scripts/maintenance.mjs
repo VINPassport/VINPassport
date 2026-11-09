@@ -341,7 +341,11 @@ try {
                 signedBy: checkSignatures(proposal).valid.map((s) => s.member ?? `#${s.index}`),
                 updates: proposal.updates.map(({ op, circuit, version, vkSha256, threshold }) => ({ op, circuit, version, vkSha256, threshold }))
             }];
-            const auditDir = join(ROOT, 'deploy', 'maintenance', network);
+            // One directory per contract, so a redeploy's counters cannot
+            // overwrite the previous contract's audit trail. (The first
+            // contract's counter-1.json predates this and stays where the
+            // README links it.)
+            const auditDir = join(ROOT, 'deploy', 'maintenance', network, address.slice(0, 16));
             mkdirSync(auditDir, { recursive: true });
             const audit = join(auditDir, `counter-${proposal.counter}.json`);
             writeFileSync(audit, JSON.stringify({ ...proposal, executed: { txId: id, at: new Date().toISOString(), newCounter: Number(seen.counter) } }, null, 2) + '\n');

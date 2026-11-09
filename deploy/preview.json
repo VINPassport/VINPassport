@@ -1,44 +1,67 @@
 {
   "network": "preview",
   "contract": "vinpassport",
-  "contractAddress": "68e25627e92e3e3809be1700d12ac77b32ffd946d2876a1ebe9a6f47bcec48f4",
-  "txHash": "d2f7e19134790f82f55a0e5d003f3bd7064c4de46b70894cfd51a569aaeb0ce3",
-  "txId": "005e09f4645ba1649be3babff7e2df9ecdcaaf9f474e25b3306b3becba97b5e404",
-  "blockHeight": 17102,
-  "deployedAt": "2026-11-08T05:34:48.000Z",
+  "contractAddress": "22723f4a56a61d2c8f87f7327b8b40cba13612a493ea6282ed6607d9788af7cd",
+  "txHash": "bc1a94072237ee6173db865f06d6cc9f034c4aedb7792e12616d9bba90eb0b5b",
+  "txId": "00811d97de10c4e8ceb0efa6746be12119763127899b0abc6ccab11bee4198c2ad",
+  "blockHeight": 28785,
+  "deployedAt": "2026-11-09T01:03:18.000Z",
   "fees": {
-    "estimatedFees": "13629709485714286",
-    "paidFees": "13629709485714286"
+    "estimatedFees": "14574015568537733",
+    "paidFees": "14574015568537733"
   },
   "ledger": "v9",
-  "buildId": "c3e6e0e8ab4468d6",
+  "buildId": "f9859ecfb77e6e74",
   "build": {
     "compiler": "0.36.0",
     "language": "0.28.0",
     "runtime": "0.21.0",
-    "manifestSha256": "6b09a0406a04158f0984f96d6169cdb544bd88f604d81edc4e44dd992bdc667c",
+    "manifestSha256": "13013561c4ac3e251e13d43614d78f52568a2862b592d6cffd7b5499802f02a9",
     "verifierKeys": {
-      "registerPassport": "a9facc1664c74761ed0353bf2eb7cf6ddeb8df3593a7d7eb62147bbfe2fc09f0",
-      "authoriseWriter": "88fca0ed5d65d64bbead7f644d9caa230562cb4e4c29ded48f1e8f99277ce6a8",
-      "withdrawWriter": "f8170ac88252a7584c59ece4cb18ee778fd580604fe2e8744b85a31dc6c0ad65",
-      "grantDisclosure": "5c122ae46116918d00b0ee376493987ec3e8b50fbeb2eb2e149bf71a229a8b85",
-      "revokeDisclosure": "672761c19688b589fc131f296fa089ef6019cd85997a42a05cd05883988524df",
-      "initialiseField": "047f2a13d2df1666eecfc6663fa90618fef25d53ad427f4320bae413c95a31bf",
-      "recordField": "d38cfb57053b9816a51f0f828e135261f08db9b45338dc46d0b13ead650ff983",
-      "proveFieldAtMost": "f67915f3db2699b1b82815fb1e83bd4d9101c30fc5ade0f793025acc4c0b1acc",
-      "proveFieldAtLeast": "6008708dc28de2a304ba30f8049b36475d1cd2fd31491e60f39da0950423c101",
-      "proveFieldAtMostField": "6844dbc76addcb92fee72081012bfe610e121ab830a5d9545e56ab5d03783ca2",
+      "registerPassport": "9feb1030e9416415bb21352d253d270b83d7bfd9a97f03c6d679d639b763cb13",
+      "authoriseWriter": "03e76c15468585e1716e4ee97da3c0008261a4d5898cbe131e5c3fcc6f03d84f",
+      "withdrawWriter": "5b6f59ffadafce473500d009ef3d003c5c33c0c1b4cc00abeb81670842969d7f",
+      "grantDisclosure": "70afe45df34ccac44ba49e0f284c5fa3211e36edd30f157e33bf5c39296f91d1",
+      "revokeDisclosure": "bf2d3dc27f5fa79910edbcd087d9dfcc94afc8941bf815316f59582329e0c2a0",
+      "initialiseField": "7bc566f37034ca1197e746dd4eb8e841b9e8a98fbcb1d07c0746cfbec23e31e0",
+      "recordField": "389726093dcc8e9e73e441cda1c9cbf3c75e3940ab6e219565a26162b8291847",
+      "proveFieldAtMost": "70b0d33c219cf3a8ceca1cd2199afe19be66982b94a997a918c91b23a4ecef50",
+      "proveFieldAtLeast": "8a101bc3f354a46f8ff0321c6bf99b6d680028d270ddbc0e800794b42d91aa7d",
+      "proveFieldAtMostField": "82443be15f2fe5168fd04fbee1e8760350b0b2cfa82d7d41b0630fc7147c75a7",
       "isRegistered": "7eec7a11c0ba74b04679ac2f7ab7fac5d2ec63e33e2fb4b3eb820e7f452a05dd",
       "registrarOf": "28f3bd04e9d6f40df47637c649e34cce87ea52a04f109269aa6e5af4177f138d",
       "commitmentOf": "48538886df83f9d65edbe70baa4147cf027a81c3f4e4bb72218fd9f8ae86ad83",
       "holdsAtMost": "bd6bef6a1b52e74a4103c53484d7a7c285502ee95060f5b010c188ad93c2589e",
       "holdsAtLeast": "1c3b4947896c3a6e5868390c0c9c9f93d592c3e04c0f991df2db8b903b29ffd7",
-      "holdsGrant": "badf9bda939625e7622927635521701f692722de6b524d3b8a2363db87fe5f3c"
-    },
-    "upgradedAt": "2026-11-08T10:07:09.936Z",
-    "upgradedBy": "maintenance counter 1",
-    "previousManifestSha256": "ed7010c2e6a0a6b7d8821121d4bbbb5d734739a41c420820ef66982d821e53b2",
-    "previousBuildId": "2a217faf925623b2"
+      "holdsGrant": "badf9bda939625e7622927635521701f692722de6b524d3b8a2363db87fe5f3c",
+      "isRegistrar": "829057490f93e1695f963da55d9b68ee9ff8c9cc22f9b601c73574e90cdae4e2",
+      "approveRegistrarChange": "af47f2c76dd6a269f97f2d97215327632b6d59825468fb02f72c7aaee1d7c930"
+    }
+  },
+  "deployedInSteps": {
+    "why": "all 18 verifier keys in one deploy exceed the block's bytes-written budget once the fee is added (scripts/lib/deploy-fit.mjs)",
+    "deployed": [
+      "registerPassport",
+      "authoriseWriter",
+      "withdrawWriter",
+      "grantDisclosure",
+      "revokeDisclosure",
+      "initialiseField",
+      "recordField",
+      "proveFieldAtMost",
+      "proveFieldAtLeast",
+      "proveFieldAtMostField",
+      "approveRegistrarChange"
+    ],
+    "insertedAfter": [
+      "isRegistered",
+      "registrarOf",
+      "commitmentOf",
+      "holdsAtMost",
+      "holdsAtLeast",
+      "holdsGrant",
+      "isRegistrar"
+    ]
   },
   "registrars": [
     {
@@ -59,42 +82,33 @@
     }
   ],
   "authority": {
-    "holder": "committee",
-    "threshold": 2,
-    "counter": 2,
+    "holder": "custody",
+    "threshold": 1,
+    "counter": 1,
     "committee": [
       {
         "tag": "schnorr",
-        "value": "9cbde32ead9877a07b22dc9fcfe37e193fce70448986aa507fd1ff0d8174e185"
-      },
-      {
-        "tag": "schnorr",
-        "value": "3fb0f9dbb9295a5756756c8dc987c5928c44400a91f1144248d908f2370c5a39"
-      },
-      {
-        "tag": "ecdsa",
-        "value": "02d84ae6a9ceb6b4bd38f64d04f04eced2d2d0911bfb3906e6d4f56a1bc0d44804"
+        "value": "c9dc4bfb41f8a24e9773a94c571a283a1178ad32c8af56f27200970e974e272f"
       }
     ],
-    "members": [
-      "rehearsal-1",
-      "rehearsal-2",
-      "rehearsal-3"
-    ],
-    "handoverTxId": "00e2cbf0076042f4b1e47c7c6cb4b2b299bc19fcdec8ce4ef9dbf2459c3e066d6f",
-    "handedOverAt": "2026-11-08T08:30:58.964Z",
-    "note": "Committee per DECISIONS D28. The custody key no longer has any power over this contract."
+    "note": "Custody key until `scripts/maintenance.mjs handover` replaces it with the committee (DECISIONS D28)."
   },
   "note": "Public record of the deployment. Address, hashes and verifying keys are public by definition. build.manifestSha256 pins the compiler integrity manifest; build.verifierKeys are the SHA-256 hashes of the verifier keys this address holds.",
   "maintenance": [
     {
-      "counter": 1,
-      "txId": "0002245f15577f927d661afdcf71228ce28a2e0e514881c7ab25c8ea8dba8b408b",
-      "at": "2026-11-08T10:07:09.936Z",
-      "fingerprint": "f4cbd53d89a0ea622b8fad22aff3103a7ea6da0e88f187db09b6c78844d1a081",
+      "counter": 0,
+      "txId": "00ae207bfb08253c92272b4e60187edbe67caf71aa0f1c928c563b86aebbf27ab8",
+      "txHash": "96ef0487af20eb8958c5e72ec19b8b3bdc3b4dc55444c2abce1b05b7d206971d",
+      "blockHeight": 28830,
+      "fees": {
+        "estimatedFees": "6125223314285715",
+        "paidFees": "6125223314285715"
+      },
+      "at": "2026-11-09T01:08:10.575Z",
+      "newCounter": 1,
+      "fingerprint": "df269ebfe4563d0be3e8bf50133360cedf73fd41e73dea043869acbdda92de3a",
       "signedBy": [
-        "rehearsal-1",
-        "rehearsal-3"
+        "custody"
       ],
       "updates": [
         {
@@ -132,20 +146,14 @@
           "circuit": "holdsGrant",
           "version": "v4",
           "vkSha256": "badf9bda939625e7622927635521701f692722de6b524d3b8a2363db87fe5f3c"
+        },
+        {
+          "op": "insertVerifierKey",
+          "circuit": "isRegistrar",
+          "version": "v4",
+          "vkSha256": "829057490f93e1695f963da55d9b68ee9ff8c9cc22f9b601c73574e90cdae4e2"
         }
-      ],
-      "txHash": "bd17588cb975dc5d981730c846156c77fb27171b1e7193b41a0c924e8689c530",
-      "blockHeight": 19822,
-      "paidFees": "5486285798620879"
+      ]
     }
-  ],
-  "readCallCheck": {
-    "circuit": "holdsAtMost",
-    "args": "recorded vehicle, odometerKm, 150000",
-    "answer": true,
-    "txHash": "273d0c26d6ece9d1fee15e2baf9519d6d16ed465317077f4f795ba39a74258df",
-    "blockHeight": 19862,
-    "paidFees": "286319085714286",
-    "note": "One call to a circuit the committee added, accepted by the chain (scripts/ask.mjs)."
-  }
+  ]
 }
