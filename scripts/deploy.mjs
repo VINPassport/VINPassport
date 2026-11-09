@@ -79,7 +79,7 @@ log(`network    ${NETWORK} (${networkEndpoints(NETWORK).nodeWsUrl})`);
 log(`build      compactc ${facts.compiler}, runtime ${facts.runtime}, build id ${buildId()}, manifest ${facts.manifestSha256.slice(0, 16)}`);
 log(`circuits   ${PROVABLE.length} with keys: ${PROVABLE.join(', ')}`);
 for (const r of regs) log(`registrar  ${r.label} ${r.hex}  (${REGISTRAR_ROLES[r.label]})`);
-log('           this list is fixed for the contract\'s lifetime');
+log('           afterwards it changes only when two of them approve (scripts/govern.mjs, D32)');
 log(`authority  custody key ${custody.verifyingKey.value.slice(0, 16)}... (threshold 1) until handed to the committee`);
 log(`mode       ${SUBMIT ? 'SUBMIT: deploys and pays the fee in DUST' : 'dry run: builds and estimates, submits nothing'}\n`);
 
@@ -89,7 +89,11 @@ let code = 0;
 try {
     const state = await w.synced();
     log(describe(state));
-    const providers = await contractProviders(w, state, { log });
+    // A deploy pins the build on disk, the one it is about to record. Left to
+    // its default, contractProviders expects the manifest of the build the
+    // EXISTING record names, which a --redeploy of a new build can never match.
+    // Midnight.js still checks every artifact against this manifest.
+    const providers = await contractProviders(w, state, { log, expectedManifestHash: facts.manifestSha256 });
     const compiled = compiledContract(refusingWitnesses());
     const s = summarize(state);
 
