@@ -106,7 +106,11 @@ async function buildInto(base) {
             rollupOptions: {
                 input: join(ROOT, 'scripts', 'lib', 'wallet-browser.mjs'),
                 preserveEntrySignatures: 'strict',
-                output: { format: 'es', entryFileNames: 'wallet-engine.js', chunkFileNames: '[name].js', assetFileNames: '[name][extname]' }
+                // Content-hashed names: the bundle holds two wasm files with the
+                // same base name (two onchain-runtime versions), and without a
+                // hash they were numbered in whatever order the bundler met them,
+                // which changed between builds and broke --check.
+                output: { format: 'es', entryFileNames: 'wallet-engine.js', chunkFileNames: '[name]-[hash].js', assetFileNames: '[name]-[hash][extname]' }
             }
         }
     });
