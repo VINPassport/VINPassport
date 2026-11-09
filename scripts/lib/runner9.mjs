@@ -78,7 +78,15 @@ export function readRegistrars(network) {
  * `code`; node refusals arrive inside the message.
  */
 export function explainFailure(e) {
-    const msg = String(e?.message ?? e);
+    // The provider's own reason is on `cause`. Midnight.js redacts it of
+    // anything that could carry transaction or witness material, so it is safe
+    // to show, and without it a failed balance names no reason at all.
+    const causes = [];
+    for (let c = e?.cause, depth = 0; c && depth < 5; c = c.cause, depth += 1) {
+        const m = String(c?.message ?? c);
+        if (m && !causes.includes(m)) causes.push(m);
+    }
+    const msg = String(e?.message ?? e) + (causes.length ? ` (cause: ${causes.join(' <- ')})` : '');
     const code = e?.code ? ` [${e.code}]` : '';
     if (/OutsideTimeToDismiss/i.test(msg)) {
         return `the node refused the fee as OutsideTimeToDismiss${code}: ledger issue #838, a fee paid with exactly one `
@@ -184,7 +192,9 @@ export async function executeRun(chain, intake, { log = () => { }, onStep = () =
                 circuitId: 'recordField', args: [vinBytes, K[s.name]],
                 before: arm(label, {
                     pending: { ...writeAt(s.name, s.writeIndex) }, prev: { ...writeAt(s.name, s.writeIndex - 1) },
-                    secret: s.by === dealer?.label ? dealer.secret : undefined
+                    // `dealer &&` first: with no dealer, `s.by` and `dealer?.label`
+                    // are both undefined, and equal.
+                    secret: dealer && s.by === dealer.label ? dealer.secret : undefined
                 })
             };
         }
@@ -203,6 +213,9 @@ export async function executeRun(chain, intake, { log = () => { }, onStep = () =
     };
 
     const onChain = [];
+    // How many writes of each field are on chain, so a receipt for a run that
+    // stopped claims only those (writes land in order).
+    const landed = {};
     let n = 0;
     for (const stage of stages) {
         n += 1;
@@ -213,9 +226,23 @@ export async function executeRun(chain, intake, { log = () => { }, onStep = () =
         const t0 = Date.now();
         const dustBefore = summarize(await chain.w.wallet.waitForSyncedState()).dust;
         try {
-            holder.armed = null;
-            call.before();
-            const r = await withTimeout(chain.found.callTx[call.circuitId](...call.args), CALL_TIMEOUT_MS, call.circuitId);
+            let r;
+            for (let attempt = 1; ; attempt += 1) {
+                holder.armed = null;
+                call.before();
+                try {
+                    r = await withTimeout(chain.found.callTx[call.circuitId](...call.args), CALL_TIMEOUT_MS, call.circuitId);
+                    break;
+                } catch (e) {
+                    // A transaction the wallet could not balance was never
+                    // submitted, so one retry after the wallet re-syncs cannot
+                    // land a call twice. Seen on 9 November 2026 after the
+                    // wallet's sync socket dropped mid-run.
+                    if (attempt >= 2 || !/balanceTx/i.test(String(e?.message))) throw e;
+                    log(`  ${n}/${stages.length} ${stage.label}: the wallet could not balance it (${explainFailure(e)}); re-syncing and trying once more`);
+                    await chain.w.wallet.waitForSyncedState();
+                }
+            }
             const pub = r.public;
             const entry = {
                 stage: n, label: stage.label, calls: [stepLabel(s)], circuit: call.circuitId,
@@ -223,6 +250,8 @@ export async function executeRun(chain, intake, { log = () => { }, onStep = () =
                 fees: pub.fees ?? null, dustBefore: String(dustBefore), ms: Date.now() - t0
             };
             onChain.push(entry);
+            if (s.kind === 'init') landed[s.name] = 1;
+            if (s.kind === 'update') landed[s.name] = s.writeIndex + 1;
             Object.assign(step, { status: 'done', ms: entry.ms, detail: `tx ${pub.txHash} in block ${pub.blockHeight}` });
             onStep(step);
             log(`  ${n}/${stages.length} ${stage.label}: block ${pub.blockHeight}, fee ${pub.fees?.paidFees ?? '?'}, ${Math.round(entry.ms / 1000)} s`);
@@ -231,15 +260,37 @@ export async function executeRun(chain, intake, { log = () => { }, onStep = () =
             onStep(step);
             const err = new Error(`call ${n} (${stage.label}) failed: ${explainFailure(e)}`);
             err.partial = { vin, onChain };
+            // The values and salts live only in this process. Without this, a
+            // run that stops leaves commitments on chain that nobody can ever
+            // open (9 November 2026: 13 calls landed, the receipt was lost).
+            if (onChain.length) {
+                try {
+                    err.partial.receipt = makeReceipt({ stoppedAt: { call: n, label: stage.label, reason: explainFailure(e) } });
+                    if (save) err.partial.savedTo = saveReceipt(network, err.partial.receipt);
+                } catch (saveErr) {
+                    err.partial.saveError = String(saveErr?.message ?? saveErr);
+                }
+            }
             throw err;
         } finally {
             holder.armed = null;
         }
     }
 
+    const receipt = makeReceipt();
+    if (save) receipt.savedTo = saveReceipt(network, receipt);
+    return receipt;
+
+    /**
+     * The receipt. With `stoppedAt` it is for a run that did not finish: it
+     * holds only the writes and claims that landed, and says where it stopped.
+     */
+    function makeReceipt({ stoppedAt = null } = {}) {
+    const reached = (claim) => onChain.some((c) => c.calls.some((l) => l.startsWith(`prove ${claim}`)));
     const ep = publicEndpoints(network);
     const receipt = {
-        title: `VINPassport ${network} receipt`,
+        title: `VINPassport ${network} receipt${stoppedAt ? ' (incomplete run)' : ''}`,
+        ...(stoppedAt ? { incomplete: true, stoppedAt } : {}),
         note: 'This file is the passport: the values and salts below never touched the chain. '
             + 'The chain holds only commitments; anyone can check the transactions listed here, '
             + 'and only the holder of this file can open them. To answer ONE question without '
@@ -250,13 +301,16 @@ export async function executeRun(chain, intake, { log = () => { }, onStep = () =
         registrar: { name: intake.registrar, id: hex(registrar.id) },
         contentRoot: hex(croot),
         fields: Object.fromEntries(Object.entries(writes).map(([name, ws]) => [name,
-            ws.map((w, i) => ({ writeIndex: i, value: w.value.toString(), salt: hex(w.salt) }))])),
+            (stoppedAt ? ws.slice(0, landed[name] ?? 0) : ws)
+                .map((w, i) => ({ writeIndex: i, value: w.value.toString(), salt: hex(w.salt) }))])),
         panel: intake.panel ?? {},
         claims: (intake.prove ? Object.entries(CLAIM_DEFS) : []).flatMap(([claim, def]) => {
             const wanted = intake.prove?.[claim];
             if (!wanted) return [];
             const wasRefused = refused.some((r) => r.step.startsWith(`prove ${claim}`));
-            return [{ claim, label: claimLabel(def, wanted, FIELDS[def.field]?.kind), outcome: wasRefused ? 'refused in-circuit - nothing written' : 'proven on-chain' }];
+            const outcome = wasRefused ? 'refused in-circuit - nothing written'
+                : (!stoppedAt || reached(claim)) ? 'proven on-chain' : 'not reached - the run stopped before this call';
+            return [{ claim, label: claimLabel(def, wanted, FIELDS[def.field]?.kind), outcome }];
         }),
         refused,
         onChain,
@@ -266,8 +320,8 @@ export async function executeRun(chain, intake, { log = () => { }, onStep = () =
         }
     };
     assertNoSecrets(receipt, 'the receipt');
-    if (save) receipt.savedTo = saveReceipt(network, receipt);
     return receipt;
+    }
 }
 
 /** Atomically, under _local-tracking/receipts/<network>/, never inside the repository. */

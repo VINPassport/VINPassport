@@ -52,6 +52,8 @@ try {
     if (e?.partial?.onChain?.length) {
         console.error(`landed before the failure (${e.partial.onChain.length}), vehicle ${e.partial.vin}:`);
         for (const c of e.partial.onChain) console.error(`  ${c.label}: ${c.txHash} block ${c.blockHeight}`);
+        if (e.partial.savedTo) console.error(`receipt (incomplete run, holds only what landed): ${e.partial.savedTo}`);
+        if (e.partial.saveError) console.error(`the receipt could NOT be saved: ${e.partial.saveError}`);
     }
     code = 1;
 } finally {

@@ -26,12 +26,17 @@ async function identities() {
     registrar.id = pureCircuits.registrarIdOf(new Uint8Array(registrar.secret));
 }
 
-function fakeChain(dealer) {
+function fakeChain(dealer, { failAt = new Map() } = {}) {
     const { holder, witnesses, arm } = makeWitnessHolder(registrar.secret);
     const calls = [];
     let height = 100;
+    let attempt = 0;
     const callTx = new Proxy({}, {
         get: (_, circuitId) => async (...args) => {
+            // `failAt` maps an attempt number to the error that attempt throws,
+            // before anything is recorded, as a failed balance would.
+            attempt += 1;
+            if (failAt.has(attempt)) throw failAt.get(attempt);
             // What Midnight.js does first: run the circuit, which reads the witnesses.
             const ctx = { privateState: undefined };
             const read = (w) => witnesses[w](ctx)[1];
@@ -119,4 +124,41 @@ test('failures are explained in words a person can act on', () => {
     assert.match(explainFailure(new Error('Transaction rejected: OutsideTimeToDismiss')), /#838.*--split/);
     assert.match(explainFailure(new Error('Insufficient Funds: could not balance dust')), /not enough DUST/);
     assert.match(explainFailure(Object.assign(new Error('boom'), { code: 'MIDNIGHT_JS_X' })), /\[MIDNIGHT_JS_X\]/);
+    // The provider's reason travels on `cause`; without it a refusal names nothing.
+    const wrapped = new Error('balanceTx rejected the transaction', { cause: new Error('SubmissionError', { cause: new Error('1010: Invalid Transaction') }) });
+    assert.match(explainFailure(wrapped), /cause: SubmissionError <- 1010: Invalid Transaction/);
+});
+
+const balanceFailure = () => Object.assign(new Error('balanceTx rejected the transaction'), { code: 'MIDNIGHT_JS_C_PROVIDER_FAILED' });
+
+test('a run that stops keeps a receipt holding exactly what landed', async () => {
+    await identities();
+    const dealer = { label: 'dealership', secret: dealerSecret, id: pureCircuits.registrarIdOf(dealerSecret) };
+    // Attempt 10 fails with something a retry cannot fix.
+    const { chain, calls } = fakeChain(dealer, { failAt: new Map([[10, new Error('node refused it')]]) });
+    const err = await executeRun(chain, { ...guidedIntake(dealer), kind: 'guided' }, { save: false }).then(() => null, (e) => e);
+    assert.ok(err, 'the run fails');
+    assert.equal(calls.length, 9, 'nothing after the failure is sent, and the failure is not retried');
+    const r = err.partial.receipt;
+    assert.ok(r, 'a receipt exists for the partial run');
+    assert.equal(r.incomplete, true);
+    assert.equal(r.stoppedAt.call, 10);
+    assert.equal(r.onChain.length, 9);
+    // Every write the receipt holds is one a landed call committed, and every landed commitment is in it.
+    const committed = calls.filter((c) => c.circuitId === 'initialiseField' || c.circuitId === 'recordField').map((c) => c.pending.salt);
+    const held = Object.values(r.fields).flat().map((w) => w.salt);
+    assert.deepEqual([...held].sort(), [...committed].sort());
+    assert.ok(r.claims.every((c) => c.outcome !== 'proven on-chain'), 'no claim is reported proven before its call landed');
+});
+
+test('a failed balance is retried once after a re-sync; a second one stops the run', async () => {
+    await identities();
+    const once = fakeChain(null, { failAt: new Map([[3, balanceFailure()]]) });
+    const ok = await executeRun(once.chain, { ...guidedIntake(null), kind: 'guided' }, { save: false });
+    assert.equal(ok.onChain.length, once.calls.length, 'the retried call landed once, and the run finished');
+
+    const twice = fakeChain(null, { failAt: new Map([[3, balanceFailure()], [4, balanceFailure()]]) });
+    const err = await executeRun(twice.chain, { ...guidedIntake(null), kind: 'guided' }, { save: false }).then(() => null, (e) => e);
+    assert.match(err.message, /call 3 .*balanceTx/);
+    assert.equal(err.partial.receipt.onChain.length, 2);
 });

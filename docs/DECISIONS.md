@@ -832,6 +832,40 @@ call, so the answer and the listing are one transaction: on Preview, block 20774
 checks that the module it calls is the code deployed at the address, by verifier key, which this
 contract passes because its build is exactly what the chain holds since the upgrade above.
 
+### D34: A deploy is fitted to the block before it is sent; one too large goes in steps · 2026-11-09
+
+The ledger caps what one block may write to state. Preview's ledger parameters, read live from the
+public indexer, set `block_limits.bytes_written` at 50,000 modelled bytes, and a deploy writes every
+verifier key it carries into the contract's state. On 9 November 2026 the node refused the
+eighteen-circuit deploy of the events and governance build as larger than a block allows (error
+1010), before inclusion, so nothing was charged.
+
+**Measured against the live parameters, before the fee is added:**
+
+| Transaction | Share of `bytes_written` |
+|---|---:|
+| All 18 circuits in one deploy | 92.6%, refused once the fee was added |
+| 10 circuits, as many as the 8 November deploy carried | 57.6% |
+| The 11 circuits that write | 62.2% |
+| The 7 read circuits as one maintenance insert | 25.5% |
+
+**The decision.** [`scripts/deploy.mjs`](../scripts/deploy.mjs) measures every deploy against the live
+limits and sends nothing above 65% of any of them ([`scripts/lib/deploy-fit.mjs`](../scripts/lib/deploy-fit.mjs));
+the margin is for the fee, which adds two DUST spends. A deploy above it goes in steps: the circuits
+that write first, so the contract takes writes from its first block, then the read circuits as
+verifier-key inserts by the maintenance authority. Before the handover that authority is the custody
+key, which holds it from deploy until the committee takes over ([D28](#settled)); after the handover
+the same inserts are a committee proposal. The deploy record names what is still pending until the
+last step lands, and each step's signed proposal is kept under
+[`deploy/maintenance/preview/`](../deploy/maintenance/preview/), one directory per contract.
+
+**On Preview.** The contract at `22723f4a…` was deployed with the 11 writing circuits in block 28785
+(14.57 DUST), and the custody key inserted the 7 read circuits in block 28830 (6.13 DUST): 20.70 DUST
+for the whole build. Mainnet's limits are read the same way when it deploys, not assumed from these.
+
+**Basis.** A ledger rule, not a regulatory one: the block limits in the ledger parameters, which the
+node enforces on every transaction.
+
 ## Reversed
 
 Recorded so they are not accidentally reinstated.
