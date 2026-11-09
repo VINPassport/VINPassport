@@ -1,11 +1,11 @@
 {
-  "note": "A recording of the guided run of 8 November 2026, kept so the page can still show a real run while no circuit server is answering. Every field below is already public on the Midnight Preview chain: the claims and their bounds are on the ledger, and no field reading appears here, because none was published.",
+  "note": "A recording of the guided run of 9 November 2026, kept so the page can still show a real run while no circuit server is answering. Every field below is already public on the Midnight Preview chain: the claims and their bounds are on the ledger, and no field reading appears here, because none was published.",
   "network": "preview",
-  "contractAddress": "68e25627e92e3e3809be1700d12ac77b32ffd946d2876a1ebe9a6f47bcec48f4",
-  "vinHash": "29cb17756faf189944a9e1a667b3678b744d8f5221afc8e19b0a66a539db04cf",
+  "contractAddress": "22723f4a56a61d2c8f87f7327b8b40cba13612a493ea6282ed6607d9788af7cd",
+  "vinHash": "1748a6b2db96c9430915ecaf2e11736f6c525744a95c02b9c05eebcf6bf4b6b2",
   "registrarId": "9ecd472baaaa93fe3f1dd92b610c7ae4fff14bed398f3e48530402812a2938be",
-  "contentRoot": "1f2dbb0c06e53b8038c6d07dec78248acba4bbfa1f441f621fffec67a02f8259",
-  "finishedAt": "2026-11-08T07:08:40.483Z",
+  "contentRoot": "631f64d9189b8a0f23c242d0cec9ce4af28291b790a3e4551db3cbee27887030",
+  "finishedAt": "2026-11-09T02:16:39.848Z",
   "stages": [
     {
       "stage": 1,
@@ -13,8 +13,8 @@
       "calls": [
         "registerPassport"
       ],
-      "txHash": "1b6a4f00cc87cd5833da0c9154ae99a3c9f13026560f779a84721935f51e8f44",
-      "blockHeight": 17890,
+      "txHash": "9f28608715279fdc8729a3e74e86fc63a0ee5a8480fafbff03737308140f4214",
+      "blockHeight": 29328,
       "explorer": null
     },
     {
@@ -23,8 +23,8 @@
       "calls": [
         "initialiseField odometerKm"
       ],
-      "txHash": "495c0855643d73fd4e010b76e351022cff938b383a4418ae085ec54a7e2e678b",
-      "blockHeight": 17900,
+      "txHash": "5dc80e4fadbb51fe5cd636a291e1b5cf21deaac46ba26f0a3d20e31deea7a909",
+      "blockHeight": 29346,
       "explorer": null
     },
     {
@@ -33,8 +33,8 @@
       "calls": [
         "initialiseField accidentCount"
       ],
-      "txHash": "8323570b8066797bf34a2630bb688854fe23dc754041f06abe6b8b134b0a6374",
-      "blockHeight": 17914,
+      "txHash": "d6b7d7a851eea2355b61d1e29a08e064ff5a82334d358b579c5c31fb26e3dbfd",
+      "blockHeight": 29359,
       "explorer": null
     },
     {
@@ -43,8 +43,8 @@
       "calls": [
         "initialiseField ownerCount"
       ],
-      "txHash": "1da314586123f8e2802daf769fbf2451f21c1866c764331903b52797406bf3ce",
-      "blockHeight": 17931,
+      "txHash": "e687018a04a053925b6ee4940443115a8134da869a0f117a6ab2b4cfcbc63556",
+      "blockHeight": 29372,
       "explorer": null
     },
     {
@@ -53,8 +53,8 @@
       "calls": [
         "initialiseField serviceCount"
       ],
-      "txHash": "4248e2bb4c76d5138348a2e48fc17c55334d614d52e365cc29d97fefc7acfc16",
-      "blockHeight": 17941,
+      "txHash": "965f7971171f061d35af89d4164b6b918fc3df16e90b76e0315bf00f84fee59a",
+      "blockHeight": 29385,
       "explorer": null
     },
     {
@@ -63,8 +63,8 @@
       "calls": [
         "initialiseField lastServiceOdometerKm"
       ],
-      "txHash": "012d99a99985f27dc797a4f7ae4a890061178ce299078de1b6b0630cfe502987",
-      "blockHeight": 17951,
+      "txHash": "4fe66b54c61d2c55e44bc166a27b09bcc72a32b969c2a7fc13553e66d5b7452d",
+      "blockHeight": 29398,
       "explorer": null
     },
     {
@@ -73,8 +73,8 @@
       "calls": [
         "authoriseWriter dealership"
       ],
-      "txHash": "4a01ec5ce0a03d689fc720f46e59338cb5a7e141bf81c7fc144880efbd88f798",
-      "blockHeight": 17959,
+      "txHash": "e6eead8205c09335ed84c90801eb4ae653f932cfac1a864ba9bd668605bb62d1",
+      "blockHeight": 29412,
       "explorer": null
     },
     {
@@ -83,8 +83,8 @@
       "calls": [
         "grantDisclosure dealership: trade"
       ],
-      "txHash": "df28df14411891183f77dff13bbed66e76cc87057ec0cf7fb132d686345e5fda",
-      "blockHeight": 17967,
+      "txHash": "47649817d09a48b84dd4b659a00bce02ceaabd6150649f33d66aa04bf9ad4991",
+      "blockHeight": 29425,
       "explorer": null
     },
     {
@@ -93,8 +93,8 @@
       "calls": [
         "update 1: odometerKm, new value committed (by dealership)"
       ],
-      "txHash": "ca85566eaa740b02f340fa7681cbc2f6c20c8f81d38404e53f046fc3898aabe5",
-      "blockHeight": 17981,
+      "txHash": "bccf9457ebf0a426afa8f7d9da5204a56edef31acf40c8260f11f41c6ca228bc",
+      "blockHeight": 29439,
       "explorer": null
     },
     {
@@ -103,8 +103,8 @@
       "calls": [
         "withdrawWriter dealership"
       ],
-      "txHash": "f2bf8e0a18bfb6f9b88955c53f854a334cd69925227d03c57627689eb208642b",
-      "blockHeight": 17989,
+      "txHash": "4e190fbfb9b40aa291ea52bd4dbee04368f64dd36d9dda73dd3f84d4c5403b41",
+      "blockHeight": 29453,
       "explorer": null
     },
     {
@@ -113,8 +113,8 @@
       "calls": [
         "prove mileageUnder 150000"
       ],
-      "txHash": "6cd1899066836951c3b6cf044d09ea18e5f6eeaa8168ddefea29914315480689",
-      "blockHeight": 18002,
+      "txHash": "14c0637cede6526390d925c950458dc7758dcdc04985ec87fc16db4a8c119f0e",
+      "blockHeight": 29467,
       "explorer": null
     },
     {
@@ -123,8 +123,8 @@
       "calls": [
         "prove noAccidents"
       ],
-      "txHash": "0f2a7583d5ff1810386724bb464840e54384c84d93a10d694dc6e6f84b6c071f",
-      "blockHeight": 18013,
+      "txHash": "5e847988ed33c9d33845062bc5a3e3e7af7478729050e8df44736c3318ffee97",
+      "blockHeight": 29480,
       "explorer": null
     },
     {
@@ -133,8 +133,8 @@
       "calls": [
         "prove fourServices"
       ],
-      "txHash": "4628e269c418466ca04c5609341bf1401eb30fa3184866c82909077671563021",
-      "blockHeight": 18024,
+      "txHash": "47c9743f56d96cf3ce2cd98f7917a88545f3143de65b2b8e8bd2c6698b1b3ae2",
+      "blockHeight": 29494,
       "explorer": null
     },
     {
@@ -143,8 +143,8 @@
       "calls": [
         "prove servicedWithin15000km"
       ],
-      "txHash": "74d0cb91d63988f58fad146b0cd986fe805cbb39ea7eb2c902970df85b7ef207",
-      "blockHeight": 18038,
+      "txHash": "ef01d27b13993fd281c3ecd9294059f1999165ed74991261ace6f37ed3fd8771",
+      "blockHeight": 29516,
       "explorer": null
     }
   ],

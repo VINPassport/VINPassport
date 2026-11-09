@@ -33,7 +33,8 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { Tier } from '../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
 import { checkNetwork, guardLogs } from './lib/endpoints.mjs';
-import { deployRecord, readContract } from './lib/chain-state.mjs';
+import { deployRecord, readContract, readContractEvents } from './lib/chain-state.mjs';
+import { decodeIndexerEvent, CIRCUIT_KIND, VEHICLE_KINDS, GOVERNANCE_KINDS } from './lib/events.mjs';
 import { slotOf, fieldKeyOf, commitmentOf, grantKeyOf, vinHashOf, PLAIN_VIN_SCHEME } from './lib/disclosure.mjs';
 import { readRegistrarSlots } from './lib/registrar-slots.mjs';
 import { expectedRegistrars, sameMembers } from './lib/governance.mjs';
@@ -72,7 +73,19 @@ for (const k of passportKeys) console.log(`  ${k}`);
 console.log('grants (key: tier):');
 for (const [k, t] of grants) console.log(`  ${k}: ${Tier[t] ?? t}`);
 
-if (!RECEIPT) process.exit(0);
+// Events (D29), from the indexer: one per state change, naming only a record.
+let rawEvents = [];
+try { rawEvents = await readContractEvents(NETWORK, address); } catch (e) { console.log(`\nevents       could not be read: ${e.message}`); }
+const events = rawEvents.map((e) => ({ ...e, decoded: decodeIndexerEvent(e) }));
+const byKind = {};
+for (const e of events) byKind[e.decoded?.kind ?? `(not a VINPassport event: ${e.type})`] = (byKind[e.decoded?.kind ?? `(not a VINPassport event: ${e.type})`] ?? 0) + 1;
+console.log(`\nevents       ${events.length}, naming ${new Set(events.map((e) => e.decoded?.subject)).size} distinct record(s)`);
+for (const [k, n] of Object.entries(byKind)) console.log(`  ${k.padEnd(18)} ${n}`);
+
+// process.exit() while a fetch socket is still closing aborts Node on Windows
+// (libuv UV_HANDLE_CLOSING, exit 127) even after READBACK OK; let it settle.
+const settle = () => new Promise((res) => setTimeout(res, 250));
+if (!RECEIPT) { await settle(); process.exit(0); }
 
 // -- against a receipt, printing only verdicts
 const r = JSON.parse(readFileSync(RECEIPT, 'utf8'));
@@ -126,5 +139,22 @@ for (const [, label, tier] of made) {
 }
 if (!made.length) console.log('     (the run made no grant)');
 
+// Events against the receipt and the record. An event may name only a record
+// the ledger or the deploy record holds (D29), and each call the receipt lists
+// announces itself once, with the kind its circuit emits, in its transaction.
+const known = new Set([...VEHICLE_KINDS, ...GOVERNANCE_KINDS]);
+check(`every event is a VINPassport event of a known kind (${events.length})`,
+    events.length > 0 && events.every((e) => e.decoded && known.has(e.decoded.kind)));
+const proposals = new Set((record.registrarChanges ?? []).map((c) => c.proposal));
+check('every event names a vehicle on chain or a recorded registrar proposal, and nothing else',
+    events.every((e) => e.decoded && (passportKeys.includes(e.decoded.subject) || proposals.has(e.decoded.subject))));
+const vehicleKey = String(r.vinHash).replace(/^0x/, '');
+const mine = events.filter((e) => e.decoded?.subject === vehicleKey);
+const expectedPerTx = (r.onChain ?? []).map((c) => ({ txHash: c.txHash, kind: CIRCUIT_KIND[c.circuit] }));
+const matched = expectedPerTx.filter((x) => mine.filter((e) => e.txHash === x.txHash && e.decoded.kind === x.kind).length === 1);
+check(`each of the receipt's calls announced itself once, with its kind, in its own transaction (${matched.length} of ${expectedPerTx.length})`,
+    expectedPerTx.length > 0 && matched.length === expectedPerTx.length && mine.length === expectedPerTx.length);
+
 console.log(checks.every(Boolean) ? '\nREADBACK OK' : '\nREADBACK FOUND A MISMATCH');
+await settle();
 process.exit(checks.every(Boolean) ? 0 : 1);

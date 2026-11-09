@@ -82,16 +82,31 @@
     }
   ],
   "authority": {
-    "holder": "custody",
-    "threshold": 1,
-    "counter": 1,
+    "holder": "committee",
+    "threshold": 2,
+    "counter": 2,
     "committee": [
       {
         "tag": "schnorr",
-        "value": "c9dc4bfb41f8a24e9773a94c571a283a1178ad32c8af56f27200970e974e272f"
+        "value": "9cbde32ead9877a07b22dc9fcfe37e193fce70448986aa507fd1ff0d8174e185"
+      },
+      {
+        "tag": "schnorr",
+        "value": "3fb0f9dbb9295a5756756c8dc987c5928c44400a91f1144248d908f2370c5a39"
+      },
+      {
+        "tag": "ecdsa",
+        "value": "02d84ae6a9ceb6b4bd38f64d04f04eced2d2d0911bfb3906e6d4f56a1bc0d44804"
       }
     ],
-    "note": "Custody key until `scripts/maintenance.mjs handover` replaces it with the committee (DECISIONS D28)."
+    "members": [
+      "rehearsal-1",
+      "rehearsal-2",
+      "rehearsal-3"
+    ],
+    "handoverTxId": "007ee1f845d3f7a32fa9a0df9a62f6701649f45eab9c40cd9f1584d20a934abecc",
+    "handedOverAt": "2026-11-09T02:20:04.828Z",
+    "note": "Committee per DECISIONS D28. The custody key no longer has any power over this contract."
   },
   "note": "Public record of the deployment. Address, hashes and verifying keys are public by definition. build.manifestSha256 pins the compiler integrity manifest; build.verifierKeys are the SHA-256 hashes of the verifier keys this address holds.",
   "maintenance": [

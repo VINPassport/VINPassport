@@ -27,6 +27,32 @@ export function deployRecord(network) {
 }
 
 /**
+ * Every event the contract has emitted, as the public indexer serves them,
+ * oldest first: `{ id, name, payload, txHash, blockHeight }` for each
+ * `MiscContractEvent` (the only kind VINPassport emits, DECISIONS D29).
+ */
+export async function readContractEvents(network, address, { page = 200 } = {}) {
+    const ep = networkEndpoints(network);
+    const out = [];
+    for (let offset = 0; ; offset += page) {
+        const query = `{ contractEvents(filter: { contractAddress: "${address}" }, limit: ${page}, offset: ${offset}) `
+            + '{ __typename id ... on MiscContractEvent { name payload } transaction { hash block { height } } } }';
+        const res = await fetch(ep.indexerHttpUrl, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ query }) });
+        const j = await res.json();
+        if (j.errors) throw new Error(`the indexer refused the events query: ${JSON.stringify(j.errors).slice(0, 200)}`);
+        const batch = j.data?.contractEvents ?? [];
+        for (const e of batch) {
+            out.push({
+                id: e.id, type: e.__typename, name: e.name ?? null, payload: e.payload ?? null, contractAddress: address,
+                txHash: e.transaction?.hash ?? null, blockHeight: e.transaction?.block?.height ?? null
+            });
+        }
+        if (batch.length < page) break;
+    }
+    return out.sort((a, b) => a.id - b.id);
+}
+
+/**
  * The contract's state now: decoded ledger, raw bytes (for absence checks),
  * and the latest action, from the public indexer.
  */

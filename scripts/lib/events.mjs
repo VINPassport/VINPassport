@@ -50,3 +50,39 @@ export function decodeEvent(event) {
 
 /** Every VINPassport event in a list of runtime log events, decoded, in order. */
 export const decodeEvents = (events) => (events ?? []).map(decodeEvent).filter(Boolean);
+
+const fromHex = (h) => {
+    const s = String(h ?? '').replace(/^0x/, '');
+    if (!/^(?:[0-9a-fA-F]{2})*$/.test(s)) return null;
+    return Uint8Array.from(s.match(/../g) ?? [], (x) => parseInt(x, 16));
+};
+
+/**
+ * The same event as the public indexer serves it: a `MiscContractEvent` with
+ * `name` (the subject) and `payload` (the serialized schema and kind) as hex.
+ * Returns `{ address, kind, subject }`, or null for anything that is not a
+ * VINPassport event.
+ */
+export function decodeIndexerEvent(e) {
+    const name = fromHex(e?.name);
+    const payload = fromHex(e?.payload);
+    if (!name || !payload || name.length !== 32 || payload.length > 256) return null;
+    const p = new Uint8Array(256);
+    p.set(payload);
+    if (text(p.subarray(0, 32)) !== EVENT_SCHEMA) return null;
+    return { address: e.contractAddress ?? null, kind: text(p.subarray(32, 64)), subject: hex(name) };
+}
+
+/** The kind each writing circuit announces: what a reader expects per transaction. */
+export const CIRCUIT_KIND = Object.freeze({
+    registerPassport: 'registered',
+    authoriseWriter: 'writerAuthorised',
+    withdrawWriter: 'writerWithdrawn',
+    grantDisclosure: 'granted',
+    revokeDisclosure: 'revoked',
+    initialiseField: 'fieldInitialised',
+    recordField: 'fieldRecorded',
+    proveFieldAtMost: 'claimAtMost',
+    proveFieldAtLeast: 'claimAtLeast',
+    proveFieldAtMostField: 'relClaim'
+});

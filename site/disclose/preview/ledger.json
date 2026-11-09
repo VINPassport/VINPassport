@@ -2,46 +2,79 @@
   "source": "the Midnight preview indexer, decoded with the contract's own ledger() reader (ledger v9)",
   "note": "Public chain state only: commitments, claims and grants. Regenerate it with node scripts/export-bundles.mjs --network preview and compare.",
   "network": "preview",
-  "contractAddress": "68e25627e92e3e3809be1700d12ac77b32ffd946d2876a1ebe9a6f47bcec48f4",
-  "readAtBlock": 18038,
-  "latestTransaction": "74d0cb91d63988f58fad146b0cd986fe805cbb39ea7eb2c902970df85b7ef207",
+  "contractAddress": "22723f4a56a61d2c8f87f7327b8b40cba13612a493ea6282ed6607d9788af7cd",
+  "readAtBlock": 29549,
+  "latestTransaction": "5b25cefdeed45a90e1a4bc86a27fc313b7e41ec691e19afcc34b1970d4e09252",
   "fieldCommitment": {
-    "8ba57619eff6544b4fb3ebd95ffd75dd67733c6c552b66cc769a6c19abdc4b1c": "3b31de0d3af1b5ac0b98e31405e99e89bd1654fdc9ea89f4d8fb87249822ef8e",
-    "c0003809ce0671b00cc4ff63c6f9cb26fc5f00557ee984036a5c6a8406169c62": "c6cb9fbd2e37ce19d40f651dec336d28381c234034b7739693febdd2d78b264b",
-    "4d34140823debf2dded6bde776d04ad53708b2a679ae0e9e45037da383a829e0": "07770bf780b72dbb3f2893743e8dbc200e6c6453e0b749d01ace19def990a6cb",
-    "cafcbed3f1c3e52eb25ab55bfa5d3c06b20dc686734eab81e62ba52a9a378f99": "47c840d53420a3d050a3067816aa54e5f41c0e9a6e9e8bfe2492eec71986fc75",
-    "76762bdb14926a1b5963c5cc4702562bacdd5b2216f0920d000f1347ba247f51": "5ef61da169e7d5b661f48fa707986fea040b9636ed58c0ba25ae38f1665d5aa6"
+    "f67c32e37390ae2ae80634634e1e69455ac0c8048adec0877084b1863dc988bb": "e52e85e991953fb068f8a94b69b7bda9fa68072b730f6d4ee5c20183466d4554",
+    "4c3fdbf5ae58345980df8a0fb7ba81913caee57d672775cef9b032f940752556": "e9ac60caf1646b1faa2cb892eadbcbf93c59693b4d20ab8887f4c7ff31fa405c",
+    "12cc232ddc0bed3ea7091dacf36e9a8744dca4e7dc4665cfa480886d16a1a396": "ca8e29835277a52497a55bdc9ddb27f593a281a58ea236b04e1d281199286c69",
+    "43480925df13998c566718a391cf5fd17bb09bee1f57dd52d4746eedddb7199b": "2b6bf007a4b852ab0cbdd3eb1dbb487463d128ef2cc0552396064490a5dba8f4",
+    "2278aaa2a9cf3c0e5dba641cbaf9a8627a3a55f5b0cd9a864c537ecc5a56e0fe": "fbb740e0b6423fd3f2abba8179d1513ce58145a4edf90cbcc0d2477e45a87dc9",
+    "543307e88212311ed84a1c7c126011241e972c4ffe27d666ac43e55832c49e81": "58cd0a18f1dcda41123b625db82e0041e229326b745cdb3168a4a6fc856206df",
+    "60444549e8d6e31e61dacaef6d98452db5d2a825febe4cd7c5b03c15a27d0452": "219bd5465929295c1904c6a299a28a454b9b9834a40700913f53c3d079b4ad15",
+    "5e7a614903c57d6d98370d67452b1992b7ccf31a3012c08d047a128e9fda22dc": "a14c0b568310d8fc91f5881eee2c29a78d782a769ba37b13fd22a0ebb60a5c76",
+    "ca91a8da12448fee714e26cc1097a28687020a886b873107d23d67a0021d10bd": "56d3703e76998c68b9570ef88462846c4e514514a819a0dd6c6f7da9c4dd4383",
+    "c6cc21e716af583fb2abca6bfcd9f86db415c11bbf6c01081e582b04f69700a1": "1734f3f4d16e4cf956427d5754771b267605c58bde65c38ba8381d1bae69d746"
   },
   "claims": [
     {
-      "key": "12c510b40920c4aead24d98c4af8a4915d6a6adfec82435bb2f130a7be27fd5f",
-      "slot": "4d34140823debf2dded6bde776d04ad53708b2a679ae0e9e45037da383a829e0",
-      "vinHash": "29cb17756faf189944a9e1a667b3678b744d8f5221afc8e19b0a66a539db04cf",
-      "fieldKey": "2dd69ded11554ddb3306be039e80f3f82824b0d4af96b9bc287055558ea92fe7",
-      "commitment": "07770bf780b72dbb3f2893743e8dbc200e6c6453e0b749d01ace19def990a6cb",
-      "bound": "150000",
-      "atMost": true
-    },
-    {
-      "key": "5b86074800b041f06525ea334521a7a8addaef110611e9192cd499736313753e",
-      "slot": "c0003809ce0671b00cc4ff63c6f9cb26fc5f00557ee984036a5c6a8406169c62",
-      "vinHash": "29cb17756faf189944a9e1a667b3678b744d8f5221afc8e19b0a66a539db04cf",
+      "key": "7eedfa366c283bdbdc9bd61e8abcecbc91b8c1d5ec19382484c0bf5d1a8bb239",
+      "slot": "60444549e8d6e31e61dacaef6d98452db5d2a825febe4cd7c5b03c15a27d0452",
+      "vinHash": "541e1c571e53e1e57c8c50f6ba0c9df11b779432e3530ed1ce51bc439b54f31f",
       "fieldKey": "aeb322aa379bd01ecb61ca57719f40e3c4a0368533dd62b1c7b5d2d995da98eb",
-      "commitment": "c6cb9fbd2e37ce19d40f651dec336d28381c234034b7739693febdd2d78b264b",
+      "commitment": "219bd5465929295c1904c6a299a28a454b9b9834a40700913f53c3d079b4ad15",
       "bound": "0",
       "atMost": true
     },
     {
-      "key": "9302712e7fc919118698486b83a8db748b51f1236e492cd67d10c8cd7c4ec8a1",
-      "slot": "76762bdb14926a1b5963c5cc4702562bacdd5b2216f0920d000f1347ba247f51",
-      "vinHash": "29cb17756faf189944a9e1a667b3678b744d8f5221afc8e19b0a66a539db04cf",
+      "key": "d41e255a2166b0853d7c5e175e98015c0573d45dd59999d51b81007b02a9ba4f",
+      "slot": "12cc232ddc0bed3ea7091dacf36e9a8744dca4e7dc4665cfa480886d16a1a396",
+      "vinHash": "1748a6b2db96c9430915ecaf2e11736f6c525744a95c02b9c05eebcf6bf4b6b2",
+      "fieldKey": "2dd69ded11554ddb3306be039e80f3f82824b0d4af96b9bc287055558ea92fe7",
+      "commitment": "ca8e29835277a52497a55bdc9ddb27f593a281a58ea236b04e1d281199286c69",
+      "bound": "150000",
+      "atMost": true
+    },
+    {
+      "key": "a069b175b5ba107b66583362ce16cf0480d7c3d1f614786956209dea78827dc4",
+      "slot": "4c3fdbf5ae58345980df8a0fb7ba81913caee57d672775cef9b032f940752556",
+      "vinHash": "1748a6b2db96c9430915ecaf2e11736f6c525744a95c02b9c05eebcf6bf4b6b2",
+      "fieldKey": "aeb322aa379bd01ecb61ca57719f40e3c4a0368533dd62b1c7b5d2d995da98eb",
+      "commitment": "e9ac60caf1646b1faa2cb892eadbcbf93c59693b4d20ab8887f4c7ff31fa405c",
+      "bound": "0",
+      "atMost": true
+    },
+    {
+      "key": "4e776c57235460c4c831049959389f6772a276e3f2e3e25db32e74f1ebe77e7f",
+      "slot": "ca91a8da12448fee714e26cc1097a28687020a886b873107d23d67a0021d10bd",
+      "vinHash": "1748a6b2db96c9430915ecaf2e11736f6c525744a95c02b9c05eebcf6bf4b6b2",
       "fieldKey": "48bdd789ee03fb0debd23d7e156228d3233f0110d48ed2d7dda663fb22521aff",
-      "commitment": "5ef61da169e7d5b661f48fa707986fea040b9636ed58c0ba25ae38f1665d5aa6",
+      "commitment": "56d3703e76998c68b9570ef88462846c4e514514a819a0dd6c6f7da9c4dd4383",
+      "bound": "4",
+      "atMost": false
+    },
+    {
+      "key": "6d133a7b764e14409f094c157cc4fcabdf674f175c88f0c37cb319415ffe09e2",
+      "slot": "c6cc21e716af583fb2abca6bfcd9f86db415c11bbf6c01081e582b04f69700a1",
+      "vinHash": "541e1c571e53e1e57c8c50f6ba0c9df11b779432e3530ed1ce51bc439b54f31f",
+      "fieldKey": "2dd69ded11554ddb3306be039e80f3f82824b0d4af96b9bc287055558ea92fe7",
+      "commitment": "1734f3f4d16e4cf956427d5754771b267605c58bde65c38ba8381d1bae69d746",
+      "bound": "150000",
+      "atMost": true
+    },
+    {
+      "key": "400df8e14ac9f9342f97c71921612885302e28a7fb01c0ce35f630bcc32cc7f7",
+      "slot": "2278aaa2a9cf3c0e5dba641cbaf9a8627a3a55f5b0cd9a864c537ecc5a56e0fe",
+      "vinHash": "541e1c571e53e1e57c8c50f6ba0c9df11b779432e3530ed1ce51bc439b54f31f",
+      "fieldKey": "48bdd789ee03fb0debd23d7e156228d3233f0110d48ed2d7dda663fb22521aff",
+      "commitment": "fbb740e0b6423fd3f2abba8179d1513ce58145a4edf90cbcc0d2477e45a87dc9",
       "bound": "4",
       "atMost": false
     }
   ],
   "grants": {
-    "f77796cdc5dd3481fc805bcd36c48443df9bd573df26822a76c92e1366d3bab6": 0
+    "fb4668257b4db2726321b0600cd7d9607a10494b65988a4dc9816cd10ea0b977": 0,
+    "c762ef68d3e161309dbb96a6d6bc9e5e1e965b33fe6481aa0ef0e420530bd090": 0
   }
 }

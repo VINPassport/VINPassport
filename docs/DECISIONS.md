@@ -744,8 +744,17 @@ purposes for which they are processed ('data minimisation')"*
 adds no processing.
 
 **Cost.** Events change every writing circuit, so this version deploys fresh: ledger 9 refuses the
-key removal an in-place change would need ([D28](#settled)). The fee per call is to be measured on
-Preview.
+key removal an in-place change would need ([D28](#settled)). Measured on Preview, 9 November 2026:
+in a run where the fee price held steady, `registerPassport` paid 0.603 DUST and the other calls
+0.319 to 0.321, against 0.590 and 0.307 to 0.311 on the contract without events, about 2 to 4% more.
+A fee is cost times the price of the moment, and a price move alone could explain a difference that
+size, so the honest reading is that events cost little, not a measured percentage.
+
+**On chain.** The contract at `22723f4a…` emitted 30 events across two runs and one registrar change,
+and they name exactly three records: the two vehicle keys and one registrar proposal. The readback
+([`scripts/chain-readback.mjs`](../scripts/chain-readback.mjs)) reads them from the public indexer and
+checks that each call in a receipt announced itself once, with its circuit's kind, in its own
+transaction, and that no event names anything but a vehicle on chain or a recorded proposal.
 
 ### D30: Registrar authentication stays knowledge of a secret; in-circuit ECDSA is deferred · 2026-11-08
 
@@ -794,6 +803,14 @@ responsible for the fulfilment of the obligations set out in paragraph 4 ceases 
 its activity in the Union"* ([REGULATION.md](REGULATION.md#two-parts-of-article-136-that-shape-the-design)).
 A registrar that ceases has to be replaceable without abandoning the ledger. That act does not exist
 yet, so this is the direction of travel, not a rule in force.
+
+**Exercised on Preview, 9 November 2026.** Registrars A and B removed registrar D from the contract
+at `22723f4a…` with [`scripts/govern.mjs`](../scripts/govern.mjs), each in their own transaction and
+each dry run first against the indexer's state. A's approval (block 29162, 0.32 DUST) counted
+towards the proposal and changed nothing; B's (block 29247, 0.33 DUST) carried it out. The set is
+A, B and C, the proposal is cleared, the epoch is 1, and `isRegistrar` answers `false` for D. Both
+approvals are in the deploy record's `registrarChanges`, from which the readback works out the set
+the chain should hold.
 
 ### D33: Read circuits, so other contracts can ask and a successor can carry a record forward · 2026-11-08
 

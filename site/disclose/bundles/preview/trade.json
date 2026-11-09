@@ -6,50 +6,50 @@
   "audienceId": "413eb23af7a1c4cd7c522b86d1bd7ee2be66683e167459f4e85d8761675ad04c",
   "note": "A trade disclosure. It opens only the fields listed here and carries no seed, so it cannot open any other field of this vehicle. Each claim listed was proven on the public ledger and reveals a bound, never a value.",
   "network": "preview",
-  "contractAddress": "68e25627e92e3e3809be1700d12ac77b32ffd946d2876a1ebe9a6f47bcec48f4",
+  "contractAddress": "22723f4a56a61d2c8f87f7327b8b40cba13612a493ea6282ed6607d9788af7cd",
   "vinHashScheme": "vinkey-voprf-ristretto255-sha512-v1",
-  "vinHash": "29cb17756faf189944a9e1a667b3678b744d8f5221afc8e19b0a66a539db04cf",
-  "contentRoot": "1f2dbb0c06e53b8038c6d07dec78248acba4bbfa1f441f621fffec67a02f8259",
+  "vinHash": "1748a6b2db96c9430915ecaf2e11736f6c525744a95c02b9c05eebcf6bf4b6b2",
+  "contentRoot": "631f64d9189b8a0f23c242d0cec9ce4af28291b790a3e4551db3cbee27887030",
   "fields": [
     {
       "fieldName": "odometerKm",
       "fieldKey": "2dd69ded11554ddb3306be039e80f3f82824b0d4af96b9bc287055558ea92fe7",
-      "slot": "4d34140823debf2dded6bde776d04ad53708b2a679ae0e9e45037da383a829e0",
+      "slot": "12cc232ddc0bed3ea7091dacf36e9a8744dca4e7dc4665cfa480886d16a1a396",
       "writeIndex": 1,
-      "value": "59233",
-      "salt": "5407c41dce98dbada8cbba7f215f4c0a7d9b438c0e876f4b07f7d131bf20c55f"
+      "value": "43918",
+      "salt": "b4c12d68b5ea39e8a3a368ecf5c54fdd8858b4163b2581f5cb2de851d486b79d"
     },
     {
       "fieldName": "accidentCount",
       "fieldKey": "aeb322aa379bd01ecb61ca57719f40e3c4a0368533dd62b1c7b5d2d995da98eb",
-      "slot": "c0003809ce0671b00cc4ff63c6f9cb26fc5f00557ee984036a5c6a8406169c62",
+      "slot": "4c3fdbf5ae58345980df8a0fb7ba81913caee57d672775cef9b032f940752556",
       "writeIndex": 0,
       "value": "0",
-      "salt": "e0047a31165907c4e7391992e879ca7c080c9f9415524cb0de4bba42e2292170"
+      "salt": "2ccc4d2753bf409444d5c6a4d3f4911acd8aff93ba5047ca7aed96a957377a82"
     },
     {
       "fieldName": "ownerCount",
       "fieldKey": "7567eb36429241cb257b43d05709400ac5e7400e088048071b387d7d0548b25c",
-      "slot": "cafcbed3f1c3e52eb25ab55bfa5d3c06b20dc686734eab81e62ba52a9a378f99",
+      "slot": "43480925df13998c566718a391cf5fd17bb09bee1f57dd52d4746eedddb7199b",
       "writeIndex": 0,
       "value": "2",
-      "salt": "6e68e1604a587f217f53d0fa7e9a540785615b7f6b45b1405028ab9f75304379"
+      "salt": "904255878cfb93f8d83bee4ad7ef6951e6a5bb9491de349d88a31690c8364731"
     },
     {
       "fieldName": "serviceCount",
       "fieldKey": "48bdd789ee03fb0debd23d7e156228d3233f0110d48ed2d7dda663fb22521aff",
-      "slot": "76762bdb14926a1b5963c5cc4702562bacdd5b2216f0920d000f1347ba247f51",
+      "slot": "ca91a8da12448fee714e26cc1097a28687020a886b873107d23d67a0021d10bd",
       "writeIndex": 0,
       "value": "6",
-      "salt": "5c22fa18a471814447d39e450955eed2ab6d06e61ae2a5bbcc80e6b23375348c"
+      "salt": "fdf30df5c0434d6ef262dcacf34e6632b8eceea887feb78eb0958de13fe9756a"
     },
     {
       "fieldName": "lastServiceOdometerKm",
       "fieldKey": "b6239d97e7a609a21328561a13192631ead5b420e16044e3e498a6c20b77f824",
-      "slot": "8ba57619eff6544b4fb3ebd95ffd75dd67733c6c552b66cc769a6c19abdc4b1c",
+      "slot": "543307e88212311ed84a1c7c126011241e972c4ffe27d666ac43e55832c49e81",
       "writeIndex": 0,
-      "value": "45870",
-      "salt": "471dc5e49d8cfd571f402650c9fd85595862c223ddad4dcfc913d52ccc625443"
+      "value": "31105",
+      "salt": "8298c3547def6ebfeb43ad37e22183178d360e69259224ce11e50b8ed332e2b4"
     }
   ],
   "claims": []
