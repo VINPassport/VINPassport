@@ -155,5 +155,41 @@
         }
       ]
     }
+  ],
+  "registrarChanges": [
+    {
+      "add": false,
+      "id": "fc37e966de08806ce1333e3b45d34b131c9fdd9bdfcf8f97bd3b40d3e5e44b9a",
+      "label": "D",
+      "approver": {
+        "label": "A",
+        "id": "9ecd472baaaa93fe3f1dd92b610c7ae4fff14bed398f3e48530402812a2938be"
+      },
+      "epoch": "0",
+      "proposal": "21a649b9229a29e8dbfc2c5303dfb2ef079059ea11e7ade53ef1ea42924b0304",
+      "executed": false,
+      "txHash": "cf3845fd702afbca90eec7ce842359fbaa65236b9def107b70618e7d7eff2772",
+      "txId": "00a7448fba6b56c8d410436bf8ee93540307960aa3d107c42b34a2655ec40ded02",
+      "blockHeight": 29162,
+      "paidFees": "320729001854380",
+      "at": "2026-11-09T01:41:16.615Z"
+    },
+    {
+      "add": false,
+      "id": "fc37e966de08806ce1333e3b45d34b131c9fdd9bdfcf8f97bd3b40d3e5e44b9a",
+      "label": "D",
+      "approver": {
+        "label": "B",
+        "id": "0fa7b6dd3596e2d971ce0b6d8c97b02ec053871e6b7d6928d31de7b594a09d0d"
+      },
+      "epoch": "0",
+      "proposal": "21a649b9229a29e8dbfc2c5303dfb2ef079059ea11e7ade53ef1ea42924b0304",
+      "executed": true,
+      "txHash": "341269fe3d4c446f356f1c5dd1bfd1e5a49425ada92175f20d88f07752708924",
+      "txId": "003f8d3b382faf9eea5b4e786f89e6c9ddf8b4aafacb934c2284fb3a7c59baa3df",
+      "blockHeight": 29247,
+      "paidFees": "333506137581987",
+      "at": "2026-11-09T01:49:46.733Z"
+    }
   ]
 }
