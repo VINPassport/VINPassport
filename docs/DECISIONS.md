@@ -849,6 +849,11 @@ call, so the answer and the listing are one transaction: on Preview, block 20774
 checks that the module it calls is the code deployed at the address, by verifier key, which this
 contract passes because its build is exactly what the chain holds since the upgrade above.
 
+**Again on the current contract, 9 November 2026.** After the events and governance build deployed
+at a new address ([D34](#settled)), a new listing (`59cca746…`, block 30043) was deployed trusting it,
+and listed the complete guided run's vehicle in block 30071: one transaction, two calls, 0.42 DUST.
+The listing's own code did not change; `holdsAtMost` kept its verifier key across the two builds.
+
 ### D34: A deploy is fitted to the block before it is sent; one too large goes in steps · 2026-11-09
 
 The ledger caps what one block may write to state. Preview's ledger parameters, read live from the

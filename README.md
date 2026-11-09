@@ -23,6 +23,7 @@
 | **Events** | every write emits one event naming the vehicle (or the registrar proposal) and the kind of change ([D29](docs/DECISIONS.md#settled)). The public indexer serves 30 for this contract; the readback checks that each call announced itself once, in its own transaction, and that no event names anything but a record |
 | **Registrar governance** | registrars A and B removed registrar D, each in their own transaction: A's approval in block **29162**, B's, which carried it out, in block **29247** ([D32](docs/DECISIONS.md#settled)). `isRegistrar` now answers `false` for D |
 | **Maintenance authority** | a 2-of-3 committee (two Schnorr keys, one ECDSA), handed over from the deploy key in block **29549** ([D28](docs/DECISIONS.md#settled)) |
+| **Called by another contract** | A demo listing contract (`59cca7460496386e192313676ca80c1e88a036f563f1a57d2d200a34709fb364`, block 30043) lists a vehicle only if VINPassport holds a current mileage claim for it, asking through a cross-contract call. One transaction, two calls (`list`, then `holdsAtMost` here), block **30071**, 0.42 DUST ([`deploy/listing.preview.json`](deploy/listing.preview.json); [D33](docs/DECISIONS.md#settled)) |
 | **This repository** | The build at that address (`buildId` `f9859ecfb77e6e74`, compactc 0.36.0); the deploy record pins its integrity manifest and verifier-key hashes, and the inserts' signed proposal is at [`deploy/maintenance/preview/22723f4a56a61d2c/`](deploy/maintenance/preview/22723f4a56a61d2c/) |
 | **Check it yourself** | [`deploy/preview.json`](deploy/preview.json); Preview's indexer is open, so the query under [Evaluating this repository](#evaluating-this-repository) needs no key |
 
@@ -36,7 +37,7 @@ It stays on chain and still answers. Two things were shown there first:
 | | |
 |---|---|
 | **Upgraded in place** | Block **19822**: the committee added six read circuits ([D33](docs/DECISIONS.md#settled)) with a proposal signed by one Schnorr and one ECDSA member, 5.49 DUST. Every existing verifier key was unchanged, so no redeploy and no record lost; the signed proposal is at [`deploy/maintenance/preview/counter-1.json`](deploy/maintenance/preview/counter-1.json) |
-| **Called by another contract** | A demo listing contract (`ca44281f9667b21c3023ed30de01d21f31a6699cecf2b9cb5f2eaaf8c7532e70`) lists a vehicle only if VINPassport holds a current mileage claim for it, asking through a cross-contract call. One transaction, two calls (`list`, then `holdsAtMost` there), block **20774**, 0.42 DUST ([`deploy/listing.preview.json`](deploy/listing.preview.json)) |
+| **Called by another contract** | A demo listing contract (`ca44281f9667b21c3023ed30de01d21f31a6699cecf2b9cb5f2eaaf8c7532e70`) lists a vehicle only if VINPassport holds a current mileage claim for it, asking through a cross-contract call. One transaction, two calls (`list`, then `holdsAtMost` there), block **20774**, 0.42 DUST ([`deploy/listing.preview-superseded-1794193761228.json`](deploy/listing.preview-superseded-1794193761228.json)) |
 
 ### Deployed on Midnight preprod (ledger 8)
 

@@ -29,7 +29,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, renameSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -65,7 +65,12 @@ guardLogs();
 if (!existsSync(recordPath(network))) fail(`no VINPassport deploy record for ${network}`);
 const passport = JSON.parse(readFileSync(recordPath(network), 'utf8')).contractAddress;
 const LISTING_RECORD = join(ROOT, 'deploy', `listing.${network}.json`);
-const listingRecord = existsSync(LISTING_RECORD) ? JSON.parse(readFileSync(LISTING_RECORD, 'utf8')) : null;
+const recorded = existsSync(LISTING_RECORD) ? JSON.parse(readFileSync(LISTING_RECORD, 'utf8')) : null;
+// A listing trusts one VINPassport address, fixed at its deploy. One recorded
+// for a superseded VINPassport is history: it is ignored here, and archived
+// when a listing for the current contract is deployed.
+const listingRecord = recorded && recorded.trusts === passport ? recorded : null;
+const staleListing = recorded && !listingRecord ? recorded : null;
 const MANIFEST = join(LISTING_DIR, 'compiler', 'contract-manifest.json');
 if (!existsSync(join(LISTING_DIR, 'keys', 'list.prover'))) fail('no keys for the listing: run `npm run compile:listing` in WSL (see contracts/README.md)');
 
@@ -81,6 +86,7 @@ const moduleProvider = {
 
 log(`VINPassport  ${passport} (${network})`);
 log(`rule         a current claim that ${RULE.field} is at most ${RULE.bound}`);
+if (staleListing) log(`note         the recorded listing ${staleListing.contractAddress.slice(0, 16)}... trusts a superseded VINPassport (${String(staleListing.trusts).slice(0, 16)}...); a deploy archives it`);
 
 // ------------------------------------------------------------------ list, dry run
 if (command === 'list' && !SUBMIT) {
@@ -144,6 +150,11 @@ try {
             const deployed = await deployContract(providers, { compiledContract: compiled(), args: constructorArgs() });
             const pub = deployed.deployTxData.public;
             log(`\nDEPLOYED   ${pub.contractAddress}\ntx hash    ${pub.txHash}  block ${pub.blockHeight}\nfees       paid ${pub.fees?.paidFees ?? '?'} SPECK; ${Math.round((Date.now() - t0) / 1000)} s`);
+            if (staleListing) {
+                const archived = join(ROOT, 'deploy', `listing.${network}-superseded-${Date.now()}.json`);
+                renameSync(LISTING_RECORD, archived);
+                log(`archived   the previous listing record to ${archived}`);
+            }
             writeFileSync(LISTING_RECORD, JSON.stringify({
                 network, contract: 'listing', contractAddress: pub.contractAddress, txHash: pub.txHash, txId: pub.txId,
                 blockHeight: pub.blockHeight, deployedAt: new Date().toISOString(), fees: pub.fees ?? null,
