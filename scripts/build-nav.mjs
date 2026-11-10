@@ -62,13 +62,13 @@ export const PAGES = [
     { file: 'index.html', depth: 0, current: 'home', design: 'vp' },
     { file: 'guide/index.html', depth: 1, current: 'guide' },
     { file: 'regulation/index.html', depth: 1, current: 'regulation' },
-    { file: 'demo/index.html', depth: 1, current: 'demo' },
+    { file: 'demo/index.html', depth: 1, current: null, design: 'vp' },
     { file: 'verify/index.html', depth: 1, current: 'verify' },
-    { file: 'intake/index.html', depth: 1, current: 'intake' },
-    { file: 'proofs/index.html', depth: 1, current: null },
+    { file: 'intake/index.html', depth: 1, current: null, design: 'vp' },
+    { file: 'proofs/index.html', depth: 1, current: null, design: 'vp' },
     { file: 'manufacturers/index.html', depth: 1, current: 'manufacturers', design: 'vp' },
-    { file: 'disclose/index.html', depth: 1, current: null },
-    { file: 'wallet/index.html', depth: 1, current: null },
+    { file: 'disclose/index.html', depth: 1, current: null, design: 'vp' },
+    { file: 'wallet/index.html', depth: 1, current: null, design: 'vp' },
     // The 2026 redesign. A page joins the new design when it is ported: `design: 'vp'` stamps
     // the new header and footer instead of the old bar. The old bar goes once every page has
     // moved. 404.html is served from any depth, so its links are root-absolute.

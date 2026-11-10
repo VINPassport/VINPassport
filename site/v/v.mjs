@@ -323,7 +323,7 @@ ${b ? `<div class="v-oem"><div class="wrap v-oem__bar"><span class="v-oem__name"
 
 // chainSeesBlock is shared with other pages and draws in the old palette; it
 // sits inside a collapsed box here, as evidence rather than the answer.
-const chainSeesBlockFor = (key, view, ledger) => chainSeesBlock(key, view, ledger);
+const chainSeesBlockFor = (key, view, ledger) => chainSeesBlock(key, view, ledger, { bare: true });
 
 const NONE_ICON = '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>';
 

@@ -27,7 +27,7 @@ function explain(e) {
     if (codes.some((c) => /^(Rejected|PermissionRejected)$/.test(c))) msgs.unshift('the wallet said no');
     // The words first, then what actually failed: a guess with no evidence
     // under it sends a visitor to fix the wrong thing.
-    const detail = `<br><small style="color:rgba(14,23,38,.66)">${esc(msgs.join(' ← '))}</small>`;
+    const detail = `<br><small>${esc(msgs.join(' ← '))}</small>`;
     if (codes.some((c) => /^(Rejected|PermissionRejected)$/.test(c)) || /user (rejected|denied|cancell?ed)|rejected by (the )?user|request (was )?(rejected|denied|cancell?ed)/i.test(all)) {
         return 'The wallet declined the request. Nothing was sent.' + detail;
     }
@@ -65,7 +65,7 @@ async function ask() {
         const fee = r.fees?.paidFees ? `${(Number(r.fees.paidFees) / 1e15).toFixed(3)} DUST` : 'paid by your wallet';
         say('result', `<b>${r.answer ? 'Yes: this vehicle is registered.' : 'No: no passport is registered under this key.'}</b><br>`
             + `Accepted by the chain in block ${esc(r.blockHeight)}, fee ${esc(fee)}.<br>`
-            + `Transaction <code style="word-break:break-all">${esc(r.txHash)}</code>`);
+            + `Transaction <code>${esc(r.txHash)}</code>`);
     } catch (e) {
         say('result', explain(e));
     } finally {
@@ -84,7 +84,7 @@ if (!wallets.length) {
         const b = document.createElement('button');
         b.type = 'button';
         b.textContent = w.name;
-        b.style.cssText = "font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;padding:9px 20px;background:transparent;color:#0E1726;border:1px solid rgba(0,74,173,.4);cursor:pointer";
+        b.className = 'vp-btn vp-btn--secondary';
         b.addEventListener('click', () => choose(w));
         $('walletlist').appendChild(b);
     }

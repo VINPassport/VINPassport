@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-import { esc, short } from '../assets/chain-sees.mjs?v=2';
+import { esc, short } from '../assets/chain-sees.mjs?v=3';
 import { formatBound } from '../assets/verdict.mjs';
 import { CLAIM_CATALOGUE, isCompare } from '../assets/claim-catalogue.mjs';
 import { networkOf, explorerUrl } from '../assets/networks.mjs?v=1';
@@ -109,7 +109,7 @@ function claimLabel(c) {
     return open?.openLabel ? `${open.openLabel} ${bound}` : `${meta(c.fieldName).label} ${c.atMost ? 'at most' : 'at least'} ${bound}`;
 }
 
-const tick = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true" style="vertical-align:-2px"><path d="M20 6L9 17l-5-5"></path></svg>';
+const tick = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true" class="ds-tick"><path d="M20 6L9 17l-5-5"></path></svg>';
 
 function fieldRow(f, r) {
     const m = meta(f.fieldName);
@@ -118,7 +118,7 @@ function fieldRow(f, r) {
         : r.ok ? `<b>${tick} Opens its commitment</b> at slot <span class="mono">${esc(short(f.slot))}</span>`
             : `<b>Does not check:</b> ${esc(r.why)}`;
     return `<li class="ds-row" data-state="${state}">
-      <span class="nm"><b>${esc(m.label)}</b><span class="mono" style="font-size:11px;color:rgba(14,23,38,.62)">${esc(f.fieldName)}</span> <span class="ds-chip">${esc(m.tier ?? 'no tier')}</span></span>
+      <span class="nm"><b>${esc(m.label)}</b><span class="mono">${esc(f.fieldName)}</span> <span class="ds-chip">${esc(m.tier ?? 'no tier')}</span></span>
       <span class="val">${esc(value(f.fieldName, f.value))}</span>
       <span class="st">${status}</span>
     </li>`;
@@ -127,7 +127,7 @@ function fieldRow(f, r) {
 function claimRow(c) {
     const state = c.ok ? 'ok' : 'fail';
     return `<li class="ds-row" data-state="${state}">
-      <span class="nm"><b>${esc(claimLabel(c))}</b><span class="mono" style="font-size:11px;color:rgba(14,23,38,.62)">${esc(c.fieldName ?? 'unknown field')} ${c.atMost ? '&le;' : '&ge;'} ${esc(c.bound ?? '?')}</span></span>
+      <span class="nm"><b>${esc(claimLabel(c))}</b><span class="mono">${esc(c.fieldName ?? 'unknown field')} ${c.atMost ? '&le;' : '&ge;'} ${esc(c.bound ?? '?')}</span></span>
       <span class="st">${c.ok ? `<b>${tick} Proven</b> ${esc(c.why.replace(/^proven /, ''))}` : `<b>Not accepted:</b> ${esc(c.why)}`}</span>
     </li>`;
 }
@@ -155,10 +155,10 @@ function render(tier) {
     const byField = new Map((r?.fields ?? []).map((x) => [x.fieldName, x]));
 
     const band = !r
-        ? `<div class="ds-band" data-state="pending" role="status"><b>Checking</b><span style="font-size:14px">Loading the contract runtime (about 1.5 MB, once) to check this bundle.</span></div>`
+        ? `<div class="ds-band" data-state="pending" role="status"><b>Checking</b><span>Loading the contract runtime (about 1.5 MB, once) to check this bundle.</span></div>`
         : `<div class="ds-band" data-state="${r.ok ? 'ok' : 'fail'}" role="status">
             <b>${r.ok ? `${tick} Checked in your browser` : 'Does not check'}</b>
-            <span style="font-size:14px;line-height:1.5">Opens <b style="font:inherit;font-weight:700">${r.opened.length}</b> of the ${onLedger.length} fields this vehicle has on the ledger
+            <span>Opens <b>${r.opened.length}</b> of the ${onLedger.length} fields this vehicle has on the ledger
             ${r.claims.length ? `&middot; cites ${r.claims.length} proven claim${r.claims.length === 1 ? '' : 's'}` : ''}
             ${bundle.vin ? `&middot; names the VIN, which hashes to the passport's key: ${r.vinMatchesHash ? 'yes' : 'no'}` : ''}${r.overDisclosed.length ? ` &middot; above its tier: ${esc(r.overDisclosed.join(', '))}` : ''}</span>
           </div>`;
@@ -168,30 +168,30 @@ function render(tier) {
     const odometer = bundles.trade.fields.find((f) => f.fieldName === 'odometerKm');
 
     panel.innerHTML = `
-      <p style="margin:0 0 16px;max-width:74ch;font-size:15px;line-height:1.6;color:rgba(14,23,38,.82)">${esc(L.intro(tier))}</p>
+      <p class="ds-intro">${esc(L.intro(tier))}</p>
       ${band}
       ${r ? `<p class="ds-grant" data-state="${tier === 'public' || r.grant?.covers ? 'ok' : 'none'}">${grantLine(tier, r)}</p>` : ''}
       <h3 class="ds-h3">Opened: ${bundle.fields.length} value${bundle.fields.length === 1 ? '' : 's'}</h3>
       ${bundle.fields.length
         ? `<ul class="ds-rows">${bundle.fields.map((f) => fieldRow(f, byField.get(f.fieldName))).join('')}</ul>`
-        : `<p style="margin:0;font-size:14px;line-height:1.6;color:rgba(14,23,38,.78)">None. This file opens no value; every field this vehicle has on the ledger is above the ${esc(tier)} tier.</p>`}
+        : `<p class="ds-plain">None. This file opens no value; every field this vehicle has on the ledger is above the ${esc(tier)} tier.</p>`}
       ${r && r.claims.length ? `<h3 class="ds-h3">Cited: claims already proven on the ledger</h3>
       <ul class="ds-rows">${r.claims.map(claimRow).join('')}</ul>` : ''}
       <h3 class="ds-h3">Left closed${r ? `: ${closed.length}` : ''}</h3>
-      ${!r ? '<p style="margin:0;font-size:14px">Checking.</p>'
+      ${!r ? '<p class="ds-plain">Checking.</p>'
         : closed.length
-            ? `<p style="margin:0 0 10px;max-width:74ch;font-size:14px;line-height:1.6;color:rgba(14,23,38,.78)">These fields have commitments on the ledger for this vehicle. Nothing in ${esc(t.who)}'s file opens them.</p>
+            ? `<p class="ds-plain ds-gap">These fields have commitments on the ledger for this vehicle. Nothing in ${esc(t.who)}'s file opens them.</p>
                <ul class="ds-closed">${closed.map((n) => `<li>${esc(meta(n).label)} <span class="ds-chip">${esc(meta(n).tier)}</span></li>`).join('')}</ul>`
-            : `<p style="margin:0;font-size:14px;line-height:1.6;color:rgba(14,23,38,.78)">None. This file opens every field the vehicle has on the ledger.</p>`}
+            : `<p class="ds-plain">None. This file opens every field the vehicle has on the ledger.</p>`}
       ${edit ? `<div class="ds-try">
         <label for="try-value">Try it: change the ${esc(inline(meta(edit.fieldName).label))} in this file and check again</label>
         <div class="ds-tryrow">
           <input class="ds-input" id="try-value" type="number" inputmode="numeric" min="0" step="1" value="${esc(edit.value)}">
-          <button class="ds-btn" id="try-check" type="button"${r ? '' : ' disabled'}>CHECK THIS VALUE</button>
+          <button class="ds-btn" id="try-check" type="button"${r ? '' : ' disabled'}>Check this value</button>
         </div>
         <p class="ds-out" id="try-out" role="status" aria-live="polite"></p>
-        ${tier === 'public' && odometer ? `<div style="margin-top:16px">
-          <button class="ds-btn ghost" id="try-over" type="button"${r ? '' : ' disabled'}>HAND THE BUYER THE MILEAGE TOO</button>
+        ${tier === 'public' && odometer ? `<div class="ds-over">
+          <button class="ds-btn ghost" id="try-over" type="button"${r ? '' : ' disabled'}>Hand the buyer the mileage too</button>
           <p class="ds-out" id="over-out" role="status" aria-live="polite"></p>
         </div>` : ''}
       </div>` : ''}
@@ -199,7 +199,7 @@ function render(tier) {
         <summary>Show the file ${esc(t.who)} receives</summary>
         <pre>${esc(JSON.stringify(bundle, null, 2))}</pre>
       </details>
-      <p style="margin:12px 0 0;font-size:13.5px"><a href="${L.base}${tier}.json" download style="display:inline-flex;align-items:center;min-height:44px;color:#004AAD">Download ${tier}.json</a></p>`;
+      <p class="ds-plain ds-gap-top"><a class="link ds-dl" href="${L.base}${tier}.json" download>Download ${tier}.json</a></p>`;
 
     wireTry(tier, edit, odometer);
 }
@@ -288,7 +288,7 @@ function provenance() {
     // hash itself is the reference (networks.mjs explains why Preview has none).
     const grantHref = run.grant.explorer ?? explorerUrl(net, 'transactions', run.grant.txHash);
     const grantRef = grantHref
-        ? `(<a href="${esc(grantHref)}" style="color:#004AAD">on the explorer</a>)`
+        ? `(<a class="link" href="${esc(grantHref)}">on the explorer</a>)`
         : `(transaction <span class="mono" title="${esc(run.grant.txHash)}">${esc(short(run.grant.txHash))}</span>)`;
     return `<b>Real chain data.</b> The ledger state was read from the public ${esc(net.name)} indexer (${esc(net.ledger)}) at block ${esc(ledger.readAtBlock)},
       contract <span class="mono">${esc(short(ledger.contractAddress))}</span>. The bundles come from the guided run of
@@ -312,7 +312,7 @@ async function useLedger(name) {
     history.replaceState(null, '', url);
     if (!offered().includes(current())) select('public');
     if (!loaded[name]) {
-        panel.innerHTML = `<p style="margin:0;font-size:14.5px;line-height:1.6;color:rgba(14,23,38,.78)">Loading the bundles and the ${name === 'demo' ? 'demo ledger' : `${networkOf(name).label} snapshot`}.</p>`;
+        panel.innerHTML = `<p class="ds-plain">Loading the bundles and the ${name === 'demo' ? 'demo ledger' : `${networkOf(name).label} snapshot`}.</p>`;
         const L = LEDGERS[name];
         try {
             const [l, r, ...files] = await Promise.all([
@@ -322,7 +322,7 @@ async function useLedger(name) {
             ]);
             loaded[name] = { ledger: l, run: r, bundles: Object.fromEntries(L.tiers.map((t, i) => [t, files[i]])), results: {} };
         } catch (e) {
-            if (ledgerName === name) panel.innerHTML = `<p style="margin:0;font-size:14.5px;color:#8A1C1C">Could not load the bundles: ${esc(e.message)}</p>`;
+            if (ledgerName === name) panel.innerHTML = `<p class="ev-alert">Could not load the bundles: ${esc(e.message)}</p>`;
             return;
         }
     }
@@ -346,7 +346,7 @@ for (const b of ledgerButtons) {
         const vocab = await getJson('../verify/fields.json');
         byName = Object.fromEntries(Object.values(vocab.fields).map((f) => [f.name, f]));
     } catch (e) {
-        panel.innerHTML = `<p style="margin:0;font-size:14.5px;color:#8A1C1C">Could not load the bundles: ${esc(e.message)}</p>`;
+        panel.innerHTML = `<p class="ev-alert">Could not load the bundles: ${esc(e.message)}</p>`;
         return;
     }
     await useLedger(start);
@@ -355,7 +355,7 @@ for (const b of ledgerButtons) {
     } catch (e) {
         const band = panel.querySelector('.ds-band');
         if (band) band.outerHTML =
-            `<div class="ds-band" data-state="fail" role="status"><b>Could not check</b><span style="font-size:14px">The contract runtime did not load: ${esc(e.message)}</span></div>`;
+            `<div class="ds-band" data-state="fail" role="status"><b>Could not check</b><span>The contract runtime did not load: ${esc(e.message)}</span></div>`;
         return;
     }
     if (!bundles) return;

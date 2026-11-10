@@ -133,21 +133,16 @@ function startTicker() { if (!ticker) ticker = setInterval(tick, 1000); }
 /**
  * A step's public shape. The running row is the only one that moves, and it
  * moves because a single proof blocks for tens of seconds: without it a
- * working run and a dead page look identical.
+ * working run and a dead page look identical. Colours live in vp.css.
  */
-const MARK = {
-    pending: { glyph: '·', color: 'rgba(14,23,38,.62)', border: '1px dashed rgba(14,23,38,.62)', bg: 'transparent' },
-    running: { glyph: '»', color: '#EDE4D8', border: '1px solid #004AAD', bg: '#004AAD' },
-    done: { glyph: '✓', color: '#EDE4D8', border: '1px solid #004AAD', bg: '#004AAD' },
-    failed: { glyph: '×', color: '#0E1726', border: '1px solid #8B95FF', bg: '#8B95FF' }
-};
+const GLYPH = { pending: '·', running: '»', done: '✓', failed: '×' };
 
-const outLink = (href, text, style = 'color:#004AAD') =>
-    `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer" style="${style}">${text}</a>`;
+const outLink = (href, text) =>
+    `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${text}</a>`;
 
 function stepRow(step, net) {
-    const m = MARK[step.status] ?? MARK.pending;
-    const running = step.status === 'running';
+    const status = GLYPH[step.status] ? step.status : 'pending';
+    const running = status === 'running';
     // The confirm step's detail reads "tx <hash> in block <n>". Linking it as
     // it streams means a visitor can open the transaction while the run is
     // still going, rather than waiting for the receipt at the end. Escape
@@ -156,30 +151,28 @@ function stepRow(step, net) {
     const linkify = (s) => !net.explorer ? esc(s) : esc(s)
         .replace(/\btx ([0-9a-f]{64})\b/gi, (_, h) => `tx ${outLink(explorerUrl(net, 'transactions', h), h)}`)
         .replace(/\bblock (\d+)\b/g, (_, n) => `block ${outLink(explorerUrl(net, 'blocks', n), n)}`);
-    const detail = step.detail
-        ? `<div class="mono" style="margin-top:3px;font-size:10.5px;line-height:1.5;color:rgba(14,23,38,.62);overflow-wrap:anywhere">${linkify(step.detail)}</div>`
-        : '';
+    const detail = step.detail ? `<div class="ev-step__detail">${linkify(step.detail)}</div>` : '';
     // A finished step reports what it took; the running one counts up. Only
     // the running clock carries data-vp-since, so the ticker stops on its own
     // once nothing is live.
     const clock = running && step.startedAt
-        ? `<span class="mono vp-clock" data-vp-since="${Date.parse(step.startedAt)}"
-             style="flex:none;font-size:11px;color:#004AAD">${esc(fmtDuration(since(step.startedAt)) || '0s')}</span>`
+        ? `<span class="ev-clock" data-vp-since="${Date.parse(step.startedAt)}">${esc(fmtDuration(since(step.startedAt)) || '0s')}</span>`
         : step.ms != null
-            ? `<span class="mono vp-clock" style="flex:none;font-size:11px;color:rgba(14,23,38,.62)">${esc(fmtDuration(step.ms))}</span>`
+            ? `<span class="ev-clock">${esc(fmtDuration(step.ms))}</span>`
             : '';
-    return `<div class="${running ? 'vp-run' : ''}" style="display:flex;gap:12px;padding:11px 15px;border-top:1px solid rgba(0,74,173,.12);align-items:flex-start">
-      <span class="${running ? 'vp-mark-run' : ''}" style="flex:none;width:22px;height:22px;display:grid;place-items:center;font-size:12px;line-height:1;
-        border:${m.border};background:${m.bg};color:${m.color}">${m.glyph}</span>
-      <div style="flex:1 1 220px;min-width:0">
-        <b style="display:block;font-size:13.5px;font-weight:${running ? 700 : 500};line-height:1.4">${esc(step.label)}</b>
-        ${detail}
-      </div>
+    return `<div class="ev-step${running ? ' ev-step--running' : ''}">
+      <span class="ev-step__mark" data-status="${status}" aria-hidden="true">${GLYPH[status]}</span>
+      <div class="ev-step__body"><span class="ev-step__label">${esc(step.label)}</span>${detail}</div>
       ${clock}
     </div>`;
 }
 
 // ---------------------------------------------------------------- receipt
+
+const MARK_SVG = {
+    proven: '<span class="v-mark v-mark--verified"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"></path></svg></span>',
+    other: '<span class="v-mark v-mark--not-proven"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8h8"></path></svg></span>'
+};
 
 function receiptPanel(job, base, net) {
     const r = job.receipt;
@@ -189,68 +182,54 @@ function receiptPanel(job, base, net) {
     // not. The indexer query is the primary check either way: an explorer is
     // somebody else's website, and "check it yourself" should not depend on
     // one staying up.
-    const UNDER = 'text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px';
     const txCell = (t) => {
         const href = explorerUrl(net, 'transactions', t.txHash);
         return href
-            ? `<a class="mono" href="${esc(href)}" target="_blank" rel="noopener noreferrer"
-                 style="flex:none;font-size:10.5px;color:#004AAD;${UNDER}"
+            ? `<a class="ev-tx__hash" href="${esc(href)}" target="_blank" rel="noopener noreferrer"
                  title="View ${esc(t.txHash)} on the ${esc(net.label)} explorer">${esc(short(t.txHash))}&#8239;<span aria-hidden="true">&#8599;</span></a>`
-            : `<span class="mono" style="flex:none;font-size:10.5px;color:rgba(14,23,38,.72)" title="${esc(t.txHash)}">tx ${esc(short(t.txHash))}</span>`;
+            : `<span class="ev-tx__hash" title="${esc(t.txHash)}">tx ${esc(short(t.txHash))}</span>`;
     };
     const blockCell = (t) => {
         const href = explorerUrl(net, 'blocks', t.blockHeight);
         return href
-            ? `<a class="mono" href="${esc(href)}" target="_blank" rel="noopener noreferrer"
-                 style="flex:none;font-size:10.5px;color:rgba(14,23,38,.62);${UNDER}"
+            ? `<a class="ev-tx__block" href="${esc(href)}" target="_blank" rel="noopener noreferrer"
                  title="View block ${esc(t.blockHeight)} on the ${esc(net.label)} explorer">block ${esc(t.blockHeight)}</a>`
-            : `<span class="mono" style="flex:none;font-size:10.5px;color:rgba(14,23,38,.62)">block ${esc(t.blockHeight)}</span>`;
+            : `<span class="ev-tx__block">block ${esc(t.blockHeight)}</span>`;
     };
-    const txRows = (r.onChain ?? []).map((t) => `<div style="display:flex;flex-wrap:wrap;gap:3px 12px;padding:9px 15px;border-top:1px solid rgba(0,74,173,.12)">
-        <span style="flex:1 1 200px;min-width:0;font-size:13px">${esc(t.label)}</span>
-        ${txCell(t)}
-        ${blockCell(t)}
-      </div>`).join('');
+    const onChain = r.onChain ?? [];
+    const txRows = onChain.map((t) => `<div class="ev-tx"><span class="ev-tx__label">${esc(t.label)}</span>${txCell(t)}${blockCell(t)}</div>`).join('');
 
     const claimRows = (r.claims ?? []).map((c) => {
         const proven = c.outcome.startsWith('proven');
-        return `<div class="row" style="padding:11px 0">
-          <span class="${proven ? 'tick' : 'none'}">${proven
-            ? '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"></path></svg>'
-            : `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12h14"></path></svg>`}</span>
-          <div style="flex:1 1 220px;min-width:0">
-            <b style="display:block;font-size:14px">${esc(c.label)}</b>
-            <span style="font-size:12px;color:rgba(14,23,38,.62)">${esc(c.outcome)}</span>
-          </div>
-        </div>`;
+        return `<li>${proven ? MARK_SVG.proven : MARK_SVG.other}<div><b>${esc(c.label)}</b><span class="small">${esc(c.outcome)}</span></div></li>`;
     }).join('');
 
     const refusals = (r.refused ?? []).length
-        ? `<div style="padding:12px 15px;border-top:1px solid rgba(0,74,173,.26);background:rgba(139,149,255,.18)">
-             <b style="font-size:13px">Refused in-circuit, nothing written</b>
-             ${r.refused.map((x) => `<div style="margin-top:5px;font-size:12.5px;line-height:1.55;color:rgba(14,23,38,.85)"><span class="mono" style="font-size:11px">${esc(x.step)}</span>: ${esc(x.reason)}</div>`).join('')}
+        ? `<div class="ev-refused">
+             <div class="ev-refused__head"><span class="vp-stamp vp-stamp--refused">Refused</span>In-circuit, nothing written</div>
+             ${r.refused.map((x) => `<p><span class="mono">${esc(x.step)}</span>: ${esc(x.reason)}</p>`).join('')}
            </div>`
         : '';
 
-    return `<section style="border:1px solid rgba(0,74,173,.26);margin-top:26px">
-      <div style="padding:12px 15px;border-bottom:1px solid rgba(0,74,173,.26);display:flex;flex-wrap:wrap;align-items:baseline;gap:8px">
-        <h3 style="margin:0;font-size:19px;letter-spacing:.02em;text-transform:uppercase">On the chain</h3>
-        <span class="mono" style="margin-left:auto;font-size:11px;color:rgba(14,23,38,.62)">${(r.onChain ?? []).length} transaction${(r.onChain ?? []).length === 1 ? '' : 's'} · ${esc(net.label)}</span>
+    return `<section class="ev-panel">
+      <div class="ev-panel__head">
+        <h3 class="ev-panel__title">On the chain</h3>
+        <span class="ev-panel__meta">${onChain.length} transaction${onChain.length === 1 ? '' : 's'} · ${esc(net.label)}</span>
       </div>
       ${txRows}
       ${refusals}
-      <div style="padding:14px 15px;border-top:1px solid rgba(0,74,173,.26)">
-        <div class="sect" style="margin-bottom:10px"><span class="snum">A</span><h2 class="stitle">WHAT WAS PROVEN</h2></div>
-        ${claimRows || '<p style="margin:0;font-size:13px;color:rgba(14,23,38,.68)">No claims were requested on this run.</p>'}
+      <div class="ev-panel__body">
+        <div class="vp-label">What was proven</div>
+        ${claimRows ? `<ul class="ev-claims">${claimRows}</ul>` : '<p class="ev-note">No claims were requested on this run.</p>'}
       </div>
-      <div style="padding:14px 15px;border-top:1px solid rgba(0,74,173,.26)">
-        <div class="sect" style="margin-bottom:10px"><span class="snum">B</span><h2 class="stitle">THE PASSPORT ITSELF</h2></div>
-        <p style="margin:0 0 12px;font-size:13.5px;line-height:1.6;color:rgba(14,23,38,.82);max-width:64ch">The chain holds commitments. The values behind them, and the salts that hide them, exist only in the receipt below. Whoever holds that file can open the commitments and prove any of these values to anyone; nobody else can. That is what owning a passport means here.</p>
-        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
-          <a href="${base}/api/demo/report?id=${encodeURIComponent(job.id)}" download style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;background:#004AAD;color:#EDE4D8;padding:11px 22px">DOWNLOAD THE RECEIPT</a>
-          <a href="../v/?v=${encodeURIComponent(r.vinHash)}" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;color:#0E1726;border:1px solid rgba(0,74,173,.28);padding:11px 20px">VERIFY THIS PASSPORT</a>
+      <div class="ev-panel__body">
+        <div class="vp-label">The passport itself</div>
+        <p class="ev-copy">The chain holds commitments. The values behind them, and the salts that hide them, exist only in the receipt below. Whoever holds that file can open the commitments and prove any of these values to anyone; nobody else can. That is what owning a passport means here.</p>
+        <div class="ev-actions">
+          <a class="vp-btn vp-btn--primary" href="${base}/api/demo/report?id=${encodeURIComponent(job.id)}" download>Download the receipt</a>
+          <a class="vp-btn vp-btn--secondary" href="../v/?v=${encodeURIComponent(r.vinHash)}">Verify this passport</a>
         </div>
-        <div class="mono" style="margin-top:11px;font-size:10.5px;line-height:1.6;color:rgba(14,23,38,.62);overflow-wrap:anywhere">VIN ${esc(r.vin)} · vinHash ${esc(short(r.vinHash))} · contentRoot ${esc(short(r.contentRoot))}</div>
+        <div class="ev-step__detail">VIN ${esc(r.vin)} · vinHash ${esc(short(r.vinHash))} · contentRoot ${esc(short(r.contentRoot))}</div>
       </div>
     </section>`;
 }
@@ -282,18 +261,18 @@ export function renderJob(host, job, base) {
             : 'Real proving, real fees, real blocks. This takes a few minutes.';
 
     const total = live && job.startedAt
-        ? `<span class="mono vp-clock" data-vp-since="${Date.parse(job.startedAt)}" style="font-size:11px;color:#004AAD">${esc(fmtDuration(since(job.startedAt)) || '0s')}</span>`
+        ? `<span class="ev-clock" data-vp-since="${Date.parse(job.startedAt)}">${esc(fmtDuration(since(job.startedAt)) || '0s')}</span>`
         : job.ms != null
-            ? `<span class="mono vp-clock" style="font-size:11px;color:rgba(14,23,38,.62)">took ${esc(fmtDuration(job.ms))}</span>`
+            ? `<span class="ev-clock">took ${esc(fmtDuration(job.ms))}</span>`
             : '';
 
-    host.innerHTML = `<section style="border:1px solid rgba(0,74,173,.26)">
-      <div style="padding:12px 15px;border-bottom:1px solid rgba(0,74,173,.26);display:flex;flex-wrap:wrap;align-items:baseline;gap:8px">
-        <h3 style="margin:0;font-size:19px;letter-spacing:.02em;text-transform:uppercase">${esc(headline)}</h3>
+    host.innerHTML = `<section class="ev-panel">
+      <div class="ev-panel__head">
+        <h3 class="ev-panel__title">${esc(headline)}</h3>
         ${total}
-        <span class="mono" style="margin-left:auto;font-size:11px;color:rgba(14,23,38,.62)">${esc(job.kind)} run · ${esc(job.id.slice(0, 8))}</span>
+        <span class="ev-panel__meta">${esc(job.kind)} run · ${esc(job.id.slice(0, 8))}</span>
       </div>
-      <p style="margin:0;padding:11px 15px;font-size:13px;line-height:1.55;color:rgba(14,23,38,.72);border-bottom:1px solid rgba(0,74,173,.12)">${sub}</p>
+      <p class="ev-panel__sub">${sub}</p>
       ${(job.steps ?? []).map((s) => stepRow(s, net)).join('')}
     </section>
     ${receiptPanel(job, base, net)}`;
@@ -328,7 +307,7 @@ export async function followJob(base, jobId, host, onChange) {
         } catch (e) {
             missed += 1;
             if (missed >= GIVE_UP_AFTER) {
-                host.innerHTML = `<p style="margin:0;font-size:13.5px;line-height:1.6;color:rgba(14,23,38,.72)">Lost contact with the run: ${esc(e.message)}. It is still going on the server - reload this page to pick it up again.</p>`;
+                host.innerHTML = `<p class="ev-alert">Lost contact with the run: ${esc(e.message)}. It is still going on the server: reload this page to pick it up again.</p>`;
                 throw e;
             }
             if (missed >= QUIET_AFTER) paintBusy(host, lastJob, base);
@@ -345,7 +324,7 @@ export async function followJob(base, jobId, host, onChange) {
 
 /** Keep the last good render and add one honest line above it. */
 function paintBusy(host, lastJob, base) {
-    const note = `<p style="margin:0 0 12px;padding:10px 13px;border:1px solid #8B95FF;background:rgba(139,149,255,.16);font-size:12.5px;line-height:1.55">The server has gone quiet for a moment. That is usually the proof itself: generating one blocks the server until it is done. Still following this run.</p>`;
+    const note = '<p class="ev-quiet">The server has gone quiet for a moment. That is usually the proof itself: generating one blocks the server until it is done. Still following this run.</p>';
     if (lastJob) { renderJob(host, lastJob, base); host.insertAdjacentHTML('afterbegin', note); }
     else host.innerHTML = note;
 }

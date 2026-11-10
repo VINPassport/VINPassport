@@ -1,11 +1,14 @@
 /**
- * Proof explorer wiring: the whole claims ledger, grouped by vehicle,
- * rendered into the hand-designed markup.
+ * Proof explorer wiring: the whole claims ledger, grouped by vehicle.
  *
  * Every passport gets a section, including ones with no claims, because
  * "registered, nothing proven" is a state worth seeing. A claim is current
  * when its recorded commitment still matches the field's live one, which is
- * the same check the verify page makes.
+ * the same check the verdict page makes.
+ *
+ * Everything it fills has an id (stat-*, vehicles, source); the look lives
+ * in vp.css. Nothing here is anchored on the page's shape, which twice let
+ * this script fail quietly and leave hard-coded examples on screen.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -15,22 +18,26 @@ const fmt = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 const short = (h) => `${String(h).slice(0, 10)}…${String(h).slice(-6)}`;
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const $ = (id) => document.getElementById(id);
 
 const claimTitle = (meta, c) => {
     // No meta means the claim's fieldKey is not a canonical VINPassport field.
     // Name it as invalid rather than lending it a generic "Field" label, because a
     // forged key (e.g. "odometerKm " with a trailing space) must not read as real.
-    if (!meta) return `⚠ Unrecognised field key ${short(c.fieldKey)}, not canonical`;
+    if (!meta) return `Unrecognised field key ${short(c.fieldKey)}, not canonical`;
     const label = meta.label ?? 'Field';
     const op = c.atMost ? '≤' : '≥';
     const suffix = meta.kind === 'km' ? ' km' : '';
     return `${label} ${op} ${fmt(c.bound)}${suffix}`;
 };
 
-function claimRow(meta, c, current, last) {
-    return `<div class="claim"${last ? ' style="border-bottom:none"' : ''}>
-      <div style="flex:1 1 240px;min-width:0"><b style="display:block;font-size:14.5px">${esc(claimTitle(meta, c))}</b><span class="mono" style="font-size:10.5px;color:rgba(14,23,38,.62)">${esc(meta?.name ?? short(c.fieldKey))} · slot ${short(c.slot)} · proven against ${short(c.commitment)}</span></div>
-      <span class="chip ${current ? 'chip-cur' : 'chip-sup'}">${current ? 'current' : 'superseded'}</span>
+function claimRow(meta, c, current) {
+    const chip = !meta ? '<span class="ev-chip ev-chip--invalid">Invalid</span>'
+        : current ? '<span class="ev-chip ev-chip--current">Current</span>'
+            : '<span class="ev-chip ev-chip--superseded">Superseded</span>';
+    return `<div class="ev-claim">
+      <div class="ev-claim__text"><b>${esc(claimTitle(meta, c))}</b><span>${esc(meta?.name ?? short(c.fieldKey))} · slot ${short(c.slot)} · proven against ${short(c.commitment)}</span></div>
+      ${chip}
     </div>`;
 }
 
@@ -41,21 +48,19 @@ function vehicleSection(vin, claims, ledger, vinfo, fields) {
         : currentCount === claims.length
             ? `${claims.length} claim${claims.length === 1 ? '' : 's'} · all current`
             : `${claims.length} claims · ${claims.length - currentCount} superseded`;
-    const sub = vinfo?.blurb ? `${summary}` : summary;
     const body = claims.length === 0
-        ? '<p style="margin:0;padding:12px 15px;font-size:13px;line-height:1.55;color:rgba(14,23,38,.68)">Registered, nothing proven yet. Not a judgement; a blank page. A failed proof writes nothing, and absence of a claim is rendered as absence, never as a quiet no.</p>'
-        : claims.map((c, i) => claimRow(fields[c.fieldKey], c,
-            ledger.fieldCommitment[c.slot] === c.commitment, i === claims.length - 1)).join('\n');
+        ? '<p class="ev-panel__sub">Registered, nothing proven yet. Not a judgement; a blank page. A failed proof writes nothing, and absence of a claim is rendered as absence, never as a quiet no.</p>'
+        : claims.map((c) => claimRow(fields[c.fieldKey], c, ledger.fieldCommitment[c.slot] === c.commitment)).join('\n');
     const note = vinfo?.blurb && claims.length > 0 && currentCount !== 0 && claims.length < 4
-        ? `<p style="margin:0;padding:12px 15px;font-size:13px;line-height:1.55;color:rgba(14,23,38,.68)">${esc(vinfo.blurb)}. Claims not on this list were <b>not requested</b> or would have aborted in-circuit. Absence of a claim is what the verdict page renders, never a quiet no.</p>`
+        ? `<p class="ev-panel__sub">${esc(vinfo.blurb)}. Claims not on this list were <b>not requested</b> or would have aborted in-circuit. Absence of a claim is what the verdict page renders, never a quiet no.</p>`
         : '';
-    return `<section style="border:1px solid rgba(0,74,173,.26);margin-bottom:22px">
-    <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 12px;padding:13px 15px;border-bottom:1px solid rgba(0,74,173,.26)">
-      <b style="font-family:'Barlow Condensed',sans-serif;font-size:21px;letter-spacing:.02em">${esc((vinfo?.title ?? 'UNLABELLED VEHICLE').toUpperCase())}</b>
-      <span style="font-size:12px;color:rgba(14,23,38,.62)">${esc(sub)}</span>
-      <a href="../v/?v=${vin}" style="margin-left:auto;font-size:13px;text-decoration:none;white-space:nowrap">Verdict view →</a>
+    return `<section class="ev-panel" aria-label="${esc(vinfo?.title ?? 'Unlabelled vehicle')}">
+    <div class="ev-panel__head">
+      <h3 class="ev-panel__title">${esc(vinfo?.title ?? 'Unlabelled vehicle')}</h3>
+      <span class="small">${esc(summary)}</span>
+      <a class="link ev-panel__link" href="../v/?v=${vin}">Verdict view →</a>
     </div>
-    <div class="mono" style="padding:9px 15px;font-size:10.5px;color:rgba(14,23,38,.62);word-break:break-all;border-bottom:1px solid rgba(0,74,173,.18)">VIN HASH ${vin}</div>
+    <div class="ev-key">VIN HASH ${vin}</div>
     ${body}
     ${note}
   </section>`;
@@ -66,51 +71,24 @@ function vehicleSection(vin, claims, ledger, vinfo, fields) {
     try {
         state = await loadState('../verify/', new URLSearchParams(location.search));
     } catch (e) {
-        const host = document.querySelector('body > div');
-        const p = document.createElement('p');
-        p.style.cssText = 'padding:30px 0;font-size:14px';
-        p.textContent = `Could not read the ledger: ${e.message}`;
-        host.querySelector('header').after(p);
+        $('vehicles').innerHTML = `<p class="ev-alert">Could not read the ledger: ${esc(e.message)}</p>`;
+        $('source').textContent = 'The ledger could not be read.';
         return;
     }
     const { ledger, vocabulary } = state;
     const byVin = Object.fromEntries((vocabulary.demoVehicles ?? []).map((v) => [v.vinHash, v]));
-
-    // stats grid: passports · claims · field updates · values published (0 by construction)
-    const cells = document.querySelectorAll('div[style*="grid-template-columns"] > div > div:first-child');
     const vins = Object.keys(ledger.passports);
-    if (cells.length >= 4) {
-        cells[0].textContent = String(vins.length);
-        cells[1].textContent = String(ledger.claims.length);
-        // Field updates is the number of committed (vehicle, field) cells,
-        // which is `fieldCommitment`. This read `relClaims` and so reported
-        // the two-field comparison claims instead: 2 where the ledger holds
-        // 15. It was invisible until the block above stopped throwing, so the
-        // page had been serving the hard-coded 16 beside it either way.
-        cells[2].textContent = String(Object.keys(ledger.fieldCommitment ?? {}).length);
-        cells[3].textContent = '0';
-    }
 
-    // vehicle sections: replace the two static examples with the real ledger.
-    // Anchored on #main, not on `body > div > section`: the <main> landmark
-    // added for Annex V 4.2.1 sits between the wrapper and the sections, so
-    // the old selector silently matched nothing and this whole block threw on
-    // `statics[0]`, leaving the hard-coded examples on screen.
-    const statics = [...document.querySelectorAll('#main > section')];
-    if (!statics.length) throw new Error('proofs: no #main > section to replace; the page structure changed');
-    const legend = document.querySelector('div[style*="Legend"], div');
-    const holder = document.createElement('div');
-    holder.innerHTML = vins.map((vin) =>
+    // passports · claims · field updates · values published (0 by construction).
+    // Field updates is the number of committed (vehicle, field) cells, which is
+    // `fieldCommitment`, not the two-field claims in `relClaims`.
+    $('stat-passports').textContent = String(vins.length);
+    $('stat-claims').textContent = String(ledger.claims.length);
+    $('stat-fields').textContent = String(Object.keys(ledger.fieldCommitment ?? {}).length);
+    $('stat-values').textContent = '0';
+
+    $('vehicles').innerHTML = vins.map((vin) =>
         vehicleSection(vin, ledger.claims.filter((c) => c.vinHash === vin),
             ledger, byVin[vin], vocabulary.fields)).join('\n');
-    statics[0].before(...holder.children);
-    for (const s of statics) s.remove();
-
-    // source badge under the header
-    const header = document.querySelector('main > header p');
-    const src = document.createElement('span');
-    src.className = 'mono';
-    src.style.cssText = 'display:block;margin-top:8px;font-size:10.5px;color:rgba(14,23,38,.62)';
-    src.textContent = state.badge;
-    header.after(src);
+    $('source').textContent = `Read from: ${state.badge}.`;
 })();

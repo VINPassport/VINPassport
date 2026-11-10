@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-import { apiBase, getStatus, startGuided, followJob, capacityLine } from '../assets/chain-run.mjs?v=6';
+import { apiBase, getStatus, startGuided, followJob, capacityLine } from '../assets/chain-run.mjs?v=7';
 import { networkOf, explorerUrl, indexerCurlLines } from '../assets/networks.mjs?v=1';
 
 const $ = (id) => document.getElementById(id);
@@ -40,7 +40,7 @@ function paintNetwork(net, address, mode) {
     if (!note) return;
     const contract = explorerUrl(net, 'contracts', address);
     note.innerHTML = contract
-        ? `Or read it in a browser: every transaction hash in the run above links to <a href="${esc(contract)}" target="_blank" rel="noopener noreferrer" style="color:#004AAD">the ${esc(net.label)} explorer</a>. The curl above stays the primary answer, because an explorer is somebody else's website, and checking our work should not depend on one staying up.`
+        ? `Or read it in a browser: every transaction hash in the run above links to <a class="link" href="${esc(contract)}" target="_blank" rel="noopener noreferrer">the ${esc(net.label)} explorer</a>. The curl above stays the primary answer, because an explorer is somebody else's website, and checking our work should not depend on one staying up.`
         : `No block explorer follows ${esc(net.name)} at the moment, so the hashes above are printed rather than linked, and the curl is the way to check them. It needs nothing from us: no account, no key, no project id.`;
 }
 const goBtn = $('go');
@@ -53,16 +53,13 @@ const capLine = $('capline');
 let base = null;
 let busy = false;
 
+// The look of a disabled button lives in vp.css; only the state is set here.
 const disable = (why) => {
     goBtn.disabled = true;
-    goBtn.style.opacity = '.45';
-    goBtn.style.cursor = 'not-allowed';
     goBtn.title = why;
 };
 const enable = () => {
     goBtn.disabled = false;
-    goBtn.style.opacity = '';
-    goBtn.style.cursor = 'pointer';
     goBtn.title = '';
 };
 
@@ -71,7 +68,7 @@ function paintStatus(status) {
     // restores a large wallet on start. That is a different thing from the
     // feature being off, and the page must not confuse the two.
     if (status?.unreachable) {
-        capDot.style.background = '#8B95FF';
+        capDot.dataset.state = 'wait';
         capState.textContent = 'Chain engine busy';
         capLine.textContent = 'Not answering right now: it blocks while it restores its wallet, and again while it generates a proof. This page enables itself once it replies.';
         if (!busy) {
@@ -92,7 +89,7 @@ function paintStatus(status) {
     // with an empty wallet spends a slot to fail at the first fee, so treat
     // no dust exactly like no runs left.
     const broke = ready && status.funds?.dust != null && BigInt(status.funds.dust) === 0n;
-    capDot.style.background = live && !spent && !broke ? '#004AAD' : '#8B95FF';
+    capDot.dataset.state = live && !spent && !broke ? 'on' : 'wait';
     const net = networkOf(status?.network);
     capState.textContent = !status?.enabled ? 'Chain runs are off here'
         : status.error ? 'Chain runs unavailable'
@@ -150,14 +147,14 @@ function watchUntilReady() {
 async function follow(jobId) {
     busy = true;
     disable('A run is already in flight.');
-    goBtn.textContent = 'RUNNING…';
+    goBtn.textContent = 'Running…';
     goNote.textContent = 'leave this page open; the run continues on the server either way';
     try {
         await followJob(base, jobId, runHost);
     } catch { /* followJob already explained itself in the panel */ }
     finally {
         busy = false;
-        goBtn.textContent = 'RUN THE GUIDED DEMO';
+        goBtn.textContent = 'Run the guided demo';
         await refreshStatus();
     }
 }
@@ -166,17 +163,14 @@ goBtn.addEventListener('click', async () => {
     if (busy || goBtn.disabled) return;
     busy = true;
     disable('Starting…');
-    goBtn.textContent = 'STARTING…';
+    goBtn.textContent = 'Starting…';
     let started;
     try {
         started = await startGuided(base);
     } catch (e) {
         busy = false;
-        runHost.innerHTML = `<section style="border:1px solid #8B95FF;background:rgba(139,149,255,.16);padding:13px 15px">
-          <b style="font-size:14px">The run did not start.</b>
-          <p style="margin:5px 0 0;font-size:13px;line-height:1.55;color:rgba(14,23,38,.85)">${e.message}</p>
-        </section>`;
-        goBtn.textContent = 'RUN THE GUIDED DEMO';
+        runHost.innerHTML = `<p class="ev-alert"><strong>The run did not start.</strong> ${esc(e.message)}</p>`;
+        goBtn.textContent = 'Run the guided demo';
         await refreshStatus();
         return;
     }
@@ -227,51 +221,53 @@ async function showRecordedRun() {
     // With an explorer the hash is shortened and the row links to it; without
     // one the full hash is printed, because then it is what a reader checks.
     const stages = run.stages.map((s) => `
-      <div style="display:grid;grid-template-columns:28px 1fr;gap:10px;padding:11px 0;border-top:1px solid rgba(0,74,173,.16)">
-        <span class="mono" style="font-size:11px;color:rgba(14,23,38,.62);padding-top:2px">${esc(String(s.stage).padStart(2, '0'))}</span>
-        <div style="min-width:0">
-          <b style="display:block;font-size:13px;color:#0E1726">${esc(s.label)}</b>
-          <span class="mono" style="display:block;margin-top:4px;font-size:10.5px;color:rgba(14,23,38,.62);overflow-wrap:anywhere">block ${esc(s.blockHeight)} &middot; tx ${s.explorer ? short(s.txHash) : esc(s.txHash)}</span>
-          ${s.explorer ? `<a href="${esc(s.explorer)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:5px;font-size:12px;color:#004AAD">open in the ${esc(net.label)} explorer &rarr;</a>` : ''}
+      <div class="ev-step">
+        <span class="ev-step__mark" data-status="done" aria-hidden="true">${esc(String(s.stage).padStart(2, '0'))}</span>
+        <div class="ev-step__body">
+          <span class="ev-step__label">${esc(s.label)}</span>
+          <div class="ev-step__detail">block ${esc(s.blockHeight)} &middot; tx ${s.explorer ? short(s.txHash) : esc(s.txHash)}${s.explorer ? ` &middot; <a href="${esc(s.explorer)}" target="_blank" rel="noopener noreferrer">open in the ${esc(net.label)} explorer</a>` : ''}</div>
         </div>
       </div>`).join('');
 
+    const MARK = {
+        ok: '<span class="v-mark v-mark--verified"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"></path></svg></span>',
+        refused: '<span class="v-mark v-mark--not-proven"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8h8"></path></svg></span>'
+    };
     const claims = run.claims.map((c) => {
         const refused = /refused/i.test(c.outcome);
-        return `<li style="margin:0 0 5px;font-size:13px;color:rgba(14,23,38,.78)">
-          <b style="color:#0E1726">${esc(c.label)}</b>: ${refused ? '<span style="color:#8B4A2B">' : '<span>'}${esc(c.outcome)}</span></li>`;
+        return `<li>${refused ? MARK.refused : MARK.ok}<div><b>${esc(c.label)}</b><span class="small">${esc(c.outcome)}</span></div></li>`;
     }).join('');
 
     const otherName = Object.keys(RECORDINGS).find((n) => n !== recordingName);
     const other = networkOf(otherName);
-    const otherLink = `<a href="?recorded=${esc(otherName)}" style="color:#004AAD">the ${esc(other.ledger)} run on ${esc(other.name)}</a>`;
+    const otherLink = `<a class="link" href="?recorded=${esc(otherName)}">the ${esc(other.ledger)} run on ${esc(other.name)}</a>`;
 
     runHost.innerHTML = `
-    <section style="margin:26px 0 0;border:1px solid rgba(0,74,173,.3);background:#EDE4D8;padding:17px 19px">
-      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;justify-content:space-between">
-        <b style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.06em;font-size:15px;color:#0E1726">A RUN THAT ALREADY HAPPENED</b>
-        <span style="font-size:12px;color:rgba(14,23,38,.62)">recorded ${esc(when)} on ${esc(net.name)}${net.ledger ? ` (${esc(net.ledger)})` : ''}, not live</span>
+    <section class="ev-panel">
+      <div class="ev-panel__head">
+        <h3 class="ev-panel__title">A run that already happened</h3>
+        <span class="ev-panel__meta">recorded ${esc(when)} on ${esc(net.name)}${net.ledger ? ` (${esc(net.ledger)})` : ''}, not live</span>
       </div>
-      <p style="margin:9px 0 0;font-size:13px;line-height:1.55;color:rgba(14,23,38,.78)">
+      <p class="ev-panel__sub">
         No circuit server is answering, so you cannot start a run from this page today. This one
         was real: ${run.stages.length} transactions, proven and submitted to ${esc(net.name)}, in blocks
         ${esc(run.stages[0].blockHeight)} to ${esc(run.stages[run.stages.length - 1].blockHeight)}. Every hash below is
         on the public chain and you can check any of them without us. Also recorded: ${otherLink}.
       </p>
-      <div style="margin:13px 0 0">${stages}</div>
-      <div style="margin:15px 0 0;padding-top:13px;border-top:1px solid rgba(0,74,173,.16)">
-        <b style="display:block;font-size:13px;color:#0E1726;margin-bottom:6px">What the run claimed</b>
-        <ul style="margin:0;padding-left:17px">${claims}</ul>
-        ${run.refused.length ? `<p style="margin:9px 0 0;font-size:12.5px;line-height:1.5;color:rgba(14,23,38,.62)">
+      ${stages}
+      <div class="ev-panel__body">
+        <div class="vp-label">What the run claimed</div>
+        <ul class="ev-claims">${claims}</ul>
+        ${run.refused.length ? `<p class="ev-note">
           The refusal is the part worth watching, and the one part you cannot look up: the
           circuit would not produce the claim &quot;${esc(refusedLabel(run))}&quot;, because the
           record did not support it. A refused claim writes nothing, which is why
           ${run.claims.length - run.refused.length} proof calls reached the chain and not
           ${run.claims.length}. No server decided that; the arithmetic did.</p>` : ''}
       </div>
-      <p class="mono" style="margin:14px 0 0;font-size:10.5px;line-height:1.6;color:rgba(14,23,38,.62);word-break:break-all">
-        contract ${esc(run.contractAddress)}<br>vin hash ${esc(run.vinHash)}
-      </p>
+      <div class="ev-panel__body">
+        <div class="ev-step__detail">contract ${esc(run.contractAddress)}<br>vin hash ${esc(run.vinHash)}</div>
+      </div>
     </section>`;
     paintNetwork(net, run.contractAddress, 'recorded');
     return run;

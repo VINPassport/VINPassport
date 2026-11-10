@@ -19,19 +19,18 @@
  * have, only in the other direction.
  *
  * The markup is the designer's specification: this script only fills selects,
- * toggles the states the design already draws, and rebuilds the result rows
- * in the same grammar. Refusals are rendered, never hidden.
+ * sets the states the design draws (aria-pressed, checked, hidden), and builds
+ * the result rows. Every element it touches has an id or a data attribute, and
+ * every look lives in vp.css. Refusals are rendered, never hidden.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 import { DEMO_VEHICLES } from '../assets/demo-vehicles.mjs';
 import { CLAIM_CATALOGUE, isCompare } from '../assets/claim-catalogue.mjs';
-import { qrPanel } from '../assets/passport-qr.mjs?v=2';
+import { qrPanel } from '../assets/passport-qr.mjs?v=3';
 import { networkOf } from '../assets/networks.mjs?v=1';
 
 const $ = (id) => document.getElementById(id);
-const sections = [...document.querySelectorAll('section')];
-const byTitle = (t) => sections.find((s) => s.querySelector('.stitle')?.textContent.trim().startsWith(t));
 
 // ---------------------------------------------------------------- selects
 
@@ -65,11 +64,9 @@ for (const [id, opts] of Object.entries(OPTIONS)) {
    The page now ships in the neutral state with the button disabled, and only
    this code turns it on, so the same class of failure fails closed. */
 const statusCard = document.querySelector('#server-status');
-const registerBtn = [...document.querySelectorAll('button')]
-    .find((b) => b.textContent.includes('REGISTER'));
-const downloadBtn = [...document.querySelectorAll('button')]
-    .find((b) => b.textContent.includes('DOWNLOAD'));
-const circuitsNote = registerBtn.parentElement.querySelector('span');
+const registerBtn = $('register');
+const downloadBtn = $('download');
+const circuitsNote = $('circuits');
 
 let serverMode = false;
 let apiBase = '';
@@ -85,70 +82,47 @@ let apiBase = '';
        literal "Local circuit server found" that the page shipped with, so if
        that text ever changed the rewrite became a no-op and the stale label
        survived: a second way to report a server that is not there. */
-    const line = statusCard.querySelector('div');
-    const dot = line.querySelector('span');
-    const note = statusCard.querySelector('.mono');
-    const label = (text) => {
-        for (const n of [...line.childNodes]) if (n.nodeType === Node.TEXT_NODE) n.remove();
-        line.append(text);
-    };
+    const dot = statusCard.querySelector('[data-status-dot]');
+    const note = statusCard.querySelector('[data-status-note]');
+    const label = (text) => { statusCard.querySelector('[data-status-label]').textContent = text; };
 
     if (serverMode) {
-        dot.style.background = '#004AAD';
+        dot.dataset.state = 'on';
         label(apiBase === '' ? 'Local circuit server found' : 'Circuit server connected');
         note.textContent = apiBase === ''
             ? 'attestation-vault-32 · depth 5'
             : `${apiBase.replace(/^https?:\/\//, '')} · shared demo ledger, resets on restart`;
         registerBtn.disabled = false;
-        registerBtn.style.opacity = '';
-        registerBtn.style.cursor = 'pointer';
         registerBtn.title = '';
     } else {
         /* No server, so the circuits run HERE. The button is enabled because
            something real happens when it is pressed, and the note says what
            that is and what it is not, before the press rather than after. */
-        dot.style.background = '#8B95FF';
+        dot.dataset.state = 'wait';
         label('Running the circuits in this browser');
         note.textContent = 'real commitments, nothing proven, nothing on a chain · kept in this tab only';
         registerBtn.disabled = false;
-        registerBtn.style.opacity = '';
-        registerBtn.style.cursor = 'pointer';
         registerBtn.title = 'Runs the compiled circuits in this page; the record stays in this tab';
     }
 })();
 
 // ---------------------------------------------------------------- origin toggle
 
-const typeSection = byTitle('PASSPORT TYPE');
-const [newLabel, retroLabel] = typeSection.querySelectorAll('label');
+const originButtons = [...document.querySelectorAll('[data-origin]')];
 let origin = 'new';
 
 const paintOrigin = () => {
-    for (const [label, mine] of [[newLabel, 'new'], [retroLabel, 'retrofit']]) {
-        const active = origin === mine;
-        const dot = label.querySelector('span span');
-        const title = label.querySelector('b');
-        label.style.border = active ? '1px solid #004AAD' : '1px solid rgba(0,74,173,.28)';
-        label.style.background = active ? '#004AAD' : 'transparent';
-        label.style.color = active ? '#EDE4D8' : '';
-        title.style.color = active ? '' : '#004AAD';
-        dot.style.border = active ? '1.5px solid #EDE4D8' : '1.5px solid rgba(0,74,173,.45)';
-        dot.style.background = active ? '#EDE4D8' : 'transparent';
-        dot.style.boxShadow = active ? 'inset 0 0 0 3px #004AAD' : 'none';
-        for (const small of label.querySelectorAll('span')) {
-            if (small === dot || small.contains(dot)) continue;
-            small.style.color = active ? '' : '';
-        }
-    }
+    for (const b of originButtons) b.setAttribute('aria-pressed', String(b.dataset.origin === origin));
 };
-newLabel.addEventListener('click', () => { origin = 'new'; paintOrigin(); rebuildPicker(); });
-retroLabel.addEventListener('click', () => { origin = 'retrofit'; paintOrigin(); rebuildPicker(); });
+for (const b of originButtons) {
+    b.addEventListener('click', () => { origin = b.dataset.origin; paintOrigin(); rebuildPicker(); });
+}
 
 // ---------------------------------------------------------------- demo picker
 
 const picker = $('dv');
 const pickerLabel = document.querySelector('label[for="dv"]');
-const expectBox = byTitle('DEMONSTRATION VEHICLE').querySelector('div[style*="240px"] p');
+const expectBox = $('expect');
 let selected = null;
 
 function rebuildPicker() {
@@ -207,9 +181,6 @@ const OFFERED = CLAIM_CATALOGUE.filter((q) => (isCompare(q)
 const DEFAULT_ON = new Set(['neverWrittenOff', 'noAccidents', 'oneKeeper', 'mileageUnder']);
 const claimState = Object.fromEntries(OFFERED.map((q) => [q.id, DEFAULT_ON.has(q.id)]));
 
-const TICK_SVG = '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" '
-    + 'stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"></path></svg>';
-
 /** The line under a question: what it actually asks of the ledger. */
 const claimSub = (q) => {
     if (isCompare(q)) return `${q.field} − ${q.against} ≤ ${q.slack}`;
@@ -219,38 +190,28 @@ const claimSub = (q) => {
 };
 
 const claimGrid = document.getElementById('claimgrid');
-// Replaces the four static labels the page ships as a no-script fallback.
+// Replaces the four static checkboxes the page ships as a no-script fallback.
+// Each question is a real checkbox, so the keyboard and a screen reader get
+// it for free; the open-bound one carries its number in its own field.
 claimGrid.innerHTML = OFFERED.map((q) => {
     const open = q.bound === null;
-    return `<label data-claim="${q.id}" style="display:flex;gap:10px;align-items:${open ? 'center' : 'flex-start'};padding:11px 13px;border:1px solid #004AAD;background:rgba(0,74,173,.07);cursor:pointer">`
-        + `<span style="flex:none;width:16px;height:16px;background:#004AAD;color:#EDE4D8;display:grid;place-items:center${open ? '' : ';margin-top:1px'}">${TICK_SVG}</span>`
-        + (open
-            ? `<span style="display:flex;align-items:center;gap:7px;font-size:14px;flex-wrap:wrap"><b>Mileage under</b><input data-bound="${q.id}" value="500" class="mono" style="width:82px;min-height:34px;padding:4px 8px;font-size:13px;background:#EDE4D8;border:1px solid rgba(0,74,173,.28);color:#0E1726">km</span>`
-            : `<span><b style="font-size:14px">${q.label}</b><small style="display:block;font-size:11.5px;color:rgba(14,23,38,.62)">${claimSub(q)}</small></span>`)
-        + '</label>';
+    const box = `<input type="checkbox" data-claim="${q.id}" id="claim-${q.id}">`;
+    return open
+        ? `<div class="ev-check">${box}<span class="ev-check__text"><span class="ev-check__bound"><label for="claim-${q.id}"><b>Mileage under</b></label><input class="input" data-bound="${q.id}" value="500" inputmode="numeric" aria-label="Mileage ceiling in km">km</span><small>${claimSub(q)}</small></span></div>`
+        : `<label class="ev-check">${box}<span class="ev-check__text"><b>${q.label}</b><small>${claimSub(q)}</small></span></label>`;
 }).join('');
 
-const claimLabels = Object.fromEntries(
-    [...claimGrid.querySelectorAll('label')].map((l) => [l.dataset.claim, l])
+const claimBoxes = Object.fromEntries(
+    [...claimGrid.querySelectorAll('input[data-claim]')].map((b) => [b.dataset.claim, b])
 );
 const mileageInput = claimGrid.querySelector('input[data-bound="mileageUnder"]');
 
 const paintClaim = (id) => {
-    const label = claimLabels[id];
-    if (!label) return;
-    const box = label.querySelector('span');
-    const on = claimState[id];
-    label.style.border = on ? '1px solid #004AAD' : '1px solid rgba(0,74,173,.28)';
-    label.style.background = on ? 'rgba(0,74,173,.07)' : 'transparent';
-    box.style.background = on ? '#004AAD' : 'transparent';
-    box.style.border = on ? 'none' : '1px solid rgba(0,74,173,.4)';
-    box.querySelector('svg').style.visibility = on ? 'visible' : 'hidden';
+    if (claimBoxes[id]) claimBoxes[id].checked = Boolean(claimState[id]);
 };
-for (const [id, label] of Object.entries(claimLabels)) {
-    label.addEventListener('click', (e) => {
-        if (e.target === mileageInput) return;
-        claimState[id] = !claimState[id];
-        paintClaim(id);
+for (const [id, box] of Object.entries(claimBoxes)) {
+    box.addEventListener('change', () => {
+        claimState[id] = box.checked;
         paintCircuitCount();
     });
 }
@@ -264,23 +225,14 @@ document.getElementById('claimsmeta').textContent =
 // the secret that proves it in-circuit, stay on the server: a console that
 // handled a writer's secret would be handing it to every viewer, which is
 // the opposite of what a per-vehicle writer list is for.
-const writerLabels = [...document.querySelectorAll('.wrt')];
+const writerBoxes = [...document.querySelectorAll('input[data-writer]')];
 const writerBy = $('writerby');
 const bySelect = $('wby');
 const withdrawBox = $('wdraw');
 const authorised = new Set();
 
 const paintWriters = () => {
-    for (const label of writerLabels) {
-        const on = authorised.has(label.dataset.writer);
-        const box = label.querySelector('span');
-        label.style.border = on ? '1px solid #004AAD' : '1px solid rgba(0,74,173,.28)';
-        label.style.background = on ? 'rgba(0,74,173,.07)' : 'transparent';
-        box.style.background = on ? '#004AAD' : 'transparent';
-        box.style.color = on ? '#EDE4D8' : 'inherit';
-        box.style.border = on ? 'none' : '1px solid rgba(0,74,173,.4)';
-        box.querySelector('svg').style.visibility = on ? 'visible' : 'hidden';
-    }
+    for (const box of writerBoxes) box.checked = authorised.has(box.dataset.writer);
     // Choosing who writes only means something when there is an update to
     // write and somebody authorised to write it.
     const updates = selected?.updates?.length ?? 0;
@@ -296,10 +248,10 @@ const paintWriters = () => {
     bySelect.value = authorised.has(keep) ? keep : '';
 };
 
-writerLabels.forEach((label) => {
-    label.addEventListener('click', () => {
-        const who = label.dataset.writer;
-        authorised.has(who) ? authorised.delete(who) : authorised.add(who);
+writerBoxes.forEach((box) => {
+    box.addEventListener('change', () => {
+        const who = box.dataset.writer;
+        if (box.checked) authorised.add(who); else authorised.delete(who);
         paintWriters();
         paintCircuitCount();
     });
@@ -324,18 +276,16 @@ function paintCircuitCount() {
     circuitsNote.textContent = n > RUN_CAP
         ? `${n} circuits will run, over the ${RUN_CAP} a chain run allows`
         : `${n} circuits will run`;
-    circuitsNote.style.color = n > RUN_CAP ? '#004AAD' : '';
-    circuitsNote.style.fontWeight = n > RUN_CAP ? '700' : '';
+    circuitsNote.classList.toggle('ev-note--warn', n > RUN_CAP);
 }
 paintWriters();
 paintCircuitCount();
 
 // ---------------------------------------------------------------- fill
 
-const evBlock = document.querySelector('div[style*="BEV / PHEV"], section div[style*="8B95FF"]');
+const evBlock = $('evblock');
 const syncEv = () => {
-    const ev = ['bev', 'phev'].includes($('fuel').value);
-    evBlock.style.display = ev ? '' : 'none';
+    evBlock.hidden = !['bev', 'phev'].includes($('fuel').value);
 };
 $('fuel').addEventListener('change', syncEv);
 
@@ -445,26 +395,25 @@ function buildIntake() {
 
 // ---------------------------------------------------------------- result
 
-const resultSection = sections.find((s) => s.querySelector('h3'));
-resultSection.hidden = true;
-const resultRowsHost = resultSection;
-const resultCount = resultSection.querySelector('.mono');
-const staticRows = [...resultSection.querySelectorAll(':scope > div')].slice(1, -1);
-const rowTemplate = staticRows[0].cloneNode(true);
-const refusedTemplate = staticRows[staticRows.length - 1].cloneNode(true);
-const linksBar = resultSection.querySelector(':scope > div:last-child');
+const resultSection = $('result');
+const resultRows = $('result-rows');
+const resultCount = $('result-count');
+const linksBar = $('result-links');
 
+/** One step, accepted or refused, built as text so nothing it carries is read as markup. */
 function resultRow(kind, name, text) {
-    const row = (kind === 'refused' ? refusedTemplate : rowTemplate).cloneNode(true);
-    const [status, circuit, desc] = row.querySelectorAll('span');
-    status.textContent = kind === 'refused' ? 'REFUSED' : 'OK';
-    circuit.textContent = name;
-    desc.textContent = text;
+    const row = document.createElement('li');
+    row.className = kind === 'refused' ? 'ev-row ev-row--refused' : 'ev-row';
+    for (const [cls, value] of [['ev-row__state', kind === 'refused' ? 'REFUSED' : 'OK'], ['ev-row__name', name], ['ev-row__text', text]]) {
+        const span = document.createElement('span');
+        span.className = cls;
+        span.textContent = value;
+        row.append(span);
+    }
     return row;
 }
 
 function renderResult(result) {
-    for (const el of [...resultSection.querySelectorAll(':scope > div')].slice(1, -1)) el.remove();
     const rows = [];
     for (const step of result.applied) {
         const [name, ...rest] = String(step).split(': ');
@@ -473,11 +422,10 @@ function renderResult(result) {
     for (const r of result.refused) {
         rows.push(resultRow('refused', r.step, r.reason));
     }
-    linksBar.before(...rows);
+    resultRows.replaceChildren(...rows);
     resultCount.textContent =
         `${result.applied.length} accepted · ${result.refused.length} refused`;
-    const view = linksBar.querySelector('a[href*="verify"]');
-    view.href = `../v/?v=${result.vinHex}`;
+    $('result-view').href = `../v/?v=${result.vinHex}`;
     // The run is finished, so the vehicle now has somewhere to point at.
     // This is the artefact that leaves the screen: it goes on the car.
     resultSection.querySelector('.qr-panel')?.remove();
@@ -501,27 +449,23 @@ let toChain = false;
 let ppReady = false;
 let chainNet = networkOf();
 
+// The box is disabled until the server offers a run, so it cannot be
+// switched on to fail. Its look, checked or disabled, lives in vp.css.
 const paintChainToggle = () => {
-    ppWrap.style.border = toChain ? '1px solid #004AAD' : '1px solid rgba(0,74,173,.28)';
-    ppWrap.style.background = toChain ? 'rgba(0,74,173,.07)' : 'transparent';
-    ppBox.style.background = toChain ? '#004AAD' : 'transparent';
-    ppBox.style.color = toChain ? '#EDE4D8' : '';
-    ppBox.style.border = toChain ? 'none' : '1px solid rgba(0,74,173,.4)';
-    ppBox.querySelector('svg').style.visibility = toChain ? 'visible' : 'hidden';
-    ppWrap.style.opacity = ppReady ? '' : '.55';
-    ppWrap.style.cursor = ppReady ? 'pointer' : 'not-allowed';
-    registerBtn.textContent = toChain ? `REGISTER & PROVE ON ${chainNet.label.toUpperCase()}` : 'REGISTER & PROVE';
+    ppBox.disabled = !ppReady;
+    if (!ppReady) toChain = false;
+    ppBox.checked = toChain;
+    registerBtn.textContent = toChain ? `Register and prove on ${chainNet.label}` : 'Register and prove';
 };
-ppWrap.addEventListener('click', () => {
-    if (!ppReady) return;
-    toChain = !toChain;
+ppBox.addEventListener('change', () => {
+    toChain = ppReady && ppBox.checked;
     paintChainToggle();
 });
 
 (async () => {
     let status = null;
     try {
-        const { apiBase: resolveBase, getStatus } = await import('../assets/chain-run.mjs?v=6');
+        const { apiBase: resolveBase, getStatus } = await import('../assets/chain-run.mjs?v=7');
         status = await getStatus(await resolveBase());
     } catch (e) {
         // Not answering is not the same as not offered: the engine restores a
@@ -582,14 +526,14 @@ async function registerInThisBrowser() {
 registerBtn.addEventListener('click', async () => {
     registerBtn.disabled = true;
     const was = registerBtn.textContent;
-    registerBtn.textContent = toChain ? 'SUBMITTING…' : 'PROVING…';
+    registerBtn.textContent = toChain ? 'Submitting…' : 'Proving…';
     try {
         if (!serverMode) {
             renderResult(await registerInThisBrowser());
         } else if (toChain) {
-            const { startManual, followJob } = await import('../assets/chain-run.mjs?v=6');
+            const { startManual, followJob } = await import('../assets/chain-run.mjs?v=7');
             const started = await startManual(apiBase, buildIntake());
-            registerBtn.textContent = `RUNNING ON ${chainNet.label.toUpperCase()}…`;
+            registerBtn.textContent = `Running on ${chainNet.label}…`;
             ppRun.scrollIntoView({ behavior: 'smooth', block: 'start' });
             await followJob(apiBase, started.jobId, ppRun);
         } else {

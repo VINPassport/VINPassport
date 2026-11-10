@@ -1,118 +1,100 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#F5F0E6">
 <title>Proof explorer · VINPassport</title>
-<meta name="description" content="Every claim on the ledger: which vehicle, which field, which bound, never the value.">
-<link rel="icon" href="../favicon.ico" sizes="32x32">
-<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png">
-<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<meta name="description" content="Every claim on the ledger: which vehicle, which field, which bound, and never the value.">
+<link rel="canonical" href="https://passport.vin/proofs/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="VINPassport">
-<meta property="og:title" content="VINPassport · Proof explorer">
-<meta property="og:description" content="Every claim on the public ledger, current or superseded. Never a value.">
+<meta property="og:title" content="Proof explorer · VINPassport">
+<meta property="og:description" content="Every claim on the ledger, with the value never shown.">
 <meta property="og:url" content="https://passport.vin/proofs/">
-<meta property="og:image" content="https://passport.vin/assets/vinpassport-og.png">
-<meta property="og:image:width" content="1340">
-<meta property="og:image:height" content="702">
-<meta property="og:image:alt" content="VINPassport: a Digital Circularity Vehicle Passport built on Midnight's zero-knowledge blockchain">
+<meta property="og:image" content="https://passport.vin/og/og-developers.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="VINPassport for developers: 23 circuits, 176 contract tests, 43 of 43 guards mutation-checked">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://passport.vin/assets/vinpassport-og.png">
-<meta name="twitter:image:alt" content="VINPassport: a Digital Circularity Vehicle Passport built on Midnight's zero-knowledge blockchain">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700&family=Barlow+Condensed:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="../assets/site.css?v=13">
+<meta name="twitter:image" content="https://passport.vin/og/og-developers.png">
+<link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<link rel="preload" href="../assets/fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/ibm-plex-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/vp.css">
+<script type="module" src="../assets/chrome.mjs"></script>
+<script type="module" src="proofs.js?v=9"></script>
 </head>
 <body>
-<div style="max-width:1200px;margin:0 auto;padding:0 var(--edge)">
-
-  <nav class="nav-bar" style="display:flex;align-items:center;flex-wrap:wrap;gap:14px 26px;padding:18px 0;min-height:75px;border-bottom:1px solid rgba(0,74,173,.26)">
-    <a class="nav-skip" href="#main">Skip to content</a>
-    <a href="../" style="display:flex;align-items:center;margin-right:auto;flex:none;text-decoration:none">
-      <img src="../assets/vinpassport-logo.png" alt="VINPassport" width="546" height="102" style="height:32px;width:auto">
-    </a>
-    <div class="nav-links" id="navmenu">
-      <a href="../guide/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Guide</a>
-      <a href="../regulation/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Regulation</a>
-      <a href="../demo/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Live demo</a>
-      <a href="../manufacturers/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">For manufacturers</a>
-      <a href="../verify/" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;padding:9px 20px;white-space:nowrap;flex:none;background:transparent;color:#0E1726;border:1px solid rgba(0,74,173,.28)">SCAN A VEHICLE</a>
-      <a href="../intake/" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;padding:9px 20px;white-space:nowrap;flex:none;background:#004AAD;color:#EDE4D8;border:1px solid #004AAD">ADD PASSPORT</a>
+<header class="vp-header">
+  <a class="vp-skip" href="#main">Skip to main content</a>
+  <div class="vp-band" data-switch-at="2026-11-29T00:00:00+01:00"><span class="vp-band__before"><span class="vp-band__long">Euro 7 applies to new vehicle types from 29 Nov 2026</span><span class="vp-band__short">Euro 7 from 29 Nov 2026</span></span><span class="vp-band__after"><span class="vp-band__long">Euro 7 has applied to new vehicle types since 29 Nov 2026</span><span class="vp-band__short">Euro 7 since 29 Nov 2026</span></span> · <a href="../compliance/">What it means</a></div>
+  <nav aria-label="Main">
+    <div class="vp-bar">
+      <a class="vp-logo" href="../" aria-label="VINPassport home"><img src="../assets/brand/vinpassport-logo-horizontal-primary.svg" alt="VINPassport" width="1204" height="248"></a>
+      <div class="vp-nav"><a href="../how-it-works/">How it works</a><a href="../compliance/">Compliance</a><a href="../manufacturers/">Manufacturers</a><a href="../lifestyle/">Lifestyle</a><a href="../developers/">Developers</a></div>
+      <div class="vp-actions"><a class="vp-btn vp-btn--ghost" href="../scan/"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><path d="M14 14h3v3M21 14v7h-7"></path></svg>Scan a vehicle</a><a class="vp-btn vp-btn--primary" href="../manufacturers/#pilot">Book a pilot call</a></div>
+      <a class="vp-icon-btn vp-icon-btn--scan" href="../scan/" aria-label="Scan a vehicle"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><path d="M14 14h3v3M21 14v7h-7"></path></svg></a>
+      <button class="vp-icon-btn vp-burger" type="button" aria-expanded="false" aria-controls="vp-menu" aria-label="Open menu"><svg class="vp-burger__open" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg><svg class="vp-burger__close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
     </div>
-    <button class="nav-burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="navmenu"><i></i><i></i><i></i></button>
+    <div class="vp-menu" id="vp-menu">
+        <a href="../">Home</a>
+        <a href="../how-it-works/">How it works</a>
+        <a href="../compliance/">Compliance</a>
+        <a href="../manufacturers/">Manufacturers</a>
+        <a href="../lifestyle/">Lifestyle</a>
+        <a href="../developers/">Developers</a>
+        <a href="../about/">About and contact</a>
+        <a class="vp-btn vp-btn--primary" href="../manufacturers/#pilot">Book a pilot call</a>
+        <a class="vp-btn vp-btn--secondary" href="../scan/">Scan a vehicle</a>
+    </div>
   </nav>
+</header>
+<main id="main">
 
-  <main id="main">
-  <header style="padding:clamp(24px,4vw,40px) 0 20px">
-    <span style="display:block;font:600 11px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E">Public ledger · read-only</span>
-    <h1 style="margin:4px 0 0;font-size:clamp(30px,4.4vw,48px);line-height:1.05;letter-spacing:.01em;text-transform:uppercase">Every claim on the ledger</h1>
-    <p style="margin:12px 0 0;font-size:15px;line-height:1.6;max-width:66ch;color:rgba(14,23,38,.8)">Which vehicle, which field, which bound, never the value. <b>Superseded</b> means the field has moved on since the proof was made: the claim was true of an earlier version.</p>
-  </header>
-
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:rgba(0,74,173,.18);border:1px solid rgba(0,74,173,.26);margin-bottom:30px">
-    <div style="background:#EDE4D8;padding:14px 16px"><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:32px;line-height:1;color:#004AAD">2</div><div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(14,23,38,.62)">passports</div></div>
-    <div style="background:#EDE4D8;padding:14px 16px"><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:32px;line-height:1;color:#004AAD">5</div><div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(14,23,38,.62)">claims</div></div>
-    <div style="background:#EDE4D8;padding:14px 16px"><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:32px;line-height:1;color:#004AAD">15</div><div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(14,23,38,.62)">field updates</div></div>
-    <div style="background:#EDE4D8;padding:14px 16px"><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:32px;line-height:1;color:#004AAD">0</div><div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(14,23,38,.62)">values published</div></div>
+<section aria-labelledby="pr-h1">
+  <div class="wrap ev-top stack-lg">
+    <nav aria-label="Breadcrumb" class="small v-crumb"><a class="link" href="../developers/">Developers</a> › Proof explorer</nav>
+    <div class="ev-head__text">
+      <div class="vp-label">Public ledger · read-only</div>
+      <h1 id="pr-h1" class="h1">Every claim on the ledger</h1>
+      <p class="lead">Which vehicle, which field, which bound, never the value. <b>Superseded</b> means the field has moved on since the proof was made: the claim was true of an earlier version.</p>
+      <p id="source" class="ev-note">Reading the ledger.</p>
+    </div>
+    <div class="ev-stats">
+      <div class="card ev-stat"><span id="stat-passports" class="ev-stat__n">2</span><span class="vp-label">Passports</span></div>
+      <div class="card ev-stat"><span id="stat-claims" class="ev-stat__n">5</span><span class="vp-label">Claims</span></div>
+      <div class="card ev-stat"><span id="stat-fields" class="ev-stat__n">15</span><span class="vp-label">Field updates</span></div>
+      <div class="card ev-stat"><span id="stat-values" class="ev-stat__n">0</span><span class="vp-label">Values published</span></div>
+    </div>
   </div>
+</section>
 
-  <section style="border:1px solid rgba(0,74,173,.26);margin-bottom:22px">
-    <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 12px;padding:13px 15px;border-bottom:1px solid rgba(0,74,173,.26)">
-      <b style="font-family:'Barlow Condensed',sans-serif;font-size:21px;letter-spacing:.02em">VEHICLE A</b>
-      <span style="font-size:12px;color:rgba(14,23,38,.62)">4 claims · all current</span>
-      <a href="../verify/" style="margin-left:auto;font-size:13px;text-decoration:none;white-space:nowrap">Verdict view →</a>
-    </div>
-    <div class="mono" style="padding:9px 15px;font-size:10.5px;color:rgba(14,23,38,.62);word-break:break-all;border-bottom:1px solid rgba(0,74,173,.18)">VIN HASH 391ce048e0feacde85e7978c2c8320b3763a6c5ed5b2aacc7ca524469bafe357</div>
-    <div class="claim">
-      <div style="flex:1 1 240px;min-width:0"><b style="display:block;font-size:14.5px">Mileage ≤ 150,000 km</b><span class="mono" style="font-size:10.5px;color:rgba(14,23,38,.62)">odometerKm · slot 690615c169…02d86f · proven against d23fc21635…634fc5</span></div>
-      <span class="chip chip-cur">current</span>
-    </div>
-    <div class="claim">
-      <div style="flex:1 1 240px;min-width:0"><b style="display:block;font-size:14.5px">Write-off category ≤ 0</b><span class="mono" style="font-size:10.5px;color:rgba(14,23,38,.62)">writeOffCategory · slot 1c35bb205d…eace8d · proven against d362758e70…bf1f5b</span></div>
-      <span class="chip chip-cur">current</span>
-    </div>
-    <div class="claim">
-      <div style="flex:1 1 240px;min-width:0"><b style="display:block;font-size:14.5px">Reported accidents ≤ 0</b><span class="mono" style="font-size:10.5px;color:rgba(14,23,38,.62)">accidentCount · slot 911f689d64…f095d7 · proven against f5ad92ad0b…5c0791</span></div>
-      <span class="chip chip-cur">current</span>
-    </div>
-    <div class="claim" style="border-bottom:none">
-      <div style="flex:1 1 240px;min-width:0"><b style="display:block;font-size:14.5px">Keepers ≤ 1</b><span class="mono" style="font-size:10.5px;color:rgba(14,23,38,.62)">ownerCount · slot a155446f51…0477e8 · proven against 01d149526c…2261c7</span></div>
-      <span class="chip chip-cur">current</span>
-    </div>
-  </section>
-
-  <section style="border:1px solid rgba(0,74,173,.26);margin-bottom:22px">
-    <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 12px;padding:13px 15px;border-bottom:1px solid rgba(0,74,173,.26)">
-      <b style="font-family:'Barlow Condensed',sans-serif;font-size:21px;letter-spacing:.02em">VEHICLE B</b>
-      <span style="font-size:12px;color:rgba(14,23,38,.62)">1 claim · a record it cannot prove clean</span>
-      <a href="../verify/#b" style="margin-left:auto;font-size:13px;text-decoration:none;white-space:nowrap">Verdict view →</a>
-    </div>
-    <div class="mono" style="padding:9px 15px;font-size:10.5px;color:rgba(14,23,38,.62);word-break:break-all;border-bottom:1px solid rgba(0,74,173,.18)">VIN HASH c7e89baf7818a3dc43edc3632b7f36e0df990fc9de72ede2cf80f5886c176d3b</div>
-    <div class="claim">
-      <div style="flex:1 1 240px;min-width:0"><b style="display:block;font-size:14.5px">Mileage ≤ 200,000 km</b><span class="mono" style="font-size:10.5px;color:rgba(14,23,38,.62)">odometerKm · slot ab36d4e730…c6c3db · proven against b04fda727e…81cb09</span></div>
-      <span class="chip chip-cur">current</span>
-    </div>
-    <p style="margin:0;padding:12px 15px;font-size:13px;line-height:1.55;color:rgba(14,23,38,.68)">Three clean-history claims were <b>not requested</b>. The write-off, accident and keeper proofs would have aborted in-circuit. Absence of a claim is what the verdict page renders, never a quiet no.</p>
-  </section>
-
-  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:12px 15px;border:1px solid rgba(0,74,173,.26);margin-bottom:40px">
-    <span style="font:600 10px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:rgba(14,23,38,.62)">Legend</span>
-    <span style="display:flex;align-items:center;gap:8px;font-size:12.5px"><span class="chip chip-cur">current</span>commitment still matches the field</span>
-    <span style="display:flex;align-items:center;gap:8px;font-size:12.5px"><span class="chip chip-sup">superseded</span>field has moved on since</span>
+<section class="sec--deep" aria-labelledby="veh-title">
+  <div class="wrap ev-sec">
+    <h2 id="veh-title" class="h2">By vehicle</h2>
+    <div id="vehicles"><p class="ev-note">Reading the claims. This page needs JavaScript to read the ledger.</p></div>
+    <div class="ev-legend"><span class="vp-label">Legend</span><span><span class="ev-chip ev-chip--current">Current</span>commitment still matches the field</span><span><span class="ev-chip ev-chip--superseded">Superseded</span>field has moved on since</span></div>
   </div>
-  </main>
+</section>
 
-  <footer style="padding:26px 0 48px;border-top:1px solid rgba(0,74,173,.26);display:flex;flex-wrap:wrap;gap:16px 32px;align-items:center;font-size:13px;color:rgba(14,23,38,.7)">
-    <img src="../assets/vinpassport-logo.png" alt="VINPassport" width="546" height="102" style="height:24px;width:auto">
-    <span>Proving a vehicle identity.</span>
-    <span class="ft-meta" style="margin-left:auto;min-width:0">Apache-2.0 · Reg (EU) 2026/1738 · Midnight Network</span>
-  </footer>
-
-</div>
-<script type="module" src="proofs.js?v=8"></script>
-<script type="module" src="../assets/nav.mjs?v=1"></script>
+</main>
+<footer class="vp-footer">
+  <div class="wrap vp-footer__inner">
+    <div class="vp-footer__cols">
+      <div class="vp-footer__brand"><a class="vp-logo" href="../" aria-label="VINPassport home"><img src="../assets/brand/vinpassport-logo-horizontal-primary.svg" alt="VINPassport" width="1204" height="248"></a><p class="small">Vehicle passports issued at the factory and trusted for life. Built on Midnight.</p></div>
+      <div class="vp-footer__col"><div class="vp-label">Product</div><a href="../how-it-works/">How it works</a><a href="../how-it-works/#who-sees-what">Who sees what</a><a href="../how-it-works/#trust">Trust and limits</a><a href="../scan/">Scan a vehicle</a><a href="../lifestyle/">Boats, quads and motorhomes</a></div>
+      <div class="vp-footer__col"><div class="vp-label">Compliance</div><a href="../compliance/#euro-7">Euro 7 passport</a><a href="../compliance/#circularity">Circularity 2032</a><a href="../compliance/#standards">Standards</a></div>
+      <div class="vp-footer__col"><div class="vp-label">Manufacturers</div><a href="../manufacturers/#pilot">Pilot programme</a><a href="../manufacturers/#security">Security and data</a><a href="../manufacturers/#your-brand">Your brand on the verdict</a></div>
+      <div class="vp-footer__col"><div class="vp-label">Developers</div><a href="../developers/">Contract and docs</a><a href="https://github.com/VINPassport/VINPassport" target="_blank" rel="noopener">GitHub<span class="vp-sr"> (opens in a new tab)</span></a><a href="../developers/#try">Try it live</a><a href="../deck/">Pitch deck</a><a href="../about/">About and contact</a></div>
+    </div>
+    <div class="vp-footer__base"><span>Apache-2.0 · Euro 7 · Reg. (EU) 2026/1738 · Built on Midnight</span><span><a href="../privacy/">Privacy</a> · © 2026 VINPassport</span></div>
+    <div class="vp-mrz" aria-hidden="true">P&lt;VINPASSPORT&lt;&lt;ISSUED&lt;AT&lt;SOURCE&lt;&lt;VERIFIED&lt;FOR&lt;LIFE&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</div>
+  </div>
+</footer>
 </body>
 </html>

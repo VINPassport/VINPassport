@@ -18,12 +18,9 @@ export const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
 /* ----------------------------------------------- what the chain sees ---- */
 
 export const seeRow = (label, value, note) =>
-    `<div style="padding:9px 0;border-bottom:1px solid rgba(0,74,173,.1)">
-    <div style="display:flex;justify-content:space-between;gap:12px;align-items:baseline">
-      <span style="font-size:12.5px;color:rgba(14,23,38,.72)">${esc(label)}</span>
-      <span class="mono" style="font-size:11px;text-align:right;word-break:break-all;max-width:62%">${esc(value)}</span>
-    </div>
-    <div style="margin-top:3px;font-size:11.5px;line-height:1.5;color:rgba(14,23,38,.62)">${note}</div>
+    `<div class="ev-see__row">
+    <div class="ev-see__top"><span>${esc(label)}</span><span class="ev-see__value">${esc(value)}</span></div>
+    <div class="ev-see__note">${note}</div>
   </div>`;
 
 /**
@@ -41,9 +38,7 @@ export const seeRow = (label, value, note) =>
  * part of the claim vocabulary.
  */
 const absentRow = (what, why) =>
-    `<li style="padding:8px 0;border-bottom:1px solid rgba(0,74,173,.1);font-size:12.5px;line-height:1.55;color:rgba(14,23,38,.72)">
-    <b style="color:#0E1726">${esc(what)}</b> &middot; ${why}
-  </li>`;
+    `<li><b>${esc(what)}</b> &middot; ${why}</li>`;
 
 /**
  * Everything the public ledger holds about this vehicle, and everything it
@@ -58,13 +53,19 @@ const absentRow = (what, why) =>
  *
  * It is collapsed because it is evidence, not the answer.
  */
-export function chainSeesBlock(vin, view, ledger) {
+export function chainSeesBlock(vin, view, ledger, { bare = false } = {}) {
     const commitments = Object.keys(ledger.fieldCommitment ?? {}).length;
     // Two shapes now arrive in one list. A two-field claim carries a slack
     // and a pair of commitments where a single-field one carries a bound and
     // one commitment, so they are split here rather than rendered by a
     // builder that would print "≥ undefined" for the pair.
-    const everyClaim = view.answers.map((a) => a.claim).filter(Boolean);
+    // Once each, keyed by the claim: one claim can answer several questions
+    // (never written off, and not a structural write-off), and it is still one
+    // value on the ledger. Claims no question covers are listed too, because
+    // this block promises every public value.
+    const everyClaim = [...new Map(view.answers.map((a) => a.claim)
+        .concat((view.extras ?? []).map((x) => x.claim))
+        .filter(Boolean).map((c) => [c.key, c])).values()];
     const claims = everyClaim.filter((c) => c.slack === undefined);
     const compares = everyClaim.filter((c) => c.slack !== undefined);
 
@@ -116,7 +117,7 @@ export function chainSeesBlock(vin, view, ledger) {
 
     const claimRows = allRows.length
         ? allRows.join('')
-        : `<div style="padding:9px 0;font-size:12.5px;color:rgba(14,23,38,.62)">No claims proven yet. Registration publishes a root and a registrar and nothing else.</div>`;
+        : '<div class="ev-see__row ev-see__note">No claims proven yet. Registration publishes a root and a registrar and nothing else.</div>';
 
     const absent = [
         absentRow('The VIN', 'only its hash is published, and the hash is what every slot is derived from'),
@@ -127,20 +128,21 @@ export function chainSeesBlock(vin, view, ledger) {
         absentRow('Which commitments are this vehicle\'s', 'a slot reveals nothing without the vehicle, the field and the document that made it. Only a claim names its own slot')
     ].join('');
 
+    const inner = `<div class="ev-see">
+      <p class="ev-see__note">Read from the same ledger as the verdict above. Anyone can read all of it; none of it is ours to withhold.</p>
+      <span class="ev-see__label">On the ledger</span>
+      ${held}
+      <div class="vfy-claims-on-ledger">${claimRows}</div>
+      <span class="ev-see__label">Not on the ledger</span>
+      <ul class="ev-see__absent">${absent}</ul>
+    </div>`;
+    // The verdict page puts this inside its own disclosure; the old page wraps it here.
+    if (bare) return inner;
     return `<details class="vfy-more" style="margin:0">
     <summary style="padding:14px 18px"><span style="flex:1 1 240px;min-width:0">
       <b style="display:block;font-family:'Barlow Condensed',sans-serif;font-size:17px;letter-spacing:.02em">WHAT THE CHAIN SEES</b>
       <span style="font-size:12.5px;color:rgba(14,23,38,.62)">Every public value for this vehicle, and what stays off the ledger</span>
     </span></summary>
-    <div style="padding:4px 18px 18px">
-      <p class="vfy-measure" style="margin:0 0 10px;font-size:12.5px;line-height:1.6;color:rgba(14,23,38,.72)">
-        Read from the same ledger as the verdict above. Anyone can read all of it; none of it is ours to withhold.
-      </p>
-      <span style="display:block;font:600 10px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin:12px 0 2px">On the ledger</span>
-      ${held}
-      <div class="vfy-claims-on-ledger">${claimRows}</div>
-      <span style="display:block;font:600 10px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E;margin:16px 0 2px">Not on the ledger</span>
-      <ul style="margin:0;padding:0 0 0 18px">${absent}</ul>
-    </div>
+    <div style="padding:4px 18px 18px">${inner}</div>
   </details>`;
 }
