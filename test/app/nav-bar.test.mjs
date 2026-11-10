@@ -17,10 +17,15 @@ import { dirname, join } from 'node:path';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SITE = join(HERE, '..', '..', 'site');
 
+import { PAGES as NAV_PAGES_ALL } from '../../scripts/build-nav.mjs';
+
+/** Pages already on the 2026 redesign carry its header instead (test/app/site-chrome.test.mjs). */
+const REDESIGNED = new Set(NAV_PAGES_ALL.filter((p) => p.design === 'vp').map((p) => p.file));
+
 /** Every page that carries the shared bar. */
 const PAGES = ['index.html', 'verify/index.html', 'intake/index.html', 'proofs/index.html',
                'demo/index.html', 'regulation/index.html', 'guide/index.html',
-               'manufacturers/index.html', 'disclose/index.html'];
+               'manufacturers/index.html', 'disclose/index.html'].filter((p) => !REDESIGNED.has(p));
 
 const navOf = (page) => {
     const html = readFileSync(join(SITE, page), 'utf8');
@@ -148,7 +153,7 @@ test('marking the current item does not move it', async () => {
     // page whose current item is a link that item sat 2px higher than the rest,
     // and in the phone menu its inline padding overrode the menu's own.
     const { navMarkup, PAGES: NAV_PAGES } = await import('../../scripts/build-nav.mjs');
-    for (const page of NAV_PAGES.filter((p) => p.current)) {
+    for (const page of NAV_PAGES.filter((p) => p.current && p.design !== 'vp')) {
         const marked = navMarkup(page).match(/<span aria-current="page" style="([^"]*)">/);
         assert.ok(marked, `${page.file}: nothing is marked`);
         if (/display:inline-flex/.test(marked[1])) continue;          // a button keeps its own box

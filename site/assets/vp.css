@@ -54,6 +54,7 @@ a:hover{color:var(--passport-blue-deep)}
 [id]{scroll-margin-top:88px}
 .vp-skip{position:absolute;left:16px;top:-64px;z-index:100;background:var(--paper-raised);color:var(--ink);border:1px solid var(--rule-strong);border-radius:var(--radius-md);padding:10px 16px;font-weight:600;text-decoration:none}
 .vp-skip:focus{top:16px}
+[hidden]{display:none!important}
 .vp-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 
@@ -225,3 +226,45 @@ textarea.input{padding:10px 12px;min-height:110px;resize:vertical}
 .vp-footer__col a:hover{color:var(--passport-blue)}
 .vp-footer__base{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;font-size:13px;line-height:20px;color:var(--ink-muted)}
 .vp-footer__base a{color:var(--ink-muted)}
+
+/* ---- Page pieces shared across the redesigned pages (from the handoff's page markup) ---- */
+.vp-date{font-family:var(--font-mono);font-weight:500;font-size:15px;color:var(--seal)}
+.vp-tab{min-height:44px;padding:0 20px;border-radius:var(--radius-pill);font:600 15px/1 var(--font-sans);cursor:pointer;border:1px solid var(--rule-strong);background:var(--paper-raised);color:var(--ink)}
+.vp-tab[aria-selected="true"]{border-color:var(--passport-blue);background:var(--passport-blue);color:var(--on-action)}
+.vp-readout{list-style:none;margin:0;padding:0}
+.vp-readout li{display:flex;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--rule)}
+.vp-readout .vp-label{align-self:center}
+.vp-readout__value{font-family:var(--font-mono);font-size:14px;font-weight:500;text-align:right}
+.vp-readout__hidden{font-size:14px;color:var(--ink-muted);text-align:right}
+/* Forms (spec section 9): visible labels, 44 px controls, plain-word errors under the field.
+   No error colour: --refused belongs to the rollback demo and --seal never marks errors, so an
+   error is ink, weight and a heavier border, and aria-invalid says it to a screen reader. */
+.field__error{margin:0;font-size:14px;line-height:20px;font-weight:600;color:var(--ink)}
+.field__error::before{content:"! ";font-weight:700}
+.input[aria-invalid="true"]{border:2px solid var(--ink)}
+.vp-check{display:flex;gap:12px;align-items:flex-start;min-height:44px;font-size:14px;line-height:22px;color:var(--ink-muted)}
+.vp-check input{flex:none;width:20px;height:20px;margin:1px 0 0;accent-color:var(--passport-blue)}
+.vp-check input[aria-invalid="true"]{outline:2px solid var(--ink);outline-offset:2px}
+.vp-trap{display:none}
+.vp-form-status{margin:0;font-size:14px;line-height:22px;color:var(--ink)}
+.vp-form-status:empty{display:none}
+[data-form-done]:focus{outline:none}
+.vp-facts{margin:0;display:grid;gap:10px;border-top:1px solid var(--rule);padding-top:12px}
+.vp-facts dd{margin:2px 0 0}
+.vp-who{border-top:1px solid var(--rule);padding-top:12px;display:grid;gap:4px}
+.vp-video{display:block;width:100%;height:auto;background:var(--paper-deep);border:1px solid var(--rule);border-radius:var(--radius-doc)}
+.vp-video--tall{display:none;max-width:420px;margin:0 auto}
+@media (max-width:599px){.vp-video--wide{display:none}.vp-video--tall{display:block}}
+.vp-pill{align-self:flex-start;display:inline-flex;gap:8px;align-items:center;background:var(--blue-tint);color:var(--passport-blue);border-radius:var(--radius-pill);padding:6px 14px;font-family:var(--font-label);font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase}
+.vp-idtag{align-self:flex-start;font-family:var(--font-mono);font-size:12px;line-height:18px;color:var(--passport-blue);background:var(--blue-tint);border-radius:var(--radius-sm);padding:3px 8px}
+.vp-log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.vp-log li{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--rule);font-size:15px}
+.vp-log li span:last-child{font-family:var(--font-mono);font-weight:500}
+.vp-fieldset{border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.vp-fieldset legend{font-size:14px;font-weight:600;padding:0;margin-bottom:8px}
+/* SPEC section 10: touch targets 44 px (the mockup's chips were 40). */
+.vp-pick{min-height:44px;padding:8px 14px;border-radius:var(--radius-pill);font:500 14px/20px var(--font-sans);cursor:pointer;border:1px solid var(--rule-strong);background:var(--paper-raised);color:var(--ink)}
+.vp-pick[aria-pressed="true"]{border-color:var(--passport-blue);background:var(--passport-blue);color:var(--on-action)}
+.vp-addr{margin:0;font-family:var(--font-mono);font-size:14px;line-height:22px;overflow-wrap:anywhere;color:var(--ink)}
+.vp-code{font-family:var(--font-mono);font-size:14px}
+.vp-photo-slot{aspect-ratio:4/5;border-radius:var(--radius-doc);background:var(--paper-deep);border:1px dashed var(--rule-strong);display:grid;place-items:center;color:var(--ink-muted);font-size:14px}

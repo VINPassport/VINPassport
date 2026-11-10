@@ -59,21 +59,26 @@ const ITEMS = [
  * laptop.
  */
 export const PAGES = [
-    { file: 'index.html', depth: 0, current: null },
+    { file: 'index.html', depth: 0, current: 'home', design: 'vp' },
     { file: 'guide/index.html', depth: 1, current: 'guide' },
     { file: 'regulation/index.html', depth: 1, current: 'regulation' },
     { file: 'demo/index.html', depth: 1, current: 'demo' },
     { file: 'verify/index.html', depth: 1, current: 'verify' },
     { file: 'intake/index.html', depth: 1, current: 'intake' },
     { file: 'proofs/index.html', depth: 1, current: null },
-    { file: 'manufacturers/index.html', depth: 1, current: 'manufacturers' },
+    { file: 'manufacturers/index.html', depth: 1, current: 'manufacturers', design: 'vp' },
     { file: 'disclose/index.html', depth: 1, current: null },
     { file: 'wallet/index.html', depth: 1, current: null },
     // The 2026 redesign. A page joins the new design when it is ported: `design: 'vp'` stamps
     // the new header and footer instead of the old bar. The old bar goes once every page has
     // moved. 404.html is served from any depth, so its links are root-absolute.
     { file: 'privacy/index.html', depth: 1, current: null, design: 'vp' },
-    { file: '404.html', depth: 0, current: null, design: 'vp', absolute: true }
+    { file: '404.html', depth: 0, current: null, design: 'vp', absolute: true },
+    { file: 'compliance/index.html', depth: 1, current: 'compliance', design: 'vp' },
+    { file: 'how-it-works/index.html', depth: 1, current: 'how', design: 'vp' },
+    { file: 'lifestyle/index.html', depth: 1, current: 'lifestyle', design: 'vp' },
+    { file: 'developers/index.html', depth: 1, current: 'developers', design: 'vp' },
+    { file: 'about/index.html', depth: 1, current: 'about', design: 'vp' }
 ];
 
 // ---- The redesign's header and footer (design handoff, Header.dc.html and Footer.dc.html) ----

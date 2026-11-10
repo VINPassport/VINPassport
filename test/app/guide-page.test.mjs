@@ -87,8 +87,9 @@ test('each step says both what to do and why', () => {
 
 test('the guide is reachable from the pages it explains', () => {
     const site = join(HERE, '..', '..', 'site');
-    for (const [page, href] of [['index.html', 'guide/'],
-                                ['verify/index.html', '../guide/#verify'],
+    // The redesigned home page no longer links the guide: its content folds into
+    // /how-it-works/, and /guide/ redirects there at launch (SITE-REDESIGN plan, phase 6).
+    for (const [page, href] of [['verify/index.html', '../guide/#verify'],
                                 ['intake/index.html', '../guide/#create']]) {
         const body = readFileSync(join(site, page), 'utf8');
         assert.ok(body.includes(`href="${href}"`), `${page} does not link to the guide`);

@@ -30,6 +30,11 @@ const PAGES = ['index.html', 'verify/index.html', 'intake/index.html', 'proofs/i
 
 const read = (page) => readFileSync(join(SITE, page), 'utf8');
 
+// Pages on the 2026 redesign put the skip link first in their header instead of the old bar
+// (test/app/site-chrome.test.mjs); the main-landmark checks below hold for every page.
+import { PAGES as NAV_PAGES } from '../../scripts/build-nav.mjs';
+const REDESIGNED = new Set(NAV_PAGES.filter((p) => p.design === 'vp').map((p) => p.file));
+
 test('every page names its content with exactly one main', () => {
     for (const page of PAGES) {
         const html = read(page);
@@ -54,7 +59,7 @@ test('the main holds the content, not the bar or the footer', () => {
 });
 
 test('every bar starts with a way past it', () => {
-    for (const page of PAGES.filter((p) => p !== 'console/index.html')) {
+    for (const page of PAGES.filter((p) => p !== 'console/index.html' && !REDESIGNED.has(p))) {
         const html = read(page);
         const nav = html.slice(html.indexOf('<nav'), html.indexOf('</nav>'));
         assert.match(nav, /<a class="nav-skip" href="#main">/,
