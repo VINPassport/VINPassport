@@ -43,6 +43,7 @@ import { createServer } from 'node:http';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, extname, relative } from 'node:path';
+import { MOVED } from './build-nav.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SITE = join(ROOT, 'site');
@@ -64,7 +65,7 @@ const pages = [];
     }
     for (const entry of readdirSync(dir)) {
         const full = join(dir, entry);
-        if (entry !== 'shots' && statSync(full).isDirectory()) walk(full);
+        if (statSync(full).isDirectory()) walk(full);
     }
 })(SITE);
 pages.sort();
@@ -244,10 +245,34 @@ for (const page of pages) {
     for (const m of [...new Set(missing)]) console.error(`          ${m}`);
 }
 
-if (bad) {
-    console.error(`\ncheck:pages FAILED - ${bad} of ${pages.length} pages throw or cannot load an asset.`);
-    console.error('A page that throws still renders, so this will not be visible by looking at it.');
+/* MOVED ADDRESSES, followed in the browser. A printed QR code says /verify/?v=<key>; if the
+   forward dropped the query, the reader would land on the sample vehicle, with nothing saying
+   so. So each moved address is opened with a query and a section, and where the browser ends up
+   is read back. The verify one is followed all the way to the verdict it should show. */
+const evaluate = async (expression) => (await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true })).result?.value;
+const GOLF = '391ce048e0feacde85e7978c2c8320b3763a6c5ed5b2aacc7ca524469bafe357';
+let movedBad = 0;
+for (const { from, to } of MOVED) {
+    const ask = from === 'verify/' ? `?v=${GOLF}` : '?probe=1';
+    await send('Page.navigate', { url: `${base}/${from}${ask}#probe` });
+    await sleep(from === 'verify/' ? 4500 : 1500);
+    const at = await evaluate('location.pathname + location.search + location.hash');
+    let ok = at === `/${to}${ask}#probe`;
+    if (ok && from === 'verify/') {
+        const shown = await evaluate(`[document.getElementById('v-h1')?.textContent, document.body.innerText.includes('VP-74EE-0J74')].join('|')`);
+        ok = shown === 'This passport is genuine|true';
+        if (!ok) console.error(`          the verdict shown was ${shown}`);
+    }
+    if (ok) { console.log(`  ok    /${from} -> ${at}`); continue; }
+    movedBad++;
+    console.error(`  FAIL  /${from}${ask}#probe ended at ${at}`);
+}
+
+if (bad || movedBad) {
+    if (bad) console.error(`\ncheck:pages FAILED - ${bad} of ${pages.length} pages throw or cannot load an asset.`);
+    if (bad) console.error('A page that throws still renders, so this will not be visible by looking at it.');
+    if (movedBad) console.error(`\ncheck:pages FAILED - ${movedBad} moved address(es) lose the query or land on the wrong page.`);
     finish(1);
 }
-console.log(`\ncheck:pages: ${pages.length} pages, none throw, every asset resolves`);
+console.log(`\ncheck:pages: ${pages.length} pages, none throw, every asset resolves; ${MOVED.length} moved addresses keep their query`);
 finish(0);

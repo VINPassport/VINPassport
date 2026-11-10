@@ -310,7 +310,7 @@ ${b ? `<div class="v-oem"><div class="wrap v-oem__bar"><span class="v-oem__name"
       <p class="lead">The four above are a buyer's first questions. This passport answers ${answered} of the ${total} a passport can. Most go unanswered on most vehicles, and an unanswered question is the one worth asking about. Open an answer to see the proof behind it.</p>
     </div>
     <div class="v-groups">${fullRecord(view, ctx)}</div>
-    <details class="v-ledger"><summary>What the ledger holds for this passport, and what it does not</summary><div class="v-ledger__body">${chainSeesBlockFor(key, view, state.ledger)}</div></details>
+    <details class="v-ledger"><summary>What the ledger holds for this passport, and what it does not</summary><div class="v-ledger__body">${chainSeesBlock(key, view, state.ledger)}</div></details>
     <div class="card v-honest">
       <h3 class="h3">What a tick does, and does not, mean</h3>
       <p class="copy">Proven against the anchored record, attributable to a named registrar, tamper-evident. Not a guarantee that the record matched the vehicle when it was written: that is the registrar's word, which is why every passport names one.</p>
@@ -321,9 +321,6 @@ ${b ? `<div class="v-oem"><div class="wrap v-oem__bar"><span class="v-oem__name"
 </section>`;
 }
 
-// chainSeesBlock is shared with other pages and draws in the old palette; it
-// sits inside a collapsed box here, as evidence rather than the answer.
-const chainSeesBlockFor = (key, view, ledger) => chainSeesBlock(key, view, ledger, { bare: true });
 
 const NONE_ICON = '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>';
 
@@ -496,7 +493,8 @@ export async function start(doc = document) {
         wireAsk(body);
     } else {
         body.innerHTML = missingMarkup(req, state.mode === 'static' ? othersOf(null) : []);
-        doc.title = 'No passport on record · VINPassport';
+        // The tab says what the page found: no passport, a mistyped code, or a code two passports share.
+        doc.title = `${body.querySelector('#v-h1')?.textContent ?? 'No passport on record'} · VINPassport`;
     }
     main.removeAttribute('aria-busy');
 }

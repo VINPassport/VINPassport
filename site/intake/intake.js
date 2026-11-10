@@ -8,7 +8,7 @@
  *            REFUSED, then links to the vehicle's verdicts.
  *   browser  no server (GitHub Pages): the SAME circuits run in this page,
  *            and the ledger they produce is kept in sessionStorage so
- *            /verify/ can read it. Same intake, same validation, same
+ *            /v/ can read it. Same intake, same validation, same
  *            refusals: both call scripts/lib/intake-engine.mjs.
  *
  * The browser mode is narrower than it looks and the page has to say so

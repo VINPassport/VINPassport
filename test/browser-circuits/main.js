@@ -109,7 +109,7 @@ try {
     say(`intake path in ${Math.round(performance.now() - t3)} ms`);
 
     // The export has to be the shape local-ledger.mjs will accept, or the
-    // console would produce something /verify/ then refuses to read.
+    // console would produce something /v/ then refuses to read.
     const shaped = ['passports', 'registrar', 'fieldCommitment', 'fieldRule', 'fieldWriter']
         .every((k) => exported[k] && typeof exported[k] === 'object') && Array.isArray(exported.claims);
 

@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://passport.vin/</loc></url>
-  <url><loc>https://passport.vin/regulation/</loc></url>
   <url><loc>https://passport.vin/manufacturers/</loc></url>
   <url><loc>https://passport.vin/disclose/</loc></url>
   <url><loc>https://passport.vin/demo/</loc></url>
   <url><loc>https://passport.vin/intake/</loc></url>
   <url><loc>https://passport.vin/proofs/</loc></url>
   <url><loc>https://passport.vin/wallet/</loc></url>
-  <url><loc>https://passport.vin/verify/</loc></url>
-  <url><loc>https://passport.vin/guide/</loc></url>
   <url><loc>https://passport.vin/deck/</loc></url>
   <url><loc>https://passport.vin/how-it-works/</loc></url>
   <url><loc>https://passport.vin/compliance/</loc></url>

@@ -84,36 +84,14 @@ test('two different VINs never produce the same key', () => {
     }
 });
 
-test('the page cannot answer with a vehicle nobody asked for', () => {
-    const js = readFileSync(join(SITE, 'verify', 'verify.js'), 'utf8');
-
-    // The exact expression that caused it. Spelling is checked loosely so a
-    // reformat does not let it back in unnoticed.
-    assert.ok(!/ledger\.passports\[asked\]\s*\?\s*asked\s*:\s*vins\[0\]/.test(
-        js.replace(/missed\s*\?[^;]*/g, '')),
-        'an unknown identifier falls back to the first passport again');
-
-    assert.match(js, /const missed = asked && !ledger\.passports\[asked\]/,
-        'nothing detects an identifier that was asked for and not found');
-    assert.match(js, /notFoundSection\(missed, null\)/,
-        'a miss does not render the not-found section');
-
-    // The wording is load-bearing: "no passport" must not read as a verdict.
-    assert.match(js, /This is not a verdict on the vehicle/,
-        'the not-found section no longer says it is not a verdict');
-    assert.match(js, /No passport for this vehicle/, 'the not-found heading is gone');
-});
-
-test('the VIN never reaches the address bar, and the page says so', () => {
-    const js = readFileSync(join(SITE, 'verify', 'verify.js'), 'utf8');
-    // Both navigations carry the key. If either ever carried `vin` the VIN
-    // would end up in history, in logs and in anything the page links to.
-    for (const m of js.matchAll(/location\.search = ([^;]+);/g)) {
-        assert.equal(m[1].trim(), "'?v=' + key", `navigates with ${m[1]}`);
-    }
-    for (const m of js.matchAll(/history\.replaceState\([^)]*\)/g)) {
-        assert.match(m[0], /'\?v=' \+ key/, `rewrites the address with ${m[0]}`);
-    }
-    assert.match(js, /hashed <b>in this browser<\/b>/,
+test('the scan page sends a VIN on as its key, and tells the reader so', () => {
+    // The old verify page carried these guarantees; /scan/ and /v/ carry them
+    // now. The miss and the address bar on /v/ are held in
+    // test/app/scan-verdict-pages.test.mjs; this holds the scan page's half.
+    const js = readFileSync(join(SITE, 'scan', 'scan.mjs'), 'utf8');
+    const navigations = [...js.matchAll(/location\.(?:href|search) = ([^;]+);/g)].map((m) => m[1].trim());
+    assert.deepEqual(navigations, ['got.href'], 'the scan page navigates only to the address readEntry built');
+    const html = readFileSync(join(SITE, 'scan', 'index.html'), 'utf8');
+    assert.match(html, /turned into the passport's key in your browser, and only the key goes in the address/,
         'the page no longer tells the reader where their VIN goes');
 });

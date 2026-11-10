@@ -51,9 +51,10 @@ const absentRow = (what, why) =>
  * value, in full, next to the things a reader might reasonably assume are
  * hidden and deserve to see named.
  *
- * It is collapsed because it is evidence, not the answer.
+ * The verdict page shows it inside its own collapsed box, because it is
+ * evidence, not the answer.
  */
-export function chainSeesBlock(vin, view, ledger, { bare = false } = {}) {
+export function chainSeesBlock(vin, view, ledger) {
     const commitments = Object.keys(ledger.fieldCommitment ?? {}).length;
     // Two shapes now arrive in one list. A two-field claim carries a slack
     // and a pair of commitments where a single-field one carries a bound and
@@ -128,7 +129,7 @@ export function chainSeesBlock(vin, view, ledger, { bare = false } = {}) {
         absentRow('Which commitments are this vehicle\'s', 'a slot reveals nothing without the vehicle, the field and the document that made it. Only a claim names its own slot')
     ].join('');
 
-    const inner = `<div class="ev-see">
+    return `<div class="ev-see">
       <p class="ev-see__note">Read from the same ledger as the verdict above. Anyone can read all of it; none of it is ours to withhold.</p>
       <span class="ev-see__label">On the ledger</span>
       ${held}
@@ -136,13 +137,4 @@ export function chainSeesBlock(vin, view, ledger, { bare = false } = {}) {
       <span class="ev-see__label">Not on the ledger</span>
       <ul class="ev-see__absent">${absent}</ul>
     </div>`;
-    // The verdict page puts this inside its own disclosure; the old page wraps it here.
-    if (bare) return inner;
-    return `<details class="vfy-more" style="margin:0">
-    <summary style="padding:14px 18px"><span style="flex:1 1 240px;min-width:0">
-      <b style="display:block;font-family:'Barlow Condensed',sans-serif;font-size:17px;letter-spacing:.02em">WHAT THE CHAIN SEES</b>
-      <span style="font-size:12.5px;color:rgba(14,23,38,.62)">Every public value for this vehicle, and what stays off the ledger</span>
-    </span></summary>
-    <div style="padding:4px 18px 18px">${inner}</div>
-  </details>`;
 }

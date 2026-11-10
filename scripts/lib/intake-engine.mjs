@@ -10,7 +10,7 @@
  *
  * Nothing here proves or submits. It executes the compiled circuits and
  * returns the public ledger they produced, which is what the console needs
- * and all it needs: /verify/ reads commitments, never values.
+ * and all it needs: /v/ reads commitments, never values.
  *
  * SPDX-License-Identifier: Apache-2.0
  */

@@ -6,12 +6,14 @@
  * Serves every site surface and runs the REAL compiled circuits in-process:
  *
  *   /            home - the problem and the mechanism
- *   /regulation/ what Reg (EU) 2026/1738 actually requires
- *   /verify/     verification - scan a vehicle, see its verdicts
+ *   /compliance/ what Euro 7 and Reg (EU) 2026/1738 require, and when
+ *   /scan/       scan a vehicle: a passport code, a VIN or a link
+ *   /v/          the verdict - what a passport has proven and what it has not
  *   /intake/     intake - fill in the fields, submit, watch the proofs land
  *   /proofs/     proof explorer - every claim on the ledger, with status
  *   /demo/       the guided run against the DEPLOYED contract (VINPASSPORT_NETWORK_ID, Preview by default)
- *   /console/    a redirect to /intake/, kept because the old url was shared
+ *   /verify/, /guide/, /regulation/ and /console/ forward to /v/, /how-it-works/,
+ *                /compliance/ and /intake/, query kept (old links and printed QR codes)
  *
  *   POST /api/intake   run an intake through the circuits (register, record,
  *                      prove). Refusals are results: a step the circuit
@@ -336,6 +338,6 @@ server.on('error', (e) => {
 });
 server.listen(port, () => {
     console.log(`VINPassport app  http://localhost:${port}`);
-    console.log(`  site  /       verify  /verify/       intake  /intake/       proofs  /proofs/`);
+    console.log(`  site  /       scan  /scan/       verdict  /v/       intake  /intake/       proofs  /proofs/`);
     console.log(`  circuits: compiled vinpassport, in-process; ledger resets on restart`);
 });

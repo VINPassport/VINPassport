@@ -84,10 +84,10 @@ test('the ledger block lists each of a vehicle\'s claims once, including ones no
     const ledger = JSON.parse(read('verify/demo-data.json'));
     const vocabulary = JSON.parse(read('verify/fields.json'));
     for (const key of Object.keys(ledger.passports)) {
-        const html = chainSeesBlock(key, passportView(ledger, key, vocabulary), ledger, { bare: true });
+        const html = chainSeesBlock(key, passportView(ledger, key, vocabulary), ledger);
         const own = ledger.claims.filter((c) => c.vinHash === key).length
             + (ledger.relClaims ?? []).filter((c) => c.vinHash === key).length;
         assert.equal((html.match(/Claim · /g) ?? []).length, own, key);
-        assert.doesNotMatch(html, /<details/, 'the bare form nests no disclosure');
+        assert.doesNotMatch(html, /<details/, 'the block nests no disclosure of its own: the page wraps it');
     }
 });

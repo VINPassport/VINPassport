@@ -3,247 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Verify a vehicle · VINPassport</title>
-<meta name="description" content="The buyer verdict: four questions answered by zero-knowledge proof, with nothing published.">
+<title>Moved · VINPassport</title>
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://passport.vin/v/">
+<script data-moved-to="../v/">
+/* Moved for good. GitHub Pages has no server redirects, so this page forwards
+   the query and the section as well as the path. Printed QR codes and shared links say /verify/?v=<key>, and the query IS the passport, so it travels. */
+(function () {
+  var to = '../v/', sections = {};
+  var h = location.hash.slice(1);
+  location.replace(to + location.search + (h ? '#' + (sections[h] || h) : ''));
+})();
+</script>
+<meta http-equiv="refresh" content="0; url=../v/">
 <link rel="icon" href="../favicon.ico" sizes="32x32">
 <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png">
 <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="VINPassport">
-<meta property="og:title" content="VINPassport · Verify a vehicle">
-<meta property="og:description" content="Scan a vehicle and see its verdicts: proven claims, never values.">
-<meta property="og:url" content="https://passport.vin/verify/">
-<meta property="og:image" content="https://passport.vin/assets/vinpassport-og.png">
-<meta property="og:image:width" content="1340">
-<meta property="og:image:height" content="702">
-<meta property="og:image:alt" content="VINPassport: a Digital Circularity Vehicle Passport built on Midnight's zero-knowledge blockchain">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://passport.vin/assets/vinpassport-og.png">
-<meta name="twitter:image:alt" content="VINPassport: a Digital Circularity Vehicle Passport built on Midnight's zero-knowledge blockchain">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700&family=Barlow+Condensed:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="../assets/site.css?v=13">
 </head>
 <body>
-<div style="max-width:1200px;margin:0 auto;padding:0 var(--edge)">
-
-  <nav class="nav-bar" style="display:flex;align-items:center;flex-wrap:wrap;gap:14px 26px;padding:18px 0;min-height:75px;border-bottom:1px solid rgba(0,74,173,.26)">
-    <a class="nav-skip" href="#main">Skip to content</a>
-    <a href="../" style="display:flex;align-items:center;margin-right:auto;flex:none;text-decoration:none">
-      <img src="../assets/vinpassport-logo.png" alt="VINPassport" width="546" height="102" style="height:32px;width:auto">
-    </a>
-    <div class="nav-links" id="navmenu">
-      <a href="../guide/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Guide</a>
-      <a href="../regulation/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Regulation</a>
-      <a href="../demo/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">Live demo</a>
-      <a href="../manufacturers/" style="text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap">For manufacturers</a>
-      <span aria-current="page" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;padding:9px 20px;white-space:nowrap;flex:none;background:transparent;color:#004AAD;border:1px solid #004AAD">SCAN A VEHICLE</span>
-      <a href="../intake/" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;padding:9px 20px;white-space:nowrap;flex:none;background:#004AAD;color:#EDE4D8;border:1px solid #004AAD">ADD PASSPORT</a>
-    </div>
-    <button class="nav-burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="navmenu"><i></i><i></i><i></i></button>
-  </nav>
-
-  <main id="main">
-  <div class="vfy-stack">
-
-  <section class="vfy-lede">
-    <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E">How to read this page</span>
-    <p class="vfy-measure" style="margin:9px 0 0;font-size:14.5px;line-height:1.6;color:rgba(14,23,38,.8)">
-      This is a buyer's verdict on one vehicle. Each line is a question a buyer actually asks, answered
-      against the record anchored on the ledger. Open any line to see the proof behind it: which field it
-      covers, the commitment it was proven against, and where it sits on the ledger.
-      <b>No reading is ever shown, because none was ever published</b>, not to this page and not to the chain.
-    </p>
-    <p class="vfy-measure" style="margin:10px 0 0;font-size:13.5px;line-height:1.6;color:rgba(14,23,38,.66)">First time reading one of these? <a href="../guide/#verify" style="color:#004AAD">The guide explains every part of this page</a>, including what a tick does not mean.</p>
-    <p class="vfy-measure" style="margin:6px 0 0;font-size:13.5px;line-height:1.6;color:rgba(14,23,38,.66)">A dealer or an authority is entitled to more than a buyer, and receives it in a file the holder hands them, checked against the same ledger: <a href="../disclose/" style="color:#004AAD">one vehicle, three audiences</a>.</p>
-    <div class="vfy-legend">
-      <div><span class="tick"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg></span><span style="font-size:13px;line-height:1.5;color:rgba(14,23,38,.72)"><b style="display:block;font-size:14px;color:#0E1726">Proven</b>The circuit accepted this claim, and it could not exist unless the hidden value satisfied the bound. On a live chain that acceptance is a zero-knowledge proof on the ledger; here it is the same circuit, run wherever this record was made.</span></div>
-      <div><span class="none"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12h14"></path></svg></span><span style="font-size:13px;line-height:1.5;color:rgba(14,23,38,.72)"><b style="display:block;font-size:14px;color:#0E1726">Not proven</b>Nothing on the ledger answers this question. That is silence, <b>not a no</b>. The difference matters, and the page will not blur it.</span></div>
-    </div>
-  </section>
-
-  <section class="vfy-card">
-  <header style="padding:20px 0 14px;border-bottom:1px solid rgba(0,74,173,.16)">
-    <span style="display:block;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#002E6E">Vehicle passport &middot; Reg (EU) 2026/1738</span>
-    <h1 style="margin:5px 0 4px;font-size:clamp(28px,7vw,38px);line-height:1;letter-spacing:.01em;text-transform:uppercase">2019 Golf, silver</h1>
-    <span class="mono" style="font-size:10.5px;color:rgba(14,23,38,.62);word-break:break-all">VIN HASH 391ce048e0feacde85e7978c2c8320b3763a6c5ed5b2aacc7ca524469bafe357</span>
-  </header>
-
-  <div style="margin:18px 0;padding:16px 18px;background:#004AAD;color:#EDE4D8;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-    <div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:48px;line-height:.9;flex:none">4<span style="opacity:.55;font-size:25px">/4</span></div>
-    <div style="flex:1 1 190px;min-width:0">
-      <b style="display:block;font-family:'Barlow Condensed',sans-serif;font-size:18px;letter-spacing:.03em">BUYER QUESTIONS PROVEN</b>
-      <span style="font-size:12px;line-height:1.45;opacity:.8">Each tick is a zero-knowledge proof on the ledger. No value was ever published, not to us and not to the chain.</span>
-    </div>
-  </div>
-
-    <details class="vp-claim"><summary>
-      <div class="row">
-        <span class="tick"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg></span>
-        <div style="flex:1;min-width:0"><b style="display:block;font-size:15.5px">Never written off</b><span style="font-size:12px;color:rgba(14,23,38,.62)">writeOffCategory &le; 0 &middot; proven against the current record</span></div>
-        <span class="mono vp-toggle" aria-hidden="true" style="flex:none;font-size:12px;color:rgba(14,23,38,.62)"></span>
-      </div></summary>
-      <div class="vp-detail vfy-measure" style="margin:0 0 16px;padding:13px 15px;border:1px solid rgba(0,74,173,.3);background:#EDE4D8">
-        <p style="margin:0 0 11px;font-size:13px;line-height:1.55;color:rgba(14,23,38,.78)">The circuit accepted this claim. It could not have been produced unless the hidden value satisfied the bound, and the value itself was never published. On a live chain that acceptance is a zero-knowledge proof on the ledger.</p>
-        <div class="mono" style="display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:10.5px">
-          <span style="color:rgba(14,23,38,.62)">claim</span><span>odometerKm &le; 150,000 km</span>
-          <span style="color:rgba(14,23,38,.62)">field key</span><span style="word-break:break-all">2dd69ded11&hellip;a92fe7</span>
-          <span style="color:rgba(14,23,38,.62)">proven against</span><span style="word-break:break-all">d23fc21635&hellip;634fc5</span>
-          <span style="color:rgba(14,23,38,.62)">ledger slot</span><span style="word-break:break-all">690615c169&hellip;02d86f</span>
-        </div>
-      </div>
-    </details>
-    <details class="vp-claim"><summary>
-      <div class="row">
-        <span class="tick"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg></span>
-        <div style="flex:1;min-width:0"><b style="display:block;font-size:15.5px">No reported accidents</b><span style="font-size:12px;color:rgba(14,23,38,.62)">accidentCount &le; 0 &middot; proven against the current record</span></div>
-        <span class="mono vp-toggle" aria-hidden="true" style="flex:none;font-size:12px;color:rgba(14,23,38,.62)"></span>
-      </div></summary>
-      <div class="vp-detail vfy-measure" style="margin:0 0 16px;padding:13px 15px;border:1px solid rgba(0,74,173,.3);background:#EDE4D8">
-        <p style="margin:0 0 11px;font-size:13px;line-height:1.55;color:rgba(14,23,38,.78)">The circuit accepted this claim. It could not have been produced unless the hidden value satisfied the bound, and the value itself was never published. On a live chain that acceptance is a zero-knowledge proof on the ledger.</p>
-        <div class="mono" style="display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:10.5px">
-          <span style="color:rgba(14,23,38,.62)">claim</span><span>odometerKm &le; 150,000 km</span>
-          <span style="color:rgba(14,23,38,.62)">field key</span><span style="word-break:break-all">2dd69ded11&hellip;a92fe7</span>
-          <span style="color:rgba(14,23,38,.62)">proven against</span><span style="word-break:break-all">d23fc21635&hellip;634fc5</span>
-          <span style="color:rgba(14,23,38,.62)">ledger slot</span><span style="word-break:break-all">690615c169&hellip;02d86f</span>
-        </div>
-      </div>
-    </details>
-    <details class="vp-claim"><summary>
-      <div class="row">
-        <span class="tick"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg></span>
-        <div style="flex:1;min-width:0"><b style="display:block;font-size:15.5px">One keeper from new</b><span style="font-size:12px;color:rgba(14,23,38,.62)">ownerCount &le; 1 &middot; proven against the current record</span></div>
-        <span class="mono vp-toggle" aria-hidden="true" style="flex:none;font-size:12px;color:rgba(14,23,38,.62)"></span>
-      </div></summary>
-      <div class="vp-detail vfy-measure" style="margin:0 0 16px;padding:13px 15px;border:1px solid rgba(0,74,173,.3);background:#EDE4D8">
-        <p style="margin:0 0 11px;font-size:13px;line-height:1.55;color:rgba(14,23,38,.78)">The circuit accepted this claim. It could not have been produced unless the hidden value satisfied the bound, and the value itself was never published. On a live chain that acceptance is a zero-knowledge proof on the ledger.</p>
-        <div class="mono" style="display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:10.5px">
-          <span style="color:rgba(14,23,38,.62)">claim</span><span>odometerKm &le; 150,000 km</span>
-          <span style="color:rgba(14,23,38,.62)">field key</span><span style="word-break:break-all">2dd69ded11&hellip;a92fe7</span>
-          <span style="color:rgba(14,23,38,.62)">proven against</span><span style="word-break:break-all">d23fc21635&hellip;634fc5</span>
-          <span style="color:rgba(14,23,38,.62)">ledger slot</span><span style="word-break:break-all">690615c169&hellip;02d86f</span>
-        </div>
-      </div>
-    </details>
-    <details class="vp-claim" open><summary>
-      <div class="row">
-        <span class="tick"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg></span>
-        <div style="flex:1;min-width:0"><b style="display:block;font-size:15.5px">Mileage under 150,000 km</b><span style="font-size:12px;color:rgba(14,23,38,.62)">odometerKm &le; 150,000 &middot; proven against the current record</span></div>
-        <span class="mono vp-toggle" aria-hidden="true" style="flex:none;font-size:12px;color:rgba(14,23,38,.62)"></span>
-      </div></summary>
-      <div class="vp-detail vfy-measure" style="margin:0 0 16px;padding:13px 15px;border:1px solid rgba(0,74,173,.3);background:#EDE4D8">
-        <p style="margin:0 0 11px;font-size:13px;line-height:1.55;color:rgba(14,23,38,.78)">The circuit accepted this claim. It could not have been produced unless the hidden value satisfied the bound, and the value itself was never published. On a live chain that acceptance is a zero-knowledge proof on the ledger.</p>
-        <div class="mono" style="display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:10.5px">
-          <span style="color:rgba(14,23,38,.62)">claim</span><span>odometerKm &le; 150,000 km</span>
-          <span style="color:rgba(14,23,38,.62)">field key</span><span style="word-break:break-all">2dd69ded11&hellip;a92fe7</span>
-          <span style="color:rgba(14,23,38,.62)">proven against</span><span style="word-break:break-all">d23fc21635&hellip;634fc5</span>
-          <span style="color:rgba(14,23,38,.62)">ledger slot</span><span style="word-break:break-all">690615c169&hellip;02d86f</span>
-        </div>
-      </div>
-    </details>
-
-  <div class="vfy-foot">
-    <div style="padding:16px 0;border-top:1px solid rgba(0,74,173,.26);display:flex;flex-direction:column;gap:9px">
-      <div style="display:flex;justify-content:space-between;gap:12px;font-size:12.5px;color:rgba(14,23,38,.62)"><span>Registered by</span><span class="mono" style="text-align:right;word-break:break-all">48735664c0&hellip;53e6a1</span></div>
-      <div style="display:flex;justify-content:space-between;gap:12px;font-size:12.5px;color:rgba(14,23,38,.62)"><span>Claims on the ledger</span><span class="mono">4</span></div>
-      <div style="display:flex;justify-content:space-between;gap:12px;font-size:12.5px;color:rgba(14,23,38,.62)"><span>Battery passport</span><span class="mono">not an EV</span></div>
-    </div>
-    <div style="padding:16px 18px;border-top:1px solid rgba(0,74,173,.26);background:rgba(0,74,173,.05)">
-      <b style="display:block;font-family:'Barlow Condensed',sans-serif;font-size:17px;letter-spacing:.02em;margin-bottom:7px">WHAT A TICK DOES, AND DOES NOT, MEAN</b>
-      <p style="margin:0;font-size:12.5px;line-height:1.6;color:rgba(14,23,38,.72)">Proven against the anchored record, attributable to a named registrar, tamper-evident. Not a guarantee that the record matched physical reality when it was written. That is the registrar's word, which is why every passport names one.</p>
-    </div>
-  </div>
-  </section>
-
-  <h2 style="margin:8px 0 -8px;font-family:'Barlow Condensed',sans-serif;font-size:20px;letter-spacing:.03em;text-transform:uppercase;color:#002E6E">Other passports on this ledger</h2>
-  <p class="vfy-measure" style="margin:0;font-size:13.5px;line-height:1.6;color:rgba(14,23,38,.7)">More vehicles, kept collapsed so they do not compete with the one you came to check. They exist to show the range: a record that answers every question, and one that cannot.</p>
-
-  <details class="vfy-more" id="b"><summary>
-    <span class="vfy-chip">1/4</span>
-    <span style="flex:1 1 240px;min-width:0">
-      <b style="display:block;font-family:'Barlow Condensed',sans-serif;font-size:20px;letter-spacing:.02em;text-transform:uppercase">2018 320d, grey</b>
-      <span style="font-size:12.5px;color:rgba(14,23,38,.62)">Another passport on the same ledger &middot; a record it cannot prove clean</span>
-    </span>
-    <span class="vfy-open" style="flex:none;font:600 10.5px Barlow,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#004AAD"></span>
-  </summary>
-  <div class="vfy-more-body">
-    <span class="mono" style="display:block;margin-bottom:4px;font-size:10.5px;color:rgba(14,23,38,.62);word-break:break-all">VIN HASH c7e89baf7818a3dc43edc3632b7f36e0df990fc9de72ede2cf80f5886c176d3b</span>
-    <div style="margin:16px 0;padding:15px 17px;border:1px solid #8B95FF;background:rgba(139,149,255,.18);display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:46px;line-height:.9;color:#004AAD;flex:none">1<span style="opacity:.5;font-size:24px">/4</span></div>
-      <div style="flex:1 1 190px;min-width:0">
-        <b style="display:block;font-family:'Barlow Condensed',sans-serif;font-size:18px;letter-spacing:.03em">ONE QUESTION PROVEN</b>
-        <span style="font-size:12px;line-height:1.45;color:rgba(14,23,38,.75)">The rest carry no claim. That is not a no, it is the absence of a proof, and the difference matters.</span>
-      </div>
-    </div>
-    <details class="vp-claim" open><summary>
-      <div class="row">
-        <span class="none"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12h14"></path></svg></span>
-        <div style="flex:1;min-width:0"><b style="display:block;font-size:15.5px;color:rgba(14,23,38,.78)">Never written off</b><span style="font-size:12px;color:rgba(14,23,38,.62)">No claim on the ledger. Not proven, not a no.</span></div>
-        <span class="mono vp-toggle" aria-hidden="true" style="flex:none;font-size:12px;color:rgba(14,23,38,.62)"></span>
-      </div></summary>
-      <div class="vp-detail vfy-measure" style="margin:0 0 16px;padding:13px 15px;border:1px solid rgba(0,74,173,.3)">
-        <p style="margin:0 0 11px;font-size:13px;line-height:1.55;color:rgba(14,23,38,.78)">Nothing on the ledger answers this question. A failed proof writes nothing and no proof was recorded, so the honest rendering is not proven. Ask the seller for it: if the claim is true of the record, producing it costs one transaction.</p>
-        <button type="button" class="vp-ask" data-vehicle="2018 320d, grey" data-claim="Never written off" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;min-height:44px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;background:#004AAD;color:#EDE4D8;border:1px solid #004AAD;padding:10px 18px;cursor:pointer">COPY THE REQUEST</button>
-        <span style="display:block;margin-top:9px;font-size:12px;color:rgba(14,23,38,.62)">Copies the vehicle and the claim as text you can send to the seller. Nothing leaves this page: there is no request inbox behind it.</span>
-      </div>
-    </details>
-    <details class="vp-claim"><summary>
-      <div class="row">
-        <span class="none"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12h14"></path></svg></span>
-        <div style="flex:1;min-width:0"><b style="display:block;font-size:15.5px;color:rgba(14,23,38,.78)">No reported accidents</b><span style="font-size:12px;color:rgba(14,23,38,.62)">No claim on the ledger. Not proven, not a no.</span></div>
-        <span class="mono vp-toggle" aria-hidden="true" style="flex:none;font-size:12px;color:rgba(14,23,38,.62)"></span>
-      </div></summary>
-      <div class="vp-detail vfy-measure" style="margin:0 0 16px;padding:13px 15px;border:1px solid rgba(0,74,173,.3)">
-        <p style="margin:0 0 11px;font-size:13px;line-height:1.55;color:rgba(14,23,38,.78)">Nothing on the ledger answers this question. A failed proof writes nothing and no proof was recorded, so the honest rendering is not proven. Ask the seller for it: if the claim is true of the record, producing it costs one transaction.</p>
-        <button type="button" class="vp-ask" data-vehicle="2018 320d, grey" data-claim="No reported accidents" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;min-height:44px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;background:#004AAD;color:#EDE4D8;border:1px solid #004AAD;padding:10px 18px;cursor:pointer">COPY THE REQUEST</button>
-        <span style="display:block;margin-top:9px;font-size:12px;color:rgba(14,23,38,.62)">Copies the vehicle and the claim as text you can send to the seller. Nothing leaves this page: there is no request inbox behind it.</span>
-      </div>
-    </details>
-    <details class="vp-claim"><summary>
-      <div class="row">
-        <span class="none"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12h14"></path></svg></span>
-        <div style="flex:1;min-width:0"><b style="display:block;font-size:15.5px;color:rgba(14,23,38,.78)">One keeper from new</b><span style="font-size:12px;color:rgba(14,23,38,.62)">No claim on the ledger. Not proven, not a no.</span></div>
-        <span class="mono vp-toggle" aria-hidden="true" style="flex:none;font-size:12px;color:rgba(14,23,38,.62)"></span>
-      </div></summary>
-      <div class="vp-detail vfy-measure" style="margin:0 0 16px;padding:13px 15px;border:1px solid rgba(0,74,173,.3)">
-        <p style="margin:0 0 11px;font-size:13px;line-height:1.55;color:rgba(14,23,38,.78)">Nothing on the ledger answers this question. A failed proof writes nothing and no proof was recorded, so the honest rendering is not proven. Ask the seller for it: if the claim is true of the record, producing it costs one transaction.</p>
-        <button type="button" class="vp-ask" data-vehicle="2018 320d, grey" data-claim="One keeper from new" style="display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;min-height:44px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em;background:#004AAD;color:#EDE4D8;border:1px solid #004AAD;padding:10px 18px;cursor:pointer">COPY THE REQUEST</button>
-        <span style="display:block;margin-top:9px;font-size:12px;color:rgba(14,23,38,.62)">Copies the vehicle and the claim as text you can send to the seller. Nothing leaves this page: there is no request inbox behind it.</span>
-      </div>
-    </details>
-    <details class="vp-claim"><summary>
-      <div class="row">
-        <span class="tick"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg></span>
-        <div style="flex:1;min-width:0"><b style="display:block;font-size:15.5px">Mileage under 200,000 km</b><span style="font-size:12px;color:rgba(14,23,38,.62)">odometerKm &le; 200,000 &middot; proven against the current record</span></div>
-        <span class="mono vp-toggle" aria-hidden="true" style="flex:none;font-size:12px;color:rgba(14,23,38,.62)"></span>
-      </div></summary>
-      <div class="vp-detail vfy-measure" style="margin:0 0 16px;padding:13px 15px;border:1px solid rgba(0,74,173,.3);background:#EDE4D8">
-        <p style="margin:0 0 11px;font-size:13px;line-height:1.55;color:rgba(14,23,38,.78)">The circuit accepted this claim. It could not have been produced unless the hidden value satisfied the bound, and the value itself was never published. On a live chain that acceptance is a zero-knowledge proof on the ledger.</p>
-        <div class="mono" style="display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:10.5px">
-          <span style="color:rgba(14,23,38,.62)">claim</span><span>odometerKm &le; 150,000 km</span>
-          <span style="color:rgba(14,23,38,.62)">field key</span><span style="word-break:break-all">2dd69ded11&hellip;a92fe7</span>
-          <span style="color:rgba(14,23,38,.62)">proven against</span><span style="word-break:break-all">d23fc21635&hellip;634fc5</span>
-          <span style="color:rgba(14,23,38,.62)">ledger slot</span><span style="word-break:break-all">690615c169&hellip;02d86f</span>
-        </div>
-      </div>
-    </details>
-    <p style="margin:16px 0 0;font-size:13px"><a href="../proofs/">See every claim in the proof explorer &rarr;</a></p>
-  </div></details>
-
-  </div>
-  </main>
-
-  <footer style="padding:26px 0 48px;margin-top:24px;border-top:1px solid rgba(0,74,173,.26);display:flex;flex-wrap:wrap;gap:16px 32px;align-items:center;font-size:13px;color:rgba(14,23,38,.7)">
-    <img src="../assets/vinpassport-logo.png" alt="VINPassport" width="546" height="102" style="height:24px;width:auto">
-    <a href="https://github.com/VINPassport/VINPassport" target="_blank" rel="noopener" style="text-decoration:none">Source</a>
-    <a href="https://midnight.network" target="_blank" rel="noopener" style="text-decoration:none">Midnight Network</a>
-    <a href="../regulation/" style="text-decoration:none">Reg (EU) 2026/1738</a>
-  </footer>
-
-</div>
-<script type="module" src="verify.js?v=13"></script>
-<script type="module" src="../assets/nav.mjs?v=1"></script>
+<main id="main">
+<p>The verdict page moved to <a href="../v/">passport.vin/v/</a>.</p>
+</main>
 </body>
 </html>

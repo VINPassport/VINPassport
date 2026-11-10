@@ -1,36 +1,22 @@
 /**
- * One navigation bar, written into every page.
+ * One header and one footer, written into every page.
  *
- *   node scripts/build-nav.mjs          rewrite every page's <nav>
+ *   node scripts/build-nav.mjs          rewrite every page's header and footer
  *   node scripts/build-nav.mjs --check  report drift, change nothing (exit 1 if any)
  *
- * The bar was hand-written on seven pages and had drifted into three
- * different bars: the home page offered Watch, How it works and Honest
- * limits; the application pages offered Intake, Proofs and Verify; the
- * content pages offered something in between. A reader moving between them
- * saw the site change shape under them. Repeating markup by hand is what
- * caused that, so it is generated here from one list and one page table.
+ * The bar was once hand-written on seven pages and drifted into three
+ * different bars, so a reader moving between pages saw the site change shape
+ * under them. Repeating markup by hand is what caused that, so the header and
+ * footer are generated here from one list and one page table, and the check
+ * fails CI when a page drifts.
  *
- * Two conventions, applied uniformly rather than per page:
+ * The 2026 redesign (design handoff, Header.dc.html and Footer.dc.html) is the
+ * only design now: each page carries `<header class="vp-header">` and
+ * `<footer class="vp-footer">`, and this stamps their contents. The page you
+ * are on stays a link and carries `aria-current="page"`, as the design does.
  *
- *   - The page you are on is MARKED, not linked. A text item gets the blue
- *     underline, a button keeps its shape but loses its fill. Both carry
- *     `aria-current="page"`, which the bars used to do only sometimes.
- *   - Every item is a page. The bar carries no anchors into home page
- *     sections: Watch, How it works and Honest limits were all dropped,
- *     because a reader reaches each of them by scrolling the home page.
- *
- * THE 2026 REDESIGN. A page marked `design: 'vp'` in PAGES gets the new
- * header (notice band, bar, phone menu) and footer instead of the bar above,
- * stamped between `<header class="vp-header"` and `</header>` and between
- * `<footer class="vp-footer"` and `</footer>`. Pages move over as they are
- * ported; the old bar and its markers go once the last one has. In the new
- * header the current page stays a link and carries `aria-current="page"`,
- * as the design does.
- *
- * Line endings are preserved per file: the site's pages are CRLF, while
- * /guide/ is generated with LF, and rewriting one in the other's style
- * produces a diff of the whole file and a mixed-ending repository.
+ * Line endings are preserved per file, so a rewrite never turns into a diff of
+ * the whole page.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -41,37 +27,22 @@ import { dirname, join } from 'node:path';
 const SITE = join(dirname(fileURLToPath(import.meta.url)), '..', 'site');
 const CHECK = process.argv.includes('--check');
 
-/** The bar, in order. */
-const ITEMS = [
-    { key: 'guide', label: 'Guide', href: 'guide/', kind: 'link' },
-    { key: 'regulation', label: 'Regulation', href: 'regulation/', kind: 'link' },
-    { key: 'demo', label: 'Live demo', href: 'demo/', kind: 'link' },
-    { key: 'manufacturers', label: 'For manufacturers', href: 'manufacturers/', kind: 'link' },
-    { key: 'verify', label: 'SCAN A VEHICLE', href: 'verify/', kind: 'ghost' },
-    { key: 'intake', label: 'ADD PASSPORT', href: 'intake/', kind: 'solid' }
-];
-
 /**
- * `current` names the item this page IS, so the bar marks it instead of
- * offering a trip to where the reader already is. `/proofs/`, `/disclose/` and
- * `/wallet/` have no item of their own: they are reached from the pages that cite them.
- * The bar holds six items today; at eight it wrapped to a second row on a
- * laptop.
+ * Every page that carries the header and footer. `current` names the header
+ * item a page IS (see VP_ITEMS, plus 'home', 'about' and 'scan'), so the
+ * header marks it. The evidence pages (demo, intake, proofs, disclose,
+ * wallet) and the verdict page have no item of their own: they are reached
+ * from the pages that cite them. 404.html is served from any depth, so its
+ * links are root-absolute.
  */
 export const PAGES = [
     { file: 'index.html', depth: 0, current: 'home', design: 'vp' },
-    { file: 'guide/index.html', depth: 1, current: 'guide' },
-    { file: 'regulation/index.html', depth: 1, current: 'regulation' },
     { file: 'demo/index.html', depth: 1, current: null, design: 'vp' },
-    { file: 'verify/index.html', depth: 1, current: 'verify' },
     { file: 'intake/index.html', depth: 1, current: null, design: 'vp' },
     { file: 'proofs/index.html', depth: 1, current: null, design: 'vp' },
     { file: 'manufacturers/index.html', depth: 1, current: 'manufacturers', design: 'vp' },
     { file: 'disclose/index.html', depth: 1, current: null, design: 'vp' },
     { file: 'wallet/index.html', depth: 1, current: null, design: 'vp' },
-    // The 2026 redesign. A page joins the new design when it is ported: `design: 'vp'` stamps
-    // the new header and footer instead of the old bar. The old bar goes once every page has
-    // moved. 404.html is served from any depth, so its links are root-absolute.
     { file: 'privacy/index.html', depth: 1, current: null, design: 'vp' },
     { file: '404.html', depth: 0, current: null, design: 'vp', absolute: true },
     { file: 'compliance/index.html', depth: 1, current: 'compliance', design: 'vp' },
@@ -81,6 +52,19 @@ export const PAGES = [
     { file: 'about/index.html', depth: 1, current: 'about', design: 'vp' },
     { file: 'scan/index.html', depth: 1, current: 'scan', design: 'vp' },
     { file: 'v/index.html', depth: 1, current: null, design: 'vp' }
+];
+
+/**
+ * Addresses that moved. Each keeps a small page that forwards the path, the
+ * query and the section (GitHub Pages has no server redirects), so printed QR
+ * codes (`/verify/?v=<key>`) and old links keep working. They carry no header,
+ * stay out of the sitemap, and nothing on the site links to them.
+ */
+export const MOVED = [
+    { from: 'verify/', to: 'v/' },
+    { from: 'guide/', to: 'how-it-works/' },
+    { from: 'regulation/', to: 'compliance/' },
+    { from: 'console/', to: 'intake/' }
 ];
 
 // ---- The redesign's header and footer (design handoff, Header.dc.html and Footer.dc.html) ----
@@ -191,61 +175,11 @@ function stamp(body, file, open, close, markup) {
     return body.slice(0, a) + markup + body.slice(b + close.length);
 }
 
-const LINK = 'text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap';
-// The mark is a text decoration, not a border. A border and its padding made
-// the marked item 4px taller than its neighbours, so the bar centred it 2px
-// higher on every page whose current item is a link, and in the phone menu its
-// inline padding beat the menu's own and squeezed that one row.
-const LINK_HERE = 'font-size:14px;color:#004AAD;white-space:nowrap;text-decoration:underline;'
-    + 'text-decoration-thickness:2px;text-underline-offset:6px;text-decoration-skip-ink:none';
-const BTN = "display:inline-flex;align-items:center;justify-content:center;text-align:center;"
-    + "line-height:1.2;text-decoration:none;font-family:'Barlow Condensed',sans-serif;"
-    + "font-weight:600;font-size:15px;letter-spacing:.06em;padding:9px 20px;white-space:nowrap;flex:none";
-const SOLID = `${BTN};background:#004AAD;color:#EDE4D8;border:1px solid #004AAD`;
-const GHOST = `${BTN};background:transparent;color:#0E1726;border:1px solid rgba(0,74,173,.28)`;
-const BTN_HERE = `${BTN};background:transparent;color:#004AAD;border:1px solid #004AAD`;
-
-const itemMarkup = (item, page) => {
-    const prefix = page.depth ? '../' : '';
-    const href = `${prefix}${item.href}`;
-    const here = page.current === item.key;
-    if (item.kind === 'link') {
-        return here
-            ? `<span aria-current="page" style="${LINK_HERE}">${item.label}</span>`
-            : `<a href="${href}" style="${LINK}">${item.label}</a>`;
-    }
-    const style = here ? BTN_HERE : (item.kind === 'solid' ? SOLID : GHOST);
-    return here
-        ? `<span aria-current="page" style="${style}">${item.label}</span>`
-        : `<a href="${href}" style="${style}">${item.label}</a>`;
-};
-
-export function navMarkup(page) {
-    const prefix = page.depth ? '../' : '';
-    const img = `<img src="${prefix}assets/vinpassport-logo.png" alt="VINPassport" `
-        + `width="546" height="102" style="height:32px;width:auto">`;
-    // The logo goes home from every page, home included. A reader far down the
-    // home page expects it to take them back to the top, and a link to the page
-    // itself, without any fragment, reloads it there.
-    const brand = `<a href="${page.depth ? prefix : './'}"${page.depth ? '' : ' aria-current="page"'} `
-        + `style="display:flex;align-items:center;margin-right:auto;flex:none;text-decoration:none">\n      ${img}\n    </a>`;
-    const links = ITEMS.map((i) => `      ${itemMarkup(i, page)}`).join('\n');
-    return `<nav class="nav-bar" style="display:flex;align-items:center;flex-wrap:wrap;gap:14px 26px;`
-        + `padding:18px 0;min-height:75px;border-bottom:1px solid rgba(0,74,173,.26)">\n`
-        + `    <a class="nav-skip" href="#main">Skip to content</a>\n`
-        + `    ${brand}\n`
-        + `    <div class="nav-links" id="navmenu">\n${links}\n    </div>\n`
-        + `    <button class="nav-burger" type="button" aria-label="Menu" aria-expanded="false" `
-        + `aria-controls="navmenu"><i></i><i></i><i></i></button>\n`
-        + `  </nav>`;
-}
-
-// Importing this module must not rewrite the site. `scripts/build-guide.mjs`
-// imports `navMarkup` so the generated guide carries the same bar as every
-// hand-written page; without this guard that import would rewrite all seven.
+// Importing this module must not rewrite the site: the tests import PAGES and
+// the markup builders.
 const RUN_DIRECTLY = process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url;
 if (!RUN_DIRECTLY) {
-    // Imported for `navMarkup` / `PAGES`; nothing else to do.
+    // Imported for `PAGES` and the markup builders; nothing else to do.
 } else {
 
 let changed = 0;
@@ -256,13 +190,8 @@ for (const page of PAGES) {
     const crlf = raw.includes('\r\n');
     const body = crlf ? raw.replace(/\r\n/g, '\n') : raw;
 
-    let next;
-    if (page.design === 'vp') {
-        next = stamp(body, page.file, '<header class="vp-header"', '</header>', headerMarkup(page));
-        next = stamp(next, page.file, '<footer class="vp-footer"', '</footer>', footerMarkup(page));
-    } else {
-        next = stamp(body, page.file, '<nav', '</nav>', navMarkup(page));
-    }
+    let next = stamp(body, page.file, '<header class="vp-header"', '</header>', headerMarkup(page));
+    next = stamp(next, page.file, '<footer class="vp-footer"', '</footer>', footerMarkup(page));
 
     if (next === body) { console.log(`  same  ${page.file}`); continue; }
     drift += 1;
@@ -274,7 +203,7 @@ for (const page of PAGES) {
 }
 
 if (CHECK) {
-    console.log(drift ? `\n${drift} page(s) drifted from the shared bar` : '\nevery bar matches');
+    console.log(drift ? `\n${drift} page(s) drifted from the shared header and footer` : '\nevery header and footer matches');
     process.exit(drift ? 1 : 0);
 }
 console.log(`\n${changed} page(s) rewritten, ${PAGES.length - changed} already correct`);

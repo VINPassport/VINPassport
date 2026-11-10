@@ -25,12 +25,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import { spawn } from 'node:child_process';
-import { existsSync } from 'node:fs';
-import { fileURLToPath, pathToFileURL } from 'node:url';
-import { dirname, join } from 'node:path';
+import { createServer } from 'node:http';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join, extname, normalize, sep } from 'node:path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const DECK = join(ROOT, 'deck', 'index.html');
+const DECK = join(ROOT, 'deck');
 const PORT = 9454;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -51,11 +52,23 @@ const browser = spawn(BRAVE, [
     `--remote-debugging-port=${PORT}`,
     `--user-data-dir=${process.env.TEMP ?? '/tmp'}/brave-vinpassport-deck`,
     '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
-    '--allow-file-access-from-files', '--hide-scrollbars',
+    '--hide-scrollbars',
     '--window-size=1400,900', 'about:blank',
 ], { stdio: 'ignore' });
 
-const quit = (code) => { browser.kill(); process.exit(code); };
+/* Served over http, as Pages serves it. Opened as a file the browser refuses the deck's own
+   fonts (a file page has no origin to share them with), falls back to a system font, and every
+   measurement below is of a deck nobody sees. */
+const TYPES = { '.html': 'text/html', '.woff2': 'font/woff2', '.txt': 'text/plain', '.md': 'text/plain' };
+const server = createServer((req, res) => {
+    let file = normalize(join(DECK, decodeURIComponent(new URL(req.url, 'http://x').pathname)));
+    if (file.endsWith(sep)) file = join(file, 'index.html');
+    if (!file.startsWith(DECK) || !existsSync(file) || statSync(file).isDirectory()) { res.writeHead(404).end(); return; }
+    res.writeHead(200, { 'content-type': TYPES[extname(file)] ?? 'application/octet-stream' }).end(readFileSync(file));
+});
+await new Promise((r) => server.listen(0, '127.0.0.1', r));
+
+const quit = (code) => { browser.kill(); server.close(); process.exit(code); };
 
 let target;
 for (let i = 0; i < 80 && !target; i++) {
@@ -94,8 +107,17 @@ await send('Runtime.enable');
 await send('Emulation.setDeviceMetricsOverride', {
     width: 1400, height: 900, deviceScaleFactor: 1, mobile: false
 });
-await send('Page.navigate', { url: pathToFileURL(DECK).href });
+await send('Page.navigate', { url: `http://127.0.0.1:${server.address().port}/` });
 await sleep(3500);
+
+// The deck's Montserrat comes from deck/fonts/. If that path breaks, the deck still renders, in a
+// fallback font with different widths, so the slides measured here would not be the slides shown.
+const montserrat = await evaluate(`document.fonts.ready.then(() => [...document.fonts]
+    .some((f) => f.family.replace(/['"]/g, '') === 'Montserrat' && f.status === 'loaded'))`);
+if (!montserrat) {
+    console.error('check:deck FAILED - Montserrat did not load from deck/fonts/, so the deck is in a fallback font.');
+    quit(1);
+}
 
 /* Each slide is display:none until it carries `active`, so each has to be
    switched on before anything can be measured. The original classes go back

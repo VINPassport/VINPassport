@@ -3,7 +3,7 @@
  *
  * The published site is static, so the intake console has nowhere to post a
  * registration. It runs the compiled circuits in the tab instead, and the
- * ledger they produce has to reach /verify/ and /proofs/ somehow. This is
+ * ledger they produce has to reach /v/ and /proofs/ somehow. This is
  * that somehow: the same public-ledger snapshot the static export already
  * holds, written to sessionStorage and read back by sources.mjs.
  *

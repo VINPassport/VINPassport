@@ -5,7 +5,7 @@
   <p><em>Euro 7 binds new M1 and N1 types on <strong>29 November 2026</strong>. The circularity passport follows in 2032.</em></p>
   <p>
     <a href="https://passport.vin/"><b>Website (Live Demo)</b></a> ·
-    <a href="https://passport.vin/#video"><b>Explainer video</b></a> ·
+    <a href="https://passport.vin/how-it-works/#explained"><b>Explainer video</b></a> ·
     <a href="https://passport.vin/deck/"><b>Slide deck</b></a>
   </p>
   <p>
@@ -192,14 +192,14 @@ npm install
 npm test
 ```
 
-Expected: **176 contract tests, 337 app tests and 24 SDK assertions, all passing**, in about fifteen
+Expected: **176 contract tests, 378 app tests and 24 SDK assertions, all passing**, in about fifteen
 seconds.
 
 ```
  Test Files  2 passed (2)
       Tests  176 passed (176)
 
-ℹ pass 337
+ℹ pass 378
 
 ================ 24 passed, 0 failed ================
 ```
@@ -209,7 +209,7 @@ seconds.
 | `npm test` | Everything below, in one run |
 | `npm run test:contract` | The 176 contract tests, against the compiled circuits, including a cross-contract call tree run in memory |
 | `npm run test:watch` | The same, re-running on change |
-| `npm run test:app` | 337 tests on the application paths: verdicts, the deploy's registrar list and witness set, the runner's per-call wiring, the committee handover and committee proposals, registrar governance bookkeeping against the compiled contract, DUST coin selection, hash parity with the ledger 8 build, the chain-sees panel and the QR encoder, via `node --test`. **Most import and run product code; a minority assert on what is written in the repository** (that every screenshot the guide names exists, that each page's bar carries the same links, that every page names its content with one `<main>` and offers a way past the bar, that the verify page cannot answer with a vehicle nobody asked for, that no text colour drops below the contrast floor). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
+| `npm run test:app` | 378 tests on the application paths: verdicts, the deploy's registrar list and witness set, the runner's per-call wiring, the committee handover and committee proposals, registrar governance bookkeeping against the compiled contract, DUST coin selection, hash parity with the ledger 8 build, the chain-sees panel and the QR encoder, via `node --test`. **Most import and run product code; a minority assert on what is written in the repository** (that each page carries the shared header and footer, that every page names its content with one `<main>` and offers a way past the header, that every pairing of a text colour and a background clears the contrast floor, that a moved address keeps its query, that a link to a verdict previews as a check and never as a verdict). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
 | `npm run test:sdk` | 24 assertions pinning our assumptions about `@odatano/dpp-sdk` |
 | `npm run app` | All three surfaces + the circuits, one dependency-free server |
 | `npm run serve:site` | The site statically, as GitHub Pages serves it: no circuits, demo state only |
@@ -217,6 +217,7 @@ seconds.
 | `node scripts/chain-readback.mjs --network preview` | Read the deployed contract back from the public indexer; with `--receipt`, check a run against it |
 | `node scripts/export-bundles.mjs --network preview` | Re-read the Preview contract into `site/disclose/preview/ledger.json` (no key needed); with `--receipt`, also the sample bundles |
 | `node scripts/export-preprod-bundles.mjs` | The same for the ledger 8 preprod contract; run it from the tag `ledger8-preprod`, whose runtime reads that state |
+| `node scripts/build-og.mjs` | Re-render the link previews that carry numbers (`design/og/*.html` to `site/og/*.png`) in Brave, after a number on them changes |
 | `node scripts/record-run.mjs <receipt>` | Turn a guided-run receipt into the public recording `/demo/` shows (`site/demo/recorded-run.<network>.json`); it refuses to write if the VIN or any reading survives |
 | `npm run compile` | Recompile the Compact contract: **WSL2, macOS or Linux only**, see below |
 | `npm run check:upstream` | What moved upstream, read only: pinned Midnight packages against npm, the pinned compiler against its latest release, and the state of every issue a workaround here depends on, with its removal steps ([`scripts/lib/known-issues.mjs`](scripts/lib/known-issues.mjs)) |
@@ -247,13 +248,16 @@ npm run app        # -> http://localhost:8790
 | Surface | | Who it is for |
 |---|---|---|
 | **Home** | `/` | The problem, the mechanism, and what the chain does and does not learn |
-| **Regulation** | `/regulation/` | What Reg (EU) 2026/1738 actually requires, article by article |
-| **Verification** | `/verify/` | A buyer: scan a QR or type the VIN, see what the passport has *proven* and what it has not. The VIN is hashed in the browser, so it never reaches a server, and an identifier with no passport is told so rather than answered with another vehicle |
+| **Compliance** | `/compliance/` | What Euro 7 and Reg (EU) 2026/1738 require and when, with the article behind each date |
+| **Scan a vehicle** | `/scan/` | A buyer: type the passport code (`VP-XXXX-XXXX`) or the VIN, or paste a link. The VIN is hashed in the browser, so it never reaches a server and never enters the address |
+| **Verdict** | `/v/` | What the passport has *proven* and what it has not, read from the ledger. An identifier with no passport is told so rather than answered with another vehicle |
 | **Intake console** | `/intake/` | A registrar: fill in the fields, submit, watch the circuits accept and refuse |
 | **Proof explorer** | `/proofs/` | An auditor: every claim on the ledger, marked current or superseded |
+| **Check a disclosure** | `/disclose/` | A buyer, a dealer and an authority each get a different bundle; every value in it is checked against the ledger in the browser |
+| **Your own wallet** | `/wallet/` | A visitor's Midnight wallet asks the deployed contract whether a vehicle is registered; no server of ours, and the page never holds a key |
 | **Live chain demo** | `/demo/` | Anyone: one click writes a real passport to the deployed contract. With no server answering, it shows a recorded guided run instead: Preview (ledger 9) by default, preprod (ledger 8) at `?recorded=preprod` |
 
-`/console/` is kept as a redirect to `/intake/`, because the console moved after the URL was shared.
+`/verify/`, `/guide/`, `/regulation/` and `/console/` are kept as redirects to `/v/`, `/how-it-works/`, `/compliance/` and `/intake/`. They carry the query and the section across, because those addresses were shared and every QR code made before November 2026 encodes `/verify/?v=<key>`.
 
 The server is dependency-free Node and runs the **real compiled circuits in-process**: submitting
 the console form registers the passport, records the history, and proves the claims. A rollback
@@ -638,7 +642,7 @@ repository begins with no contract at all.
 |---|---|
 | **The contract** - five exported circuits at Wave 1's close, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
 | **Deployed to Midnight preprod**, 28 August, built and signed locally | [`deploy/preprod.json`](deploy/preprod.json) |
-| **537 tests today** - 176 contract, 337 application, 24 SDK assumption assertions; all forty-three guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
+| **578 tests today** - 176 contract, 378 application, 24 SDK assumption assertions; all forty-three guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
 | **Three surfaces** - verification, intake console, proof explorer - all running the compiled circuits, not a mock | [passport.vin](https://passport.vin/) |
 | **On-chain runs from the browser, self-funded**, after a hosted sponsor turned out to be a single point of failure in a demo a judge runs unattended | [D24](docs/DECISIONS.md#settled) |
 | **The regulatory basis read from the Official Journal** rather than secondary analysis - which caught two wrong article citations that had survived months of work | [REGULATION.md](docs/REGULATION.md) |
@@ -741,7 +745,7 @@ scripts/
 test/
   passport-simulator.mjs             harness: compiled circuits + a local ledger
   passport.test.mjs, listing.test.mjs 176 contract tests
-  app/                               337 tests on the paths around the circuits
+  app/                               378 tests on the paths around the circuits
   fixtures/golden-vectors.json       what the ledger 8 build computed, checked against this one
   sdk-assumptions.mjs                24 assertions pinning @odatano/dpp-sdk behaviour
 ```
@@ -787,7 +791,7 @@ that implements this panel end-to-end on Midnight preprod.
 
 | Document | What it covers |
 |---|---|
-| [Explainer video](https://passport.vin/#video) | Watch it first: the shortest route to what this does, embedded on the home page |
+| [Explainer video](https://passport.vin/how-it-works/#explained) | Watch it first: the shortest route to what this does, embedded on How it works |
 | [DEMO.md](docs/DEMO.md) | The ninety-second walkthrough: the script behind the video, and a guided run you can do yourself |
 | [deck/](deck/index.html) | The Wave 1 slide deck: [present it live](https://passport.vin/deck/), arrow keys to advance, Ctrl+P for the PDF |
 | [REGULATION.md](docs/REGULATION.md) | Primary legal sources, with direct EUR-Lex links |

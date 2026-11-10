@@ -187,6 +187,10 @@ textarea.input{padding:10px 12px;min-height:110px;resize:vertical}
 .vp-band__short,.vp-band__after{display:none}
 .vp-band.is-after .vp-band__before{display:none}
 .vp-band.is-after .vp-band__after{display:inline}
+/* A sentence in two tenses, switched by assets/chrome.mjs at data-switch-at (same date as the band). */
+.vp-when-after{display:none}
+.is-after>.vp-when-before{display:none}
+.is-after>.vp-when-after{display:inline}
 .vp-bar{max-width:1200px;margin:0 auto;padding:16px 24px;display:flex;align-items:center;gap:32px}
 .vp-bar .vp-logo{margin-right:auto}
 .vp-bar .vp-logo img{width:auto;height:45px}

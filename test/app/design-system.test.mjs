@@ -109,13 +109,13 @@ test('the Developers preview carries the build\'s and README\'s numbers', () => 
     assert.equal(stat('Guards<br>mutation-checked'), `${guards[1]}/${guards[2]}`, 'guards');
 });
 
-test('a page on the new design never asks Google for fonts', () => {
-    const pages = [];
+test('no page the site serves asks Google for fonts, the deck included', () => {
+    // The privacy notice says every font is served from this site; a font service sees each
+    // visitor's IP address before they have read a word (site/privacy/, "No cookies").
+    const pages = [join(SITE, '..', 'deck', 'index.html')];
     const walk = (d) => { for (const n of readdirSync(d, { withFileTypes: true })) { const p = join(d, n.name); if (n.isDirectory()) { if (!/engine|zk|fonts|brand|og/.test(n.name)) walk(p); } else if (n.name.endsWith('.html')) pages.push(p); } };
     walk(SITE);
     for (const p of pages) {
-        const html = readFileSync(p, 'utf8');
-        if (!html.includes('assets/vp.css')) continue;
-        assert.doesNotMatch(html, /fonts\.(googleapis|gstatic)\.com/, `${p} uses vp.css and still loads Google Fonts`);
+        assert.doesNotMatch(readFileSync(p, 'utf8'), /fonts\.(googleapis|gstatic)\.com/, `${p} loads Google Fonts`);
     }
 });

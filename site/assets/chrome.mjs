@@ -69,6 +69,10 @@ function wireMenu(header) {
 if (typeof document !== 'undefined') {
     const header = document.querySelector('.vp-header');
     if (header) wireMenu(header);
-    const band = document.querySelector('.vp-band[data-switch-at]');
-    if (band && bandIsAfter(Date.now(), band.dataset.switchAt)) band.classList.add('is-after');
+    // The band and any sentence written in two tenses (a .vp-when-before and a .vp-when-after
+    // inside an element carrying data-switch-at) show the second from the switch time. Without
+    // the script the first shows, which is right until then.
+    for (const el of document.querySelectorAll('[data-switch-at]')) {
+        if (bandIsAfter(Date.now(), el.dataset.switchAt)) el.classList.add('is-after');
+    }
 }
