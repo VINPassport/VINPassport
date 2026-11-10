@@ -13,6 +13,7 @@
  *   live contract    deploy/preview.json, the deploy record (address, network,
  *                    verifier keys, compiler)
  *   field slots      PANEL in scripts/lib/scenario.mjs (the slot map docs/FIELDS.md lays out)
+ *   pages            PAGES in scripts/build-nav.mjs, the pages check:a11y drives
  *
  * It reads every page the site serves, including what its meta description
  * and image text say (search results and link previews show those before
@@ -27,6 +28,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
 import { PANEL } from '../../scripts/lib/scenario.mjs';
+import { PAGES } from '../../scripts/build-nav.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const SITE = join(ROOT, 'site');
@@ -42,6 +44,7 @@ const SOURCE = {
     contractTests: Number(README.match(/\*\*(\d+) contract tests, \d+ app tests/)?.[1]),
     guards: NOW.match(/every guard mutation-checked, (\d+) of (\d+)/)?.slice(1).map(Number),
     slotsInUse: Object.keys(PANEL).length,
+    pages: PAGES.length,
     deploy: json('deploy', 'preview.json')
 };
 
@@ -125,6 +128,11 @@ test('the field slots on the site are the slot map\'s', () => {
     allEqual(/\b(\d+) Provable field slots\b/gi, 32, 'the slot count');
     allEqual(/\b(\d+) in use, \d+ reserved\b/gi, SOURCE.slotsInUse, 'the slots in use');
     allEqual(/\b\d+ in use, (\d+) reserved\b/gi, 32 - SOURCE.slotsInUse, 'the reserved slots');
+});
+
+test('every page count on the site is the page list\'s', () => {
+    // The wallet page's retirement (D36) took the list from 16 to 15 while the deck still said 16.
+    allEqual(/\ball (\d+) pages\b/gi, SOURCE.pages, 'the page count');
 });
 
 test('no figure from the stale handoff survives anywhere on the site', () => {

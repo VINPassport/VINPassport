@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BUILD, NETWORK_LEDGER, BUILDABLE, requireBuildableNetwork } from '../../scripts/lib/eras.mjs';
+import { BUILD, NETWORK_LEDGER, BUILDABLE, requireBuildableNetwork, requireRecordLedger } from '../../scripts/lib/eras.mjs';
 import { NETWORKS } from '../../scripts/lib/endpoints.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -42,15 +42,24 @@ test('package.json installs the runtime and SDK versions BUILD names', () => {
 
 test('every known network has a ledger, and only ledger 9 networks are buildable', () => {
     assert.deepEqual(Object.keys(NETWORK_LEDGER).sort(), [...NETWORKS].sort());
-    assert.deepEqual([...BUILDABLE], ['preview', 'mainnet']);
-    assert.equal(requireBuildableNetwork('preview'), 'preview');
-    assert.equal(requireBuildableNetwork('mainnet'), 'mainnet');
+    // Preprod moved to ledger 9 on 9 Nov 2026, block 3348434 (runtime 1000300 to 2001100).
+    assert.deepEqual([...BUILDABLE], ['preview', 'preprod', 'mainnet']);
+    for (const n of ['preview', 'preprod', 'mainnet']) assert.equal(requireBuildableNetwork(n), n);
 });
 
-test('preprod is refused with a sentence that says where the ledger 8 tooling went', () => {
-    assert.throws(() => requireBuildableNetwork('preprod'), (e) =>
+test('a ledger 8 network is refused with a sentence that says where the ledger 8 tooling went', () => {
+    const before = { ...NETWORK_LEDGER, preprod: 'v8' };
+    assert.throws(() => requireBuildableNetwork('preprod', before), (e) =>
         /preprod runs ledger 8/.test(e.message) && /ledger8-preprod/.test(e.message));
     assert.throws(() => requireBuildableNetwork('testnet'), /unknown network/);
+});
+
+test('preprod\'s ledger 8 record is not taken for a contract this build can call', () => {
+    // The network moved; the 1 Nov contract and its record did not.
+    assert.throws(() => requireRecordLedger(read('deploy/preprod.json'), 'deploy/preprod.json'), (e) =>
+        /records a ledger 8 deployment/.test(e.message) && /ledger8-preprod/.test(e.message) && /--redeploy/.test(e.message));
+    const preview = read('deploy/preview.json');
+    assert.equal(requireRecordLedger(preview, 'deploy/preview.json'), preview);
 });
 
 test('the listing demo is built by the same pinned compiler', () => {

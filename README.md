@@ -60,8 +60,9 @@ It stays on chain and still answers. Two things were shown there first:
 > build reproduces every hash and commitment of the ledger 8 build, so receipts and bundles carry
 > over. It has been rehearsed end to end on Preview: deploy, the full guided run, readback, sample
 > bundles, and the handover of the maintenance authority to a 2-of-3 committee
-> ([D27](docs/DECISIONS.md#settled), [D28](docs/DECISIONS.md#settled)). Preprod is still on
-> ledger 8; the paragraph below describes that deployment, whose build is at the tag `ledger8-preprod`.
+> ([D27](docs/DECISIONS.md#settled), [D28](docs/DECISIONS.md#settled)). Preprod followed on
+> 9 November (block 3348434). The contract above was deployed there on ledger 8; the indexer still
+> serves its state, and the paragraph below describes that deployment, whose build is at the tag `ledger8-preprod`.
 
 > **Status: pre-alpha, under active development.** The Compact contract is written, compiles and is
 > covered by tests, and the three application surfaces (verification, intake console, proof
@@ -193,14 +194,14 @@ npm install
 npm test
 ```
 
-Expected: **176 contract tests, 386 app tests and 24 SDK assertions, all passing**, in about fifteen
+Expected: **176 contract tests, 388 app tests and 24 SDK assertions, all passing**, in about fifteen
 seconds.
 
 ```
  Test Files  2 passed (2)
       Tests  176 passed (176)
 
-ℹ pass 386
+ℹ pass 388
 
 ================ 24 passed, 0 failed ================
 ```
@@ -210,7 +211,7 @@ seconds.
 | `npm test` | Everything below, in one run |
 | `npm run test:contract` | The 176 contract tests, against the compiled circuits, including a cross-contract call tree run in memory |
 | `npm run test:watch` | The same, re-running on change |
-| `npm run test:app` | 386 tests on the application paths: verdicts, the deploy's registrar list and witness set, the runner's per-call wiring, the committee handover and committee proposals, registrar governance bookkeeping against the compiled contract, DUST coin selection, hash parity with the ledger 8 build, the chain-sees panel and the QR encoder, via `node --test`. **Most import and run product code; a minority assert on what is written in the repository** (that each page carries the shared header and footer, that every page names its content with one `<main>` and offers a way past the header, that every pairing of a text colour and a background clears the contrast floor, that a moved address keeps its query, that a link to a verdict previews as a check and never as a verdict). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
+| `npm run test:app` | 388 tests on the application paths: verdicts, the deploy's registrar list and witness set, the runner's per-call wiring, the committee handover and committee proposals, registrar governance bookkeeping against the compiled contract, DUST coin selection, hash parity with the ledger 8 build, the chain-sees panel and the QR encoder, via `node --test`. **Most import and run product code; a minority assert on what is written in the repository** (that each page carries the shared header and footer, that every page names its content with one `<main>` and offers a way past the header, that every pairing of a text colour and a background clears the contrast floor, that a moved address keeps its query, that a link to a verdict previews as a check and never as a verdict). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
 | `npm run test:sdk` | 24 assertions pinning our assumptions about `@odatano/dpp-sdk` |
 | `npm run app` | All three surfaces + the circuits, one dependency-free server |
 | `npm run serve:site` | The site statically, as GitHub Pages serves it: no circuits, demo state only |
@@ -367,7 +368,8 @@ curl -s -X POST https://indexer.preview.midnight.network/api/v4/graphql -H 'Cont
 > `node scripts/maintenance.mjs status --network preview` reads the contract's maintenance
 > authority back from the same indexer and compares it with the record.
 
-On ledger 8 the contract is live on **Midnight preprod**; address and transaction
+On ledger 8 the contract was deployed to **Midnight preprod**, which moved to ledger 9 on
+9 November 2026 (block 3348434); the indexer still serves its state. Address and transaction
 hash are committed at [`deploy/preprod.json`](deploy/preprod.json). That address holds the
 **build of 1 November 2026**: fourteen exported circuits, ten of them proved, adding the
 disclosure grants ([D26](docs/DECISIONS.md#settled)) to the registrar authority and the
@@ -643,7 +645,7 @@ repository begins with no contract at all.
 |---|---|
 | **The contract** - five exported circuits at Wave 1's close, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
 | **Deployed to Midnight preprod**, 28 August, built and signed locally | [`deploy/preprod.json`](deploy/preprod.json) |
-| **586 tests today** - 176 contract, 386 application, 24 SDK assumption assertions; all forty-three guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
+| **588 tests today** - 176 contract, 388 application, 24 SDK assumption assertions; all forty-three guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
 | **Three surfaces** - verification, intake console, proof explorer - all running the compiled circuits, not a mock | [passport.vin](https://passport.vin/) |
 | **On-chain runs from the browser, self-funded**, after a hosted sponsor turned out to be a single point of failure in a demo a judge runs unattended | [D24](docs/DECISIONS.md#settled) |
 | **The regulatory basis read from the Official Journal** rather than secondary analysis - which caught two wrong article citations that had survived months of work | [REGULATION.md](docs/REGULATION.md) |
@@ -743,7 +745,7 @@ scripts/
 test/
   passport-simulator.mjs             harness: compiled circuits + a local ledger
   passport.test.mjs, listing.test.mjs 176 contract tests
-  app/                               386 tests on the paths around the circuits
+  app/                               388 tests on the paths around the circuits
   fixtures/golden-vectors.json       what the ledger 8 build computed, checked against this one
   sdk-assumptions.mjs                24 assertions pinning @odatano/dpp-sdk behaviour
 ```

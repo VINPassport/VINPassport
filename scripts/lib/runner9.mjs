@@ -38,6 +38,7 @@ import { loadVinKeys, vinKey, VINKEY_SCHEME } from './vin-key.mjs';
 import { credentialPath, LOCAL_DIR } from './local-credentials.mjs';
 import { openWallet, summarize } from './wallet9.mjs';
 import { buildFacts, compiledContract, contractProviders, recordPath } from './contract9.mjs';
+import { requireRecordLedger } from './eras.mjs';
 import { guidedIntake, validateManualIntake, randomDemoVin } from './intake-rules.mjs';
 
 export { guidedIntake, validateManualIntake, randomDemoVin };
@@ -108,7 +109,7 @@ export function explainFailure(e) {
 export async function openChain(network, { log = () => { } } = {}) {
     const path = recordPath(network);
     if (!existsSync(path)) throw new Error(`no deploy record at ${path}: deploy first (scripts/deploy.mjs)`);
-    const record = JSON.parse(readFileSync(path, 'utf8'));
+    const record = requireRecordLedger(JSON.parse(readFileSync(path, 'utf8')), path);
     const facts = buildFacts();
     if (record.build?.manifestSha256 && record.build.manifestSha256 !== facts.manifestSha256) {
         throw new Error('the build on disk is not the deployed build (integrity manifest differs from the deploy record)');

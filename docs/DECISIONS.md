@@ -650,6 +650,14 @@ which is why ledger 9 has its own deploy.
 18038; the readback checked 9 of 9 against the run's receipt; and the maintenance authority handed to
 the committee of [D28](#settled).
 
+**Amended 2026-11-10: preprod is on ledger 9 too.** It moved at block 3348434, 9 November 2026,
+12:04:12 UTC, where the preprod node's runtime specVersion goes from 1000300 to 2001100, the version
+Preview runs (both read from the nodes on 10 November). `scripts/lib/eras.mjs` now lets this build
+deploy there. The 1 November contract stays a ledger 8 contract: the indexer still serves its state
+(last action in block 3230032, read 10 November), this build refuses to read it or to treat its
+record as callable (`requireRecordLedger`), and its tooling stays at the tag `ledger8-preprod`. Whether it still
+accepts calls under ledger 9 has not been tried.
+
 ### D28: The maintenance authority is a 2-of-3 committee, never a single key · 2026-11-08
 
 A Midnight contract's maintenance authority decides who may insert or replace its verifier keys,

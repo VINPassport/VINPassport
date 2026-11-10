@@ -15,7 +15,7 @@ import { ContractState } from '@midnight-ntwrk/compact-runtime';
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
 import { ledger } from '../../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
 import { networkEndpoints } from './endpoints.mjs';
-import { requireBuildableNetwork } from './eras.mjs';
+import { requireBuildableNetwork, requireRecordLedger } from './eras.mjs';
 import { recordPath } from './contract9.mjs';
 
 /** The deploy record for a network this build serves. */
@@ -23,7 +23,7 @@ export function deployRecord(network) {
     requireBuildableNetwork(network);
     const path = recordPath(network);
     if (!existsSync(path)) throw new Error(`no deploy record at ${path}`);
-    return JSON.parse(readFileSync(path, 'utf8'));
+    return requireRecordLedger(JSON.parse(readFileSync(path, 'utf8')), path);
 }
 
 /**
