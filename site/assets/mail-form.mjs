@@ -1,5 +1,5 @@
 /**
- * The site's three forms (pilot request, contact, lifestyle interest): deliver
+ * The site's three forms (pilot request, contact, lifestyle enquiry): deliver
  * what was written, say what happened, and never pretend it went somewhere it
  * did not. Generalised from the first manufacturer form (manufacturers/apply.js).
  *

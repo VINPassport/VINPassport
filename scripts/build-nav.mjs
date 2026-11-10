@@ -78,7 +78,9 @@ export const PAGES = [
     { file: 'how-it-works/index.html', depth: 1, current: 'how', design: 'vp' },
     { file: 'lifestyle/index.html', depth: 1, current: 'lifestyle', design: 'vp' },
     { file: 'developers/index.html', depth: 1, current: 'developers', design: 'vp' },
-    { file: 'about/index.html', depth: 1, current: 'about', design: 'vp' }
+    { file: 'about/index.html', depth: 1, current: 'about', design: 'vp' },
+    { file: 'scan/index.html', depth: 1, current: 'scan', design: 'vp' },
+    { file: 'v/index.html', depth: 1, current: null, design: 'vp' }
 ];
 
 // ---- The redesign's header and footer (design handoff, Header.dc.html and Footer.dc.html) ----
@@ -136,9 +138,9 @@ export function headerMarkup(page) {
         '    <div class="vp-bar">',
         `      ${logo(page)}`,
         `      <div class="vp-nav">${desk}</div>`,
-        `      <div class="vp-actions"><a class="vp-btn vp-btn--ghost" href="${r}scan/">${QR_ICON(18)}Scan a vehicle</a>`
+        `      <div class="vp-actions"><a class="vp-btn vp-btn--ghost" href="${r}scan/"${here('scan')}>${QR_ICON(18)}Scan a vehicle</a>`
             + `<a class="vp-btn vp-btn--primary" href="${r}manufacturers/#pilot">Book a pilot call</a></div>`,
-        `      <a class="vp-icon-btn vp-icon-btn--scan" href="${r}scan/" aria-label="Scan a vehicle">${QR_ICON(22)}</a>`,
+        `      <a class="vp-icon-btn vp-icon-btn--scan" href="${r}scan/" aria-label="Scan a vehicle"${here('scan')}>${QR_ICON(22)}</a>`,
         '      <button class="vp-icon-btn vp-burger" type="button" aria-expanded="false" aria-controls="vp-menu" aria-label="Open menu">'
             + '<svg class="vp-burger__open" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>'
             + '<svg class="vp-burger__close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>',
@@ -146,7 +148,7 @@ export function headerMarkup(page) {
         '    <div class="vp-menu" id="vp-menu">',
         `        ${phone}`,
         `        <a class="vp-btn vp-btn--primary" href="${r}manufacturers/#pilot">Book a pilot call</a>`,
-        `        <a class="vp-btn vp-btn--secondary" href="${r}scan/">Scan a vehicle</a>`,
+        `        <a class="vp-btn vp-btn--secondary" href="${r}scan/"${here('scan')}>Scan a vehicle</a>`,
         '    </div>',
         '  </nav>',
         '</header>'

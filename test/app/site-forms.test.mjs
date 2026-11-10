@@ -1,5 +1,5 @@
 /**
- * The site's forms (pilot request, contact, lifestyle interest), and what each
+ * The site's forms (pilot request, contact, lifestyle enquiry), and what each
  * promises the person filling it in. Carries over every guarantee the first
  * manufacturer form's tests held:
  *

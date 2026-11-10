@@ -96,7 +96,7 @@ test('every page on the new design is a complete page', () => {
         assert.match(html, /<script type="module" src="[^"]*assets\/chrome\.mjs"><\/script>/, page.file);
         assert.match(html, /<link rel="manifest" href="[^"]*site\.webmanifest">/, page.file);
         assert.equal(count(html, /<h1[ >]/g), 1, `${page.file}: one h1`);
-        assert.equal(count(html, /<main id="main">/g), 1, `${page.file}: one main landmark`);
+        assert.equal(count(html, /<main id="main"[ >]/g), 1, `${page.file}: one main landmark`);
         assert.ok(html.includes(headerMarkup(page)) && html.includes(footerMarkup(page)), `${page.file}: header and footer as build-nav writes them`);
         if (page.file !== '404.html') assert.match(html, /<link rel="canonical" href="https:\/\/passport\.vin\//, page.file);
     }

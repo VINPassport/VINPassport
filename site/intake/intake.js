@@ -26,7 +26,7 @@
  */
 import { DEMO_VEHICLES } from '../assets/demo-vehicles.mjs';
 import { CLAIM_CATALOGUE, isCompare } from '../assets/claim-catalogue.mjs';
-import { qrPanel } from '../assets/passport-qr.mjs?v=1';
+import { qrPanel } from '../assets/passport-qr.mjs?v=2';
 import { networkOf } from '../assets/networks.mjs?v=1';
 
 const $ = (id) => document.getElementById(id);
@@ -477,7 +477,7 @@ function renderResult(result) {
     resultCount.textContent =
         `${result.applied.length} accepted · ${result.refused.length} refused`;
     const view = linksBar.querySelector('a[href*="verify"]');
-    view.href = `../verify/?v=${result.vinHex}`;
+    view.href = `../v/?v=${result.vinHex}`;
     // The run is finished, so the vehicle now has somewhere to point at.
     // This is the artefact that leaves the screen: it goes on the car.
     resultSection.querySelector('.qr-panel')?.remove();
@@ -521,7 +521,7 @@ ppWrap.addEventListener('click', () => {
 (async () => {
     let status = null;
     try {
-        const { apiBase: resolveBase, getStatus } = await import('../assets/chain-run.mjs?v=5');
+        const { apiBase: resolveBase, getStatus } = await import('../assets/chain-run.mjs?v=6');
         status = await getStatus(await resolveBase());
     } catch (e) {
         // Not answering is not the same as not offered: the engine restores a
@@ -587,7 +587,7 @@ registerBtn.addEventListener('click', async () => {
         if (!serverMode) {
             renderResult(await registerInThisBrowser());
         } else if (toChain) {
-            const { startManual, followJob } = await import('../assets/chain-run.mjs?v=5');
+            const { startManual, followJob } = await import('../assets/chain-run.mjs?v=6');
             const started = await startManual(apiBase, buildIntake());
             registerBtn.textContent = `RUNNING ON ${chainNet.label.toUpperCase()}…`;
             ppRun.scrollIntoView({ behavior: 'smooth', block: 'start' });

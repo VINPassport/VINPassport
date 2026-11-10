@@ -53,7 +53,7 @@ function vehicleSection(vin, claims, ledger, vinfo, fields) {
     <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 12px;padding:13px 15px;border-bottom:1px solid rgba(0,74,173,.26)">
       <b style="font-family:'Barlow Condensed',sans-serif;font-size:21px;letter-spacing:.02em">${esc((vinfo?.title ?? 'UNLABELLED VEHICLE').toUpperCase())}</b>
       <span style="font-size:12px;color:rgba(14,23,38,.62)">${esc(sub)}</span>
-      <a href="../verify/?v=${vin}" style="margin-left:auto;font-size:13px;text-decoration:none;white-space:nowrap">Verdict view →</a>
+      <a href="../v/?v=${vin}" style="margin-left:auto;font-size:13px;text-decoration:none;white-space:nowrap">Verdict view →</a>
     </div>
     <div class="mono" style="padding:9px 15px;font-size:10.5px;color:rgba(14,23,38,.62);word-break:break-all;border-bottom:1px solid rgba(0,74,173,.18)">VIN HASH ${vin}</div>
     ${body}

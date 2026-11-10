@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-import { apiBase, getStatus, startGuided, followJob, capacityLine } from '../assets/chain-run.mjs?v=5';
+import { apiBase, getStatus, startGuided, followJob, capacityLine } from '../assets/chain-run.mjs?v=6';
 import { networkOf, explorerUrl, indexerCurlLines } from '../assets/networks.mjs?v=1';
 
 const $ = (id) => document.getElementById(id);

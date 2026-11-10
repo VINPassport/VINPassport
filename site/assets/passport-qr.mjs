@@ -18,7 +18,7 @@ import { toSvg } from './qr.mjs?v=1';
 /** The absolute link a code for this vehicle should carry. */
 export function passportUrl(vinHash, origin = location.origin) {
     if (!/^[0-9a-f]{64}$/i.test(vinHash)) throw new Error('a vin hash is 64 hex characters');
-    return `${origin}/verify/?v=${vinHash.toLowerCase()}`;
+    return `${origin}/v/?v=${vinHash.toLowerCase()}`;
 }
 
 const BTN = "display:inline-flex;align-items:center;justify-content:center;text-align:center;"

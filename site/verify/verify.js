@@ -12,7 +12,7 @@
 import { passportView, QUESTIONS, isCompare } from '../assets/verdict.mjs';
 import { loadState } from '../assets/sources.mjs?v=5';
 import { chainSeesBlock, fmt, short, esc } from '../assets/chain-sees.mjs?v=2';
-import { qrPanel } from '../assets/passport-qr.mjs?v=1';
+import { qrPanel } from '../assets/passport-qr.mjs?v=2';
 import { parseEntry } from '../assets/vin.mjs?v=1';
 
 
