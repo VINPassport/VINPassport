@@ -195,13 +195,16 @@ npm test
 ```
 
 Expected: **176 contract tests, 388 app tests and 24 SDK assertions, all passing**, in about fifteen
-seconds.
+seconds. On a fresh clone one app test skips itself and says why: the script it checks is a local
+spike, gitignored, so the clone reports 387 passed and 1 skipped, as CI does.
 
 ```
  Test Files  2 passed (2)
       Tests  176 passed (176)
 
-ℹ pass 388
+ℹ tests 388
+ℹ pass 387
+ℹ skipped 1
 
 ================ 24 passed, 0 failed ================
 ```
