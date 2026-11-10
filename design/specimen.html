@@ -1,0 +1,135 @@
+<!doctype html>
+<!--
+  Design-system specimen: every token, component and layout helper in site/assets/vp.css on one
+  page, laid out like the design handoff's reference markup, for checking the stylesheet in a
+  browser at 1440 and 390 px. Not deployed (Pages publishes site/ and deck/ only).
+  Serve the repository root and open /design/specimen.html.
+  SPDX-License-Identifier: Apache-2.0
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Specimen · VINPassport design system</title>
+<link rel="stylesheet" href="../site/assets/vp.css">
+<style>
+  .sw { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .sw div { border: 1px solid var(--rule); border-radius: var(--radius-md); overflow: hidden; background: var(--paper-raised); font-size: 13px; line-height: 18px; }
+  .sw i { display: block; height: 56px; }
+  .sw span { display: block; padding: 8px 10px; font-family: var(--font-mono); }
+</style>
+</head>
+<body>
+<a class="vp-skip" href="#main">Skip to main content</a>
+<div class="vp-band">Euro 7 applies to new vehicle types from 29 Nov 2026 · <a href="#">What it means</a></div>
+<main id="main">
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-wash" aria-hidden="true"><div class="wave-track wave-track--a"><img src="../site/assets/brand/wave-a.svg" alt=""><img src="../site/assets/brand/wave-a.svg" alt=""></div><div class="wave-swell"><div class="wave-track wave-track--b"><img src="../site/assets/brand/wave-b.svg" alt=""><img src="../site/assets/brand/wave-b.svg" alt=""></div></div></div>
+  <div class="wrap sec split center" style="position: relative;">
+    <div class="stack" style="gap: 24px;">
+      <div class="vp-label">Vehicle passports for Euro 7 and beyond</div>
+      <h1 id="hero-title" class="h1">The vehicle passport, issued at the factory and trusted for life.</h1>
+      <p class="lead">Issue a Euro 7-ready passport with every new vehicle type. Any buyer checks it with a scan, and every reader, from buyer to recycler to authority, sees only what they are entitled to.</p>
+      <div class="btns">
+        <a class="vp-btn vp-btn--primary" href="#">Book a pilot call</a>
+        <a class="vp-btn vp-btn--secondary" href="#">See a sample passport</a>
+      </div>
+      <p class="small">No app or account for buyers · Mileage can never be rolled back · Built on Midnight</p>
+    </div>
+    <div style="max-width: 520px;">
+      <div class="vp-datapage">
+        <div class="vp-datapage__head">
+          <div>
+            <div class="vp-label">Sample passport · Page 01</div>
+            <p class="vp-datapage__title">2027 Volta EX4, Glacier White</p>
+          </div>
+          <img src="../site/assets/brand/vinpassport-icon-primary.svg" alt="VINPassport shield" style="width: 72px; height: 72px; flex: none;">
+        </div>
+        <div class="vp-fields">
+          <div><div class="vp-label">Issued by</div><div class="vp-field__value">Volta Automotive AG</div></div>
+          <div><div class="vp-label">Date of issue</div><div class="vp-field__value">14 MAR 2027</div></div>
+          <div><div class="vp-label">Vehicle type</div><div class="vp-field__value">M1 · EURO 7</div></div>
+          <div><div class="vp-label">VIN ends</div><div class="vp-field__value">4417</div></div>
+        </div>
+        <ul class="vp-verdicts">
+          <li class="vp-verdict vp-verdict--verified"><span class="vp-verdict__icon"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"></path></svg></span><span class="vp-verdict__q">Never written off</span><span class="vp-verdict__state">Verified</span></li>
+          <li class="vp-verdict vp-verdict--verified"><span class="vp-verdict__icon"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"></path></svg></span><span class="vp-verdict__q">No reported accidents</span><span class="vp-verdict__state">Verified</span></li>
+          <li class="vp-verdict vp-verdict--not-proven"><span class="vp-verdict__icon"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8h8"></path></svg></span><span class="vp-verdict__q">One keeper from new</span><span class="vp-verdict__state">Not proven</span></li>
+          <li class="vp-verdict vp-verdict--superseded"><span class="vp-verdict__icon"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5"></circle><path d="M8 5v3.2l2 1.3"></path></svg></span><span class="vp-verdict__q">Under 150,000 km</span><span class="vp-verdict__state">Superseded</span></li>
+        </ul>
+        <div class="vp-mrz" aria-hidden="true" style="margin-top: 16px;">P&lt;VINPASSPORT&lt;&lt;VOLTA&lt;EX4&lt;&lt;&lt;&lt;4417&lt;270314</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec--raised" style="padding: 28px 0;">
+  <div class="wrap grid-4">
+    <div><div class="vp-label">Network</div><div style="font-weight: 600; margin-top: 4px;">Built on Midnight, running on its Preview test network</div></div>
+    <div><div class="vp-label">Contract</div><div style="font-weight: 600; margin-top: 4px;">Open source, Apache-2.0</div></div>
+    <div><div class="vp-label">Testing</div><div style="font-weight: 600; margin-top: 4px;">176 contract tests passing</div></div>
+    <div><div class="vp-label">Fees</div><div style="font-weight: 600; margin-top: 4px;">Free for buyers to check</div></div>
+  </div>
+</section>
+
+<section class="sec sec--deep">
+  <div class="wrap stack-lg">
+    <div class="stack"><div class="vp-label">Tokens</div><h2 class="h2">Paper, ink and one blue.</h2></div>
+    <div class="sw">
+      <div><i style="background: var(--paper)"></i><span>--paper</span></div>
+      <div><i style="background: var(--paper-deep)"></i><span>--paper-deep</span></div>
+      <div><i style="background: var(--paper-raised)"></i><span>--paper-raised</span></div>
+      <div><i style="background: var(--blue-tint)"></i><span>--blue-tint</span></div>
+      <div><i style="background: var(--ink)"></i><span>--ink</span></div>
+      <div><i style="background: var(--ink-muted)"></i><span>--ink-muted</span></div>
+      <div><i style="background: var(--passport-blue)"></i><span>--passport-blue</span></div>
+      <div><i style="background: var(--guilloche)"></i><span>--guilloche</span></div>
+      <div><i style="background: var(--seal)"></i><span>--seal</span></div>
+      <div><i style="background: var(--verified)"></i><span>--verified</span></div>
+      <div><i style="background: var(--not-proven)"></i><span>--not-proven</span></div>
+      <div><i style="background: var(--superseded)"></i><span>--superseded</span></div>
+      <div><i style="background: var(--refused)"></i><span>--refused</span></div>
+    </div>
+    <div class="grid">
+      <div class="card"><div class="vp-label">Option A</div><h3 class="h3">Publish the full history</h3><p class="copy">Buyers can check it, but owners become identifiable and dealers expose prices and commercial records.</p></div>
+      <div class="card"><div class="vp-label">Option B</div><h3 class="h3">Keep the history private</h3><p class="copy">Owners stay protected, but the buyer is back to taking the seller's word for it.</p></div>
+      <div class="card card--accent"><div class="vp-label" style="color: var(--passport-blue);">VINPassport</div><h3 class="h3">Prove the answer, keep the record</h3><p class="copy">Each answer is proven from the record without publishing the record.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap stack-lg">
+    <div class="split">
+      <div class="stack">
+        <div style="display: flex; gap: 16px; align-items: center;"><span class="num">01</span><h3 class="h3">Issue on the production line</h3></div>
+        <div class="btns"><a class="vp-btn vp-btn--primary" href="#">Primary</a><a class="vp-btn vp-btn--secondary" href="#">Secondary</a><a class="vp-btn vp-btn--ghost" href="#">Ghost</a></div>
+        <div style="display: flex; gap: 28px; align-items: center; flex-wrap: wrap; padding: 12px 4px;">
+          <span class="vp-stamp vp-stamp--verified">Verified</span><span class="vp-stamp vp-stamp--issued">Issued</span><span class="vp-stamp vp-stamp--refused">Refused</span>
+        </div>
+        <div class="chips"><span class="chip">Engine hours</span><span class="chip">Hull repairs</span><span class="chip">Stolen check</span></div>
+        <ul class="ticks"><li><svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" style="stroke: var(--verified); fill: none; stroke-width: 2.4;"><path d="M3.5 8.5l3 3 6-7"></path></svg><span>Early access when lifestyle passports open</span></li></ul>
+        <p><a class="link" href="#">See how it works in detail →</a></p>
+      </div>
+      <div class="stack">
+        <div class="field"><label for="f1">Passport code</label><input id="f1" class="input" value="VP-G724-782P"></div>
+        <div class="field"><label for="f2">Message</label><textarea id="f2" class="input"></textarea></div>
+        <pre class="code">git clone https://github.com/VINPassport/VINPassport.git
+cd VINPassport</pre>
+      </div>
+    </div>
+    <div class="table-box"><table class="table">
+      <thead><tr><th>Passport page</th><th>Buyer</th><th>Recycler</th><th>Authority</th></tr></thead>
+      <tbody><tr><td>Ever written off?</td><td class="yes">Yes or no</td><td>Category</td><td>Full record</td></tr>
+      <tr><td>Reported accidents</td><td class="yes">Yes or no</td><td class="no">Not shown</td><td>Full record</td></tr></tbody>
+    </table></div>
+    <div class="faq"><details open><summary>Do buyers need an app or an account?</summary><p>No. The QR code opens a web page.</p></details><details><summary>What does "Not proven" mean?</summary><p>No claim on record.</p></details></div>
+    <div class="cta-band"><h2 class="h2" style="font-size: 30px;">Launching a new vehicle type after 29 November 2026?</h2><a class="vp-btn vp-btn--primary" href="#">Book a pilot call</a></div>
+    <div><span class="stat">0.12%</span></div>
+  </div>
+</section>
+</main>
+</body>
+</html>
