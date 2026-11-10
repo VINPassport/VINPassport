@@ -45,7 +45,14 @@ const SOURCE = {
     deploy: json('deploy', 'preview.json')
 };
 
-/** Visible text of every page the site serves (with its meta and alt text), and scripts as written. */
+/** Visible text of an HTML page, with its meta and alt text. */
+const visible = (raw) => {
+    const said = [...raw.matchAll(/(?:content|alt)="([^"]*)"/g)].map((m) => m[1]).join(' . ');
+    return `${raw.replace(/<(script|style)[\s\S]*?<\/\1>/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ')} . ${said}`;
+};
+
+/** Every page the site serves and scripts as written, plus the deck, which the Pages workflow
+ *  serves at /deck/ from the repository root and which states the same figures to judges. */
 const texts = (() => {
     const out = [];
     (function walk(d) {
@@ -54,14 +61,11 @@ const texts = (() => {
             if (e.isDirectory()) { if (!/engine|zk|fonts|brand|og/.test(e.name)) walk(p); continue; }
             if (!/\.(html|m?js)$/.test(e.name)) continue;
             const raw = readFileSync(p, 'utf8');
-            let text = raw;
-            if (e.name.endsWith('.html')) {
-                const said = [...raw.matchAll(/(?:content|alt)="([^"]*)"/g)].map((m) => m[1]).join(' . ');
-                text = `${raw.replace(/<script[\s\S]*?<\/script>/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ')} . ${said}`;
-            }
+            const text = e.name.endsWith('.html') ? visible(raw) : raw;
             out.push({ file: relative(SITE, p).split(/[\\/]/).join('/'), text: text.replace(/\s+/g, ' ') });
         }
     })(SITE);
+    out.push({ file: 'deck/index.html', text: visible(readFileSync(join(ROOT, 'deck', 'index.html'), 'utf8')).replace(/\s+/g, ' ') });
     return out;
 })();
 const every = (re) => texts.flatMap(({ file, text }) => [...text.matchAll(re)].map((m) => ({ file, m })));

@@ -163,15 +163,27 @@ test('a link to a verdict previews as a check, never as a verdict', () => {
 
 // ------------------------------------------------------------------ fonts and the switch
 
-test('the deck serves its own Montserrat, hashed and licensed', () => {
+test('the deck serves the site\'s own fonts and logos, hashed and licensed', () => {
     const deck = readFileSync(join(ROOT, 'deck', 'index.html'), 'utf8');
     assert.doesNotMatch(deck, /fonts\.(googleapis|gstatic)\.com|<link rel="stylesheet" href="https?:/);
     const sources = readFileSync(join(ROOT, 'deck', 'fonts', 'SOURCES.md'), 'utf8');
-    for (const [, file] of deck.matchAll(/url\(fonts\/([\w-]+\.woff2)\)/g)) {
+    const siteSources = readFileSync(join(SITE, 'assets', 'fonts', 'SOURCES.md'), 'utf8');
+    const files = [...deck.matchAll(/url\(fonts\/([\w-]+\.woff2)\)/g)].map((m) => m[1]);
+    assert.ok(files.length >= 8, 'the deck declares its fonts');
+    for (const file of files) {
         const sha = createHash('sha256').update(readFileSync(join(ROOT, 'deck', 'fonts', file))).digest('hex');
-        assert.ok(sources.includes(`| ${file} | @fontsource-variable/montserrat@5.3.0 | ${sha} |`), `${file} is not hashed in deck/fonts/SOURCES.md`);
+        // Recorded here, and the very file the site serves, as the site recorded it.
+        const row = new RegExp(`\\| ${file} \\| (@fontsource[\\w/@.-]+) \\| ${sha} \\|`);
+        const pkg = sources.match(row)?.[1];
+        assert.ok(pkg, `${file} is not hashed in deck/fonts/SOURCES.md`);
+        assert.ok(siteSources.includes(`| ${file} | ${pkg} | ${sha} |`), `${file} differs from site/assets/fonts/`);
     }
-    assert.match(readFileSync(join(ROOT, 'deck', 'fonts', 'OFL-Montserrat.txt'), 'utf8'), /SIL Open Font License/);
+    for (const licence of ['OFL-Fraunces.txt', 'OFL-IBM-Plex-Sans.txt', 'OFL-IBM-Plex-Mono.txt', 'OFL-Barlow.txt']) {
+        assert.match(readFileSync(join(ROOT, 'deck', 'fonts', licence), 'utf8'), /SIL Open Font License/);
+    }
+    for (const [, logo] of deck.matchAll(/src="(brand\/[\w-]+\.svg)"/g)) {
+        assert.deepEqual(readFileSync(join(ROOT, 'deck', logo)), readFileSync(join(SITE, 'assets', logo)), `deck/${logo} is not the brand kit's file`);
+    }
 });
 
 test('the old stylesheet and menu script are gone, and nothing asks for them', () => {

@@ -59,7 +59,7 @@ const browser = spawn(BRAVE, [
 /* Served over http, as Pages serves it. Opened as a file the browser refuses the deck's own
    fonts (a file page has no origin to share them with), falls back to a system font, and every
    measurement below is of a deck nobody sees. */
-const TYPES = { '.html': 'text/html', '.woff2': 'font/woff2', '.txt': 'text/plain', '.md': 'text/plain' };
+const TYPES = { '.html': 'text/html', '.woff2': 'font/woff2', '.svg': 'image/svg+xml', '.txt': 'text/plain', '.md': 'text/plain' };
 const server = createServer((req, res) => {
     let file = normalize(join(DECK, decodeURIComponent(new URL(req.url, 'http://x').pathname)));
     if (file.endsWith(sep)) file = join(file, 'index.html');
@@ -110,12 +110,23 @@ await send('Emulation.setDeviceMetricsOverride', {
 await send('Page.navigate', { url: `http://127.0.0.1:${server.address().port}/` });
 await sleep(3500);
 
-// The deck's Montserrat comes from deck/fonts/. If that path breaks, the deck still renders, in a
+// The deck's fonts come from deck/fonts/. If that path breaks, the deck still renders, in a
 // fallback font with different widths, so the slides measured here would not be the slides shown.
-const montserrat = await evaluate(`document.fonts.ready.then(() => [...document.fonts]
-    .some((f) => f.family.replace(/['"]/g, '') === 'Montserrat' && f.status === 'loaded'))`);
-if (!montserrat) {
-    console.error('check:deck FAILED - Montserrat did not load from deck/fonts/, so the deck is in a fallback font.');
+// A face loads only once a visible slide uses it, and the slides below are measured one after
+// another with no wait, so every face is loaded up front: each slide is measured in its real font.
+const FAMILIES = ['Fraunces', 'IBM Plex Sans', 'IBM Plex Mono', 'Barlow Condensed'];
+const missing = await evaluate(`Promise.allSettled([...document.fonts].map((f) => f.load()))
+    .then(() => ${JSON.stringify(FAMILIES)}.filter((fam) => ![...document.fonts]
+        .some((f) => f.family.replace(/['"]/g, '') === fam && f.status === 'loaded')))`);
+if (missing.length) {
+    console.error(`check:deck FAILED - ${missing.join(', ')} did not load from deck/fonts/, so the deck is in a fallback font.`);
+    quit(1);
+}
+// The logos come from deck/brand/. A broken path leaves an empty box on every slide.
+const brokenImages = await evaluate(`Promise.all([...document.images].map((im) => im.decode().catch(() => null)))
+    .then(() => [...new Set([...document.images].filter((im) => !im.naturalWidth).map((im) => im.getAttribute('src')))])`);
+if (brokenImages.length) {
+    console.error(`check:deck FAILED - these images did not load: ${brokenImages.join(', ')}`);
     quit(1);
 }
 

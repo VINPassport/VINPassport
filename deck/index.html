@@ -3,139 +3,152 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VINPassport Wave 2 Deck</title>
+<title>VINPassport Wave 3 Deck</title>
 <link rel="icon" href="../favicon.ico" sizes="32x32">
 <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png">
 <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
-<meta name="description" content="VINPassport slide deck: a Digital Circularity Vehicle Passport on Midnight. Arrow keys to navigate; print to PDF.">
+<meta name="description" content="VINPassport slide deck for Wave 3 of the Midnight Buildathon: a Digital Circularity Vehicle Passport on Midnight. Arrow keys to navigate; print to PDF.">
 <style>
 /* Self-contained slide deck. Arrow keys / click to advance; Ctrl+P prints one
-   slide per landscape page for the PDF the submission wants. Montserrat is
-   served from deck/fonts/ (SOURCES.md there), so the deck makes no request
-   to anyone else, as the site's privacy notice says of every font. */
-@font-face{font-family:'Montserrat';font-style:normal;font-display:swap;font-weight:100 900;src:url(fonts/montserrat-latin-ext-wght-normal.woff2) format('woff2-variations');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
-@font-face{font-family:'Montserrat';font-style:normal;font-display:swap;font-weight:100 900;src:url(fonts/montserrat-latin-wght-normal.woff2) format('woff2-variations');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
-/* VINPassport brand: royal blue #004AAD, periwinkle #8B95FF, cream #EDE4D8. */
+   slide per landscape page for the PDF the submission wants. It wears the
+   site's 2026 design: the same colour tokens as site/assets/vp.css, the same
+   four families, and the brand kit's logo. Fonts and logos are served from
+   deck/fonts/ and deck/brand/ (SOURCES.md there), so the deck makes no
+   request to anyone else, as the site's privacy notice says of every font. */
+@font-face{font-family:'Fraunces';font-style:normal;font-display:swap;font-weight:100 900;src:url(fonts/fraunces-latin-ext-opsz-normal.woff2) format('woff2-variations');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Fraunces';font-style:normal;font-display:swap;font-weight:100 900;src:url(fonts/fraunces-latin-opsz-normal.woff2) format('woff2-variations');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-display:swap;font-weight:400;src:url(fonts/ibm-plex-sans-latin-ext-400-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-display:swap;font-weight:400;src:url(fonts/ibm-plex-sans-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-display:swap;font-weight:500;src:url(fonts/ibm-plex-sans-latin-ext-500-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-display:swap;font-weight:500;src:url(fonts/ibm-plex-sans-latin-500-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-display:swap;font-weight:600;src:url(fonts/ibm-plex-sans-latin-ext-600-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-display:swap;font-weight:600;src:url(fonts/ibm-plex-sans-latin-600-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-display:swap;font-weight:400;src:url(fonts/ibm-plex-mono-latin-ext-400-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-display:swap;font-weight:400;src:url(fonts/ibm-plex-mono-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Barlow Condensed';font-style:normal;font-display:swap;font-weight:600;src:url(fonts/barlow-condensed-latin-ext-600-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Barlow Condensed';font-style:normal;font-display:swap;font-weight:600;src:url(fonts/barlow-condensed-latin-600-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+/* The site's tokens (site/assets/vp.css), under the names this deck uses. */
 :root {
-  --bg: #EDE4D8; --card: #FBF7F0; --ink: #16264A; --ink-2: #44536F;
-  --muted: #77809A; --line: #DBD1C0; --brand: #004AAD; --brand-soft: #DCE3F7;
-  --accent: #8B95FF;
-  --ok: #1E6B33; --ok-bg: #E2EDDD; --warn: #8A5A0B; --warn-bg: #F3E6C9;
-  --bad: #8C2F26; --bad-bg: #F2DCD3;
+  --bg: #f5f0e6; --card: #fbf8f2; --ink: #0f1c35; --ink-2: #4a5470;
+  --muted: #55607a; --line: #cbc3b1; --brand: #004bb0; --brand-deep: #003a8a; --brand-soft: #e6edf8;
+  --accent: #8c96ff;
+  --ok: #1d6b4b; --ok-bg: #dcebe2; --warn: #8a5a0b; --warn-bg: #f3e6cc;
+  --bad: #a33a1f;
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-label: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  --shadow-doc: 0 1px 0 rgba(15,28,53,0.06), 0 14px 36px rgba(15,28,53,0.10);
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
 body {
-  background: #0E1730; color: var(--ink);
-  font: 18px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: #0f1c35; color: var(--ink);
+  font: 18px/1.5 var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
 .slide {
   width: 1280px; height: 720px; flex: none;
-  margin: 24px auto; padding: 56px 72px;
+  margin: 24px auto; padding: 52px 72px 60px;
   background: var(--bg); border-radius: 6px;
-  display: none; flex-direction: column; gap: 18px;
+  display: none; flex-direction: column; gap: 16px;
   position: relative; overflow: hidden;
 }
 .slide.active { display: flex; }
 
 .eyebrow {
-  font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
-  color: var(--brand);
+  font-family: var(--font-label); font-size: 15px; font-weight: 600;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--brand);
 }
-h1, h2, .brandline {
-  font-family: "Montserrat", system-ui, sans-serif;
-}
-h1 { font-size: 52px; line-height: 1.12; margin: 0; letter-spacing: .01em; font-weight: 700; }
-h1.wordmark { text-transform: uppercase; letter-spacing: .14em; font-weight: 300; color: var(--brand); }
-/* The lockup sets VIN heavy against a light PASSPORT, both in one colour.
-   Text renderings of the name follow the logo rather than inventing a
-   second treatment. Montserrat 800 and 500 are both loaded above. */
-.wm { white-space: nowrap; }
-.wm-vin { font-weight: 800; }
-h2 { font-size: 34px; line-height: 1.2; margin: 0 0 6px; letter-spacing: -.005em; font-weight: 700; }
+h1, h2 { font-family: var(--font-display); font-weight: 600; color: var(--ink); }
+h1 { font-size: 54px; line-height: 1.08; margin: 0; letter-spacing: -.02em; font-variation-settings: 'opsz' 144; }
+h2 { font-size: 36px; line-height: 1.16; margin: 0 0 4px; letter-spacing: -.015em; font-variation-settings: 'opsz' 96; }
 h3 { font-size: 20px; margin: 0; }
-p, li { font-size: 19px; color: var(--ink-2); }
-.lede { font-size: 24px; color: var(--ink-2); max-width: 60ch; }
-strong { color: var(--ink); }
-ul { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
+p, li { font-size: 18px; line-height: 1.5; color: var(--ink-2); }
+.lede { font-size: 22px; line-height: 1.45; color: var(--ink-2); max-width: 62ch; margin: 0; }
+strong { color: var(--ink); font-weight: 600; }
+ul, ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 7px; }
+code { font-family: var(--font-mono); font-size: .9em; }
 
-.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; flex: 1; min-height: 0; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; flex: 1; min-height: 0; }
 .box {
-  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
   padding: 20px 22px; display: flex; flex-direction: column; gap: 10px;
+  box-shadow: var(--shadow-doc);
 }
-.box h3 { color: var(--brand); font-size: 16px; text-transform: uppercase; letter-spacing: .06em; }
+.box h3 {
+  font-family: var(--font-label); font-weight: 600; color: var(--brand);
+  font-size: 16px; text-transform: uppercase; letter-spacing: .1em;
+}
 
 /* A box is a flex column with its own `gap`, but its paragraphs still carried
    the browser's default ~1em top AND bottom margin, which does not collapse in
-   a flex container. Every paragraph break was costing about 44px instead of 10.
-   On a slide fixed at 720px with overflow:hidden that pushed the boxes down
-   into the footer and, on the densest slides, past the bottom edge entirely:
-   three slides were shipping with text that simply was not on screen. */
-.box > p, .box > ul, .box > h3 { margin: 0; }
+   a flex container. On a slide fixed at 720px with overflow:hidden that pushed
+   boxes into the footer and, on the densest slides, past the bottom edge, so
+   text shipped that was not on screen. scripts/check-deck.mjs now measures it. */
+.box > p, .box > ul, .box > ol, .box > h3 { margin: 0; }
 
-/* Slides that are dense even after that. Buys roughly another 90px. */
-.slide.dense p, .slide.dense li { font-size: 17px; line-height: 1.45; }
-.slide.dense .box { padding: 16px 18px; }
-.slide.dense .cols { gap: 26px; }
-.slide.dense ul { gap: 6px; padding-left: 20px; }
+/* Slides that are dense even after that. */
+.slide.dense p, .slide.dense li { font-size: 15.5px; line-height: 1.45; }
+.slide.dense .box { padding: 15px 18px; gap: 8px; }
+.slide.dense .cols { gap: 24px; }
+.slide.dense ul, .slide.dense ol { gap: 5px; padding-left: 20px; }
+.slide.dense h2 { font-size: 32px; }
 
 .slide-foot {
-  position: absolute; left: 72px; right: 72px; bottom: 26px;
-  display: flex; justify-content: space-between; align-items: baseline;
+  position: absolute; left: 72px; right: 72px; bottom: 22px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--font-label); font-weight: 600; letter-spacing: .1em;
   font-size: 13px; color: var(--muted);
 }
-.brandline { display: flex; align-items: center; gap: 8px; font-weight: 400;
-  text-transform: uppercase; letter-spacing: .1em; color: var(--ink); }
-.brandline svg { width: 18px; height: 18px; color: var(--brand); }
+.slide-foot img { height: 22px; width: auto; display: block; }
 
 table { border-collapse: collapse; width: 100%; font-size: 17px; }
-th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); color: var(--ink-2); }
-th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spacing: .05em; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); color: var(--ink-2); vertical-align: top; }
+th { color: var(--ink); font-family: var(--font-label); font-weight: 600; font-size: 15px; text-transform: uppercase; letter-spacing: .08em; }
 
-.big-num { font-size: 46px; font-weight: 800; color: var(--brand); letter-spacing: -.02em; }
-.chip { display: inline-block; font-size: 13px; font-weight: 700; border-radius: 999px; padding: 3px 12px; }
+.big-num { font-family: var(--font-display); font-size: 44px; font-weight: 600; color: var(--brand); letter-spacing: -.02em; line-height: 1; }
+.stats { display: flex; gap: 28px; align-items: flex-start; margin-bottom: 4px; }
+.stats > div { display: flex; flex-direction: column; gap: 4px; flex: 1 1 0; }
+.stats > div:first-child { flex: 1.6 1 0; }
+.stats > div > span:last-child { font-size: 14px; line-height: 1.35; color: var(--ink-2); }
+.chip { display: inline-block; font-size: 13px; font-weight: 600; border-radius: 999px; padding: 2px 12px; }
 .chip.ok { background: var(--ok-bg); color: var(--ok); }
 .chip.warn { background: var(--warn-bg); color: var(--warn); }
 .chip.brand { background: var(--brand-soft); color: var(--brand); }
 
 .term {
-  font-family: ui-monospace, Consolas, monospace; font-size: 15px; line-height: 1.65;
-  background: #0E1730; color: #DCE0F2; border-radius: 10px; padding: 18px 22px;
+  font-family: var(--font-mono); font-size: 15px; line-height: 1.7;
+  background: #0f1c35; color: #dce0f2; border-radius: 14px; padding: 18px 22px;
 }
-.term .ok { color: #7CC489; }
-.term .no { color: #E0A45C; }
-.term .dim { color: #7D87AD; }
+.term .ok { color: #7cc489; }
+.term .no { color: #e0a45c; }
+.term .dim { color: #8d97b8; }
 
-.title-logo { width: 120px; height: 120px; display: block; margin-bottom: 6px; }
-.footmark { display: inline-block; width: 18px; height: 18px; vertical-align: -3px;
-  background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAABFFklEQVR42u29eZhcVbU+vNbe+5yqU2PP3Ul3J50RMpKRMAsIooiIoqggKsjnLA44cVWc7w+9F+ReroATCqKXi0yKgkiYwQwkIYGQBDInnZ6nmuucs/de3x+nu1Nd3V2ZqkMn1H585HlI06na5z1reNda78Lu5i1QOqVzuIeVrqB0SgAqnRKASqcEoNIpAah0SqcEoNIpAah0SgAqnRKASqd0SgAqnRKASqcEoNIpAah0SqcEoNIpAah0SgAqnRKA3hJHaVC6dA0lAB0ueqIBFrGY0lS6jRKADuEQgdJUHRW/+Gf3r5/uqY4aUlMJRCMeUbqCvOOZm6qwuPEv7df/rgUYuIq+8q6qrrgCBMTSDZUAVMhtkcEx4GNfubvlvx5q50EOAF/91d72PvnjD9UlMkoq4CWrXXJhIx6pKOhjBPDR/9nzXw+086BQABqAB/hP72296rY9nKFlolQlb1YC0LDjKqoIib098oKf7Pjz0z0iKhQREBCBIhBhcc8T3RfeuKMjLsuD3C1haOBgaS5sIOjhf385cc3te9u6HBHkw82M4CiTsrHOd+fnJ503N9QZl4jIsASgtzaApCLLZKaB//lI5w3/26oBuI+pUQwM56iyWnC48cqJ176zOuPorKvFWxtEb10AEYEiqgyJPd3ul37X/MiLfRjkyEAXZA4ZA9JAKfXBsytu/vjEuqjRk5Sc4Vs2O3uLAkgq8hksZLH7VvR97e6Wljabh4QmOhi2BxEYokrKyfX+mz8+8ZKl0URG2ZLemqboLQcgTUBEFSHR0ut+597Wu5/sAYEF3NZox3NnQPSpC6p+8MG6qjDvSSrG3nJR0VsIQASgFAV8zG+w+1f1ffOe1j37sizMieDwaGYPKzqhZjRZP71y4sWLI2lbZxwtOJYAdNz5LE2CYXmQb2m1v/d/bX9+vvfwDM/wIzjKrAZNV55T8b0P1k2pMXuTShPxt4YtOv4BpDQhYlmAJ7LqV8u7f/pwR2+vy0IcCIpVJO03RSlVXWV++/21V51bYRksllIExz9tfTwDSGsgoGiAKw0PvRS78aH2V7emweJc4FgU2DlH5Wiw9ZJZoesvqXn34ggRJDLq+KaLjk8AedAJ+znn8NTG5I0PdzyzIQEMuMW1poOPePpNy0H/fH+CllEA8M7FkW9eUnPGiSHH1Ulbs+MURscbgJQGAAr7uRD4r9dTt/y986FVMVDEAhyA9KF0hzGG2tEAwEymD8ViMdbv0dBkHz6t7Evvrl4yNWC7OmVrBGSsBKBxmWFpTYgYthhDWPFG+hf/6Lp/VZ/OagxyhofsswRHmZCTJvmVhn3NWREWh1pD5QyVJkgrM8A/fFrZ5y6oWjwtIBUlM5rg+Amxj3kAaQKtyRAYtrgr6bnNyTue6P7LmhhlNQR4/1M8pBvx3FBcnrUwfNcXJkkFV966e+XGJA8fLNM4AoxSSgT5B5ZFP31e5akzg4xBIqOlouOAwj6GAeQhI+BjAZN1xOU/NyTufLrnmY1JcA8TOv3PW2rI6s9cVP2zj04EAkSQBF+9a9/vHuuCAGcc9aEiEoANWCPwsQtOCl99TsXb54Urgjxl64yjvb+3BKCjanIEx7DFAGBTs/3nFX33/qtv+94MIKLFDsNh7XdbaRUO8ps/UX/12RV96f5fwxlELH7H8u6v37Uvk9UiwA+jJWg/jDIaEGY1WR85vezSZWUzJ/q0pmRWS0XHIpF9zABIE2gihhgw0TJZb0o981rynud7/7EhkYlLMBn3MQA6vCGKQU554azgrz/TuKjJ6kxIjv3+hQg0UVVYrNyW/tQdezduTbMwP6TsLM/IEZC2NTgULjcuWhi+4szyM04MRSyWdnTGIU00+FeXAFQce8MYWiZaJsu6euOe7CNr4w+ujm3alQFFHq9Dmg6b2emnkom+8O7qH1xWZxksnlHGsHKEqyga4PGM/u69rb96vAs4Ch877O5EhoAMlUuQVSBwwbTApcui714UmVXvNwWmbZ11yXthxrlNGo8AIgDS4FUDLB/zG5h19But9hOvJB9ZG1uxLS2TCgxkfoaA+gjmJRgDINAJNWWS/+efqL94caQvXajr2euYjgT4A6tiX71rX3OLzUKHb4oGA3ZNRLYGl3wRcfrMwMWLo+fNC02r85kCM47OOqQ0MYaIgCUAHdBJIYDgGDCZKTCZ1Zuas8s3Jv+xPr5mRyYbl8AR/Exw1EdgcrwnxxnKjAKAq8+r/MFldXVR0ZNUB0yLBruImnvc7/xv6z3P9AAD4edKHdHcD0NgDKUksDVoCkaNZdOtdy2InDs3dMJEX8BktqSMoz2DN66o7TcTQDQQXiCAYOgzmV8gAXQl5Ibd2adfSzzxSnL97oxKKeAIPsY5AoA+4hEtzlApgpQ6Yar1s49OvGhxJJHRtjyE3kKpyS9Y0M8eXB27/o8t23dnIXSYed/wQBsAlCKwNSgywmLJFOsd88NnzwnObbTKgxwAbFdnXZKaEADxTbZMRxtARKAJCPotjd9gPoEE0JdS29rtl7aln3899dL29M42B2wNAsHHhBd1ajjy8lW/z0opKySuvbDqKxdVVwRFb0oeRtDqQb88KDoS8j/+0nHb411ORrEg9wopR/pUcpHkaJAEfjZzou/k6YEzTwgunhaYVmNGLE4Atqttl7y5RwRkR31ybWwB5NkYj35DAM7QEOgTaHBUGnqScnu7s25nZtW21Ortma1ttk4rAACDoYmcoSaiYuCmP2gdqFK995SyGz5Qu7DJ6ksrj82DI+gS8XGMBPjqbenv/7ntH2viwID7OREVpVyLAIwBAkpN4BK4GgBESJw4wXfydOuU6cEFTdbUGrMsyBHBleRIchTpHDzBGNunYgKIyENMv4thiIKBIdDkKDhqgmRWt/a529rsV/dkV+9Ib9iV3dXlUD9oEAzmPcti3f4Q6NgaXH3y7NC3Lql596KIVJDMqqIQwd4cdNjiyOAvq2M3Ptyx/o2URyuQLv4X6TdLrgaXAEEE+dQa38Im/9JpgbkN/ml1vtqoCPgYQ3AVOZJcRUqD5/b7XR4U00oVE0CC92OFMyACW1I8rdpicke7vbnFfnVPdlNzdmenk0hI78uDwcBAzhABvCpBcXss9kPH0TObrOsurvnI6WV+A/tSxW+x0BoAoSzAk7a+57mem//WuXNvth9GRX0fBnAADJE8Ot4DEwGYrCzCp9b4Zjf65zX6Z030Takxa6MiYnFDIAIoDa4iV1ERZyOLCaDelGrpcXd3uzs7nJ0d9vYOZ3en0xaTdkqBJEAAgSCQcfS+fNFvdihZBzqrQNIJTdbnLqj6yOllFSHRl1Zaj2EhU2niDMuCvD0m//h87+3/7NqxJwsG435Gh9gLcEhg8iyTJiJF4BIoAgIw0AryCWXGlGpzaq05pcacUm02VpoTykVZgI8jABEBZ5B26Owfbd+6NwuaQHolAASOIJAxGESMFxWNlT8epFUyGgBOmhb41HmVl51WVhHisbRy1VEanJCaTI6RAO+My/99se/Xy7s37cwAgldmOYyK7CHdACIw6MeTVgCK+v8HAAKB4QmT/M98d5rfQEVFCI9Ecd4CAIaQsjUgiAD3XFE/Yqif4BnTZ8YYIKJytcoo8LFzFoQ/9fbKdy4Mh/08nlFdCckZHrWxG8FQEXTFpU/gte+q+thZ5X9bF//18u4XNqeUq8DPuYHFDY+GhKEEg4kHMkCe466RZJayLnFWtGhBFAU/msBvYmWIt7ST1nTUBJmY13pBpDMaJJVXGu89q+KjZ5WfNjNocIxnVHfyqEIn904ER0XQlZCC4eVnlF+6LPr85tQfnut9ZF0s0SvBQPSNuUHqt/cDfwFnAJqqI8Iyme1SUUJpUSwSOSBYNMBBAyLCWNsbBEQkIu2SthX42aIZwQ+cEr10WXRanU9KSmQ1Eb0p0MmHEUMA6E1KhnjOnND588Ovt2TvXxl7YFXslV1p5RD4GDMRYWyRtP8TaSgLMpNj1hlPACIizqEyxMcOOpgT4miXwFZg4JQJvncvjLzv5OiSaYGQn6Wyujshmdc2Op7K2V7YHs9oAJpUZX730tpr31W1alv6wVWxx9Yn9rbboAhMxgzs/4I0hkxuVUhwjgQExWCIRLFMJWdYGRKgi0xbeaBBAKmJbK1dAgObJvjOnxt+9+LIKdMD1VHhSErZuishOeJ4ni/mDADQdiltS8Hx7Nmh8+eH23rdFW+kH1kXf3Jjornd0ZLAQDCZ4OiR3UV8JREACCpCnOF4ioEGP1xNVBQTNAhKE0lSjgINGOTzpgbOmRM6b25oybRATVRIRWlbdw2YnKJAZ5AL9d6KoXlCcVg4RPBGV+MZTUABP7t4aeSSk6Ntfe7qbenlryaf2ZTctM+WKQkMwGRMIGPFBFNt1BiPEncEUFcmDs/+eOVA7/Eo8kCjQROYWFdpLpkaOPPEwJknhmY3+CIWdwdw4xWMjhA3ubU5r9JicBRsoOKN/d/NSyQ9Ik4qUpoIgAEiO3yL6xkkpaAvpQAg6GcXLYq8d2m0L6Ve25t9fkvq+S3JNTszXT2udgk4goEokA8SIofOuxIAMKiLCk1FcxSiWOZHaaqLCuB4MMUrBEA2hK4gqUESEICP1VUY8yb5T54WOHVGYP4kq7ZMCI62SxlHd8YlYrFwQwBgCAyZzOBIBMms6ozL9j7ZmZB9aZWytadEZnAM+lhZgNdERG2ZqAjxiCUYA1dSxun/GcYO0zAhAu8vUEBfWhGAYLhkWuCME4PXyerWPnfDruyKramXtqdf3Zvt7JXSUf2UrMEYBwZIAAQHVTQkIuBYWyaKOFdZLKeDSkN1RIBAOgi+lTSQrbVHmAq0wnxadWBuo39hk7WwyTqx3lcTEaZAV1HGoVhaEYDXm3fkugWeLfEJFvRzAOiIyZVbk+t3Ztbvzmxpsfd0u70pBa4G7Ql5DJY0ERigycqDvL7cmF5rLpkaOHl6YE6DvzoiACCZVY48oqbmQSQBQMrWiSwxwIqgeNfC8MVLIraktj538z57/a7Mul2ZjXuzOzsdO6W0R/FzBIMdUK9QE6DJqsNCaShWz2xxShlE4DdwW7tz8ne3Oi5h4RiNIOxnMyb4Tpjgm9Pgn13vmzHB11BhhK3+knLWJVeSJvL8SLHSKW/mMOTnPgObu91nNyUfWx9/4fX03g4HHN3/WnMEjoNlSxy0/IOFF4/VHTCWjdXm6TMD710SfdvsUG2ZyDpFnh4cDH0YQ5Ojz0STo9IQz6jmbveNVnvzvuzG5uwbrfa2NidpF0phEIEUBC225scz6isMRxYnjS8agATHvrRa8u2tXX0uChwt3BMMZVJe/a7q336m0XG1wVEqsiU5MiewKHZTi6cJFLE4Mli3I3P3c70Pr461dtheARKNnMDiQJWW/HDNJXA0MJw8wffepdErzihbOCUgFSWzxa/X5oVrPoGmgYKho8gn8Ir/2fOn5d0iJOQo7gkRyKX6anP1j2cEzOLUMYrowkBpilisOsy7uh0USAXiOICelHIl9SQVY55/QK/HFMZGjCzkZ4Zgz25K3fpY16Mvx2VagZ/xoICBLgB50OlNf+g68PPMQDQFAezudP77ofY7nui6eHH02gurTp0ZtB2dsjXnRXsXEIHvN4uQcSntaA9VFSHek1JQ0PAjACmqjoiwnzmKcLxlYZog7GMTyo3N2zMFyWgChm0x15Va8LHt7VUaOIOqiNiwO/OTB9ofWBUDV4PFeURoTYUDSfT+b78PG/n76AGThQZyn3AU3f9cz4Or+y4/vfzr762Z2+jvSynvY4wFHe8ZaiKwXWqPSWBYIDNDRNBUXyH8JmZTuliva/HSeCKDY0OFAVQI3UQAHLsSKuMQR9AwVv1yUlHY4q6iHz3Q/rOHO9JJiUHOTKE1jSgqNdjUOuDICEjDYBTd3zMxMCk2wBXlfi+pCAFYSChN9zzZ/ZeXYl97b82XLqy2TExk1BjJlnkSRClbdyck8EImCAFAQ2OFKRjS+OSBEKGx0iicTXpURHdCxtKqKiL6k4jit11TVUSs3Zm59rfNK19NQpDzsFCKho9OeNm31pqUJK8rjDPGhc8wfEJwZACgtLaVtKXUSpLSAASMAeOMMc8JDlHR0wQAPCwSDn3vrpZH18X/55MNi6ZY3Ql52Kl+4QvlHPvSsjul4CCQ0VhlwPjcleHV5BsrTWAHSMGAYSytupKyrkw4xbZAmoAhVATFHcu7v3FXSyqtRFSoYVbHC4Q1kXYdIDD9/gnhiknlFRMjZVXBUNjns4RpCD4IIEeprOvE7WxXKtkS79vd29OaiEvbBgQQgiHLY4mVIuTAo2LV5tTZ39t28yfqP3lO/6x0kSNrAINjZ1ym0goYFojlCAA4NlaYqqjlpiIuW0GlqaHCAMEKdP8QAGOgbd3eJxdMRiJdxIxLaTAFCI6f/U3zrx/tBD/nw+bY+6GjFCkpTN+MCfUL6ydNrayqCARM3g9Bpb2umn4PxgX3Cx71mxOjIYZVAOBI6E6ntnV3vtq6b2tnh+vYwAXjPBdGnlPjAZ5y6dO37t64N/OzKyZmHS11MTHklbFb+yS4xCws0PSoicDA+gohNRWx0V4UserpSmqoMEyLFaaCEBEk7e1xi+uMlSa/wWxJH7pl1+MrYyIiFOVHygxRa02uEw2Fl01qWtwwqS4c5gwcBVLD4AYM7P+U+1EvAUCTo/b/nqpgcEIkeHpTU1s8uaZ598o9u+KJBBgGY0PeH6UJObCQuPXB9uZu93efbTQ4uBKKRhQBcIZ7uhxQxGDUMgAikKJgkE8sN9wiMUBjACBFNRFRHRH7Ohw0RjWnXk14Z6eDCMUqCisNfoNlXP3+/9z14vqEiObrQfV3DTtOwLLedsLs06dMK7dMR4EtifrZnUKzYfmQAnA1eUWF6lDovXPmnDV1xopdO57e/kY6k0HThJwo2xtmFVHjoWd74xl935cnGwJdRcWyQwiws9MpfJMIQArqoqIqLKQuZtzJihgDKQ0RizVUGFCQpfIGTHZ1urpI7ksTmAJcRe+/adeLG0ZAD0MkpUi6y6ZO/8Y55180e5ZlmEmHXOWR3Ycz24mADBERXUVJhyzDvHD2iV87+/wlTVPJdUmpvIhZKhJR8eTq2If+azdD8AZXinHtKBXt6nQLh56e1W+sNEJ+VtwYiBU1gCW/yZqqTM+cFswccE+Xk3X1keclRMAQDI6X37r7xfUJERkBPdp1on7r6lPOuHLx4ojfSjikyGMvcVgDKGkiTTQkmhnl3w8+G4aoCBI2lVnWJ5YuveqUMyJ+S7vOiBhavip29S/3Bk1GxbC/3jjD3m4HOBbo9vCq1lOqfabA4vani+JmBAxhWq1Z+GI0AXBs7nH70iroZ0odkR3SRBVB8f/9uvnxFbERbY+27ZkT6j+6eGlFwJ9yCAGHk8PenQqGhkCPTFEa9JBZBuQMEEARuAq8ckEuPhCAI0oFrqLFDRMnlZffs2b19o5WZvpyH5hUZETF/U/1NFSZN18xoTMhj6StgAgMgd0Jua/XBY4HJEan15o4nldeepn8jAm+AxASBMCxIybbY/KEoE8eAa0uFVVHxC3/6Prdo50j2x7HPnXGCZfNX0gASYdGhA5HDBgIALGsu6Mn3tzX25aIx7KZtOs6SgKAyUXAMKJ+a0I40lBWXheORC0DCGwJimgIjBAQMOlQmd/63Bln3bf+5VU73sjDkKtIhPktD7TNbfBf9bbyrrg8bI7Ry+Fb+2RvUgEvlMNrIhA4o87nSTKMVwAhOpKm15roL7Qq28vkZVbt6XbnNfrTh5vJK02RAF+xNf2tP7TwAM8jCRmidpzzZs+/ZM7sjOt1wmA+dBgGDUw6evO+tpdbmrd1d8YzaVBq/4TVYC1jcKEGF1HLml5ZvaC+cWZ1bdBkWTcfRhzRUcQRr1y8KGCaT2/ZmIchBcB87Mt3Ni9q8p8wwZ+y9eHVOjz2f1enQ1nNA2w0dTYE0AqExafWmK6k4oqfFdkCOZIaKsyKsOiOFarJM0Tt0rZ2W/AIHUH6mnX0Z37b7NiaWTy3E92zPefPPumSubNSNuUlWF5MEzQx6ajlW3e8uHNHZzwGRMA5MoFc5NZ9c1tavWcWy2TW7t65ds+umkj09CnTTpk8NWCwtEu5fwlD1ABphz4wfy4A5GGICJhgyaT69G/3Pf3tqYed0nt1jK1tNiiP2hk9h5dUW2lMKC9aF8eYBNGIIBVVhvjkKgMO4oNu2WcfdjinFJUH+Y2PdL66OSUCXOehx7ZPmz7rkjmzkjblhcqaSCBYBq7e23zTM8sffnltZzKOhsFMExkj6A+W++PlgbP/XwIgY8w00TA6kvGH1q+5+dnla/ftCxjIcUhZw8v8UzZdOm/u0qkztWPnWimlSQT5S68kbnm8qyLID29Y3YsZNrfYhdMqRABJTdVmeZDLYk89sGKrjFHAx6bX+QbeidFeHQKOr7fatkuHkYhpgpCfr92ZueWRDh7kKg89rjNzYsNl80/yrMIQ2BFZBqZd53erV9298sXOZJz5fMgFDYBj2Mz5gCvLEzUnIiLkgpm+9njs9ytfvGvNS7Zy/QLVMAxlXPrIgoVNNRO06+ZhiFn8pw+1b9pnB3zsMLpMGWLa1lvb7MKdxAgIimbW+XwGFn1EmBW9OMwQZtf7oCBZRQQgcGen05dS4tDHbInIEPD9B9rt1JDgERFJqWgwfOXikzUBUb7tCZm4q7fvlueeennPTmaayD3t8Fz8geDIGBAASSKXyCVS5CXMef0nHuxQCGYYa3Ztv+XZp5pj8ZCJeXZIEyDglYtPDvj9pFWONwQ0MNErf/RQu2WyQ320XhNfd1Lu7nJB4AH+a4Q5DT6Acb/2GwGkonmNfijIN3hNHW29bnOPax7wyw8jnSMWf/LV5N9Xx9hQ84MARPqDJy0pt0xXD4GPJgqauKG1/RfPP9OVTDDTnwcdTytI21rGpU5rRCiPiPpqs7bSiAQFAKi0lnGpbZ3X++bBiJn+jkTsf55/+rX2zuBQDDFEW1FdyHr//MWkVK5RVIpYkN//Yt+/3kiF/fyQjBAB+ATu6XJ7Ym7hFEwRgcnmNvhdSUWXmxLF7nJCW9KMCT5/iHvDszSaoeKo0uqNNnthk5Wy5aEkYoQINz3aCZLQt5/Q9QLnZdNOWDixJjE0Y1dEIRPXt7TfufJ5jYBC6JzWf8aACFRSgoHzpwbePi+0bHpgSo1ZGRJBH3MVZRzdk1Q7OpzV29JPbkxu3JVWLkGQM9yvZqdJM2FkpPvrFc9fc+qZc2qq0znemSMmHTplUv2G1qZX9+xipjmIMMZQpuV/Pd71f1+cnMgegkMnIkPglhabspqHRh208KpgkYiYWutzJBW9g08UXV7ElVRfbkyqMt/YnUEfGzURA9CKXmvOHpJShCYI+/nKremnXkmitZ8sQADSKhQMvfvEObYa8hg0UcDA7d19d63+l0ZExvIMj8oo4HjpWeXXnFt5ysxg1GJSkytJatCaLJOVBXhjpblkqvWR08piabVqa/rXT3U/sDKmFfEAH2wU0UTIuVTq96tevPasc+sjkazc/0kQwFVw8ax5b7S3OUoi9lNlShNa/G8vxdbvysyq96Wdg33GXrSwsTlbOFpAAHJparVZFxVFT8GK78I8dZyIxWdN9EFBysGriG3cmz0kaksT+Qy86/lenVG5fgQRScpzpp9YGTBdlZN1AxgM4lnn9y+tcJXMRQ8iMASVkEtmBv/5nWn3fqnp3LkhpakzLvtSKu2QK0kRSEXe6HRvSnXGpSY4e07o3i83/fO70xZOD6i45Gy/WyAixnnWdX63emXadXPDO0S0FU2MBs6cNoOkO3gzBMAF2gn1xxd7DykSYoiOpNeas4VpW4YIimY3+AM+NhYiO2yMmixPmmwdKI4mMNjmlmwsfbD6ukTgF2x3p/OXNXHws8F8BwG0UpFw5NRJTRk5pMJARILjvRvW9SZizDBy0YMEOq2/cEnNkzdMe9vsYE9KxtLak2XhrH+caDAXYwic4eBIck9Cvm1W8KnvTfvsxdUqpRjt98CaiAmzM9bz51c2mEPrUwwx68JZU6YHAyGt9kfTWhP42J9Xxzri0uQH1eLizR92J9WWFhsOmFsRLJjsRwQa/0H0YBy9qMkq/MW8RGx3p7u32zEFHkz8qIiCfrb8tWR3h80Nlpt8gZKnTpoa9Q8JBbzAefXefRv37mamTw8ELP3ocfQtn2q49ap6qSiWVoLhQdLBXjoWSyvScNsnG266pl47eiiGNDN963Zvf7mlLZBzCZ5ERGXAXDKpCZQcNEKagJmsucV+dnMq6Duo5XZE4DNwV6fT1nOAFEwRgY8tnGy5ktgYNKCzMZgWwKxLJ070hSJCq1GdLgFwDm5KbWmxfQY7GN0AT4vzr2vjeb9Ta236raWNkx0FQ1wDw7gt/7bpFeSc8sKvrP75NQ1fend1R0wSHc5EEWeoCTpi8qvvqbnp6gaVVbmPhwCAsUc2vZqROq/m6mo4uWEyN8whxgkAJT2yLs4PrslOE5kCX2vO6qwq8OE9Drqq3JgxwZd1aSwUb9hYyPQ5kiaWGzPrfFDwQ3sE18u7MgcTRxOBKVhLr7tia5pyYgWGCEqeWFNXG7Jyx52IyBLw4s4dffEYck77VbpQJdUXLq758jurO3pdwQ+/NOTpbHT0ul+9sPozF9WopOQDZVEiYlx09nWv3rMnYOxnqBHRkVAfDTdVVpOUbL8RIjLZ86+nuhLSODgvxhDW7coU1tNhCODSrIm+mohw1TECoEFfs2CyBQXNptcSsW5nxjkI66qJLBPX78p2dTssx2h7/5xfV593O5xh3FYv7t6BQtDQnGvpvNCNH67z1O+gGOJRPUn5s49MWDA7pNKKMcz5dvz5XdvSQ9l2AjIYzJ9QDzlUgiZAA/e025v22ZbBDmiOOWLa0S/vygAvOAsGCIoWTbH8Y8BBjyGAvHtaOi1QeFbSa/PeuC/bmZCGOMBr57UurN6ehrznobXPb02rrM71X5rIL+C19ta+RAxyzA9p4gJ/evlEb11LcYbDEaQmn4E//cgExvdPVBIRCtHe2/N6Z6dfQG4k5CiYUVXDjSEles6QsnrNjrR5oIfttQG19roDEfQBJjGWTA2oYndxjC2AGGJW0qIplghyNXq7DxGgwPYed1ub4zuQrAcCuIrW7crk9m4yRFCqPlJWHsjvKyKCl/ftzS2kc4Y6rS4+peysE4OxjCriJLVg2JdW584JvevkqE7v/80IAKTXt+zNRSoiSg01oWB1OAxDiWkAWLcrQwdqWdYEfgO3tNixmGSiUO+5UuQPiwWT/VmXxmiF3RgBCLKOnl5rTq3zgasLfHLOELJ63a6MaRQqBxKA4BjP6K1tNoihETfpyeUVRg6qvBS3N+Pu7OkGLijXJJjss+dVSlV8Rt9TyfzMuRXAWW47PXCxrbszYQ/BqybyC5xUVgE5pTENBBy3tNhp+wCdvgRkcFy7MwNOoZ9EBuDoWfW+yVWmPQYc9Ni6MKkpGuBLp1ogD0zPr9yaogM5MG98rrVP5vduItZHyyi/zQqaY73pbBoZo4F6hc7qedOsZdMDyawu+rA6Z5DM6tNnBk9o8mtbs/4JaELG+lLJtkTcYEOmoRGgPhIdzmvs63H70koUVCv1jPHKrenCjfQMECQtmx4IFezvG68xEAACnDYzCHDgMGjdrkxvShmskKaHYNgek+mMwpx5Bk0EXFQFQ3mTBhxhb18vaI1Db/P8ueFwDgNZ9HemLMjfPiecG6V5HNW+WF9e04EiqA6FYQDfg7WJnpTqjEvBC12F9y5t2JMF4wAznMDxtBkBRWO4sIeNmZQzZl29dGpABIUavVtKE4DBdnU429ttnzlq9uHNX3bGZS4v4ClTmIYR9vkVDRG/JID2ZCJ3bNprCl42PSDHLJz0BpuWTbeG1xbaEonhjWARv4W5HhYAGUhb9ySVGF1GlTT4TfZ6q93qyegUCIAkWRGxaIqVdTQbM9HjsQMQZF2aMcF3Qr0PHF2ga5MzVCm1dmfGX7ADhCH2pBToocEgkSUMSxi5FhoBpIa+TBpyCplaj1VTcG507Co9s86XW+X1/qQvmx7yEiFqgoBhGFzk+ipPtao3pRiD0ZJzDeQTuHp7GrKFJFoYA3D0/En+KdXmGFGIY+7CpKaIxc48MViYDfL+4IXXU3Qg6Y+Mo4fwZohAZHAuGMvNXLw0J+06MFDx9l75siCvDAmpYOwskFRQEeJhi0MuR4CYcpy8KUoiMLnwCZGrhoOAoCGWUazgjKzU9MLr6QNPEip626zgYbSqjaMYSGs6e1YQOOoDhEFs9fa0FwYVakugQ1PSzBum9hnYz6fh2O0NpoCPBUwEndt0gFnpKtq/O9D7LgbnJucAlGspQVMyq9nofVSGYB0xuXZnpnAApDSByc46MTQWTWRHCUAMMePQ4qmBaIWh5ajJvCYAA3e1O1vbbL8xamuwV+TPvwrcv08z71sNJX/771R5hoHG6o0hAobIhr0GwxfQ0IBOyCF9GNJgGbhpn93WVVB9AIFcqq02Fkz2Z1xiDI5NC4RguzSpwlg61QK7UDIvGKq0WrE15TNHD4MIDI5DcjoCAFSkFQ3Jwby5M+Et2M15ulmXxo5P6xfvY5hxdMbJK1CRwVkecYAIirT0HBsN6ZHyjY4MDWQKfOH1FNi6gPgiRwRHnz4jWBs1HKnHdPnDWIITQAMZAi+YH4aCuY93Xc9sSo3GuHtpS9DPgOUaEAIERymp1BCzQsQRAqY52JDktWDH06orIQUbKwNEAIJBd1LG0vtb/T3IB0wfRxiScAG4SrtKwtCXAhgGTDaafobXMfzs5mThEpj3BxecFB6jHqCjByCGmHH02bNDRpgXGGHWRGCy1dvT7X1ylB571ETlQQ45JJAXXthSZlyX5YRInrMr8wdyq5Wcgc7obe2OKdgYrVUiIlOwbW2OzgwlKkmX+60hHQdEDCHjulkpAZBym+wYVIS4HsEtAxH4BO7tctbtyhYogSGCkhQsN848IZhxNB/jrUVjDSDIOHTiRN+8yVaBZJ4ImIHtXc6GPRnLHCEMQgSloSos2NC3E4EpKeN2fmM1AtSFI8Pr0qu2pflYWiDOYNW29PCZuNpwBIf9ZNzOKCkRWZ6SfFXIU5IfsR+BrdmZSfS6bPSKPUMERy+dGphSM7YJ/NEAUH9rh4+9Y14YCqYDDBEcenpTyhjJOHvkfU1ERAI8V3wIEUCpzmQyL2xVBA3RMmD7+8g8yvuJjYm+tBqjlVCCYSytntiYzG3FJADgvLGsPI9MZQhdqSQohUO+C0WDvCYq3JGstRfbPflaEhSxwjocii44KeQTqMd+hR0b+62UaLv0zpPCzCpUkdFAIPCp15LJ7AhWd3BoemKFAfmXS/vifZhP6MHESFnQCtBA67EmYD62ZVdmxRtpT2Sp6JrUIR9buS29eVeGDYyZIgApFbKCE8NRVw2ROEOAffFYbvTjPfj6MqMyxOWw5i8CMBj2JtUzm5Iweqrh9RObYXH+3HBmLAnoowkgSDt6wWRr9mSLCngxDWCyjXuyb7TZljmCg1eaQn4+o87MH/ZgbG9fr62GsCxSU9QvplVW5fZLeCpdtz/ZzRCLvaIeCIgxvH15N0g95G9UanplVdQvcksoCOgo2NPbkyuV6H28mRN9IT8f/qaRBsvHXt2b3dFiozkq2cEYgq0XT7Nm1fsPfkJoXANokJK+cEEE3FEpaa9hw03K57ek/CORp17csKhpyLCHJgLGW+OxnnTG4Plh0MKJjbkdbUoTC/BHV8eWb0yUBbgsXoFaaioL8OUbE39bFWOB/Y/fC/MXTpxE+dVQ6EpnWuN9wHhuoxkQLGyyRozSvArG05uTVLCC4ZmxixZFLPNo+K+jBCAv+bxwQRitA+gGAcI/NiRGzNcQ0JG0dFoAzCHldMaYa2e3dXcafH+ezBCzEmbX1lZEynLnHwBQK/rm/7ZmXRIMi3LDRCAYZl365p9atdqfPSEiKVkVLZtVU5PNGTbyuk22dXW4ts1yLJA3PnHyNGvEBl+OmHH0PzckCkjZef7LCIsL5h8l/3XUAASprF442ZrbZJE9qhfTROBjK7amd3c6/mFZBmOQdfT8Rn9dtUl5yQXChpbmPGQqopDJT2+aRrkTWEQ8wF/ZnPq3/2urCIsjN0KeNH1FiH/9Ty2vvJ7i1lCLotQZTdODwwyqJtjQug8wnzueUG3ObfBnHEI2rAXRxNdb7XU7M+Bjo4lBe/7r5BmB2UfLfx0lAHmPM2yxS5dGCxRWiYALFu9xX3g9HTDzu3YQwFFUGxWnzwxgDr3htQRt6+poS6TNnAyOIWYknDa5qTxSlitpoBTxEP/FXztueayztsyQ6vBZISJQmmrKjRv/2vmrv3WKnAF1z/xURstPnTw5M9T8mBxbE+ltXR3AjUFgcUR09BkzA3VlhqvyuWMvgX96U8pJFGoV8i76gydHfcZR8l9HD0AMMe3oixdHfcOUDIdJSNOjG+IwSsaPiBctjNBQgtXzYi/t3W0ObeRTmsKmuGjWvFwjBAAagPnZV37TfPPfO2vKhLer6jAE9hChOixufLj9+rv2cYvnKQOR1u+ZPT9oDImICcDksGbvbmlnc0tmBEAML14cHfG5e0noY+vj+/sLRuYPdbjSfNeCcCo75vzh0QcQZBw9u8F3+qwgjh4GenHA05uSzd2uTwzzYojJrD53Tqi61qdyWq2JCLhYuXtHb8bN5XgYYsqlpY318yY1acdmA46BCAiBmey63zRfe+c+zjAa4FLRQeb2Svc37AqOn/tt8/V37mM+pnMWXHk6IQsmTV1cPyE1dIZEMOjNuCt378ht1mYIytF1deY5s4MpW+fVYonAMti2NmfFG2nw42hzqxwRs/r8eaGptb5swT70YxJAniMXDD90ShkVnHfmBuvucJ/bkgwOEwNABFvqxkrjvYsjkPOSEQDjPJFKvLBrR+4ATX9vkKIPzV9YFo7oXEkDD0MWu/XhjnN/uO3ZzanKsIhYzFN+VZr0gK4mDawKVJqkIgKIBFh5UDy3OXXeD7ff8UgnD4lc9CCilm5FpOyy+QscNYRx8PTRXty9M5FKsJxhWYYItv7AydGJ5YY9rPapiAImW74xkepzOWc0KpEGxPCyU8qOlu866gDiDJNZfeFJ4doJPuWM+oogABL9ZW28wNz0x88q54GhroEIhfHc9tc7U3ZuPu+NEkf85seXnGpwTlrnYkgT8IhYtzX9jh9t//Atu57dlGQI1RFRFuQBEw2BggNHMAQGTCwPiuqIEAye2pi87OZd5/9o+0tvpHhYKL2fVPIk0kxhfmLpqUHTyBUkJCCTQ3sy++y211HkyDwAKE1GiF95ZsWIqRMDcDX9dW28gIQSQ9C2njrZ//a5oWRRJ5aOtj4QFKTYbanrK4xLT47e9nAHN8WIiyYVEfnY05uSe3qcymD+QC5DSGbVsmmB8xeE/7EyNiiQSACMsXQm/fctr31i8SI359VniGmXZlSVf+zk0+5c+QJphWz/qKFSxCymCe5/rvf+FbG5Tf7z54dPmxn0JCn9BjKGGUd1J9Qbrfbq7elnXku+sjMDroYgZybmyzMqxRGvXnb61Ipoyhk6AElgcnxk08Z0JpWr2MoZyqR811nli5r8van8Z08EfpNtbbX/9UaqgP9iiNpRHz61rDLEj1C8fPwCaNB+fOS0sl/+s3u0uNXzYj2dzlOvJT9xVkV3Uor8Nw81wVcvrH58bTzXG2oiZvpe2rVt/oT6hRNrc2XFOWLKoUUT69ipZ9y1eoUjJRPGoEiZlxXzkNBEG3dmNr6R/rlAbvGIxXwGeg0FsbTSGQ2KwED0MeYTamiPGEOmpeM3fFctO21ObXVyJIm0Nc2t63bvyNOM1pqYj33lndVSjbCKWxEFffwfGxKZPtlv7UYbIIyKy5aVHXCm7Bh2YYOE0JIpgVNnBQ/IqD64Oq5Hag/iDOIZdfbs0EXLonroK0sAiOzP69d0p2zfMG2epEMnTaj7/JnnVAZD2snm7cpQmoiA+ZgIC2Yxpag3Ltu63JZOpzcutQYe4CIimI952XvergxtZ2vC0S+eec6c2urUUPQQkY9jVyp7/ytrkQ3JDDhHnVaXnFp25onBRFYNvw8Pvg++FIfR1ew5Q8qo8+aHZzf4045mCMctgPqnKgVec3ZFgQ5nrYl87NnNyW3tjn+kWR9EdCV97/21vhCHHB9HRMh5PJ28e+0qT0qR8pI4h6aUl335bW9fMGmKdhxSMg9GmkBq8voEUSAaiAaiQC/Vl2qI1fGgQ1Jq110yZdqXzzq3IRpJ5nmugc24d69dnUynkPPBiMnTXglGxPfeX5t1NI6whgECJm5stl/alkL/qLpB3sTSJwte6fEDIM4wnlbvXhiZ2mQpW434uhAAFyzV6z7+SiLoYyMtOoVkVi1qsr7ynhqVknlTw8wwt7e33LthfcDAvN24HDHjUtAwrz552ZXLTq8KhrVtezQjG/oAveSLcnKxXOvowY6k1I5dG4ledcoZH1+61CeMrBxqe7zBIwP/9PLLO9pbmGHmqSnolPrGJbXzGv0pewTL4fGHj6yLy6QaTTeIM6CsPmlG8O1zQvGM5kfZ/gDwb371C0f5r5SKqsIikdFPr40zHx/xtWGIJCnm6itOK5cjdVchw6xLZ54QfHRTqq3dYTmGigCYEM1d7TaxkybUuIpygwtE1ABS0ZSK6OLGppBldadS6UyGlAJEZMwDR/+K5oGz/18CkNYkJWhdGy27YNbcD560eFJZJO0SAbJh6AmaeP8rG/+1bXNe6MMZqrRaOi98xyfrk/bID95TQfzaH1u74nK0ZTwMUdv6u5fVnXZCMHXUAyAAwO7mLUfbixEYAjvicum3t8aScjSNYwRgBM9+f/qiKdaIL6jSFPbz9bsz53x/m6tBD13h5rF555447/3z5njLVnCkZSt+AUlbvd7Zvn7f3u3dnfFMBvQBlq2UWYHpVdUL6htmVI28bKXfECJYBj7w6sbhy1YQARX4DHzuB9PnNPhHnNVXGqIB9sSryYv+fTsbpX+DIZBLddXmmh9PD5hsTEeYx0UWNnh9WVdPqzEvP73stoc7RHjkfJ5zlHH5wOq+02YGRhRQ5gzjGbVseuBnH6+/9rY9IjTk93hJ2VNbXk059ocXLAIAZ6j8L0MkgpRDgvNFDRMX1U+MZd2WeKw51teWiMezmZTruEoBgMlF0DSjfn9dONoQLZsQiUb8wlv35OXqw9FjcgSAe9auWzls3ZPnSWVW3nTNpEVNVldy5KybgATD+1b2gUvMN3JtCxG1rT75tvIJZcZRzt7fTAvkhYeWidvanFO/szUraUQdKoagHZo80bf6h9MNgaMNKihNlSHxqd82//aRTiMq3JFWhs2oq//o4qWV3sK5keZ69i+c4zC4cE4ReO89R+AIrODCubw9QJ2pzJ/WvbS1rWU4egyObkx+7n01t36ivjsxskqat8agN6WWfPuN7pgccQbeW6ESDYs1P5lRHRGuJHwT8HPUg+j9+byt5zX6339qGY3CnGoC7mO792af2JgI+/moHBrDvrT674/Vv/O0MjeWv7zNs0Nb21tufvapDS1tQRMFg+EFeDawtjLjUtKhlEO2JKn7HZerISsp5VDSoaxLmmC41SEARSQYhExcv6/1588+ubW9dTh6BEc3Jt93TsXNH53Ym1Rs9Jpg2M8eWRfr7nD4KP3znqLZlWeWT60xs45+U9DzpgFosMvs8+dVCovrgiptdz/fpwtuA9UErtJ//MKk0xeGZXwkDBlmLJP+9Yrn71m7Np7Nhn39q5loWMeIhwyGQ5J7HMjYh69ZHdyVwRHCPkxks3evXfublS/Es9m8nMtDj4zJt58c/f1nGjOOBhg1ZGGIGVf/4YW+0egfT3wjUCY+dW5Fyn4Tkq/xACBIZtXJ0wKXnDJEFi6/ZcLPntmYfHVvNjj6QiSG4EgwOD54XdNpJ4XlSHYIOUchVu7Y+p/PPPHo5i0Z1wmZaHAc2AJGh9FK5kHQ4BjyYVa6/9jy+n88s3zVjq0oBHI+Gnru+/JkApCjr2nUBCE/W7UtveaNFPpG7uHkDCmtPnpWhUce4puGnzcjjc99kTjDabXmXS/0jQYOwdFNyEhEXLggUiBNZQiuIstkHzylbENLduv2jPDzEeIqIWwpt7a2rGlpzrgqalnlls8nEAAVAeVWOCGfFvKyMBrodBYMLAM5w45E8pnt2+5bv+6VPbsd0CynUDoYrHCGKibff075n744mSM4kgrYDEUU9vMfPtS+/vWU8PERp+RIUSgsfvvpxoDJVJG2px9LQXRuO3pVSHzsjr1/fLxrxFoPQ9AuTaw21/x4hmVi4UxVafAJZBy+clfLbx7tBItzjnm/0/NHWilQ0vD5Z1bVLKhvmFJRVREImLz/l2iC/hI7DU4letsOwFuM4SjoSWd29nS9vG/vG50drpMFLhjnw5eCc4ZKEmTVFy+p/dkVE7KOlhoKOBwiMAW2xdyl394WS0kcieMQHGVcXntp7S1XTnyzkq83M40fLmR23buqHljR5+2SoeGhtMla9mUfWRf/5DkVPQXFnTkDRxHTcMc1DSc1WV+/a182o0SAq5x1hF6ihIwh97lavday97V9ew2/f0Io3Fhe0Rgtrw6FIz7LbwiDcc/gaU2uUhnpxrKZrmSyNRHb09fTEo85dhYAQBjM9HmR0HDDI1MqFOQ3f2ryJ8+p6E0qb8UOFOz9Dfn5nx+PxbocHhlB3A0RtKvLqowvvqMqeRQ7D8ctgCCZ1QuarKvOrbj94Y4Rr8z7uTuf7fnoGeUH1NZgCETQk5SfP79yYZP1+d80b9iSgmC+KfJgBIDMMAHAlXJPT9eerg4ABM6FMPoBxBAINJGrVFa6UrqgNAABMuDc+2/1MOh4JJZySSbkKfNCt17TsKjJ6k5IxpAdnGLwXc/3goE0kl9niCqjvnBp3bRa8003P2++CxskprsScum3t/bG5YirQzzK9bFvTz1nTiiWPqiGKakoYvG0q2/+W+fPH+lMJyUGOUMcfTEbDkh5EA3yzoM+rP8nBqoZACP2VSIAY6iJKKUiUeMbl9R88Z1VBsdERh3McnilqTzI71sZu+KmXSwwQnLKEMihxjpz9Y9m+Ax8c6OfNzkLyyOmp1SbX76wmrIjh8mISI6+48meg6/1CI6JrEKCH11W9/yPpl96VjlJUknp/dHwX0M5e5m9ohhyjlwgF8g5MuY1tA8udB5xbwYBqKQkSR8+u+KFH0//t0tqpKJkVh8MegZE7+H2J7tHy/ARkVz9rYtrqiPCUfSmo2dcWKDB5XtKwbIbtu7cZ+Ow0WbvogyEF344Y86hdL0QgFIU9DNTsOc2J//70a6/rYvrjAIfY6anCUNHMhzGEBCRgLRDYGsjyC9aFPniu6rOPDFkuzplHyx0BnbBsue2pC740XYcSb2FM1AZvfDE4HPfmWbLcYGeNz8GyhXfqAiKH32w7oqbdjFkea0t3uCzE5e/eabnjqvrk1liB/lOAwiOGYfStjzjhOCZs4Krt6b/9ELfI+tizW0OaAKToYEc0fNK1L+TfPSpo/4tdJ6WBmmXwFHAcPJE3yVLoh85o2zRlIDS1JuSiHjw6PG+JWd4+/JucjQzBQwjOYEAGf77ZXWmgRmX+PgA0LiwQIMRQFmAv+emXY+v7OPB/JQeEUBByGKrfzKjvtw4jPWfSgMAhfzcZ2Brr/vsptTf18Wffz21t9MBWwMCCPTqXqx/V/xAVATenhYgDaAJFIEkIAAfa6w2zzox+J7FkbNmh+qiIuNSKqsQ8FBlCTVBwMde3ZM584ZtciQRR85RxeXl76j8w2cndSWkGCfwGVcA8hrwNrfYZ3x3q6OAhqX0gqFMyK9eVvefl0847ATEE3D1CQz6OCK0x+Rre7NrdqRf3pV5vdXe1+v2ppR2qL+USoPr4BA4ch9GLV4XFSdM8C2aEjh5mjV3klUbFZoglVWOJMbw8LIiqakqLD5xx94//KNLDJu5RgSUFAnx1T+eWVcmxm7xxbENIC91qo6If7uv7cY/tQ5P6b36c3lErPnJjMrwEdWfaUAH2OBomcwQqDWkbN2blB1x2ZVUPUmZzOqsSwBgmRj284oQrwqJihAvD/KwxTkDR1LG0V79nx1BK9f+3oTvbs26I/QmeObnPz/V8NULqzvj48j8jJcYKPemelPqGxdV/2VNfPPONBtahO8f2Ohw7ny254cfqOtMDB/YOITUz6PgFEEiozUQAnCGFWFREzUE96qq/T7MGzL0VIKlBqmoNyUJgAEigyMvZGqigMlvW96Vicnh5sdT8j9tYfhz51f1JNW4Qs+4SOOHrZugoI/ddMUERBjOCGki9LM7lnfv6XL9gh15Fzn2awKjhwNXUtrRsbTuTcnupOxMyM6E7EnK3pSMZ7S3C9x7qIIhK8YSW00QNNnGvdl7nu3FAB8uKQGKTD+76YqJ/Zra4+yw8faBOMO+lHrnSeFPvqNKJRTn+YN2zGRdbc6vnu4OW8XfYjSw4Rs4Qw8lHrY4w/5CWLHff60p4GP//XhXOib5MBKVc1Qpdd17a5ZNDyQyirMSgA4OQ7G0+smH6mZMs1Qmv+tKa0I/++UT3bu7RpAROraOJgj62Ct7sn98rhcDPC/m80ppS+aHrr+4pjc17pzX+AUQIriKygL8F1c3cI6o83dZMoN1dzi/eGJMjNDRBRBZPnbTo52ZuGRD5y48oikQ5Ldf3SA4jtuvycbnx+IMe1Pq/Hmh6y6pVcl8R6aJ0GK/eqJ7S6sd8B2rRkgThP181bb0vc/3smB+5cub+/nBhycsnmLFj65ewvEAIK9i1Z1UN7yv5tSFYW+ybogREize4978aOeIk4fHxPG6GW/8a4ebVjh0bpBzlAn57jPKv3RBZXdSGRzH7bcYvwBCANKACL+6pqGsTNBQ0SStiQX4Pc/0rt2ZCY3UtjfOj9IUtfhTryUfWRVjQT5U5QN0VtdP9N12VX3GHe9fjI3rD8cgmdWzG/w/v6peD137QADIMZuUP3iw3RBAx5oR8rbi3XB/Gw2VvUbs351xxzWNE8tF1tUMSwA6MkfWlZAfO7P80++pyZu4UJp4UPxtRd/f18XLAvwYiqalpoog/8MLvateSeQpZXm04bc/VHfRwnB3UolxDp/xD6BBZuimKyacuTgikzI3oPbSsxvub8+4xMf9Xe/X2RTYHpc/fqgdzSGrg7xh3EveVn7DJTVdSTmeQ59jCUA4UEy467ONDXU+ld2vNK018QB/dUvqjuXd5UFeQP91HEU/isos/h9/62zem2U5s0qe7Zk9PfCraxrSjgY4Nt4Hdmx8SoS0resrjLu/ONlvIMj9jLDWxPzs/z3UvrXNtkafHRs3sTOELb5qe/q2RztZgOsBxDMGytHlZeJP104O+ZkznurtxwOAvGCoN6XOnhW8/TON2tUc9m8jRIP1dbvfvb89OMYbioviwRjCt+5tszMaB5hDT6xDINz9xclzG/2JjD5W3PGxBCAAMDh2xOUnziq/4fIJucyQ0sRD/L5nex5ZF68ICjlerZAnjPT753qfWbNfHhQBOIDKqFuuabhoYXhcNYsdbwDyMNQVlze8r/aqC6tzkzICQMDr7mnpTUmD4zg0Q5rAMtmODuc797Yy3/7YmTOUSfWND0343HmVHfFjI3A+hgHkMSixtLrtqvqLziwfxJAmYBbbviPzvQfai7vKqZgr5U329T+1dnU6gwu/vBnTqy6s/vfL6o6JpP34ABBogqxLf/hc42kn7Zfj8Lao/PKxrsdfSZQHxxct5E1w3/Ov3oee7+Wh/k5LT27h4rPKb7uqvi+jjj3sHKMA8pIyqYgz/PNXmk46ISiT/RgiBlrTtb/fF0ur8ePINIFlsJ2dzjf+0MKMfvFhz/acszRy9+cas1ITAWIJQEe3ypF1dTTA/vrNKXOmBWRSCY5aA7f41h2Z6+9ri44bbpqILAO/dHdLR0e/8/LQc8aC8P1fafI2vLJj1P4cuwDyws+UratC4pFvTjmhye9hSCkSIf7bx7oeWB2rDIs3nVp0FVWHxe1P9fz9xV4REkqRh55T5oUfvK7J4GiPmwmvtxyAvEGfpK3qouLv35o6a4rVb4cAkOMX79y3u8sJmG8mtag0RSy+dlfm3+5pYX6uqB89p50UfvjrTZbJsq7mx/YTOMYB5GEokdUTy43H/m3q/OkB6YlgmKyt3f70b5oNgQD0ZolGCI62qz95x95kUqFAzlDG5dmLI3/5+pSAyTIOcYbH+v0f8wAawJCqDvNHr5+ydHZIxiUiiLBYvir24790VIXzpVuP2pbPsgC/7o+tGzanRJAjgIzJC06JPnhdk0/gcWB7jh8AeRhK2Toa4H+/fuoFy6IyJhFAhPi/39f28Jp41VEPhlxFNWFxx5M9dz7WaUQEEMmEvPz8yvu/0uStLDoObM9xBSAvps445OP4wHVNV7yj0o1JZAgIn7xtz+Z92ZB19JIyqag8yJ/enPrKnc3C4ppAJtSXL639/WcbXUmuIn783PpxBKBBiTvHpd99pvFrH6pzE4oZrCcur7h1T9bRnlr5UQicAz62r9f92K27XUWKQNnqZ9c03HTlxHhGa4LjxfQcjwDqbygmiGX0zy6fcNvnG8HVaLBXtqWv/uXegOEJAsGYcoYGR6Xpiv/e09zpaoKQgfd9fcrX31PdnZCAxypb+BYCEAysSemMy8+eV/nXf5taFeTA4C8v9H31jy0VIT52IxxEgAABH7v6l80rXksC0bRa8583TLt0abQ9Jjk7/sBznAJoUFeqPS7Pnxt65gfTl84MAtEv/tr507911kSMMUrKNFFliH/tj60PPtsDBBcsijz9/ekLJ1tdiWOvxv5WBxAM9H70JFVTlfH4t6d9/B1VoOn63+2789me2kjxE3tPmOYnf+249f42EHjdpbUPfX1KWYDHMkocv+gZd/pAYxTVGhxDFr/tn13X392STqkHvjvtfYsjRWy+cRXVRsUvnuj+ws27aib6br664fLTynoOQhW6BCA4RmZAQRNVhcXqHelP37Z3w9b0Yz+e8c75obaYNI8YQ66i2nLjd0/3XP3/dpx7SvR/PtU4s87XnZCcI8Lxf94SABp80tEAT7v6+rtbfvtkz4PfmnLxkmh7n3skdshVVFth3P541+du3/vtD9Rdf2ktEKWy+vh2WzBuFcrGOiTyBL9/+dnGc+aHP/+7fcmsvvyM8s6Yexi8sLeVt7bMuOmvHb94vOuJ708/b364Oy69Ethb51bfQhZo0J0pTdURsbPT+c59bRfMD3/41LKUrQ9D2NpvsF8+2f3qnuyNH5lQFuQ9yeM52yoBKD9pCviYwfHeFX0Ri509O3QY9NDjryQYwgdPKUtktCM1Z/gWvMm3KIA81hgBogG+rd3mCDVRofQh1Exa+6Rg2FRt9KY0Ox4p5hKADlKiEHwGKn1oCw8IvDW8aLvHVWW0FETDYfRWH4bovTeur9RbHT3HORN98LWzwy6YlE4JQKVTAlDplABUOiUAlU4JQKVTOiUAlU4JQKVTAlDplABUOqVTAlDplABUOiUAlU4JQKVTOiUAlU4JQKVTAlDpHD/n/wcOp3vhnnDOSgAAAABJRU5ErkJggg==") center / contain no-repeat; }
-
-.url { font-family: ui-monospace, Consolas, monospace; font-size: 16px; color: var(--brand); }
+.title-logo { width: 300px; height: auto; display: block; margin: 0 0 8px -14px; }
+.url { font-family: var(--font-mono); font-size: 15px; color: var(--brand); }
 
 .nav-hint {
-  position: fixed; right: 18px; bottom: 12px; font-size: 12px; color: #8D95B3;
+  position: fixed; right: 18px; bottom: 12px; font-size: 12px; color: #8d95b3;
 }
 
 
 /* The deck is designed at exactly 1280x720 and scaled to fit, rather than
-   letting the box shrink while the type stays put. That kept text at its
-   design size inside a smaller slide, and .slide is overflow:hidden, so the
-   excess was cut with nothing to scroll and no warning - four slides lost
-   content at 1152px, twelve at 768px.
-   Scaling the whole surface means the layout never reflows: what fits at the
-   design size fits at every size, and there is one width to verify. */
+   letting the box shrink while the type stays put. Scaling the whole surface
+   means the layout never reflows: what fits at the design size fits at every
+   size, and there is one width to verify. */
 #fit { overflow: hidden; display: flex; justify-content: center; }
 #stage { width: 1280px; flex: none; transform-origin: top center; }
 
 @media print {
+  @page { size: 1280px 720px; margin: 0; }
   body { background: #fff; }
   #fit { display: block; overflow: visible; height: auto !important; }
   #stage { width: auto; transform: none !important; }
-  .slide { display: flex !important; page-break-after: always; margin: 0 auto; border-radius: 0; width: 100%; height: 100vh; }
+  .slide { display: flex !important; page-break-after: always; margin: 0; border-radius: 0; }
   .nav-hint { display: none; }
 }
 </style>
@@ -146,30 +159,32 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
 <!-- ============================================================ 1 title -->
 <section class="slide active">
   <div style="flex:1"></div>
-  <img class="title-logo" src="data:image/png;base64,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" alt="VINPassport shield logo">
-  <div class="eyebrow">Midnight Buildathon · Wave 2 · October 2026</div>
-  <h1 class="wordmark"><span class="wm-vin">VIN</span>Passport</h1>
-  <p class="lede"><strong>Prove a vehicle's history. Never show the record.</strong><br>
-  A Digital Circularity Vehicle Passport under Regulation (EU) 2026/1738, built on
-  Midnight's zero-knowledge blockchain.</p>
-  <p>
-    <span class="url">github.com/VINPassport/VINPassport</span> &nbsp;·&nbsp;
-    <span class="url">passport.vin</span>
+  <img class="title-logo" src="brand/vinpassport-logo-stacked-primary.svg" alt="VINPassport" width="720" height="348">
+  <div class="eyebrow">Midnight Buildathon · Wave 3 · November 2026</div>
+  <h1>Prove a vehicle's history.<br>Never show the record.</h1>
+  <p class="lede">A Digital Circularity Vehicle Passport under Regulation (EU) 2026/1738, built on
+  Midnight's zero-knowledge blockchain. Each audience sees only what it is entitled to, and
+  checks it against the ledger itself.</p>
+  <p style="margin:0">
+    <span class="url">passport.vin</span> &nbsp;·&nbsp;
+    <span class="url">github.com/VINPassport/VINPassport</span>
   </p>
   <div style="flex:1"></div>
-  <div class="slide-foot"><span class="brandline"><i class="footmark" aria-hidden="true"></i><span class="wm"><span class="wm-vin">VIN</span>PASSPORT</span></span><span>1</span></div>
+  <div class="slide-foot"><img src="brand/vinpassport-logo-horizontal-primary.svg" alt="VINPassport" width="1204" height="248"><span>1</span></div>
 </section>
 
 <!-- ============================================================ 2 problem -->
 <section class="slide dense">
   <div class="eyebrow">The problem</div>
-  <h2>A vehicle's history must be checkable by strangers,<br>and too sensitive to publish</h2>
+  <h2>A vehicle's history must be checkable by strangers,<br>and is too sensitive to publish</h2>
   <div class="cols">
     <div class="box">
       <h3>Today</h3>
       <p>The history a used-car buyer sees is whatever the seller chose to print. Write-offs
       re-registered as clean, accidents that vanish between listings, service stamps nobody
       earned: each is a field moving a way it should never move, and the buyer cannot tell.</p>
+      <p>The same is true of a boat, a motorbike or a motorhome sold privately, with a handshake
+      and a folder of receipts.</p>
     </div>
     <div class="box">
       <h3>From 29 November 2026, by law</h3>
@@ -179,14 +194,14 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
       (Reg (EU) 2025/1707 Art 17(4)). Art 4(7) separately obliges manufacturers to minimise
       tampering with the <strong>odometer</strong> and with the passport itself.</p>
       <p>The fuller Digital Circularity Vehicle Passport follows in September 2032
-      (Reg (EU) 2026/1738 Art 13). <strong>2032 is the roadmap. Six weeks away is the
+      (Reg (EU) 2026/1738 Art 13). <strong>2032 is the roadmap. 29 November 2026 is the
       customer.</strong></p>
-      <p><strong>The regulation demands a passport that can be checked, not one that is
+      <p><strong>The law asks for a passport that can be checked, not one that is
       public.</strong> A full history is commercially sensitive to the seller and personally
       identifying to the owner. Publish it and one problem is solved by creating the other.</p>
     </div>
   </div>
-  <div class="slide-foot"><span class="brandline"><i class="footmark" aria-hidden="true"></i><span class="wm"><span class="wm-vin">VIN</span>PASSPORT</span></span><span>2</span></div>
+  <div class="slide-foot"><img src="brand/vinpassport-logo-horizontal-primary.svg" alt="VINPassport" width="1204" height="248"><span>2</span></div>
 </section>
 
 <!-- ============================================================ 3 insight -->
@@ -203,79 +218,112 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
     <tr><td>Record a service, a reading</td><td>The field moved <strong>only the way that field may move</strong></td></tr>
     <tr><td>Is the mileage under 150 000 km?</td><td><strong>Yes</strong>, and never the reading itself</td></tr>
   </table>
-  <p>Each field carries an <strong>integrity rule fixed at creation</strong>: mileage, accidents,
+  <p style="margin:0">Each field carries an <strong>integrity rule fixed at creation</strong>: mileage, accidents,
   keepers, write-off status can never fall. The rule lives on the ledger, so nobody can pick the
   flattering rule at the moment they need it.</p>
-  <div class="slide-foot"><span class="brandline"><i class="footmark" aria-hidden="true"></i><span class="wm"><span class="wm-vin">VIN</span>PASSPORT</span></span><span>3</span></div>
+  <div class="slide-foot"><img src="brand/vinpassport-logo-horizontal-primary.svg" alt="VINPassport" width="1204" height="248"><span>3</span></div>
 </section>
 
-<!-- ============================================================ 4 built -->
-<section class="slide">
+<!-- ============================================================ 4 what changed -->
+<section class="slide dense">
+  <div class="eyebrow">What changed since Wave 2</div>
+  <h2>The Wave 2 deferral shipped, and the passport moved to ledger 9</h2>
+  <div class="cols">
+    <div class="box">
+      <h3>On chain</h3>
+      <ol>
+        <li><strong>Who may see what is on the ledger.</strong> New circuits <code>grantDisclosure</code> and <code>revokeDisclosure</code> record which identity was given which view. On preprod from 1 Nov 2026 (block 3228852); a dealership was granted the trade view in block 3229987, read back from the public indexer.</li>
+        <li><strong>Ledger 9.</strong> Ported to Compact 0.36.0, Midnight.js 5 and Wallet SDK 2, reproducing every hash and commitment of the old build (13 of 13 golden vectors). <strong>Live on Preview since 9 Nov 2026, block 28785.</strong></li>
+        <li><strong>Events.</strong> Every write announces itself once, and the public indexer serves it.</li>
+        <li><strong>Registrar governance.</strong> Two current registrars add or remove one, each in their own transaction: exercised in blocks 29162 and 29247.</li>
+        <li><strong>Upgrades by committee.</strong> A 2-of-3 maintenance committee (Schnorr and ECDSA keys) added six read circuits to a live contract (block 19822) without changing any existing verifier key.</li>
+      </ol>
+    </div>
+    <div class="box">
+      <h3>For people</h3>
+      <ol start="6">
+        <li><strong>One vehicle, three audiences</strong> at <span class="url">passport.vin/disclose/</span>: a buyer, a dealer and an authority each get a bounded view, checked in the browser (slide 8).</li>
+        <li><strong>A new site.</strong> Type or scan a passport code and get four plain answers; a compliance page with every date cited; a pilot request for manufacturers; lifestyle vehicles launch with cars and vans.</li>
+        <li><strong>Your own wallet.</strong> <span class="url">passport.vin/wallet/</span> asks the live contract through 1AM or Lace; the visitor's wallet proves and pays, no server of ours.</li>
+        <li><strong>Reproducible keys.</strong> CI recompiles with a hash-checked <code>compactc</code> 0.36.0 and fails on any changed byte, verifier keys included.</li>
+      </ol>
+      <p><strong>Answered from the Wave 2 review:</strong> the contract address is on the README's first screen; who pays and who answers for a value (slide 12); what dealers gain (slide 8); a pilot partner is still open (slide 13).</p>
+    </div>
+  </div>
+  <div class="slide-foot"><img src="brand/vinpassport-logo-horizontal-primary.svg" alt="VINPassport" width="1204" height="248"><span>4</span></div>
+</section>
+
+<!-- ============================================================ 5 built -->
+<section class="slide dense">
   <div class="eyebrow">What ships today</div>
   <h2>A working product, end to end</h2>
   <div class="cols">
     <div class="box">
       <h3>Our own Compact contract</h3>
       <ul>
-        <li><strong>17 circuits, 14 exported</strong>: ten that prove (register, authorise and withdraw a writer, grant and revoke a view, initialise, record, and three kinds of claim), plus four pure helpers that derive a field slot, a registrar identity, a writer key and a grant key</li>
+        <li><strong>23 circuits: 18 provable, 5 pure helpers.</strong> Register, authorise and withdraw a writer, grant and revoke a view, initialise, record, three kinds of claim, six reads and the registrar change; the helpers derive slots and keys</li>
         <li>A commitment per (vehicle, field); values never reach the ledger</li>
-        <li><strong>Claims ledger</strong>: every successful proof leaves a public, checkable record of the claim, never the value</li>
-        <li>A claim is bound to the record version it proved; supersession is visible</li>
+        <li><strong>Claims ledger</strong>: every successful proof leaves a public, checkable record of the claim, never the value, bound to the record version it proved</li>
+        <li>Every write emits one event; changing the registrars takes two of them</li>
+        <li>Live on Midnight Preview: <code>22723f4a…8af7cd</code>, with 18 verifier keys on chain (<span class="url">deploy/preview.json</span>)</li>
       </ul>
     </div>
     <div class="box">
-      <h3>Three functional surfaces: one command</h3>
+      <h3>The product, at passport.vin</h3>
       <ul>
-        <li><strong>Verification</strong>: scan a QR, see the verdicts</li>
-        <li><strong>Intake console</strong>: fill the full regulation panel, submit into the real circuits, watch refusals render</li>
+        <li><strong>Scan</strong>: type or scan a passport code, four plain answers, no app, no login</li>
+        <li><strong>Disclose</strong>: one vehicle, three audiences, every value checked in your browser</li>
+        <li><strong>Intake console</strong>: fill the full regulation panel and run the compiled circuits in your browser; watch refusals render</li>
         <li><strong>Proof explorer</strong>: every claim, current or superseded</li>
-        <li>26-vehicle demo fleet: new (BEV → diesel) and retrofit</li>
+        <li><strong>Your wallet</strong>: ask the live contract through 1AM or Lace</li>
+        <li>A 26-vehicle demo fleet: new (BEV to diesel) and retrofit</li>
       </ul>
-      <p class="url">passport.vin: the full verification surface, reading the committed ledger export · <code>npm run app</code> runs the compiled circuits locally</p>
+      <p class="url" style="font-size:14px"><code>npm run app</code> runs all of it locally against the compiled circuits</p>
     </div>
   </div>
-  <div class="slide-foot"><span class="brandline"><i class="footmark" aria-hidden="true"></i><span class="wm"><span class="wm-vin">VIN</span>PASSPORT</span></span><span>4</span></div>
+  <div class="slide-foot"><img src="brand/vinpassport-logo-horizontal-primary.svg" alt="VINPassport" width="1204" height="248"><span>5</span></div>
 </section>
 
-<!-- ============================================================ 5 how -->
+<!-- ============================================================ 6 how -->
 <section class="slide">
   <div class="eyebrow">How it works</div>
-  <h2>Values stay with the operator. Only proofs travel.</h2>
+  <h2>Values stay with the writer. Only proofs travel.</h2>
   <figure style="margin:0; flex:1; display:flex; align-items:center;">
-  <svg viewBox="0 0 1040 300" role="img" aria-label="Registrar's machine runs the circuits locally; the ledger holds commitments and claims; the buyer's phone reads verdicts." style="width:100%; height:auto;">
-    <defs><marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" fill="#44536F"/></marker></defs>
-    <rect x="10" y="60" width="280" height="180" rx="10" fill="#FBF7F0" stroke="#DBD1C0"/>
-    <text x="150" y="95" text-anchor="middle" font-size="17" font-weight="700" fill="#16264A">Registrar's machine</text>
-    <text x="150" y="125" text-anchor="middle" font-size="14" fill="#44536F">intake console → compiled circuits</text>
-    <text x="150" y="150" text-anchor="middle" font-size="14" fill="#44536F">values &amp; VIN stay here</text>
-    <text x="150" y="180" text-anchor="middle" font-size="14" fill="#8C2F26">a rollback is refused in-circuit</text>
-    <text x="150" y="205" text-anchor="middle" font-size="14" fill="#44536F">we pay the fee, no wallet shown</text>
+  <svg viewBox="0 0 1040 300" role="img" aria-label="Registrar's machine runs the circuits locally; the ledger holds commitments, claims, grants and events; the buyer's phone reads verdicts." style="width:100%; height:auto; font-family:'IBM Plex Sans', system-ui, sans-serif;">
+    <defs><marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" fill="#4a5470"/></marker></defs>
+    <rect x="10" y="50" width="280" height="200" rx="14" fill="#fbf8f2" stroke="#cbc3b1"/>
+    <text x="150" y="86" text-anchor="middle" font-size="17" font-weight="600" fill="#0f1c35">Registrar's machine</text>
+    <text x="150" y="116" text-anchor="middle" font-size="14" fill="#4a5470">intake console → compiled circuits</text>
+    <text x="150" y="141" text-anchor="middle" font-size="14" fill="#4a5470">values and VIN stay here</text>
+    <text x="150" y="166" text-anchor="middle" font-size="14" fill="#a33a1f">a rollback is refused in-circuit</text>
+    <text x="150" y="191" text-anchor="middle" font-size="14" fill="#4a5470">grants a dealer the trade view</text>
+    <text x="150" y="216" text-anchor="middle" font-size="14" fill="#4a5470">fees paid in DUST, no wallet shown</text>
 
-    <rect x="380" y="60" width="280" height="180" rx="10" fill="#DCE3F7" stroke="#004AAD"/>
-    <text x="520" y="95" text-anchor="middle" font-size="17" font-weight="700" fill="#003C8F">Midnight ledger</text>
-    <text x="520" y="125" text-anchor="middle" font-size="14" fill="#003C8F">commitment per (vehicle, field)</text>
-    <text x="520" y="150" text-anchor="middle" font-size="14" fill="#003C8F">integrity rule, fixed at creation</text>
-    <text x="520" y="175" text-anchor="middle" font-size="14" fill="#003C8F">claims: field · bound · version</text>
-    <text x="520" y="203" text-anchor="middle" font-size="14" font-weight="700" fill="#003C8F">never a value, never a VIN</text>
+    <rect x="380" y="50" width="280" height="200" rx="14" fill="#e6edf8" stroke="#004bb0"/>
+    <text x="520" y="86" text-anchor="middle" font-size="17" font-weight="600" fill="#003a8a">Midnight ledger</text>
+    <text x="520" y="116" text-anchor="middle" font-size="14" fill="#003a8a">commitment per (vehicle, field)</text>
+    <text x="520" y="141" text-anchor="middle" font-size="14" fill="#003a8a">integrity rule, fixed at creation</text>
+    <text x="520" y="166" text-anchor="middle" font-size="14" fill="#003a8a">claims · grants · one event per write</text>
+    <text x="520" y="194" text-anchor="middle" font-size="14" font-weight="600" fill="#003a8a">never a value, never a VIN</text>
 
-    <rect x="750" y="60" width="280" height="180" rx="10" fill="#FBF7F0" stroke="#DBD1C0"/>
-    <text x="890" y="95" text-anchor="middle" font-size="17" font-weight="700" fill="#16264A">Buyer's phone</text>
-    <text x="890" y="125" text-anchor="middle" font-size="14" fill="#44536F">scans the QR, no app, no login</text>
-    <text x="890" y="152" text-anchor="middle" font-size="14" fill="#1E6B33">Never written off ✓</text>
-    <text x="890" y="176" text-anchor="middle" font-size="14" fill="#1E6B33">No reported accidents ✓</text>
-    <text x="890" y="203" text-anchor="middle" font-size="14" fill="#8A5A0B">Mileage claim: not proven,</text>
-    <text x="890" y="222" text-anchor="middle" font-size="14" fill="#8A5A0B">absence of proof, never a false tick</text>
+    <rect x="750" y="50" width="280" height="200" rx="14" fill="#fbf8f2" stroke="#cbc3b1"/>
+    <text x="890" y="86" text-anchor="middle" font-size="17" font-weight="600" fill="#0f1c35">Buyer's phone</text>
+    <text x="890" y="116" text-anchor="middle" font-size="14" fill="#4a5470">scans the code, no app, no login</text>
+    <text x="890" y="143" text-anchor="middle" font-size="14" fill="#1d6b4b">Never written off ✓</text>
+    <text x="890" y="167" text-anchor="middle" font-size="14" fill="#1d6b4b">No reported accidents ✓</text>
+    <text x="890" y="194" text-anchor="middle" font-size="14" fill="#8a5a0b">Mileage claim: not proven,</text>
+    <text x="890" y="213" text-anchor="middle" font-size="14" fill="#8a5a0b">absence of proof, never a false tick</text>
 
-    <line x1="290" y1="130" x2="378" y2="130" stroke="#44536F" stroke-width="1.6" marker-end="url(#ar)"/>
-    <text x="334" y="118" text-anchor="middle" font-size="13" fill="#44536F">proofs</text>
-    <line x1="660" y1="150" x2="748" y2="150" stroke="#44536F" stroke-width="1.6" marker-end="url(#ar)"/>
-    <text x="704" y="138" text-anchor="middle" font-size="13" fill="#44536F">reads claims</text>
+    <line x1="290" y1="130" x2="378" y2="130" stroke="#4a5470" stroke-width="1.6" marker-end="url(#ar)"/>
+    <text x="334" y="118" text-anchor="middle" font-size="13" fill="#4a5470">proofs</text>
+    <line x1="660" y1="150" x2="748" y2="150" stroke="#4a5470" stroke-width="1.6" marker-end="url(#ar)"/>
+    <text x="704" y="138" text-anchor="middle" font-size="13" fill="#4a5470">reads claims</text>
   </svg>
   </figure>
-  <div class="slide-foot"><span class="brandline"><i class="footmark" aria-hidden="true"></i><span class="wm"><span class="wm-vin">VIN</span>PASSPORT</span></span><span>5</span></div>
+  <div class="slide-foot"><img src="brand/vinpassport-logo-horizontal-primary.svg" alt="VINPassport" width="1204" height="248"><span>6</span></div>
 </section>
 
-<!-- ============================================================ 6 refusal -->
+<!-- ============================================================ 7 refusal -->
 <section class="slide">
   <div class="eyebrow">The thirty seconds that carry the pitch</div>
   <h2>Type a lie into the form. Watch the circuit refuse it.</h2>
@@ -294,32 +342,68 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
       the transaction</strong>, so nothing is written and no false claim can ever appear proven.</p>
       <p>The buyer's page then shows <span class="chip warn">not proven</span> for exactly that
       question: an honest absence, never a quiet "no".</p>
-      <p>Anyone can reproduce this: clone, <span class="url">npm run app</span>, pick the Audi
-      from the demo fleet, submit.</p>
+      <p>Anyone can reproduce this: open <span class="url">passport.vin/intake/</span>, pick the
+      Audi from the demo fleet and submit. The circuits run in your browser. Or clone and
+      <span class="url">npm run app</span>.</p>
     </div>
   </div>
-  <div class="slide-foot"><span class="brandline"><i class="footmark" aria-hidden="true"></i><span class="wm"><span class="wm-vin">VIN</span>PASSPORT</span></span><span>6</span></div>
+  <div class="slide-foot"><img src="brand/vinpassport-logo-horizontal-primary.svg" alt="VINPassport" width="1204" height="248"><span>7</span></div>
 </section>
 
-<!-- ============================================================ 7 regulation panel -->
+<!-- ============================================================ 8 tiered disclosure -->
+<section class="slide dense">
+  <div class="eyebrow">The Wave 3 headline: tiered disclosure</div>
+  <h2>One vehicle, three audiences. Each sees its tier, and checks it.</h2>
+  <table>
+    <tr><th style="width:220px">Audience</th><th>The holder hands over</th><th>What the reader's browser checks</th></tr>
+    <tr><td><strong>Buyer</strong> · public tier</td><td>3 fields and 4 proven claims, such as never written off</td><td>Every value against its ledger commitment; a claim counts only if current</td></tr>
+    <tr><td><strong>Dealer</strong> · trade tier</td><td>11 fields, for appraising a trade-in</td><td>The same, and whether the ledger holds a trade grant for this dealer</td></tr>
+    <tr><td><strong>Authority</strong> · authority tier</td><td>13 fields and the VIN</td><td>The same, and the authority grant</td></tr>
+  </table>
+  <div class="cols">
+    <div class="box">
+      <h3>Bounded by construction</h3>
+      <p>Every one of the 68 fields carries a tier: <strong>22 public, 41 trade, 5 authority</strong>.
+      The builder refuses a field above the audience's tier; the reader recomputes the tiers and
+      flags anything handed over that the audience was not entitled to. <strong>Change one value
+      and the bundle fails.</strong></p>
+      <p>Bundles the holder hands over, not a redaction server: nobody holds the full record for
+      the reader's sake. The legal hook for different audiences seeing different things is
+      Reg (EU) 2026/1738 Art 13(6)(d), conditions for access.</p>
+    </div>
+    <div class="box">
+      <h3>Try it, and what it answers</h3>
+      <p><span class="url">passport.vin/disclose/</span> checks all three on demo data, and
+      bundles from the recorded Preview and preprod runs against contract state read from the
+      public indexer.</p>
+      <p><strong>What dealers gain</strong> (the Wave 2 reviewer's question): an honest dealer gets a
+      clean-history proof it cannot fake today, the seller still chooses what to prove, and the
+      trade view keeps the dealer's appraisal role. The dealers who lose are those whose margin
+      depends on what the buyer cannot check.</p>
+    </div>
+  </div>
+  <div class="slide-foot"><img src="brand/vinpassport-logo-horizontal-primary.svg" alt="VINPassport" width="1204" height="248"><span>8</span></div>
+</section>
+
+<!-- ============================================================ 9 regulation panel -->
 <section class="slide dense">
   <div class="eyebrow">Regulatory depth</div>
   <h2>The full DCVP panel, not a demo subset</h2>
   <div class="cols">
     <div class="box">
-      <h3>32-slot field panel (docs/FIELDS.md)</h3>
+      <h3>32 provable field slots: 26 in use, 6 reserved (docs/FIELDS.md)</h3>
       <ul>
         <li><strong>Fraud history</strong>: mileage, accidents, keepers, write-off, services: live fields under integrity rules</li>
-        <li><strong>Art 13 identity</strong>: category, fuel type (BEV→diesel), type approval, emissions class, registration dates</li>
+        <li><strong>Art 13 identity</strong>: category, fuel type (BEV to diesel), type approval, emissions class, registration dates</li>
         <li><strong>Art 6 / 10 declarations</strong>: recycled plastic and the share of it from end-of-life vehicles; steel and aluminium slots held for the delegated acts that will set them; CO₂ footprint; dismantling evidence</li>
-        <li><strong>New v retrofit</strong>: which path the passport came through, on the record</li>
+        <li><strong>New v retrofit</strong>: which path the passport came through, on the record (slot 30)</li>
       </ul>
     </div>
     <div class="box">
       <h3>Where our passport ends: two boundaries</h3>
       <p>An EV's <strong>battery</strong> is a separate regime with its own passport (Reg (EU)
       2023/1542, from Feb 2027). We carry the <strong>reference</strong>: slot 29,
-      <code>batteryPassportId</code>: and never restate the battery's claims.</p>
+      <code>batteryPassportId</code>, and never restate the battery's claims.</p>
       <p>The <strong>Euro 7 EVP is also separate</strong>, and we read its parameter table rather
       than assume it. Appendix 1 to Annex V is about twenty type-approval and emissions values,
       fixed at approval. <strong>We hold two, and the odometer is not an EVP parameter at
@@ -331,66 +415,78 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
       reveals nothing, including which slots are filled.</p>
     </div>
   </div>
-  <div class="slide-foot"><span class="brandline"><i class="footmark" aria-hidden="true"></i><span class="wm"><span class="wm-vin">VIN</span>PASSPORT</span></span><span>7</span></div>
+  <div class="slide-foot"><img src="brand/vinpassport-logo-horizontal-primary.svg" alt="VINPassport" width="1204" height="248"><span>9</span></div>
 </section>
 
-<!-- ============================================================ 8 QA -->
+<!-- ============================================================ 10 QA -->
 <section class="slide dense">
-  <div class="eyebrow">Engineering &amp; quality</div>
+  <div class="eyebrow">Quality and reliability</div>
   <h2>Tested like it matters, honest about what a proof means</h2>
   <div class="cols">
     <div class="box">
-      <h3>The numbers</h3>
-      <p><span class="big-num">128</span> contract tests against the <strong>compiled circuits</strong>,
-      same assertions that reject a transaction on chain</p>
-      <p><span class="big-num">+155</span> app tests · <span class="big-num">+24</span> SDK assumption assertions</p>
+      <h3>The numbers, copied from the output</h3>
+      <div class="stats">
+        <div><span class="big-num">176</span><span>contract tests, run against the compiled circuits</span></div>
+        <div><span class="big-num">386</span><span>app tests</span></div>
+        <div><span class="big-num">24</span><span>SDK assumption checks</span></div>
+      </div>
       <ul>
-        <li><strong>Mutation-checked</strong>: every guard deleted in turn, recompiled, re-run. <strong>43 of 43</strong> killed</li>
-        <li>Reproduces <strong>byte-identically</strong> from source, toolchain pinned exact</li>
-        <li><strong>Proving measured</strong>, wasm: register <strong>17.5s</strong> · at-most <strong>27.6s</strong> · at-least <strong>27.0s</strong> · initialise a field <strong>37.4s</strong>. Paid at issue, not at verification. Initialising is the most expensive and the most repeated, which is the ceiling Wave 3 goes after</li>
+        <li><strong>Mutation-checked</strong>: every guard deleted in turn, recompiled, re-run: <strong>43 of 43</strong> killed</li>
+        <li><strong>Reproducible</strong>: CI recompiles from a hash-checked compiler and fails on any changed committed byte, verifier keys included</li>
+        <li><strong>Read back from the chain</strong>: each run is checked against its receipt through the public indexer (9 of 9 on Preview, 8 Nov), and no VIN or salt is found there</li>
+        <li><strong>The site checks itself</strong>: <code>check:a11y</code> drives all 16 pages in a real browser (keyboard, focus, 320 to 1920 px, reduced motion); <code>check:facts</code> ties every figure on the site and in this deck to its source. Lighthouse, home page, mobile: 95 · 100 · 100 · 100</li>
       </ul>
     </div>
     <div class="box">
-      <h3>What we do not claim</h3>
+      <h3>Measured, not assumed</h3>
+      <p><strong>Proving</strong>, wasm, in-process: register 17.5s, at-most 27.6s, at-least 27.0s,
+      initialise a field 37.4s. Paid once by the writer; a verifier reads the verdict off the
+      ledger and never waits on a proof.</p>
+      <p>In-circuit ECDSA registrar keys work but prove about seven times slower (167s against
+      24s), so they wait for a manufacturer that needs keys held in a hardware security module.</p>
+      <h3 style="margin-top:6px">What we do not claim</h3>
       <p>A proof shows a value is <strong>the anchored one</strong> and satisfies a bound: not
       that it matched physical reality when written. The registrar is trusted for that, which is
-      why every passport names one.</p>
+      why every passport names one, and why the ledger records who wrote what.</p>
       <p>So VINPassport today makes fraud <strong>attributable and tamper-evident</strong>: never
       "impossible". Closing the last gap means the value is written by a party already
       accountable for it: work we have not done, and do not imply we have.</p>
     </div>
   </div>
-  <div class="slide-foot"><span class="brandline"><i class="footmark" aria-hidden="true"></i><span class="wm"><span class="wm-vin">VIN</span>PASSPORT</span></span><span>8</span></div>
+  <div class="slide-foot"><img src="brand/vinpassport-logo-horizontal-primary.svg" alt="VINPassport" width="1204" height="248"><span>10</span></div>
 </section>
 
-<!-- ============================================================ 9 ecosystem -->
+<!-- ============================================================ 11 ecosystem -->
 <section class="slide dense">
   <div class="eyebrow">Ecosystem</div>
   <h2>Built on Midnight, with ODATANO: precisely</h2>
   <div class="cols">
     <div class="box">
-      <h3>Ours</h3>
+      <h3>Midnight, used for what it is for</h3>
       <ul>
-        <li>The Compact contract: seventeen circuits, ten of which prove, its own ledger and three integrity rules. Not a fork of <code>attestation-vault</code></li>
-        <li>The 32-slot vehicle field panel: a vehicle-domain design</li>
-        <li>All three surfaces, the demo fleet, the tests</li>
+        <li><strong>Zero-knowledge circuits</strong> in Compact 0.36.0: values stay private inputs; only commitments, claims and grants reach the ledger</li>
+        <li><strong>Events</strong> on ledger 9: one per write, served by the public indexer</li>
+        <li><strong>Contract maintenance authority</strong>: a 2-of-3 committee mixing Schnorr and ECDSA keys, exercised on chain</li>
+        <li><strong>DUST from held NIGHT</strong> pays every fee, so no customer holds crypto or pays a network fee</li>
+        <li><strong>DApp Connector API 4</strong>: a visitor's 1AM or Lace wallet proves and pays its own call</li>
+        <li>Our tooling proves in-process with <code>zkir-v3</code>, no proof server, so <strong>no private input leaves</strong> the machine that holds it</li>
       </ul>
     </div>
     <div class="box">
-      <h3>ODATANO, in three ways</h3>
+      <h3>Ours, and ODATANO's</h3>
       <ul>
-        <li><code>@odatano/dpp-sdk</code>: key derivation, value scaling, Merkle construction</li>
-        <li><code>@odatano/nightgate-tx</code>: transaction building, batch ordering, in-process proving - against our own key</li>
-        <li>Hosted NIGHTGATE <strong>sponsored our first two deploys</strong> under a metered grant, Wave 1 on 28 Aug and the Wave 2 contract on 13 Oct. The grant allowed two and both are spent, so every <strong>redeploy since has been self-funded</strong> from DUST this project's own wallet generates. Live at <code>2f66c442…e5d648f5</code>, 16 Oct</li>
-        <li>Running fees are <strong>not sponsored</strong>: the demo pays its own DUST. Every transaction was already built, proven and signed our side, so <strong>no witness ever leaves</strong></li>
+        <li><strong>Ours</strong>: the Compact contract (not a fork of <code>attestation-vault</code>), the 32-slot vehicle field panel, the 68-field tier map, every surface, the demo fleet, the tests</li>
+        <li><code>@odatano/dpp-sdk</code>: key derivation, value scaling, Merkle construction, with 24 assertions guarding what we rely on</li>
+        <li>Hosted NIGHTGATE <strong>sponsored our first two deploys</strong> under a metered grant, on 28 Aug and 13 Oct. Every deploy since has been <strong>self-funded</strong> from DUST this project's own wallet generates</li>
+        <li>On ledger 9 our transactions are built with Midnight.js 5 and Wallet SDK 2; the ledger 8 build and its <code>nightgate-tx</code> tooling are kept at a git tag</li>
       </ul>
-      <p>Not used: CAP service, OData layer, <code>attestation-vault</code>, disclosure grants. Tiered disclosure was deferred on purpose: a passport that cannot tell one writer from another is not worth adding tiers to.</p>
+      <p>Not used: the CAP service, the OData layer, <code>attestation-vault</code>.</p>
     </div>
   </div>
-  <div class="slide-foot"><span class="brandline"><i class="footmark" aria-hidden="true"></i><span class="wm"><span class="wm-vin">VIN</span>PASSPORT</span></span><span>9</span></div>
+  <div class="slide-foot"><img src="brand/vinpassport-logo-horizontal-primary.svg" alt="VINPassport" width="1204" height="248"><span>11</span></div>
 </section>
 
-<!-- ============================================================ 10 business -->
+<!-- ============================================================ 12 business -->
 <section class="slide dense">
   <div class="eyebrow">Business: how this earns</div>
   <h2>Mandated demand, fiat-only revenue, free verification</h2>
@@ -398,69 +494,74 @@ th { color: var(--ink); font-size: 14px; text-transform: uppercase; letter-spaci
     <div class="box">
       <h3>The model</h3>
       <ul>
-        <li><strong>Who pays first:</strong> the manufacturer, once per vehicle, at issue. Euro 7 Art. 7(4) obliges it to issue one, 2025/1707 Art. 17(4) to keep it reachable for 20 years. It buys a record anyone can check is the one it issued, reachable whether or not we are</li>
+        <li><strong>Who pays first:</strong> the manufacturer, once per vehicle, at issue. Euro 7 Art 7(4) obliges it to issue one, 2025/1707 Art 17(4) to keep it reachable for 20 years. It buys a record anyone can check is the one it issued, reachable whether or not we are</li>
         <li><strong>A second product:</strong> the service and ownership history the regulated passport does not hold, paid for by second-hand dealers, who also get the trade view. A hypothesis until a dealer says yes</li>
         <li><strong>Who answers for a value:</strong> whoever wrote it. The ledger names the identity behind every write; the contract refuses a rollback but does not vouch for truth</li>
-        <li><strong>Reading is free, always:</strong> the law forbids asking a reader to register (Annex V 4.2.3). Every scanned QR is a buyer learning to demand proof</li>
+        <li><strong>Reading is free, always:</strong> the law forbids asking a reader to register (2025/1707 Annex V 4.2.3). Every scanned code is a buyer learning to demand proof</li>
         <li><strong>Every payment is fiat.</strong> No customer holds crypto or pays a network fee: we pay in DUST from NIGHT we hold</li>
       </ul>
     </div>
     <div class="box">
       <h3>Why the demand is not speculative</h3>
-      <p>The near-term date is not 2032. From <strong>29 November 2026</strong> every new
-      M1/N1 type needs an Environmental Vehicle Passport (Euro 7); the battery passport
-      follows in February 2027, the full passport in September 2032. The cascade starts
-      where the obligation starts: second-hand dealers are stage 3, inheriting passports
-      rather than adopting a new system.</p>
-      <h3 style="margin-top:6px">Honest about pricing</h3>
-      <p>Unit cost is <strong>measured, not assumed</strong>. On chain it is negligible: NIGHT is
-      never consumed, so about <strong>USD 331</strong> of held NIGHT supports a thousand vehicles
-      a day. The real cost is <strong>proving</strong>, paid once at issue and measured on the slide before.</p>
-      <p><strong>Two products, not one.</strong> The regulated EVP is twenty static values, priced
-      at issue. Provenance is voluntary and is where lifetime cost lives. Conflating them was the
-      mistake the measurement caught.</p>
+      <p>From <strong>29 November 2026</strong> every new M1/N1 type needs an Environmental
+      Vehicle Passport (Euro 7); the battery passport follows in February 2027, the full passport
+      in September 2032. Second-hand dealers are stage 3, inheriting passports rather than
+      adopting a new system.</p>
+      <h3 style="margin-top:4px">Lifestyle vehicles launch with cars and vans</h3>
+      <p>Boats, motorbikes, quads and e-bikes need no vehicle passport by law (an e-bike's
+      battery gets its own from Feb 2027, Reg 2023/1542 Art 77), so they buy on resale. A
+      verified history makes a vehicle easier to sell (randomised auction trial, Tadelis and
+      Zettelmeyer, <em>AER</em> 2015).</p>
+      <h3 style="margin-top:4px">Cost, measured on chain</h3>
+      <p>Registering a vehicle cost <strong>0.60 DUST</strong> and each later write about
+      <strong>0.32</strong> (Preview, 9 Nov, with events). NIGHT is never spent: the wallet
+      projects about 61 DUST an hour from 5,000 held NIGHT. A fee is cost times the price of the moment, so
+      mainnet's will differ. The larger cost is proving, paid once at issue (slide 10).</p>
     </div>
   </div>
-  <div class="slide-foot"><span class="brandline"><i class="footmark" aria-hidden="true"></i><span class="wm"><span class="wm-vin">VIN</span>PASSPORT</span></span><span>10</span></div>
+  <div class="slide-foot"><img src="brand/vinpassport-logo-horizontal-primary.svg" alt="VINPassport" width="1204" height="248"><span>12</span></div>
 </section>
 
-<!-- ============================================================ 11 roadmap -->
-<section class="slide">
+<!-- ============================================================ 13 roadmap -->
+<section class="slide dense">
   <div class="eyebrow">Roadmap</div>
   <h2>Each wave states its delta in advance, and reports it after</h2>
   <table style="flex:1">
-    <tr><th style="width:130px">Wave 2<br><span style="font-weight:400;opacity:.65">shipped</span></th>
-        <td><strong>A second contract that closes the limits we named, live on preprod</strong>: register and initialise gated on a registrar identity derived in-circuit, an allowlist pinned at deploy, field commitments bound in-circuit to the content root, a third integrity rule with the field registry widened from 5 to 68, a circuit that compares two of a vehicle's own hidden fields and publishes neither, and every guard mutation-checked, 32 of 32. Deployed 16 Oct 2026, block 2999411. Cost measured with real proofs: <strong>0.81 DUST</strong> at the protocol reference price to register a vehicle and initialise the five fields the demo writes, and <strong>27.6s</strong> in wasm to issue a claim. A vehicle carrying the whole 68-field registry is a different and much larger number, and bringing it down is still open</td></tr>
-    <tr><th>Wave 2<br><span style="font-weight:400;opacity:.65">deferred</span></th>
-        <td><strong>The NIGHTGATE integration</strong>: tiered disclosure, disclosure grants, live browser reads, the CAP service layer. Named for Wave 2 and held back on purpose, because a passport that cannot tell one writer from another is not worth adding tiers to. <em>documentComparison</em> waits on more than one anchored root per vehicle</td></tr>
-    <tr><th>Wave 3<br><span style="font-weight:400;opacity:.65">in progress</span></th>
-        <td><strong>Tiered disclosure, the Wave 2 deferral, first</strong>: a tier on every field, and bundles that a buyer, a dealer and an authority each check against the ledger, live at passport.vin/disclose on demo data. Disclosure grants are live on preprod since 1 Nov, read back from the public indexer, and passport.vin/disclose checks a buyer's and a dealer's bundle against that real chain data. One real pilot conversation with a manufacturer</td></tr>
+    <tr><th style="width:150px">Wave 3<br><span style="font-weight:400;opacity:.7">planned, shipped</span></th>
+        <td><strong>Tiered disclosure, the Wave 2 deferral</strong>: a tier on all 68 fields, bundles a buyer, a dealer and an authority each check against the ledger, live at passport.vin/disclose/; disclosure grants in the contract, granted on preprod on 1 Nov and read back from the indexer</td></tr>
+    <tr><th>Wave 3<br><span style="font-weight:400;opacity:.7">beyond the plan</span></th>
+        <td><strong>Ledger 9</strong>, live on Preview since 9 Nov with events, two-registrar governance and upgrades by a 2-of-3 committee; a visitor's own wallet; CI that reproduces the verifier keys; a new site with typed passport codes, every date cited and lifestyle vehicles</td></tr>
+    <tr><th>Wave 3<br><span style="font-weight:400;opacity:.7">not done</span></th>
+        <td><strong>A real pilot conversation with a manufacturer</strong>: the outreach is written and passport.vin/manufacturers/ takes pilot requests, but no pilot partner has signed. <strong>Hosted live runs</strong>: the host was cancelled on 10 Oct, so the site shows recorded runs and every chain write runs from a clone</td></tr>
+    <tr><th>Next</th>
+        <td><strong>A pilot</strong>, and a randomised dealer trial already designed: the badge shown on half the stock by coin flip. <strong>Mainnet</strong>: the contract already builds for ledger 9, which mainnet runs; who holds the mainnet maintenance keys is the open question. Handing a removed registrar's vehicles to a successor</td></tr>
     <tr><th>Horizon</th>
-        <td><strong>Closing the trust gap</strong>: a proof inherits the trust of whoever wrote the value, so the open problem is provenance of the writer, not tamper resistance. Authoritative sources - registries, testers, insurers - writing under an accountable identity, and marking that lets a verifier tell an authoritative write from a self-declared one. That distinction becomes the product</td></tr>
+        <td><strong>Closing the trust gap</strong>: a proof inherits the trust of whoever wrote the value, so the open problem is provenance of the writer, not tamper resistance. Authoritative sources (registries, testers, insurers) writing under an accountable identity, and marking that lets a verifier tell an authoritative write from a self-declared one. That distinction becomes the product</td></tr>
   </table>
-  <div class="slide-foot"><span class="brandline"><i class="footmark" aria-hidden="true"></i><span class="wm"><span class="wm-vin">VIN</span>PASSPORT</span></span><span>11</span></div>
+  <div class="slide-foot"><img src="brand/vinpassport-logo-horizontal-primary.svg" alt="VINPassport" width="1204" height="248"><span>13</span></div>
 </section>
 
-<!-- ============================================================ 12 close -->
+<!-- ============================================================ 14 close -->
 <section class="slide">
   <div style="flex:1"></div>
   <div class="eyebrow">Try it in ninety seconds</div>
   <h2>Scan a car. Get a verdict. Trust the math, not the seller.</h2>
-  <div class="term" style="max-width:640px">
+  <p class="lede">Type <span class="url" style="font-size:20px">VP-74EE-0J74</span> at
+  <span class="url" style="font-size:20px">passport.vin/scan/</span>, or check three audiences at
+  <span class="url" style="font-size:20px">passport.vin/disclose/</span>.</p>
+  <div class="term" style="max-width:680px">
     <div>git clone https://github.com/VINPassport/VINPassport</div>
-    <div>npm install &amp;&amp; npm test&nbsp;&nbsp;<span class="dim"># 128 + 155 + 24, all green</span></div>
+    <div>npm install &amp;&amp; npm test&nbsp;&nbsp;<span class="dim"># 176 + 386 + 24, all green</span></div>
     <div>npm run app&nbsp;&nbsp;<span class="dim"># the whole product on localhost</span></div>
   </div>
-  <p style="margin-top:8px">
-    <span class="url">passport.vin</span>: live demo · <span class="url">deploy/preprod.json</span>: the preprod contract ·
+  <p style="margin:6px 0 0">
+    <span class="url">deploy/preview.json</span>: the live contract ·
     <span class="url">docs/DEMO.md</span>: the walkthrough ·
     Apache-2.0, fully open source
   </p>
   <div style="flex:1"></div>
-  <div class="slide-foot"><span class="brandline"><i class="footmark" aria-hidden="true"></i><span class="wm"><span class="wm-vin">VIN</span>PASSPORT</span></span><span>12</span></div>
+  <div class="slide-foot"><img src="brand/vinpassport-logo-horizontal-primary.svg" alt="VINPassport" width="1204" height="248"><span>14</span></div>
 </section>
-
-</div></div>
 
 </div></div>
 

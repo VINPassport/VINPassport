@@ -275,7 +275,7 @@ textarea.input{padding:10px 12px;min-height:110px;resize:vertical}
 .vp-pick[aria-pressed="true"]{border-color:var(--passport-blue);background:var(--passport-blue);color:var(--on-action)}
 .vp-addr{margin:0;font-family:var(--font-mono);font-size:14px;line-height:22px;overflow-wrap:anywhere;color:var(--ink)}
 .vp-code{font-family:var(--font-mono);font-size:14px}
-.vp-photo-slot{aspect-ratio:4/5;border-radius:var(--radius-doc);background:var(--paper-deep);border:1px dashed var(--rule-strong);display:grid;place-items:center;color:var(--ink-muted);font-size:14px}
+.vp-photo{display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;border-radius:var(--radius-doc);background:var(--paper-deep)}
 /* ---- Scan a vehicle and the verdict (Phase 4) ---- */
 .scan-card{gap:12px;max-width:520px}
 .scan-row{display:flex;gap:8px;flex-wrap:wrap}
