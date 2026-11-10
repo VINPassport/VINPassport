@@ -254,7 +254,7 @@ export function renderJob(host, job, base) {
     const outOfDust = job.status === 'failed' && /out of dust|balance dust|insufficient funds/i.test(job.error ?? '');
     const sub = job.status === 'failed'
         ? (outOfDust
-            ? `${esc(job.error ?? '')} Dust pays the fees here and regenerates from NIGHT registered for it, so this is a wallet top-up rather than something wrong with the passport or the circuits.`
+            ? `${esc(job.error ?? '')} Fees here are paid in DUST, which regenerates from NIGHT we hold, so our signing service needs a top-up; nothing is wrong with the passport or the circuits.`
             : esc(job.error ?? 'the run did not finish'))
         : done
             ? `Every transaction below is on the public ${net.name} chain.`
@@ -333,7 +333,7 @@ function paintBusy(host, lastJob, base) {
 export function capacityLine(status) {
     if (!status?.enabled) return 'Chain runs are not enabled on this server.';
     if (status.error) return `Runs on ${status.network ? networkOf(status.network).name : 'the chain'} are unavailable: ${status.error}`;
-    if (!status.ready) return 'The signing wallet is catching up to the chain tip. Runs start once it is level.';
+    if (!status.ready) return 'Our signing service is catching up to the chain tip. Runs start once it is level.';
     const reset = status.resetsAtUtc ? new Date(status.resetsAtUtc) : null;
     const when = reset ? `${String(reset.getUTCHours()).padStart(2, '0')}:00 UTC` : '00:00 UTC';
     const line = `${status.remaining} of ${status.capacity} runs left today. The count resets at ${when}.`;
@@ -341,6 +341,6 @@ export function capacityLine(status) {
     // fees, and a run that starts without enough of it writes half a passport
     // before it finds out.
     const dust = status.funds?.dust;
-    if (dust != null && BigInt(dust) === 0n) return `The signing wallet is out of dust, so a run cannot pay a fee. ${line}`;
+    if (dust != null && BigInt(dust) === 0n) return `Our signing service is out of DUST, so a run cannot pay a fee. ${line}`;
     return line;
 }

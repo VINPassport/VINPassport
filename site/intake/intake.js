@@ -477,13 +477,13 @@ ppBox.addEventListener('change', () => {
     if (ppLabel) ppLabel.textContent = `Submit to ${chainNet.name}`;
     ppReady = Boolean(status?.enabled && status?.ready && !status?.error && status.remaining > 0);
     if (ppReady) {
-        ppNote.textContent = `${status.remaining} of ${status.capacity} runs on ${chainNet.name} left today. Switch this on and the fields below become real transactions on the deployed contract, funded from our wallet, ending in a receipt only you can open. The VIN is replaced with a generated demo one, so a real vehicle is never claimed on a test chain.`;
+        ppNote.textContent = `${status.remaining} of ${status.capacity} runs on ${chainNet.name} left today. Switch this on and the fields below become real transactions on the deployed contract, with every fee paid by us, ending in a receipt only you can open. The VIN is replaced with a generated demo one, so a real vehicle is never claimed on a test chain.`;
     } else if (status?.enabled && !status?.ready) {
-        ppNote.textContent = 'The signing wallet is catching up to the chain tip. Until it is level, the circuits below still run here.';
+        ppNote.textContent = 'Our signing service is catching up to the chain tip. Until it is level, the circuits below still run here.';
     } else if (status?.enabled && status?.remaining <= 0) {
         ppNote.textContent = "Today's chain runs are used; the count resets at 00:00 UTC. The circuits below still run here.";
     } else if (status === 'unreachable') {
-        ppNote.textContent = 'The chain engine is not answering right now: it blocks while it restores its wallet, and again while it generates a proof for someone else. Reload shortly to submit to the chain. The circuits below run here either way.';
+        ppNote.textContent = 'The chain engine is not answering right now: it blocks while our signing service starts up, and again while it generates a proof for someone else. Reload shortly to submit to the chain. The circuits below run here either way.';
     } else {
         ppNote.textContent = 'Chain submission is not available from this server. The circuits below still run here, against an in-process ledger.';
     }

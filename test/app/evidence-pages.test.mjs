@@ -86,6 +86,28 @@ test('no page asks a visitor for a wallet', () => {
     for (const file of files) {
         assert.doesNotMatch(read(file), /window\.midnight|dapp-connector|DApp Connector|wallet-engine|listWallets/i, `${file} reaches for a wallet`);
     }
+
+    // Nor does any text a visitor reads mention one, except to say none is needed. The
+    // backend that pays the fees is "our signing service" on a page; code comments may
+    // still describe it as the wallet it is.
+    const SAYS_NONE = /\bno wallet\b|\bnever asks for a wallet\b/gi;
+    const said = [];
+    for (const file of files) {
+        const src = read(file);
+        if (file.endsWith('.html')) {
+            const text = src.replace(/<!--[\s\S]*?-->/g, ' ').replace(/<(script|style)\b[\s\S]*?<\/\1>/gi, ' ')
+                .replace(/<[^>]+>/g, ' ').replace(SAYS_NONE, ' ');
+            if (/wallet/i.test(text)) said.push(file);
+        } else {
+            for (const [i, line] of src.split(/\r?\n/).entries()) {
+                if (/^\s*(\/\/|\/?\*)/.test(line)) continue;
+                for (const [, , body] of line.matchAll(/(['"`])((?:\\.|(?!\1).)*)\1/g)) {
+                    if (/wallet/i.test(body.replace(SAYS_NONE, ' '))) said.push(`${file}:${i + 1}`);
+                }
+            }
+        }
+    }
+    assert.deepEqual(said, [], 'a page tells a visitor about a wallet');
 });
 
 test('the ledger block lists each of a vehicle\'s claims once, including ones no question covers', () => {

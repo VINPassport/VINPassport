@@ -70,7 +70,7 @@ function paintStatus(status) {
     if (status?.unreachable) {
         capDot.dataset.state = 'wait';
         capState.textContent = 'Chain engine busy';
-        capLine.textContent = 'Not answering right now: it blocks while it restores its wallet, and again while it generates a proof. This page enables itself once it replies.';
+        capLine.textContent = 'Not answering right now: it blocks while our signing service starts up, and again while it generates a proof. This page enables itself once it replies.';
         if (!busy) {
             disable('The chain engine is not answering yet.');
             goNote.textContent = 'checking again every 20 seconds';
@@ -94,8 +94,8 @@ function paintStatus(status) {
     capState.textContent = !status?.enabled ? 'Chain runs are off here'
         : status.error ? 'Chain runs unavailable'
             : idle ? 'Ready to run'
-                : !status.ready ? 'Wallet syncing'
-                : broke ? 'Out of dust'
+                : !status.ready ? 'Catching up to the chain'
+                : broke ? 'Out of DUST'
                     : spent ? "Today's runs are used"
                         : `Connected to ${net.name}`;
     // The query and the explorer sentence name THIS contract, so "check it
@@ -107,20 +107,20 @@ function paintStatus(status) {
         disable(!status?.enabled
             ? 'This server does not run chain demos.'
             : status.error ? status.error
-                : 'The signing wallet is still catching up to the chain tip.');
+                : 'Our signing service is still catching up to the chain tip.');
         goNote.textContent = status?.enabled && !status.ready
-            ? 'the wallet is catching up; this page will enable itself'
+            ? 'our signing service is catching up; this page will enable itself'
             : 'the manual console still runs the circuits locally';
     } else if (broke) {
-        disable('The signing wallet has no dust, so a run cannot pay its first fee.');
-        goNote.textContent = 'the wallet needs dust before a run can start';
+        disable('Our signing service has no DUST, so a run cannot pay its first fee.');
+        goNote.textContent = 'our signing service needs DUST before a run can start';
     } else if (spent) {
         disable('Today\'s runs are used. The counter resets at 00:00 UTC.');
         goNote.textContent = 'the counter resets at 00:00 UTC';
     } else {
         enable();
         goNote.textContent = idle
-            ? `${status.remaining} left today · the wallet starts with your run, so step one takes a few minutes`
+            ? `${status.remaining} left today · our signing service starts with your run, so step one takes a few minutes`
             : `${status.remaining} left today · a run writes permanent public state`;
     }
 }
@@ -310,8 +310,8 @@ async function showRecordedRun() {
                 + `already happened on the deployed ${net.name} contract: real proofs, real fees, and `
                 + 'blocks you can look up yourself. Clone the repository and start it with '
                 + 'npm run app to drive the same compiled circuits on your own machine. '
-                + `Putting a passport on ${net.name} as well needs a funded wallet, which is `
-                + 'the part a static site cannot hold.';
+                + `Putting a passport on ${net.name} as well needs our signing service, which `
+                + 'a static site cannot host.';
         }
         return;
     }
