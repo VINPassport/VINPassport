@@ -235,7 +235,7 @@ export const vinHash = (vin) => fieldKey(vin);
 /**
  * The full 32-slot panel, exactly as docs/FIELDS.md lays it out. Slots 0-4
  * are the live rule-bearing fields; 5-16 numeric declarations; 22-29 strings;
- * 17-21 and 30-31 reserved. The regulation-facing majority of the passport -
+ * 17-21 and 31 reserved (30 holds passportOrigin). The regulation-facing majority of the passport -
  * vehicle category, fuel type (EV / hybrid / diesel / petrol), emissions
  * class, the battery passport link, the Art 29 recycled-content declarations
  * - lives HERE, anchored under the content root, not in the live fields.

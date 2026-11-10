@@ -199,3 +199,29 @@ test('a sentence written in two tenses switches with the band, on 29 November 20
     const css = read('assets/vp.css');
     for (const rule of ['.vp-when-after{display:none}', '.is-after>.vp-when-before{display:none}', '.is-after>.vp-when-after{display:inline}']) assert.ok(css.includes(rule), rule);
 });
+
+test('the public site never asks itself for an API it cannot have', async () => {
+    // GitHub Pages serves files only, so a probe of passport.vin/api/health can only 404, and
+    // each visitor's console would carry the error. Elsewhere (npm run app) the probe still runs.
+    const asked = [];
+    const resolveOn = async (hostname, n) => {
+        const saved = { location: globalThis.location, document: globalThis.document, fetch: globalThis.fetch };
+        Object.assign(globalThis, {
+            location: { hostname },
+            document: { querySelector: () => null },
+            fetch: async (url) => { asked.push(`${hostname} ${url}`); return { ok: false }; }
+        });
+        try {
+            const { resolveApiBase } = await import(`../../site/assets/sources.mjs?host=${n}`);
+            return await resolveApiBase();
+        } finally {
+            Object.assign(globalThis, saved);
+        }
+    };
+    assert.equal(await resolveOn('passport.vin', 1), null);
+    assert.equal(await resolveOn('www.passport.vin', 2), null);
+    assert.equal(await resolveOn('vinpassport.github.io', 3), null);
+    assert.deepEqual(asked, [], 'the static site probed itself');
+    assert.equal(await resolveOn('localhost', 4), null);
+    assert.deepEqual(asked, ['localhost /api/health'], 'the app server is no longer found where it runs');
+});

@@ -236,7 +236,7 @@ function verdictMarkup({ key, view, vinfo, state, brand, via, checkedAt, others 
     return `
 ${b ? `<div class="v-oem"><div class="wrap v-oem__bar"><span class="v-oem__name">${esc(b.band)}</span><span>Vehicle passport</span></div></div>
 <div class="wrap"><p class="small v-oem__note">Sample branding on a demo vehicle. ${esc(b.name)} is a made-up manufacturer: on a manufacturer's own verdict, its name and colour sit here and everything below stays the same.</p></div>` : ''}
-<section aria-labelledby="v-h1">
+<section class="v-top" aria-labelledby="v-h1">
   <div class="wrap v-head">
     <div class="stack" style="gap: 6px;">
       <nav aria-label="Breadcrumb" class="small v-crumb"><a class="link" href="../scan/">Scan a vehicle</a> › ${sample ? 'Sample verdict' : 'Verdict'}</nav>

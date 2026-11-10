@@ -77,10 +77,20 @@ const probe = async (base) => {
     }
 };
 
+/**
+ * The public site is static: GitHub Pages serves files and nothing else, so
+ * asking passport.vin for /api/health can only 404, and every visitor's
+ * console would show that as an error. The app server runs on the machine
+ * that started it (`npm run app`) or at a host the page names, so only those
+ * are asked.
+ */
+const STATIC_HOST = /(^|\.)passport\.vin$|\.github\.io$/;
+
 let apiBasePromise;
 export function resolveApiBase() {
     apiBasePromise ??= (async () => {
-        for (const base of ['', namedApiBase()]) {
+        const self = STATIC_HOST.test(globalThis.location?.hostname ?? '') ? null : '';
+        for (const base of [self, namedApiBase()]) {
             if (base === null) continue;
             if (await probe(base)) return base;
         }

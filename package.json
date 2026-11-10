@@ -75,6 +75,8 @@
     "record:run": "node scripts/record-run.mjs",
     "check:deck": "node scripts/check-deck.mjs",
     "check:pages": "node scripts/check-pages.mjs",
+    "check:facts": "node --test test/app/site-facts.test.mjs",
+    "check:a11y": "node scripts/check-a11y.mjs",
     "check:browser": "node scripts/check-browser-circuits.mjs",
     "check:upstream": "node scripts/check-upstream.mjs",
     "build:wallet": "node scripts/build-wallet-engine.mjs",
