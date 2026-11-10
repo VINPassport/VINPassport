@@ -176,3 +176,52 @@ textarea.input{padding:10px 12px;min-height:110px;resize:vertical}
 .ticks li{display:flex;gap:12px;align-items:flex-start}
 .ticks svg{flex:none;margin-top:4px}
 .stat{font-family:var(--font-display);font-weight:600;font-size:44px;line-height:1}
+
+/* ---- Site chrome: header, phone menu and footer (from the handoff's Header.dc.html and
+   Footer.dc.html; markup written by scripts/build-nav.mjs, behaviour in assets/chrome.mjs).
+   The mockup renders desktop or phone from a prop; a real page carries both and switches at
+   900 px (spec section 5). The logo is the outlined horizontal file, sized to the mockup's width. */
+.vp-header{position:relative;z-index:20;background:var(--paper);color:var(--ink);border-bottom:1px solid var(--rule)}
+.vp-band{margin:0}
+.vp-band__short,.vp-band__after{display:none}
+.vp-band.is-after .vp-band__before{display:none}
+.vp-band.is-after .vp-band__after{display:inline}
+.vp-bar{max-width:1200px;margin:0 auto;padding:16px 24px;display:flex;align-items:center;gap:32px}
+.vp-bar .vp-logo{margin-right:auto}
+.vp-bar .vp-logo img{width:auto;height:45px}
+.vp-nav{display:flex;gap:28px}
+.vp-nav a{color:var(--ink);text-decoration:none;font-weight:500;font-size:15px;line-height:26px;padding:6px 0;border-bottom:2px solid transparent}
+.vp-nav a:hover{color:var(--passport-blue)}
+.vp-nav a[aria-current="page"]{border-bottom-color:var(--passport-blue)}
+.vp-actions{display:flex;gap:8px;align-items:center}
+.vp-actions .vp-btn--ghost svg{flex:none}
+.vp-icon-btn{display:none;width:44px;height:44px;place-items:center;padding:0;background:transparent;border:0;color:var(--ink);cursor:pointer}
+.vp-icon-btn--scan{color:var(--passport-blue)}
+.vp-burger__close{display:none}
+.vp-menu{display:none;flex-direction:column;border-top:1px solid var(--rule);padding:4px 16px 24px;background:var(--paper)}
+.vp-menu>a:not(.vp-btn){display:block;padding:14px 0;border-bottom:1px solid var(--rule);text-decoration:none;font-weight:600;font-size:18px;line-height:26px;color:var(--ink)}
+.vp-menu>a[aria-current="page"]{color:var(--passport-blue)}
+.vp-menu .vp-btn{justify-content:center;margin-top:8px}
+.vp-menu .vp-btn--primary{margin-top:20px}
+@media (max-width:899px){
+  .vp-band__long{display:none}
+  .vp-band__short{display:inline}
+  .vp-bar{padding:8px 4px 8px 16px;gap:2px}
+  .vp-bar .vp-logo img{height:36px}
+  .vp-nav,.vp-actions{display:none}
+  .vp-icon-btn{display:grid}
+  .vp-header.is-open .vp-menu{display:flex}
+  .vp-header.is-open .vp-burger__open{display:none}
+  .vp-header.is-open .vp-burger__close{display:block}
+}
+.vp-footer{background:var(--paper-deep);color:var(--ink);border-top:1px solid var(--rule)}
+.vp-footer__inner{padding-top:56px;padding-bottom:24px;display:flex;flex-direction:column;gap:40px}
+.vp-footer__cols{display:flex;flex-wrap:wrap;gap:32px 56px}
+.vp-footer__brand{flex:1 1 260px;display:flex;flex-direction:column;gap:12px}
+.vp-footer__brand .vp-logo img{width:auto;height:40px}
+.vp-footer__brand .small{max-width:300px}
+.vp-footer__col{flex:1 1 140px;display:flex;flex-direction:column;gap:8px;font-size:15px}
+.vp-footer__col a{color:var(--ink)}
+.vp-footer__col a:hover{color:var(--passport-blue)}
+.vp-footer__base{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;font-size:13px;line-height:20px;color:var(--ink-muted)}
+.vp-footer__base a{color:var(--ink-muted)}

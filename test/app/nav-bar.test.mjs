@@ -92,7 +92,8 @@ test('every bar is the shared one, character for character', async () => {
     // reader moving between them saw the site change shape. They are now
     // generated from one definition, and this is what keeps them that way.
     const { navMarkup, PAGES: NAV_PAGES } = await import('../../scripts/build-nav.mjs');
-    for (const page of NAV_PAGES) {
+    // Pages on the redesign carry the new header instead (test/app/site-chrome.test.mjs).
+    for (const page of NAV_PAGES.filter((p) => p.design !== 'vp')) {
         const html = readFileSync(join(SITE, page.file), 'utf8').replace(/\r\n/g, '\n');
         const a = html.indexOf('<nav');
         const b = html.indexOf('</nav>', a);

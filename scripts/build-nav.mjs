@@ -20,6 +20,14 @@
  *     sections: Watch, How it works and Honest limits were all dropped,
  *     because a reader reaches each of them by scrolling the home page.
  *
+ * THE 2026 REDESIGN. A page marked `design: 'vp'` in PAGES gets the new
+ * header (notice band, bar, phone menu) and footer instead of the bar above,
+ * stamped between `<header class="vp-header"` and `</header>` and between
+ * `<footer class="vp-footer"` and `</footer>`. Pages move over as they are
+ * ported; the old bar and its markers go once the last one has. In the new
+ * header the current page stays a link and carries `aria-current="page"`,
+ * as the design does.
+ *
  * Line endings are preserved per file: the site's pages are CRLF, while
  * /guide/ is generated with LF, and rewriting one in the other's style
  * produces a diff of the whole file and a mixed-ending repository.
@@ -60,8 +68,121 @@ export const PAGES = [
     { file: 'proofs/index.html', depth: 1, current: null },
     { file: 'manufacturers/index.html', depth: 1, current: 'manufacturers' },
     { file: 'disclose/index.html', depth: 1, current: null },
-    { file: 'wallet/index.html', depth: 1, current: null }
+    { file: 'wallet/index.html', depth: 1, current: null },
+    // The 2026 redesign. A page joins the new design when it is ported: `design: 'vp'` stamps
+    // the new header and footer instead of the old bar. The old bar goes once every page has
+    // moved. 404.html is served from any depth, so its links are root-absolute.
+    { file: 'privacy/index.html', depth: 1, current: null, design: 'vp' },
+    { file: '404.html', depth: 0, current: null, design: 'vp', absolute: true }
 ];
+
+// ---- The redesign's header and footer (design handoff, Header.dc.html and Footer.dc.html) ----
+
+/** Header items, in order. `key` is what a page names as `current`. */
+export const VP_ITEMS = [
+    { key: 'how', label: 'How it works', href: 'how-it-works/' },
+    { key: 'compliance', label: 'Compliance', href: 'compliance/' },
+    { key: 'manufacturers', label: 'Manufacturers', href: 'manufacturers/' },
+    { key: 'lifestyle', label: 'Lifestyle', href: 'lifestyle/' },
+    { key: 'developers', label: 'Developers', href: 'developers/' }
+];
+
+/**
+ * The notice band's two tenses. Euro 7 applies to new M1 and N1 types from 29 November 2026
+ * (Reg (EU) 2024/1257, Art. 21); assets/chrome.mjs shows the second text from that date.
+ */
+export const BAND = {
+    switchAt: '2026-11-29T00:00:00+01:00',
+    before: { long: 'Euro 7 applies to new vehicle types from 29 Nov 2026', short: 'Euro 7 from 29 Nov 2026' },
+    after: { long: 'Euro 7 has applied to new vehicle types since 29 Nov 2026', short: 'Euro 7 since 29 Nov 2026' }
+};
+
+const QR_ICON = (size) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" `
+    + 'stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"></rect>'
+    + '<rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect>'
+    + '<path d="M14 14h3v3M21 14v7h-7"></path></svg>';
+const NEW_TAB = '<span class="vp-sr"> (opens in a new tab)</span>';
+const GITHUB = 'https://github.com/VINPassport/VINPassport';
+
+const rootOf = (page) => (page.absolute ? '/' : page.depth ? '../'.repeat(page.depth) : '');
+const homeOf = (page) => (page.absolute ? '/' : page.depth ? '../'.repeat(page.depth) : './');
+// The size lives in vp.css (45 px on the desktop bar, 36 px on the phone bar, 40 px in the
+// footer), never inline: an inline height beats the phone media query. width and height here
+// only give the browser the aspect ratio, so the bar does not shift while the logo loads.
+const logo = (page) => `<a class="vp-logo" href="${homeOf(page)}" aria-label="VINPassport home">`
+    + `<img src="${rootOf(page)}assets/brand/vinpassport-logo-horizontal-primary.svg" alt="VINPassport" width="1204" height="248"></a>`;
+
+export function headerMarkup(page) {
+    const r = rootOf(page);
+    const here = (key) => (page.current === key ? ' aria-current="page"' : '');
+    const desk = VP_ITEMS.map((i) => `<a href="${r}${i.href}"${here(i.key)}>${i.label}</a>`).join('');
+    const phone = [
+        `<a href="${homeOf(page)}"${page.current === 'home' ? ' aria-current="page"' : ''}>Home</a>`,
+        ...VP_ITEMS.map((i) => `<a href="${r}${i.href}"${here(i.key)}>${i.label}</a>`),
+        `<a href="${r}about/"${here('about')}>About and contact</a>`
+    ].join('\n        ');
+    const band = (t) => `<span class="vp-band__long">${t.long}</span><span class="vp-band__short">${t.short}</span>`;
+    return [
+        '<header class="vp-header">',
+        '  <a class="vp-skip" href="#main">Skip to main content</a>',
+        `  <div class="vp-band" data-switch-at="${BAND.switchAt}"><span class="vp-band__before">${band(BAND.before)}</span>`
+            + `<span class="vp-band__after">${band(BAND.after)}</span> · <a href="${r}compliance/">What it means</a></div>`,
+        '  <nav aria-label="Main">',
+        '    <div class="vp-bar">',
+        `      ${logo(page)}`,
+        `      <div class="vp-nav">${desk}</div>`,
+        `      <div class="vp-actions"><a class="vp-btn vp-btn--ghost" href="${r}scan/">${QR_ICON(18)}Scan a vehicle</a>`
+            + `<a class="vp-btn vp-btn--primary" href="${r}manufacturers/#pilot">Book a pilot call</a></div>`,
+        `      <a class="vp-icon-btn vp-icon-btn--scan" href="${r}scan/" aria-label="Scan a vehicle">${QR_ICON(22)}</a>`,
+        '      <button class="vp-icon-btn vp-burger" type="button" aria-expanded="false" aria-controls="vp-menu" aria-label="Open menu">'
+            + '<svg class="vp-burger__open" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>'
+            + '<svg class="vp-burger__close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>',
+        '    </div>',
+        '    <div class="vp-menu" id="vp-menu">',
+        `        ${phone}`,
+        `        <a class="vp-btn vp-btn--primary" href="${r}manufacturers/#pilot">Book a pilot call</a>`,
+        `        <a class="vp-btn vp-btn--secondary" href="${r}scan/">Scan a vehicle</a>`,
+        '    </div>',
+        '  </nav>',
+        '</header>'
+    ].join('\n');
+}
+
+/** Footer columns. Anchors name the section on each page; until a page exists they land on its top. */
+const FOOTER = [
+    ['Product', [['How it works', 'how-it-works/'], ['Who sees what', 'how-it-works/#who-sees-what'], ['Trust and limits', 'how-it-works/#trust'], ['Scan a vehicle', 'scan/'], ['Boats, quads and motorhomes', 'lifestyle/']]],
+    ['Compliance', [['Euro 7 passport', 'compliance/#euro-7'], ['Circularity 2032', 'compliance/#circularity'], ['Standards', 'compliance/#standards']]],
+    ['Manufacturers', [['Pilot programme', 'manufacturers/#pilot'], ['Security and data', 'manufacturers/#security'], ['Your brand on the verdict', 'manufacturers/#your-brand']]],
+    ['Developers', [['Contract and docs', 'developers/'], ['GitHub', GITHUB], ['Try it live', 'developers/#try'], ['Pitch deck', 'deck/'], ['About and contact', 'about/']]]
+];
+
+export function footerMarkup(page) {
+    const r = rootOf(page);
+    const link = ([label, href]) => (href.startsWith('https://')
+        ? `<a href="${href}" target="_blank" rel="noopener">${label}${NEW_TAB}</a>`
+        : `<a href="${r}${href}">${label}</a>`);
+    const cols = FOOTER.map(([title, links]) => `      <div class="vp-footer__col"><div class="vp-label">${title}</div>${links.map(link).join('')}</div>`);
+    return [
+        '<footer class="vp-footer">',
+        '  <div class="wrap vp-footer__inner">',
+        '    <div class="vp-footer__cols">',
+        `      <div class="vp-footer__brand">${logo(page)}<p class="small">Vehicle passports issued at the factory and trusted for life. Built on Midnight.</p></div>`,
+        ...cols,
+        '    </div>',
+        `    <div class="vp-footer__base"><span>Apache-2.0 · Euro 7 · Reg. (EU) 2026/1738 · Built on Midnight</span><span><a href="${r}privacy/">Privacy</a> · © 2026 VINPassport</span></div>`,
+        '    <div class="vp-mrz" aria-hidden="true">P&lt;VINPASSPORT&lt;&lt;ISSUED&lt;AT&lt;SOURCE&lt;&lt;VERIFIED&lt;FOR&lt;LIFE&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</div>',
+        '  </div>',
+        '</footer>'
+    ].join('\n');
+}
+
+/** Replace the region from `<open` to `</close>` with `markup`; throws if the page lacks it. */
+function stamp(body, file, open, close, markup) {
+    const a = body.indexOf(open);
+    const b = body.indexOf(close, a);
+    if (a < 0 || b < 0) throw new Error(`${file} has no ${open}…${close}`);
+    return body.slice(0, a) + markup + body.slice(b + close.length);
+}
 
 const LINK = 'text-decoration:none;font-size:14px;color:#0E1726;white-space:nowrap';
 // The mark is a text decoration, not a border. A border and its padding made
@@ -128,17 +249,18 @@ for (const page of PAGES) {
     const crlf = raw.includes('\r\n');
     const body = crlf ? raw.replace(/\r\n/g, '\n') : raw;
 
-    const a = body.indexOf('<nav');
-    const b = body.indexOf('</nav>', a);
-    if (a < 0 || b < 0) throw new Error(`${page.file} has no <nav>`);
-    const before = body.slice(a, b + 6);
-    const after = navMarkup(page);
+    let next;
+    if (page.design === 'vp') {
+        next = stamp(body, page.file, '<header class="vp-header"', '</header>', headerMarkup(page));
+        next = stamp(next, page.file, '<footer class="vp-footer"', '</footer>', footerMarkup(page));
+    } else {
+        next = stamp(body, page.file, '<nav', '</nav>', navMarkup(page));
+    }
 
-    if (before === after) { console.log(`  same  ${page.file}`); continue; }
+    if (next === body) { console.log(`  same  ${page.file}`); continue; }
     drift += 1;
     if (CHECK) { console.log(`  DRIFT ${page.file}`); continue; }
 
-    const next = body.slice(0, a) + after + body.slice(b + 6);
     writeFileSync(path, crlf ? next.replace(/\n/g, '\r\n') : next);
     changed += 1;
     console.log(`  wrote ${page.file}${crlf ? '' : '  (LF)'}`);
