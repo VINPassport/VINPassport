@@ -42,8 +42,6 @@ jobs:
         run: npm run check:engine
       - name: Every page carries the same navigation bar
         run: npm run check:nav
-      - name: The wallet page's engine, circuit artifacts and config match the build and the deploy record
-        run: npm run check:wallet
       - name: Disclosure rule over the commits and lines this push adds
         env:
           BEFORE: ${{ github.event.before }}

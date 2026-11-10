@@ -390,7 +390,7 @@ a.vp-verdict:hover .vp-verdict__state{text-decoration:underline}
 .v-byline .v-shield{width:36px;height:36px}
 .v-byline p{margin:0}
 @media (max-width:599px){.v-proof{margin-left:0}.v-claim>summary{grid-template-columns:24px 1fr}.v-claim__state{grid-column:2}}
-/* ---- Evidence pages: demo, intake, disclose, proofs, wallet (Phase 5) ---- */
+/* ---- Evidence pages: demo, intake, disclose, proofs (Phase 5) ---- */
 .mono{font-family:var(--font-mono)}
 .ev-top{padding-top:clamp(32px,5vw,56px);padding-bottom:24px}
 .ev-head{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:24px 40px}
@@ -503,10 +503,6 @@ a.vp-verdict:hover .vp-verdict__state{text-decoration:underline}
 .ev-key{padding:8px 18px;border-bottom:1px solid var(--rule);font-family:var(--font-mono);font-size:12px;color:var(--ink-muted);overflow-wrap:anywhere}
 .ev-legend{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;font-size:13px}
 .ev-legend span{display:inline-flex;align-items:center;gap:8px}
-.ev-wallets{display:flex;flex-wrap:wrap;gap:10px}
-.ev-result{font-size:15px;line-height:26px;color:var(--ink)}
-.ev-result code{font-family:var(--font-mono);font-size:13px;overflow-wrap:anywhere}
-.ev-result small{color:var(--ink-muted)}
 .ev-qr{display:flex;flex-wrap:wrap;gap:18px 24px;align-items:flex-start;padding:18px;border-top:1px solid var(--rule)}
 .ev-qr__code{flex:none;background:var(--on-action);padding:8px;border:1px solid var(--rule);border-radius:var(--radius-sm);line-height:0}
 .ev-qr__text{flex:1 1 260px;min-width:0;display:flex;flex-direction:column;gap:10px}

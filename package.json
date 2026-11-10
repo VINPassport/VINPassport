@@ -16,8 +16,6 @@
   "dependencies": {
     "@midnight-ntwrk/compact-runtime": "0.21.0",
     "@midnight-ntwrk/midnight-js-contracts": "5.0.0",
-    "@midnight-ntwrk/midnight-js-dapp-connector-proof-provider": "5.0.0",
-    "@midnight-ntwrk/midnight-js-fetch-zk-config-provider": "5.0.0",
     "@midnight-ntwrk/midnight-js-http-client-proof-provider": "5.0.0",
     "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "5.0.0",
     "@midnight-ntwrk/midnight-js-level-private-state-provider": "5.0.0",
@@ -25,7 +23,6 @@
     "@midnight-ntwrk/midnight-js-protocol": "5.0.0",
     "@midnight-ntwrk/midnight-js-types": "5.0.0",
     "@midnight-ntwrk/midnight-js-utils": "5.0.0",
-    "@midnightntwrk/dapp-connector-api": "4.1.0",
     "@midnightntwrk/ledger-v9": "1.0.0",
     "@midnightntwrk/wallet-sdk-abstractions": "3.0.0",
     "@midnightntwrk/wallet-sdk-address-format": "4.0.0",
@@ -78,10 +75,7 @@
     "check:facts": "node --test test/app/site-facts.test.mjs",
     "check:a11y": "node scripts/check-a11y.mjs",
     "check:browser": "node scripts/check-browser-circuits.mjs",
-    "check:upstream": "node scripts/check-upstream.mjs",
-    "build:wallet": "node scripts/build-wallet-engine.mjs",
-    "check:wallet": "node scripts/build-wallet-engine.mjs --check",
-    "check:wallet-path": "node scripts/check-wallet-path.mjs"
+    "check:upstream": "node scripts/check-upstream.mjs"
   },
   "overrides": {
     "@midnightntwrk/ledger-v9": "1.0.0",

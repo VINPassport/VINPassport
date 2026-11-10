@@ -244,7 +244,6 @@ th { color: var(--ink); font-family: var(--font-label); font-weight: 600; font-s
       <ol start="6">
         <li><strong>One vehicle, three audiences</strong> at <span class="url">passport.vin/disclose/</span>: a buyer, a dealer and an authority each get a bounded view, checked in the browser (slide 8).</li>
         <li><strong>A new site.</strong> Type or scan a passport code and get four plain answers; a compliance page with every date cited; a pilot request for manufacturers; lifestyle vehicles launch with cars and vans.</li>
-        <li><strong>Your own wallet.</strong> <span class="url">passport.vin/wallet/</span> asks the live contract through 1AM or Lace; the visitor's wallet proves and pays, no server of ours.</li>
         <li><strong>Reproducible keys.</strong> CI recompiles with a hash-checked <code>compactc</code> 0.36.0 and fails on any changed byte, verifier keys included.</li>
       </ol>
       <p><strong>Answered from the Wave 2 review:</strong> the contract address is on the README's first screen; who pays and who answers for a value (slide 12); what dealers gain (slide 8); a pilot partner is still open (slide 13).</p>
@@ -275,7 +274,7 @@ th { color: var(--ink); font-family: var(--font-label); font-weight: 600; font-s
         <li><strong>Disclose</strong>: one vehicle, three audiences, every value checked in your browser</li>
         <li><strong>Intake console</strong>: fill the full regulation panel and run the compiled circuits in your browser; watch refusals render</li>
         <li><strong>Proof explorer</strong>: every claim, current or superseded</li>
-        <li><strong>Your wallet</strong>: ask the live contract through 1AM or Lace</li>
+        <li><strong>No wallet, anywhere</strong>: our NIGHT pays every fee in DUST, so no one who uses it sees crypto</li>
         <li>A 26-vehicle demo fleet: new (BEV to diesel) and retrofit</li>
       </ul>
       <p class="url" style="font-size:14px"><code>npm run app</code> runs all of it locally against the compiled circuits</p>
@@ -468,7 +467,6 @@ th { color: var(--ink); font-family: var(--font-label); font-weight: 600; font-s
         <li><strong>Events</strong> on ledger 9: one per write, served by the public indexer</li>
         <li><strong>Contract maintenance authority</strong>: a 2-of-3 committee mixing Schnorr and ECDSA keys, exercised on chain</li>
         <li><strong>DUST from held NIGHT</strong> pays every fee, so no customer holds crypto or pays a network fee</li>
-        <li><strong>DApp Connector API 4</strong>: a visitor's 1AM or Lace wallet proves and pays its own call</li>
         <li>Our tooling proves in-process with <code>zkir-v3</code>, no proof server, so <strong>no private input leaves</strong> the machine that holds it</li>
       </ul>
     </div>
@@ -530,7 +528,7 @@ th { color: var(--ink); font-family: var(--font-label); font-weight: 600; font-s
     <tr><th style="width:150px">Wave 3<br><span style="font-weight:400;opacity:.7">planned, shipped</span></th>
         <td><strong>Tiered disclosure, the Wave 2 deferral</strong>: a tier on all 68 fields, bundles a buyer, a dealer and an authority each check against the ledger, live at passport.vin/disclose/; disclosure grants in the contract, granted on preprod on 1 Nov and read back from the indexer</td></tr>
     <tr><th>Wave 3<br><span style="font-weight:400;opacity:.7">beyond the plan</span></th>
-        <td><strong>Ledger 9</strong>, live on Preview since 9 Nov with events, two-registrar governance and upgrades by a 2-of-3 committee; a visitor's own wallet; CI that reproduces the verifier keys; a new site with typed passport codes, every date cited and lifestyle vehicles</td></tr>
+        <td><strong>Ledger 9</strong>, live on Preview since 9 Nov with events, two-registrar governance and upgrades by a 2-of-3 committee; CI that reproduces the verifier keys; a new site with typed passport codes, every date cited and lifestyle vehicles</td></tr>
     <tr><th>Wave 3<br><span style="font-weight:400;opacity:.7">not done</span></th>
         <td><strong>A real pilot conversation with a manufacturer</strong>: the outreach is written and passport.vin/manufacturers/ takes pilot requests, but no pilot partner has signed. <strong>Hosted live runs</strong>: the host was cancelled on 10 Oct, so the site shows recorded runs and every chain write runs from a clone</td></tr>
     <tr><th>Next</th>

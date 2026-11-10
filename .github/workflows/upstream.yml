@@ -24,9 +24,3 @@ jobs:
           cache: npm
       - name: Pinned versions, compiler release and known issues
         run: node scripts/check-upstream.mjs --strict | tee -a "$GITHUB_STEP_SUMMARY"
-      # Read only, against the live Preview indexer, so weekly rather than on
-      # every push: the wallet page's path, with a stand-in wallet that proves
-      # and stops at balancing (scripts/check-wallet-path.mjs).
-      - run: npm ci
-      - name: The wallet page still builds a proven call against the live contract
-        run: npm run check:wallet-path

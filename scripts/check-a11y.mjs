@@ -104,7 +104,7 @@ await send('Emulation.setFocusEmulationEnabled', { enabled: true });
 await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.__widest=0;(function t(){const d=document.documentElement;if(d)window.__widest=Math.max(window.__widest,d.scrollWidth-d.clientWidth);if(performance.now()<5000)requestAnimationFrame(t)})();' });
 
 const width = (w) => send('Emulation.setDeviceMetricsOverride', { width: w, height: w < 900 ? 844 : 900, deviceScaleFactor: 1, mobile: w < 900 });
-const slow = (file) => /^(v|proofs|disclose|intake|demo|wallet)\//.test(file);
+const slow = (file) => /^(v|proofs|disclose|intake|demo)\//.test(file);
 const open = async (file, extra = 0) => {
     await send('Page.navigate', { url: `${base}/${file.replace(/index\.html$/, '')}` });
     await sleep((slow(file) ? 3000 : 1400) + extra);

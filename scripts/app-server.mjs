@@ -12,8 +12,8 @@
  *   /intake/     intake - fill in the fields, submit, watch the proofs land
  *   /proofs/     proof explorer - every claim on the ledger, with status
  *   /demo/       the guided run against the DEPLOYED contract (VINPASSPORT_NETWORK_ID, Preview by default)
- *   /verify/, /guide/, /regulation/ and /console/ forward to /v/, /how-it-works/,
- *                /compliance/ and /intake/, query kept (old links and printed QR codes)
+ *   /verify/, /guide/, /regulation/, /console/ and /wallet/ forward to /v/, /how-it-works/,
+ *                /compliance/, /intake/ and /developers/, query kept (old links and printed QR codes)
  *
  *   POST /api/intake   run an intake through the circuits (register, record,
  *                      prove). Refusals are results: a step the circuit

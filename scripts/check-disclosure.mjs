@@ -247,8 +247,8 @@ if (mode === '--msg') {
         if (/test[\\/]app[\\/]disclosure-guard\.test\.mjs$/.test(file)) continue;
         // Generated browser bundles (site/assets/<name>-engine/): minified
         // third-party code, not prose of ours. Their SOURCES are scanned like
-        // any other file, and CI's check:engine and check:wallet prove each
-        // bundle is byte for byte what those sources build, so nothing can
+        // any other file, and CI's check:engine proves the bundle is byte for
+        // byte what those sources build, so nothing can
         // enter here that did not pass as source. Agreed with the owner on
         // 9 Nov 2026, after Midnight.js's own error text tripped the scan.
         // Reported, never silent.
@@ -261,7 +261,7 @@ if (mode === '--msg') {
 reportWaived();
 if (generatedSkipped.size) {
     console.error(`  disclosure check: skipped ${generatedSkipped.size} generated bundle file(s) under site/assets/*-engine/ `
-        + '(sources scanned; drift checked by check:engine and check:wallet)');
+        + '(sources scanned; drift checked by check:engine)');
 }
 if (hits.length) { report(hits); process.exit(1); }
 console.log(`disclosure check: clean (${mode})`);

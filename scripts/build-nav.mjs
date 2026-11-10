@@ -30,8 +30,8 @@ const CHECK = process.argv.includes('--check');
 /**
  * Every page that carries the header and footer. `current` names the header
  * item a page IS (see VP_ITEMS, plus 'home', 'about' and 'scan'), so the
- * header marks it. The evidence pages (demo, intake, proofs, disclose,
- * wallet) and the verdict page have no item of their own: they are reached
+ * header marks it. The evidence pages (demo, intake, proofs, disclose)
+ * and the verdict page have no item of their own: they are reached
  * from the pages that cite them. 404.html is served from any depth, so its
  * links are root-absolute.
  */
@@ -42,7 +42,6 @@ export const PAGES = [
     { file: 'proofs/index.html', depth: 1, current: null, design: 'vp' },
     { file: 'manufacturers/index.html', depth: 1, current: 'manufacturers', design: 'vp' },
     { file: 'disclose/index.html', depth: 1, current: null, design: 'vp' },
-    { file: 'wallet/index.html', depth: 1, current: null, design: 'vp' },
     { file: 'privacy/index.html', depth: 1, current: null, design: 'vp' },
     { file: '404.html', depth: 0, current: null, design: 'vp', absolute: true },
     { file: 'compliance/index.html', depth: 1, current: 'compliance', design: 'vp' },
@@ -64,7 +63,8 @@ export const MOVED = [
     { from: 'verify/', to: 'v/' },
     { from: 'guide/', to: 'how-it-works/' },
     { from: 'regulation/', to: 'compliance/' },
-    { from: 'console/', to: 'intake/' }
+    { from: 'console/', to: 'intake/' },
+    { from: 'wallet/', to: 'developers/' }
 ];
 
 // ---- The redesign's header and footer (design handoff, Header.dc.html and Footer.dc.html) ----

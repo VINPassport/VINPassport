@@ -1,110 +1,28 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light">
-<meta name="theme-color" content="#F5F0E6">
-<title>Ask the live contract · VINPassport</title>
-<meta name="description" content="Your own Midnight wallet asks the deployed VINPassport contract whether a vehicle is registered. No server of ours, and the page never holds a key.">
-<link rel="canonical" href="https://passport.vin/wallet/">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="VINPassport">
-<meta property="og:title" content="Ask the live contract · VINPassport">
-<meta property="og:description" content="Your own wallet asks the deployed contract one question.">
-<meta property="og:url" content="https://passport.vin/wallet/">
-<meta property="og:image" content="https://passport.vin/og/og-developers.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="VINPassport for developers: 23 circuits, 176 contract tests, 43 of 43 guards mutation-checked">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://passport.vin/og/og-developers.png">
-<link rel="icon" href="../favicon.ico" sizes="16x16 32x32 48x48">
+<title>Moved · VINPassport</title>
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://passport.vin/developers/">
+<script data-moved-to="../developers/">
+/* Retired for good. VINPassport asks no one for a wallet (docs/DECISIONS.md D36), so the
+   wallet page is gone and its address forwards to Developers, which names the live contract. */
+(function () {
+  var to = '../developers/', sections = {};
+  var h = location.hash.slice(1);
+  location.replace(to + location.search + (h ? '#' + (sections[h] || h) : ''));
+})();
+</script>
+<meta http-equiv="refresh" content="0; url=../developers/">
+<link rel="icon" href="../favicon.ico" sizes="32x32">
 <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
 <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
-<link rel="manifest" href="../site.webmanifest">
-<link rel="preload" href="../assets/fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="../assets/fonts/ibm-plex-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../assets/vp.css">
-<script type="module" src="../assets/chrome.mjs"></script>
-<script type="module" src="wallet.js?v=2"></script>
 </head>
 <body>
-<header class="vp-header">
-  <a class="vp-skip" href="#main">Skip to main content</a>
-  <div class="vp-band" data-switch-at="2026-11-29T00:00:00+01:00"><span class="vp-band__before"><span class="vp-band__long">Euro 7 applies to new vehicle types from 29 Nov 2026</span><span class="vp-band__short">Euro 7 from 29 Nov 2026</span></span><span class="vp-band__after"><span class="vp-band__long">Euro 7 has applied to new vehicle types since 29 Nov 2026</span><span class="vp-band__short">Euro 7 since 29 Nov 2026</span></span> · <a href="../compliance/">What it means</a></div>
-  <nav aria-label="Main">
-    <div class="vp-bar">
-      <a class="vp-logo" href="../" aria-label="VINPassport home"><img src="../assets/brand/vinpassport-logo-horizontal-primary.svg" alt="VINPassport" width="1204" height="248"></a>
-      <div class="vp-nav"><a href="../how-it-works/">How it works</a><a href="../compliance/">Compliance</a><a href="../manufacturers/">Manufacturers</a><a href="../lifestyle/">Lifestyle</a><a href="../developers/">Developers</a></div>
-      <div class="vp-actions"><a class="vp-btn vp-btn--ghost" href="../scan/"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><path d="M14 14h3v3M21 14v7h-7"></path></svg>Scan a vehicle</a><a class="vp-btn vp-btn--primary" href="../manufacturers/#pilot">Book a pilot call</a></div>
-      <a class="vp-icon-btn vp-icon-btn--scan" href="../scan/" aria-label="Scan a vehicle"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><path d="M14 14h3v3M21 14v7h-7"></path></svg></a>
-      <button class="vp-icon-btn vp-burger" type="button" aria-expanded="false" aria-controls="vp-menu" aria-label="Open menu"><svg class="vp-burger__open" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg><svg class="vp-burger__close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
-    </div>
-    <div class="vp-menu" id="vp-menu">
-        <a href="../">Home</a>
-        <a href="../how-it-works/">How it works</a>
-        <a href="../compliance/">Compliance</a>
-        <a href="../manufacturers/">Manufacturers</a>
-        <a href="../lifestyle/">Lifestyle</a>
-        <a href="../developers/">Developers</a>
-        <a href="../about/">About and contact</a>
-        <a class="vp-btn vp-btn--primary" href="../manufacturers/#pilot">Book a pilot call</a>
-        <a class="vp-btn vp-btn--secondary" href="../scan/">Scan a vehicle</a>
-    </div>
-  </nav>
-</header>
 <main id="main">
-
-<section aria-labelledby="w-h1">
-  <div class="wrap ev-top stack-lg">
-    <nav aria-label="Breadcrumb" class="small v-crumb"><a class="link" href="../developers/#try">Try it live</a> › Your own wallet</nav>
-    <div class="ev-head__text">
-      <div class="vp-label">Midnight Preview · your own wallet</div>
-      <h1 id="w-h1" class="h1">Ask the live contract yourself</h1>
-      <p class="lead">This page asks the deployed contract one question: is this vehicle registered? Your wallet proves the call, pays its fee in your own DUST, and submits it. Nothing passes through a server of ours, and the page never sees a key.</p>
-    </div>
-  </div>
-</section>
-
-<section class="sec--deep" aria-labelledby="w-h">
-  <div class="wrap ev-sec">
-    <div class="ev-cards">
-      <div class="card">
-        <div class="vp-label">Step 1</div>
-        <h2 id="w-h" class="h3">Your wallet</h2>
-        <p id="walletstatus" class="copy">Looking for a Midnight wallet on this page…</p>
-        <div id="walletlist" class="ev-wallets"></div>
-        <p class="small">You need a Midnight wallet that speaks the DApp Connector (1AM or Lace), set to the Preview network, holding DUST. 1AM proves in the page; Lace proves through a proof server running on your own machine.</p>
-      </div>
-      <div class="card">
-        <div class="vp-label">Step 2</div>
-        <h2 id="q-h" class="h3">The question</h2>
-        <div class="field"><label for="vehiclekey">Vehicle key</label><input id="vehiclekey" class="input mono" type="text" spellcheck="false" autocomplete="off" aria-describedby="vehiclekey-help"><p id="vehiclekey-help" class="ev-help">The keyed hash the chain holds, 64 hex characters. Filled in with the vehicle from the recorded run on <a class="link" href="../demo/">the live demo</a>. The circuit is <code>isRegistered</code>: it reads, writes nothing, and takes no secret.</p></div>
-        <div class="ev-actions"><button id="askbtn" type="button" class="vp-btn vp-btn--primary" disabled>Ask the chain</button></div>
-      </div>
-      <div class="card">
-        <div class="vp-label">Step 3</div>
-        <h2 id="r-h" class="h3">What the chain answered</h2>
-        <div id="result" class="ev-result" aria-live="polite">Nothing asked yet.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
+<p>VINPassport never asks for a wallet, so this page has retired. The live contract is on <a href="../developers/">passport.vin/developers/</a>.</p>
 </main>
-<footer class="vp-footer">
-  <div class="wrap vp-footer__inner">
-    <div class="vp-footer__cols">
-      <div class="vp-footer__brand"><a class="vp-logo" href="../" aria-label="VINPassport home"><img src="../assets/brand/vinpassport-logo-horizontal-primary.svg" alt="VINPassport" width="1204" height="248"></a><p class="small">Vehicle passports issued at the factory and trusted for life. Built on Midnight.</p></div>
-      <div class="vp-footer__col"><div class="vp-label">Product</div><a href="../how-it-works/">How it works</a><a href="../how-it-works/#who-sees-what">Who sees what</a><a href="../how-it-works/#trust">Trust and limits</a><a href="../scan/">Scan a vehicle</a><a href="../lifestyle/">Boats, quads and motorhomes</a></div>
-      <div class="vp-footer__col"><div class="vp-label">Compliance</div><a href="../compliance/#euro-7">Euro 7 passport</a><a href="../compliance/#circularity">Circularity 2032</a><a href="../compliance/#standards">Standards</a></div>
-      <div class="vp-footer__col"><div class="vp-label">Manufacturers</div><a href="../manufacturers/#pilot">Pilot programme</a><a href="../manufacturers/#security">Security and data</a><a href="../manufacturers/#your-brand">Your brand on the verdict</a></div>
-      <div class="vp-footer__col"><div class="vp-label">Developers</div><a href="../developers/">Contract and docs</a><a href="https://github.com/VINPassport/VINPassport" target="_blank" rel="noopener">GitHub<span class="vp-sr"> (opens in a new tab)</span></a><a href="../developers/#try">Try it live</a><a href="../deck/">Pitch deck</a><a href="../about/">About and contact</a></div>
-    </div>
-    <div class="vp-footer__base"><span>Apache-2.0 · Euro 7 · Reg. (EU) 2026/1738 · Built on Midnight</span><span><a href="../privacy/">Privacy</a> · © 2026 VINPassport</span></div>
-    <div class="vp-mrz" aria-hidden="true">P&lt;VINPASSPORT&lt;&lt;ISSUED&lt;AT&lt;SOURCE&lt;&lt;VERIFIED&lt;FOR&lt;LIFE&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</div>
-  </div>
-</footer>
 </body>
 </html>

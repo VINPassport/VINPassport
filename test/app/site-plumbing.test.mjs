@@ -106,7 +106,7 @@ test('nothing on the site links to a moved address', () => {
     // Scripts write links too. The demo data stays under verify/ (verify/demo-data.json,
     // verify/fields.json, and loadState('../verify/')), which is data, not a page link.
     const scripts = readdirSync(join(SITE, 'assets')).filter((f) => /\.m?js$/.test(f)).map((f) => `assets/${f}`)
-        .concat(['v/v.mjs', 'scan/scan.mjs', 'demo/demo.js', 'intake/intake.js', 'proofs/proofs.js', 'disclose/disclose.js', 'wallet/wallet.js']);
+        .concat(['v/v.mjs', 'scan/scan.mjs', 'demo/demo.js', 'intake/intake.js', 'proofs/proofs.js', 'disclose/disclose.js']);
     for (const s of scripts) {
         const js = read(s);
         for (const m of js.matchAll(/(?:verify|guide|regulation|console)\/(?:\?|#|['"`])/g)) {

@@ -888,53 +888,33 @@ for the whole build. Mainnet's limits are read the same way when it deploys, not
 **Basis.** A ledger rule, not a regulatory one: the block limits in the ledger parameters, which the
 node enforces on every transaction.
 
-### D35: A visitor's own wallet calls the contract, starting with the circuit whose keys the site can serve · 2026-11-09
+### D35: A visitor's own wallet calls the contract · 2026-11-09 · **REVERSED**, see [R8](#reversed)
+Kept as a numbered stub so D35 is not reused. The decision, its reasoning and its reversal are
+recorded in full at [R8](#reversed).
 
-The hosted chain demo has needed a server holding a funded wallet since [D24](#settled), and that
-host is gone. Midnight.js 5 and the DApp Connector API 4 let a page hand a transaction to the
-visitor's own wallet instead.
+### D36: No one who uses VINPassport meets a wallet · 2026-11-10
 
-**The decision.** [`/wallet/`](../site/wallet/) finds the Midnight wallets on the page (1AM, Lace),
-connects to the one the visitor picks, and asks the deployed contract one question,
-`isRegistered`. The wallet proves the call when it can (`getProvingProvider`; the page hands it the
-circuit's keys and ZKIR on request), balances it, pays the fee in the visitor's DUST and submits
-it. No server of ours is involved, and the page never holds a key, a seed or a credential. Every
-artifact the page serves is checked in the browser against the compiler manifest whose hash the
-deploy record pins, so a key that is not the deployed one is refused before any wallet sees it.
+A Web2 face on a Web3 backbone. A buyer, a dealer, a manufacturer, an authority or a visitor to
+passport.vin never connects, holds or sees a wallet, a token or a network fee. Midnight is the
+backbone: it proves and records, and the project's own wallet pays every fee in DUST generated from
+NIGHT it holds ([D24](#settled)). Every payment for the service goes through fiat routes
+([D5](#settled), [D14](#settled)); there is no crypto payment path.
 
-**Why one read circuit first.** A circuit can be offered only if the site serves its prover key,
-and the wallet receives that key with every proof:
+**What it removes.** The wallet page ([R8](#reversed)), its engine and its two CI checks, retired
+the day after they were built. `/wallet/` forwards to Developers, which names the live contract.
+A test holds every page to this: none looks for a wallet extension or ships the code to talk to one
+(`test/app/evidence-pages.test.mjs`).
 
-| Circuits | Prover key each |
-|---|---:|
-| `isRegistered`, `isRegistrar`, `registrarOf` | 224 KB |
-| `commitmentOf`, `holdsGrant` | 11 MB |
-| `holdsAtMost`, `holdsAtLeast`, `registerPassport` | 22 MB |
-| the other writing circuits | 45 to 90 MB |
+**What it does not remove.** The project's own wallet and the tooling that runs it (deploy, DUST,
+maintenance): that is the backbone, and no customer sees it. A developer who clones the repository
+runs the chain tooling with a wallet they fund themselves, outside any page.
 
-GitHub Pages does not serve Git LFS files, git refuses files over 100 MB, and a published site is
-capped at 1 GB ([LFS](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage),
-[Pages limits](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits)).
-This site deploys from a workflow artifact, so larger keys can be added there later without
-entering git; the 224 KB key ships now. Lace proves through a proof server on the visitor's own
-machine, 1AM in the page or through its own service
-([Midnight's wallet integration notes](https://docs.midnight.network/sdks/community/wallets/community-wallets-integration)).
+**Why.** It is the promise [D13](#settled) and [D24](#settled) already make: the people VINPassport
+serves should not need to learn crypto to check or sell a vehicle, and a page that offers a wallet,
+even an optional one, says they might. The contract stays verifiable without one: Developers names
+its address, and anyone can read it back from the public indexer.
 
-**Checked so far.** In Node, against the live Preview indexer, with a stand-in wallet that proves
-from the page's key material and stops at balancing: the page builds a proven `isRegistered` call to
-the contract, 4,278 bytes, nothing submitted ([`scripts/check-wallet-path.mjs`](../scripts/check-wallet-path.mjs),
-weekly in CI). In Brave: the engine loads (the Ledger 9 runtime only, about 13 MB), reads the
-contract from the indexer, runs the circuit and serves the wallet the key, verifier key and ZKIR,
-each verified against the manifest. Not yet checked: a real wallet extension submitting the call,
-which needs a visitor with 1AM or Lace on Preview and DUST.
-
-**Found on the way.** A browser's native `fetch` refuses to run as another object's method, and
-the Midnight.js artifact provider calls it that way; the page always hands it a bound wrapper. A
-wallet's bech32m keys are decoded with `Buffer`, which browsers lack; the engine sets it before
-Midnight.js loads. The provider fetches each artifact three times per call: harmless at 224 KB,
-to be cached before a 45 MB key is offered.
-
-**Basis.** No provision asks for it; it removes the server [D24](#settled) depended on.
+**Basis.** A commercial choice: no provision requires or prohibits a wallet.
 
 ## Reversed
 
@@ -1018,6 +998,59 @@ two ROADMAP Phase 1 items: a `passport-service.ts` that shaped each answer to th
 refused queries probing columns the caller could not see. Never built. Superseded by
 [D26](#settled): the service would have held every value in the clear, and the site has nowhere to
 run it. **The tier table itself is not reversed**; it carries into D26 as the policy.
+
+### R8: A visitor's own wallet calls the contract · REVERSED 2026-11-10
+Previously [D35](#settled), taken 2026-11-09. Reversed the next day by [D36](#settled): VINPassport
+asks no one for a wallet. The page, its engine (`site/assets/wallet-engine/`,
+`scripts/lib/wallet-browser.mjs`), its build and its two CI checks are removed, and `/wallet/`
+forwards to Developers. The decision as it stood is kept below, so it is not rebuilt by accident
+and what it found is not lost.
+
+The hosted chain demo has needed a server holding a funded wallet since [D24](#settled), and that
+host is gone. Midnight.js 5 and the DApp Connector API 4 let a page hand a transaction to the
+visitor's own wallet instead.
+
+**The decision.** `/wallet/` finds the Midnight wallets on the page (1AM, Lace),
+connects to the one the visitor picks, and asks the deployed contract one question,
+`isRegistered`. The wallet proves the call when it can (`getProvingProvider`; the page hands it the
+circuit's keys and ZKIR on request), balances it, pays the fee in the visitor's DUST and submits
+it. No server of ours is involved, and the page never holds a key, a seed or a credential. Every
+artifact the page serves is checked in the browser against the compiler manifest whose hash the
+deploy record pins, so a key that is not the deployed one is refused before any wallet sees it.
+
+**Why one read circuit first.** A circuit can be offered only if the site serves its prover key,
+and the wallet receives that key with every proof:
+
+| Circuits | Prover key each |
+|---|---:|
+| `isRegistered`, `isRegistrar`, `registrarOf` | 224 KB |
+| `commitmentOf`, `holdsGrant` | 11 MB |
+| `holdsAtMost`, `holdsAtLeast`, `registerPassport` | 22 MB |
+| the other writing circuits | 45 to 90 MB |
+
+GitHub Pages does not serve Git LFS files, git refuses files over 100 MB, and a published site is
+capped at 1 GB ([LFS](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage),
+[Pages limits](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits)).
+This site deploys from a workflow artifact, so larger keys can be added there later without
+entering git; the 224 KB key ships now. Lace proves through a proof server on the visitor's own
+machine, 1AM in the page or through its own service
+([Midnight's wallet integration notes](https://docs.midnight.network/sdks/community/wallets/community-wallets-integration)).
+
+**Checked so far.** In Node, against the live Preview indexer, with a stand-in wallet that proves
+from the page's key material and stops at balancing: the page builds a proven `isRegistered` call to
+the contract, 4,278 bytes, nothing submitted (`scripts/check-wallet-path.mjs`,
+then weekly in CI). In Brave: the engine loads (the Ledger 9 runtime only, about 13 MB), reads the
+contract from the indexer, runs the circuit and serves the wallet the key, verifier key and ZKIR,
+each verified against the manifest. Not yet checked: a real wallet extension submitting the call,
+which needs a visitor with 1AM or Lace on Preview and DUST.
+
+**Found on the way.** A browser's native `fetch` refuses to run as another object's method, and
+the Midnight.js artifact provider calls it that way; the page always hands it a bound wrapper. A
+wallet's bech32m keys are decoded with `Buffer`, which browsers lack; the engine sets it before
+Midnight.js loads. The provider fetches each artifact three times per call: harmless at 224 KB,
+to be cached before a 45 MB key is offered.
+
+**Basis.** No provision asks for it; it removes the server [D24](#settled) depended on.
 
 ## Open
 

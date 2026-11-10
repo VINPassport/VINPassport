@@ -179,7 +179,8 @@ token, or any cryptocurrency.
 
 Every transaction fee is paid by VINPassport, never by the customer. Every customer payment is
 ordinary fiat: card, direct debit or invoice. The blockchain is an implementation detail, and it is
-meant to stay one. See [BUILD-SCOPE.md](docs/BUILD-SCOPE.md).
+meant to stay one: no page on the site asks for a wallet, and a test holds every page to that
+([D36](docs/DECISIONS.md#settled)). See [BUILD-SCOPE.md](docs/BUILD-SCOPE.md).
 
 ## Quick start
 
@@ -223,7 +224,6 @@ seconds.
 | `npm run check:facts` | Every figure the site states (circuits, contract tests, guards, verifier keys, field slots, the live contract and its compiler) against its source: `contract-info.json`, this README, the deploy record |
 | `npm run check:pages` / `check:a11y` / `check:deck` | The site in Brave: every page loads without throwing and every moved address keeps its query; on every page, real Tab presses reach each control with a visible focus ring, no control is under 24 px on a phone, nothing scrolls sideways from 320 to 1920 px and nothing moves with reduced motion; no deck slide clips. `--base <url>` runs the first two against the live site |
 | `npm run check:upstream` | What moved upstream, read only: pinned Midnight packages against npm, the pinned compiler against its latest release, and the state of every issue a workaround here depends on, with its removal steps ([`scripts/lib/known-issues.mjs`](scripts/lib/known-issues.mjs)) |
-| `npm run build:wallet` / `check:wallet` / `check:wallet-path` | The wallet page's engine, circuit artifacts and config, rebuilt from the build and the deploy record (CI checks they match); and its path against the live contract with a stand-in wallet that proves and stops at balancing, read only |
 
 On a chain, with a funded deploy wallet (see [Running it on the real chain](#running-it-on-the-real-chain)):
 
@@ -256,10 +256,9 @@ npm run app        # -> http://localhost:8790
 | **Intake console** | `/intake/` | A registrar: fill in the fields, submit, watch the circuits accept and refuse |
 | **Proof explorer** | `/proofs/` | An auditor: every claim on the ledger, marked current or superseded |
 | **Check a disclosure** | `/disclose/` | A buyer, a dealer and an authority each get a different bundle; every value in it is checked against the ledger in the browser |
-| **Your own wallet** | `/wallet/` | A visitor's Midnight wallet asks the deployed contract whether a vehicle is registered; no server of ours, and the page never holds a key |
 | **Live chain demo** | `/demo/` | Anyone: one click writes a real passport to the deployed contract. With no server answering, it shows a recorded guided run instead: Preview (ledger 9) by default, preprod (ledger 8) at `?recorded=preprod` |
 
-`/verify/`, `/guide/`, `/regulation/` and `/console/` are kept as redirects to `/v/`, `/how-it-works/`, `/compliance/` and `/intake/`. They carry the query and the section across, because those addresses were shared and every QR code made before November 2026 encodes `/verify/?v=<key>`.
+`/verify/`, `/guide/`, `/regulation/` and `/console/` are kept as redirects to `/v/`, `/how-it-works/`, `/compliance/` and `/intake/`. They carry the query and the section across, because those addresses were shared and every QR code made before November 2026 encodes `/verify/?v=<key>`. `/wallet/` forwards to `/developers/`: the wallet page is retired ([D36](docs/DECISIONS.md#settled)).
 
 The server is dependency-free Node and runs the **real compiled circuits in-process**: submitting
 the console form registers the passport, records the history, and proves the claims. A rollback
@@ -712,7 +711,7 @@ line of comparison rather than two days of reading tag names.
 | Maintenance authority | **A 2-of-3 committee on Preview** ([D28](docs/DECISIONS.md#settled)): handed over from the deploy key by a `ReplaceAuthority` update, two Schnorr keys and one ECDSA key, read back from the indexer; done for both Preview contracts, the current one in block 29549. **Exercised** on the previous contract: a proposal signed by two members (one Schnorr, one ECDSA) inserted six verifier keys into the live contract, counter 1 to 2, block 19822, 5.49 DUST, and a call to one of the new circuits was accepted. Who holds the mainnet keys is open ([Q8](docs/DECISIONS.md#open)) |
 | Frontend: verification, intake console, proof explorer | **Done.** Three surfaces against the compiled circuits (`npm run app`), live for anyone at [passport.vin](https://passport.vin/) |
 | Live chain runs from the browser | **Built, not currently hosted.** `/demo/` and the intake console write real transactions to the deployed contract, paying their own DUST ([D24](docs/DECISIONS.md#settled)), capped per UTC day; on this tree the Preview contract, under `npm run app:chain`. Hashes link to the network's explorer where one follows the chain (the [preprod explorer](https://preprod.midnightexplorer.com) does; Preview has none yet, so the keyless indexer query stands in). The host that served them was cancelled on 10 Oct 2026, so the hosted page says no run can start and shows the recorded Preview run of 8 Nov 2026 instead, with the ledger 8 preprod run of 1 Nov one click away |
-| A visitor's own wallet | **Built, 9 Nov 2026; awaiting a run with a real wallet** ([D35](docs/DECISIONS.md#settled)). [`/wallet/`](site/wallet/) asks the deployed contract `isRegistered` through the visitor's Midnight wallet (1AM or Lace, DApp Connector API 4), which proves, pays in the visitor's DUST and submits: no server of ours, no key on the page. Checked with a stand-in wallet in Node against the live indexer (a proven call, nothing submitted) and in Brave (the engine loads, the circuit runs, the key material is served and verified). Only the read circuit whose 224 KB key the site can serve is offered so far |
+| A visitor's own wallet | **Retired, 10 Nov 2026** ([D36](docs/DECISIONS.md#settled)). Built on 9 Nov and removed the next day, because VINPassport asks no one for a wallet. `/wallet/` forwards to Developers; what it found is kept at [R8](docs/DECISIONS.md#reversed) |
 | CAP service layer | **Not in this submission, and not in Wave 2.** See [D20](docs/DECISIONS.md#settled) |
 | Tiered disclosure | **Wave 3, in progress.** Not by redaction in a service, which was reversed before it was built ([R7](docs/DECISIONS.md#reversed)), but as bundles the holder hands over and the reader checks against the ledger ([D26](docs/DECISIONS.md#settled)). **Try it: [passport.vin/disclose](https://passport.vin/disclose/)**, one demo vehicle and three audiences checked in the browser against the demo ledger, and, since 1 Nov 2026, a buyer's and a dealer's bundle from the preprod run checked against contract state read from the public indexer |
 
@@ -733,15 +732,12 @@ scripts/
   listing.mjs                        deploy the listing demo and list a vehicle through it
   chain-readback.mjs                 read a deployed contract back, events included, and check a receipt against it
   check-upstream.mjs                 what moved upstream: versions, compiler release, known issues
-  build-wallet-engine.mjs            the wallet page's engine, circuit artifacts and config, from the build
-  check-wallet-path.mjs              the wallet page's path against the live contract, stand-in wallet, read only
   mutate-guards.mjs                  deletes each guard in turn, reports the kills
   lib/scenario.mjs                   the 32-slot panel and its integrity rules
   lib/wallet9.mjs, contract9.mjs     the deploy wallet, providers and artifact checks
   lib/runner9.mjs                    one call per transaction, witnesses armed per call
   lib/maintenance9.mjs               committee proposals: build, sign, check, submit
   lib/deploy-fit.mjs                 fits a deploy to the live block limits; steps when it does not fit
-  lib/wallet-browser.mjs             a visitor's wallet calls the contract (bundled for /wallet/)
   lib/known-issues.mjs               every upstream issue a workaround depends on, and when it goes
 .github/workflows/                   CI on every push; a reproducible-build check; a weekly upstream check
 test/

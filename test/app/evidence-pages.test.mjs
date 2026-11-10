@@ -1,17 +1,17 @@
 /**
- * The evidence pages (demo, intake, disclose, proofs, wallet) on the 2026 design.
+ * The evidence pages (demo, intake, disclose, proofs) on the 2026 design.
  *
  * These pages are scripts as much as markup, and twice a script lost an
  * element it looked up by position and failed quietly (proofs.js, intake.js).
  * So: every element a script looks up by id exists on its page or in markup
  * the script writes itself; the scripts carry no inline colours, so the look
- * lives in vp.css; and the heavy wallet engine still loads only on demand.
+ * lives in vp.css; and no page asks a visitor for a wallet.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { PAGES } from '../../scripts/build-nav.mjs';
@@ -25,11 +25,10 @@ const EVIDENCE = {
     demo: { script: 'demo/demo.js', ids: ['eyebrow', 'lede', 'capdot', 'capstate', 'capline', 'go', 'gonote', 'run', 'nodename', 'curl', 'explorernote'] },
     intake: { script: 'intake/intake.js', ids: ['ppwrap', 'ppbox', 'ppnote', 'pplabel', 'pprun', 'server-status', 'register', 'download', 'circuits', 'result', 'result-rows', 'result-count', 'result-links', 'result-view', 'evblock', 'claimgrid', 'claimsmeta', 'writerby', 'wby', 'wdraw', 'expect', 'dv'] },
     disclose: { script: 'disclose/disclose.js', ids: ['ledger-note', 'tier-panel', 'tab-public', 'tab-trade', 'tab-authority'] },
-    proofs: { script: 'proofs/proofs.js', ids: ['stat-passports', 'stat-claims', 'stat-fields', 'stat-values', 'vehicles', 'source'] },
-    wallet: { script: 'wallet/wallet.js', ids: ['walletstatus', 'walletlist', 'vehiclekey', 'askbtn', 'result'] }
+    proofs: { script: 'proofs/proofs.js', ids: ['stat-passports', 'stat-claims', 'stat-fields', 'stat-values', 'vehicles', 'source'] }
 };
 
-test('the five evidence pages are on the new design, with none of the old sheet', () => {
+test('the four evidence pages are on the new design, with none of the old sheet', () => {
     for (const name of Object.keys(EVIDENCE)) {
         const file = `${name}/index.html`;
         assert.equal(PAGES.find((p) => p.file === file)?.design, 'vp', `${file} is not marked as redesigned`);
@@ -74,10 +73,19 @@ test('the scripts set states, never colours: the look lives in vp.css', () => {
     }
 });
 
-test('a visitor without a wallet never downloads the wallet engine', () => {
-    const js = read('wallet/wallet.js');
-    assert.match(js, /await import\('\.\.\/assets\/wallet-engine\/wallet-engine\.js'\)/);
-    assert.doesNotMatch(js, /^import .*wallet-engine/m, 'the engine is imported up front');
+// A Web2 face on a Web3 backbone (D36): the project pays every fee from its own wallet
+// (D24), so no page looks for a wallet extension or ships the code to talk to one.
+test('no page asks a visitor for a wallet', () => {
+    const own = (dir) => readdirSync(join(SITE, dir), { withFileTypes: true }).flatMap((e) => {
+        const p = dir ? `${dir}/${e.name}` : e.name;
+        if (e.isDirectory()) return /^(assets\/(intake-engine|fonts|brand)|zk)$/.test(p) ? [] : own(p);
+        return /\.(html|m?js)$/.test(e.name) ? [p] : [];
+    });
+    const files = own('');
+    assert.ok(files.length > 30, `only ${files.length} files read`);
+    for (const file of files) {
+        assert.doesNotMatch(read(file), /window\.midnight|dapp-connector|DApp Connector|wallet-engine|listWallets/i, `${file} reaches for a wallet`);
+    }
 });
 
 test('the ledger block lists each of a vehicle\'s claims once, including ones no question covers', () => {

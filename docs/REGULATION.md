@@ -364,6 +364,30 @@ a battery passport rather than repeat it, as the car panel's `batteryPassportId`
 law we have read requires a passport" for a boat is a statement about these texts, not a search of
 all Union law: an ecodesign delegated act could reach recreational craft, and none was looked for.
 
+### Motorhomes, read 10 November 2026
+
+Read in full from EUR-Lex for the Lifestyle page, which names motorhomes. Unlike the classes above,
+**a new motorhome does carry a vehicle passport by law, but it is the base vehicle's**, and the
+circularity passport never reaches it.
+
+| Provision | What it says |
+|---|---|
+| Reg (EU) 2018/858 **Art. 3(31)** | *"'special purpose vehicle' means a vehicle of category M, N or O having specific technical features that enable it to perform a function that requires special arrangements or equipment"* |
+| 2018/858 **Annex I, Part A, point 5.1** | Motor caravan, code SA: *"A vehicle of category M with living accommodation space"* and the minimum equipment listed there |
+| 2018/858 **Art. 4(1)(a)(i)** | M1 is *"not more than eight seating positions in addition to the driver's seating position"*; the definition sets no mass limit, so a motorhome is normally M1 |
+| Reg (EU) 2024/1257 **Art. 2** | Euro 7 applies to M1 to N3 vehicles *"including those designed and constructed in one or more stages"* |
+| 2024/1257 **Art. 7(4)** | *"Manufacturers shall issue an EVP for each vehicle and deliver that passport to the purchaser together with the vehicle"* |
+| 2024/1257 **Art. 10(4), (5)** | New M1 and N1 types from 29 November 2026; every new M1 and N1 vehicle from 29 November 2027 |
+| Implementing Reg (EU) 2025/1707 **Art. 17(5)** | *"In the case of a multi-stage type-approval, the manufacturer referred to in paragraphs 1 to 4 shall be understood as the manufacturer of the base vehicle, and the EVP data shall refer to the base vehicle."* |
+| Reg (EU) 2026/1738 **Art. 2(1)(b)** | The regulation applies to M1 and N1 special purpose vehicles from 1 September 2029 |
+| 2026/1738 **Art. 2(5)(i)** | Article 13, the Digital Circularity Vehicle Passport, does not apply to special purpose vehicles |
+| 2026/1738 **Art. 2(2)(g)** | Trailer caravans (2018/858 Annex I, point 5.6) are outside the regulation |
+
+So the motorhome passport is the van or chassis maker's EVP, and it says nothing about the living
+space: habitation checks, damp reports and conversion work are ours to record. Our passport links to
+the base vehicle's EVP rather than repeating it, as the car panel links to a battery passport. Never
+imply that the 2032 circularity passport reaches motorhomes: Art. 2(5)(i) excludes it.
+
 ## Pending, not law: odometer recording in the 2025 roadworthiness package, read 1 November 2026
 
 Proposal [COM(2025) 180](https://data.consilium.europa.eu/doc/document/ST-8255-2025-INIT/en/pdf),
