@@ -57,7 +57,7 @@
 <main id="main">
 
 <section class="hero" aria-labelledby="mf-h1">
-  <div class="hero-wash" aria-hidden="true"><div class="wave-track wave-track--a"><img src="../assets/brand/wave-a.svg" alt=""><img src="../assets/brand/wave-a.svg" alt=""></div><div class="wave-swell"><div class="wave-track wave-track--b"><img src="../assets/brand/wave-b.svg" alt=""><img src="../assets/brand/wave-b.svg" alt=""></div></div></div>
+  <div class="hero-wash" aria-hidden="true"><div class="wave-track wave-track--a"><img src="../assets/brand/wave-a.svg" alt="" width="1200" height="200"><img src="../assets/brand/wave-a.svg" alt="" width="1200" height="200"></div><div class="wave-swell"><div class="wave-track wave-track--b"><img src="../assets/brand/wave-b.svg" alt="" width="1200" height="200"><img src="../assets/brand/wave-b.svg" alt="" width="1200" height="200"></div></div></div>
   <div class="wrap sec stack" style="position: relative; gap: 20px;">
     <div class="vp-label">For manufacturers</div>
     <h1 id="mf-h1" class="h1" style="max-width: 900px;">Issue passports on the line. Let every buyer check them.</h1>
@@ -82,7 +82,7 @@
   <div class="wrap sec split center">
     <div class="stack">
       <div class="vp-label">Your brand on the verdict</div>
-      <h2 id="wl-title" class="h2">Your name on top. Our proof underneath.</h2>
+      <h2 id="wl-title" class="h2">A verdict page in your brand, with our proof underneath.</h2>
       <p class="lead">Buyers see your logo, colour and service links. The answers, stamps and wording stay standard, so a buyer learns one layout across every brand, and "Verified by VINPassport" shows it is an independent check.</p>
       <a class="link" href="../v/?brand=volta">Open the full phone screen →</a>
     </div>
@@ -106,11 +106,11 @@
 
 <section id="security" class="sec--deep" aria-labelledby="sec-title">
   <div class="wrap sec stack-lg">
-    <div class="stack" style="max-width: 780px;"><div class="vp-label">Security and data</div><h2 id="sec-title" class="h2">What lives where</h2><p class="lead">The answers procurement and IT security ask for first.</p></div>
+    <div class="stack" style="max-width: 780px;"><div class="vp-label">Security and data</div><h2 id="sec-title" class="h2">Passport data, keys and access: what lives where</h2><p class="lead">The answers procurement and IT security ask for first.</p></div>
     <div class="table-box">
-      <table class="table">
+      <table class="table table--pairs">
         <tbody>
-          <tr><td style="width: 26%;"><strong>On the ledger</strong></td><td>A sealed fingerprint of each value, never the value and never the key that seals it.</td></tr>
+          <tr><td><strong>On the ledger</strong></td><td>A sealed fingerprint of each value, never the value and never the key that seals it.</td></tr>
           <tr><td><strong>Vehicle identifiers</strong></td><td>Records are found by a fingerprint of the identifier, derived under a network key; the identifier itself is never written to the ledger.</td></tr>
           <tr><td><strong>Who can write</strong></td><td>A named set of registrars. Adding or removing one takes two registrars' approval, and every change is announced on the ledger.</td></tr>
           <tr><td><strong>Integrity rules</strong></td><td>Fixed per field at creation. Forward-only fields refuse a lower value inside the proof.</td></tr>
@@ -151,7 +151,7 @@
         <button type="submit" class="vp-btn vp-btn--primary" style="justify-content: center;" disabled>Request a pilot call</button>
         <p class="small">The button opens your own email app with your request written out, addressed to info@passport.vin. We reply by email within 2 working days.</p>
       </form>
-      <p class="vp-form-status" data-form-status aria-live="polite"></p>
+      <p class="vp-form-status" role="status" data-form-status aria-live="polite"></p>
       <div data-form-done role="status" tabindex="-1" hidden style="padding: 8px 0;">
         <div data-done-when="mail" class="stack" style="gap: 14px; align-items: flex-start;">
           <span class="vp-stamp vp-stamp--issued" data-animate>Ready to send</span>
