@@ -5,7 +5,8 @@
  * module arrives. Without it the phone menu does not open, and every link in
  * it is still reachable from the footer.
  *
- *   menu   under 900 px the bar is the logo, a scan button and a menu button.
+ *   menu   under 1,200 px the bar is the logo, a scan button and a menu button
+ *          (vp.css says why it is not the spec's 900 px).
  *          The button reports its state (aria-expanded, and its name changes
  *          between Open menu and Close menu); opening moves focus to the first
  *          link, Tab and Shift+Tab stay inside the menu and its button while it
@@ -24,7 +25,7 @@ export function bandIsAfter(now, switchAt) {
     return Number.isFinite(at) && now >= at;
 }
 
-const BREAKPOINT = '(min-width: 900px)';
+const BREAKPOINT = '(min-width: 1200px)';
 
 function wireMenu(header) {
     const burger = header.querySelector('.vp-burger');

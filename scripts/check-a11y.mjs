@@ -11,6 +11,9 @@
  *
  *   overflow     no horizontal page scroll at 320, 360, 390, 414, 768, 1024,
  *                1280, 1440 and 1920 px, at rest or while the page settles
+ *   header       at each of those widths the bar is one row (no link in it breaks
+ *                onto a second line), and from 1,200 px it stays at the top as
+ *                the page scrolls
  *   keyboard     at 390 and 1440 px, real Tab presses from the top reach every
  *                visible control, each shows a focus ring (WCAG 2.2 2.4.7) and
  *                none is hidden under the sticky header (2.4.11); the first
@@ -160,6 +163,15 @@ for (const page of CHECKED) {
         const [sw, cw, widest] = await ev('[document.documentElement.scrollWidth, document.documentElement.clientWidth, window.__widest]');
         if (sw > cw) fail(f, `scrolls sideways at ${w} px (${sw} > ${cw})`);
         else if (widest > 0) fail(f, `widens by ${widest} px at ${w} px while it settles`);
+        // The bar is one row at every width, and from 1,200 px it stays at the top as the page scrolls.
+        const head = await ev(`(() => { const bar = document.querySelector('.vp-bar'); if (!bar) return null;
+          const h = Math.round(bar.getBoundingClientRect().height); const y = Math.min(1200, document.documentElement.scrollHeight - innerHeight);
+          window.scrollTo(0, y); const top = Math.round(bar.getBoundingClientRect().top); window.scrollTo(0, 0); return [h, top, y]; })()`);
+        if (head) {
+            const [h, top, y] = head;
+            if (h > 80) fail(f, `the header bar is ${h} px tall at ${w} px: something in it wraps onto a second line`);
+            if (w >= 1200 && y > 40 && top !== 0) fail(f, `the header bar does not stay at the top at ${w} px (at ${top} px after scrolling ${y} px)`);
+        }
     }
     for (const w of [390, 1440]) {
         await width(w); await open(f);
@@ -206,5 +218,5 @@ if (fails.length) {
     for (const x of fails) console.error(`  ${x}`);
     finish(1);
 }
-console.log(`\ncheck:a11y: ${CHECKED.length} page(s); no sideways scroll from 320 to 1920 px; every control reached by Tab with a visible ring; skip links work; no target under 24 px; nothing moves with reduced motion`);
+console.log(`\ncheck:a11y: ${CHECKED.length} page(s); no sideways scroll from 320 to 1920 px; the header bar one row, and stuck to the top from 1200 px; every control reached by Tab with a visible ring; skip links work; no target under 24 px; nothing moves with reduced motion`);
 finish(0);

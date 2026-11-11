@@ -184,8 +184,11 @@ textarea.input{padding:10px 12px;min-height:110px;resize:vertical}
 
 /* ---- Site chrome: header, phone menu and footer (from the handoff's Header.dc.html and
    Footer.dc.html; markup written by scripts/build-nav.mjs, behaviour in assets/chrome.mjs).
-   The mockup renders desktop or phone from a prop; a real page carries both and switches at
-   900 px (spec section 5). The logo is the outlined horizontal file, sized to the mockup's width. */
+   The mockup renders desktop or phone from a prop; a real page carries both. The spec switched at
+   900 px (section 5), but the full bar needs 1,165 px (measured 11 Nov 2026): narrower, every link
+   broke onto two lines and the bar grew to 124 px. So the menu takes over below 1,200 px, which
+   leaves room for a desktop scrollbar, and the band's short text still starts below 900 px. The logo
+   is the outlined horizontal file, sized to the mockup's width. */
 .vp-header{position:relative;z-index:20;background:var(--paper);color:var(--ink);border-bottom:1px solid var(--rule)}
 .vp-band{margin:0}
 .vp-band__short,.vp-band__after{display:none}
@@ -212,16 +215,32 @@ textarea.input{padding:10px 12px;min-height:110px;resize:vertical}
 .vp-menu>a[aria-current="page"]{color:var(--passport-blue)}
 .vp-menu .vp-btn{justify-content:center;margin-top:8px}
 .vp-menu .vp-btn--primary{margin-top:20px}
-@media (max-width:899px){
-  .vp-band__long{display:none}
-  .vp-band__short{display:inline}
-  .vp-bar{padding:8px 4px 8px 16px;gap:2px}
-  .vp-bar .vp-logo img{height:36px}
+@media (max-width:1199px){
+  .vp-bar{gap:4px}
+  .vp-menu{padding-left:24px;padding-right:24px}
   .vp-nav,.vp-actions{display:none}
   .vp-icon-btn{display:grid}
   .vp-header.is-open .vp-menu{display:flex}
   .vp-header.is-open .vp-burger__open{display:none}
   .vp-header.is-open .vp-burger__close{display:block}
+}
+@media (max-width:899px){
+  .vp-band__long{display:none}
+  .vp-band__short{display:inline}
+  .vp-bar{padding:8px 4px 8px 16px;gap:2px}
+  .vp-menu{padding-left:16px;padding-right:16px}
+  .vp-bar .vp-logo img{height:36px}
+}
+/* Wherever the full bar shows, it stays at the top while the page scrolls. The Euro 7 band above it
+   scrolls away: the header sticks at minus the band's height, so only the bar remains, and the band
+   is held to one line of that height so the offset cannot drift. The skip link moves down by the
+   same amount so it still shows when the header is stuck. With the menu, the header stays in the
+   flow, where a stuck bar would cost a small screen its height on every page. Anchors already land
+   clear of it ([id] above). */
+@media (min-width:1200px){
+  .vp-header{--vp-band-h:36px;position:sticky;top:calc(-1 * var(--vp-band-h))}
+  .vp-band{box-sizing:border-box;height:var(--vp-band-h);white-space:nowrap}
+  .vp-skip:focus{top:calc(var(--vp-band-h) + 16px)}
 }
 .vp-footer{background:var(--paper-deep);color:var(--ink);border-top:1px solid var(--rule)}
 .vp-footer__inner{padding-top:56px;padding-bottom:24px;display:flex;flex-direction:column;gap:40px}
