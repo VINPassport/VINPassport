@@ -11,6 +11,7 @@
   <p>
     <a href="https://github.com/VINPassport/VINPassport/actions/workflows/ci.yml"><img src="https://github.com/VINPassport/VINPassport/actions/workflows/ci.yml/badge.svg" alt="CI"/></a>
     <a href="https://github.com/VINPassport/VINPassport/actions/workflows/compile.yml"><img src="https://github.com/VINPassport/VINPassport/actions/workflows/compile.yml/badge.svg" alt="Reproducible build"/></a>
+    <a href="https://github.com/VINPassport/VINPassport/actions/workflows/pages.yml"><img src="https://github.com/VINPassport/VINPassport/actions/workflows/pages.yml/badge.svg" alt="Site deploy"/></a>
   </p>
 </div>
 

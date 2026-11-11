@@ -122,6 +122,11 @@ test('the live contract the site names is the deployed one, built as the record 
     for (const { file, m } of every(/\bCompact (\d+\.\d+\.\d+)\b/g)) assert.equal(m[1], SOURCE.deploy.build.compiler, `${file}: "${m[0]}"`);
     assert.match(dev, /\bLedger 9\b/);
     assert.equal(SOURCE.deploy.ledger, 'v9');
+    // The disclosure grant on Preview is the recorded guided run's (site/disclose/preview/run.json),
+    // in the contract the deploy record names.
+    const run = json('site', 'disclose', 'preview', 'run.json');
+    assert.equal(run.contractAddress, SOURCE.deploy.contractAddress, 'the recorded Preview run is against the live contract');
+    allEqual(/\bon Preview on \d+ Nov \(block (\d+)\)/gi, run.grant.block, 'the Preview grant block', 2);
 });
 
 test('the field slots on the site are the slot map\'s', () => {

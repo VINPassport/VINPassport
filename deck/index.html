@@ -232,7 +232,7 @@ th { color: var(--ink); font-family: var(--font-label); font-weight: 600; font-s
     <div class="box">
       <h3>On chain</h3>
       <ol>
-        <li><strong>Who may see what is on the ledger.</strong> New circuits <code>grantDisclosure</code> and <code>revokeDisclosure</code> record which identity was given which view. On preprod from 1 Nov 2026 (block 3228852); a dealership was granted the trade view in block 3229987, read back from the public indexer.</li>
+        <li><strong>Who may see what is on the ledger.</strong> New circuits <code>grantDisclosure</code> and <code>revokeDisclosure</code> record which identity was given which view. On preprod from 1 Nov 2026 (block 3228852), where a dealership was granted the trade view in block 3229987. The same grant is in the live contract on Preview on 9 Nov (block 29425). Both read back from the public indexer.</li>
         <li><strong>Ledger 9.</strong> Ported to Compact 0.36.0, Midnight.js 5 and Wallet SDK 2, reproducing every hash and commitment of the old build (13 of 13 golden vectors). <strong>Live on Preview since 9 Nov 2026, block 28785.</strong></li>
         <li><strong>Events.</strong> Every write announces itself once, and the public indexer serves it.</li>
         <li><strong>Registrar governance.</strong> Two current registrars add or remove one, each in their own transaction: exercised in blocks 29162 and 29247.</li>
@@ -526,7 +526,7 @@ th { color: var(--ink); font-family: var(--font-label); font-weight: 600; font-s
   <h2>Each wave states its delta in advance, and reports it after</h2>
   <table style="flex:1">
     <tr><th style="width:150px">Wave 3<br><span style="font-weight:400;opacity:.7">planned, shipped</span></th>
-        <td><strong>Tiered disclosure, the Wave 2 deferral</strong>: a tier on all 68 fields, bundles a buyer, a dealer and an authority each check against the ledger, live at passport.vin/disclose/; disclosure grants in the contract, granted on preprod on 1 Nov and read back from the indexer</td></tr>
+        <td><strong>Tiered disclosure, the Wave 2 deferral</strong>: a tier on all 68 fields, bundles a buyer, a dealer and an authority each check against the ledger, live at passport.vin/disclose/; disclosure grants in the contract, granted on preprod on 1 Nov (block 3229987) and on Preview on 9 Nov (block 29425), both read back from the indexer</td></tr>
     <tr><th>Wave 3<br><span style="font-weight:400;opacity:.7">beyond the plan</span></th>
         <td><strong>Ledger 9</strong>, live on Preview since 9 Nov with events, two-registrar governance and upgrades by a 2-of-3 committee; CI that reproduces the verifier keys; a new site with typed passport codes, every date cited and lifestyle vehicles</td></tr>
     <tr><th>Wave 3<br><span style="font-weight:400;opacity:.7">not done</span></th>
