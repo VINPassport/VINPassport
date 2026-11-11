@@ -13,7 +13,7 @@ beside its files.
 
 | Family | Weights the deck uses | Licence |
 |---|---|---|
-| Fraunces (variable: optical size and weight) | 600 | OFL-Fraunces.txt |
+| Montserrat (headings, the logo's typeface) | 600 | OFL-Montserrat.txt |
 | IBM Plex Sans | 400, 500, 600 | OFL-IBM-Plex-Sans.txt |
 | IBM Plex Mono | 400 | OFL-IBM-Plex-Mono.txt |
 | Barlow Condensed | 600 | OFL-Barlow.txt |
@@ -24,8 +24,8 @@ Re-check a file with `sha256sum`.
 
 | File | Package | sha256 |
 |---|---|---|
-| fraunces-latin-ext-opsz-normal.woff2 | @fontsource-variable/fraunces@5.3.0 | a2930b27d13a228bd9ab6a49269b5f800237892ad560cb9dd7fab01b1620f88e |
-| fraunces-latin-opsz-normal.woff2 | @fontsource-variable/fraunces@5.3.0 | 7234ed860a9cc83045413c4faee63c960a8f2d1917adcf728119307d56e0d783 |
+| montserrat-latin-ext-600-normal.woff2 | @fontsource/montserrat@5.3.0 | 1d8a4af6a50cc4f7561e8484d5bff39acda90016b8e8cbb5cee69c253bb02750 |
+| montserrat-latin-600-normal.woff2 | @fontsource/montserrat@5.3.0 | d857325c360f7128b347ca924c1974967aaa886ba47dad22e4042d6c38b26a83 |
 | ibm-plex-sans-latin-ext-400-normal.woff2 | @fontsource/ibm-plex-sans@5.3.0 | c93d2a12aaa280f68b9ab7b726ff8dfedda67c99ef9abed047c1847a1cc6d583 |
 | ibm-plex-sans-latin-400-normal.woff2 | @fontsource/ibm-plex-sans@5.3.0 | 3b646991d30055a93a4ecc499713d4347953a74a947ecab435ab72070cbdab0e |
 | ibm-plex-sans-latin-ext-500-normal.woff2 | @fontsource/ibm-plex-sans@5.3.0 | 2846035d85100f84c79393f80f1442d4ee720129ab8b3ffa8969aae281db8c6c |

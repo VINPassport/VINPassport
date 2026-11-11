@@ -178,7 +178,7 @@ test('the deck serves the site\'s own fonts and logos, hashed and licensed', () 
         assert.ok(pkg, `${file} is not hashed in deck/fonts/SOURCES.md`);
         assert.ok(siteSources.includes(`| ${file} | ${pkg} | ${sha} |`), `${file} differs from site/assets/fonts/`);
     }
-    for (const licence of ['OFL-Fraunces.txt', 'OFL-IBM-Plex-Sans.txt', 'OFL-IBM-Plex-Mono.txt', 'OFL-Barlow.txt']) {
+    for (const licence of ['OFL-Montserrat.txt', 'OFL-IBM-Plex-Sans.txt', 'OFL-IBM-Plex-Mono.txt', 'OFL-Barlow.txt']) {
         assert.match(readFileSync(join(ROOT, 'deck', 'fonts', licence), 'utf8'), /SIL Open Font License/);
     }
     for (const [, logo] of deck.matchAll(/src="(brand\/[\w-]+\.svg)"/g)) {

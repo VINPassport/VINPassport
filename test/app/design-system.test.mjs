@@ -54,7 +54,7 @@ test('fonts are served from this site, present, licensed and hashed', () => {
     }
     const onDisk = readdirSync(fontsDir).filter((f) => f.endsWith('.woff2'));
     assert.deepEqual(onDisk.sort(), [...new Set(used)].sort(), 'no font file on disk that vp.css does not use');
-    for (const lic of ['OFL-Fraunces.txt', 'OFL-IBM-Plex-Sans.txt', 'OFL-IBM-Plex-Mono.txt', 'OFL-Barlow.txt']) {
+    for (const lic of ['OFL-Montserrat.txt', 'OFL-IBM-Plex-Sans.txt', 'OFL-IBM-Plex-Mono.txt', 'OFL-Barlow.txt']) {
         assert.match(readFileSync(join(fontsDir, lic), 'utf8'), /SIL Open Font License/, lic);
     }
 });

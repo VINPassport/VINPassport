@@ -114,7 +114,7 @@ await sleep(3500);
 // fallback font with different widths, so the slides measured here would not be the slides shown.
 // A face loads only once a visible slide uses it, and the slides below are measured one after
 // another with no wait, so every face is loaded up front: each slide is measured in its real font.
-const FAMILIES = ['Fraunces', 'IBM Plex Sans', 'IBM Plex Mono', 'Barlow Condensed'];
+const FAMILIES = ['Montserrat', 'IBM Plex Sans', 'IBM Plex Mono', 'Barlow Condensed'];
 const missing = await evaluate(`Promise.allSettled([...document.fonts].map((f) => f.load()))
     .then(() => ${JSON.stringify(FAMILIES)}.filter((fam) => ![...document.fonts]
         .some((f) => f.family.replace(/['"]/g, '') === fam && f.status === 'loaded')))`);
