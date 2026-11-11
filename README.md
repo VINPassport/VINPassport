@@ -194,16 +194,16 @@ npm install
 npm test
 ```
 
-Expected: **176 contract tests, 388 app tests and 24 SDK assertions, all passing**, in about fifteen
+Expected: **176 contract tests, 394 app tests and 24 SDK assertions, all passing**, in about fifteen
 seconds. On a fresh clone one app test skips itself and says why: the script it checks is a local
-spike, gitignored, so the clone reports 387 passed and 1 skipped, as CI does.
+spike, gitignored, so the clone reports 393 passed and 1 skipped, as CI does.
 
 ```
  Test Files  2 passed (2)
       Tests  176 passed (176)
 
-ℹ tests 388
-ℹ pass 387
+ℹ tests 394
+ℹ pass 393
 ℹ skipped 1
 
 ================ 24 passed, 0 failed ================
@@ -214,7 +214,7 @@ spike, gitignored, so the clone reports 387 passed and 1 skipped, as CI does.
 | `npm test` | Everything below, in one run |
 | `npm run test:contract` | The 176 contract tests, against the compiled circuits, including a cross-contract call tree run in memory |
 | `npm run test:watch` | The same, re-running on change |
-| `npm run test:app` | 388 tests on the application paths: verdicts, the deploy's registrar list and witness set, the runner's per-call wiring, the committee handover and committee proposals, registrar governance bookkeeping against the compiled contract, DUST coin selection, hash parity with the ledger 8 build, the chain-sees panel and the QR encoder, via `node --test`. **Most import and run product code; a minority assert on what is written in the repository** (that each page carries the shared header and footer, that every page names its content with one `<main>` and offers a way past the header, that every pairing of a text colour and a background clears the contrast floor, that a moved address keeps its query, that a link to a verdict previews as a check and never as a verdict). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
+| `npm run test:app` | 394 tests on the application paths: verdicts, the deploy's registrar list and witness set, the runner's per-call wiring, the committee handover and committee proposals, registrar governance bookkeeping against the compiled contract, DUST coin selection, hash parity with the ledger 8 build, the chain-sees panel, the QR encoder and where a scanned code may lead, via `node --test`. **Most import and run product code; a minority assert on what is written in the repository** (that each page carries the shared header and footer, that every page names its content with one `<main>` and offers a way past the header, that every pairing of a text colour and a background clears the contrast floor, that a moved address keeps its query, that a link to a verdict previews as a check and never as a verdict). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
 | `npm run test:sdk` | 24 assertions pinning our assumptions about `@odatano/dpp-sdk` |
 | `npm run app` | All three surfaces + the circuits, one dependency-free server |
 | `npm run serve:site` | The site statically, as GitHub Pages serves it: no circuits, demo state only |
@@ -222,11 +222,12 @@ spike, gitignored, so the clone reports 387 passed and 1 skipped, as CI does.
 | `node scripts/chain-readback.mjs --network preview` | Read the deployed contract back from the public indexer; with `--receipt`, check a run against it |
 | `node scripts/export-bundles.mjs --network preview` | Re-read the Preview contract into `site/disclose/preview/ledger.json` (no key needed); with `--receipt`, also the sample bundles |
 | `node scripts/export-preprod-bundles.mjs` | The same for the ledger 8 preprod contract; run it from the tag `ledger8-preprod`, whose runtime reads that state |
-| `node scripts/build-og.mjs` | Re-render the link previews that carry numbers (`design/og/*.html` to `site/og/*.png`) in Brave, after a number on them changes |
+| `node scripts/build-og.mjs` | Re-render the link previews (`design/og/*.html` to `site/og/*.png`) in Brave, after a word or number on them changes |
 | `node scripts/record-run.mjs <receipt>` | Turn a guided-run receipt into the public recording `/demo/` shows (`site/demo/recorded-run.<network>.json`); it refuses to write if the VIN or any reading survives |
 | `npm run compile` | Recompile the Compact contract: **WSL2, macOS or Linux only**, see below |
 | `npm run check:facts` | Every figure the site states (circuits, contract tests, guards, verifier keys, field slots, the live contract and its compiler) against its source: `contract-info.json`, this README, the deploy record |
 | `npm run check:pages` / `check:a11y` / `check:deck` | The site in Brave: every page loads without throwing and every moved address keeps its query; on every page, real Tab presses reach each control with a visible focus ring, no control is under 24 px on a phone, nothing scrolls sideways from 320 to 1920 px and nothing moves with reduced motion; no deck slide clips. `--base <url>` runs the first two against the live site |
+| `npm run check:camera` | The scan page in Brave with a fake camera showing the sample passport's QR code: the button asks for the camera, the code is read in the browser and opens its passport, and a refused camera is explained with the typed box still there |
 | `npm run check:upstream` | What moved upstream, read only: pinned Midnight packages against npm, the pinned compiler against its latest release, and the state of every issue a workaround here depends on, with its removal steps ([`scripts/lib/known-issues.mjs`](scripts/lib/known-issues.mjs)) |
 
 On a chain, with a funded deploy wallet (see [Running it on the real chain](#running-it-on-the-real-chain)):
@@ -255,7 +256,7 @@ npm run app        # -> http://localhost:8790
 |---|---|---|
 | **Home** | `/` | The problem, the mechanism, and what the chain does and does not learn |
 | **Compliance** | `/compliance/` | What Euro 7 and Reg (EU) 2026/1738 require and when, with the article behind each date |
-| **Scan a vehicle** | `/scan/` | A buyer: type the passport code (`VP-XXXX-XXXX`) or the VIN, or paste a link. The VIN is hashed in the browser, so it never reaches a server and never enters the address |
+| **Scan a vehicle** | `/scan/` | A buyer: scan the QR code with the camera (the browser asks first; the picture never leaves the phone), type the passport code (`VP-XXXX-XXXX`) or the VIN, or paste a link. The VIN is hashed in the browser, so it never reaches a server and never enters the address |
 | **Verdict** | `/v/` | What the passport has *proven* and what it has not, read from the ledger. An identifier with no passport is told so rather than answered with another vehicle |
 | **Intake console** | `/intake/` | A registrar: fill in the fields, submit, watch the circuits accept and refuse |
 | **Proof explorer** | `/proofs/` | An auditor: every claim on the ledger, marked current or superseded |
@@ -648,7 +649,7 @@ repository begins with no contract at all.
 |---|---|
 | **The contract** - five exported circuits at Wave 1's close, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
 | **Deployed to Midnight preprod**, 28 August, built and signed locally | [`deploy/preprod.json`](deploy/preprod.json) |
-| **588 tests today** - 176 contract, 388 application, 24 SDK assumption assertions; all forty-three guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
+| **594 tests today** - 176 contract, 394 application, 24 SDK assumption assertions; all forty-three guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
 | **Three surfaces** - verification, intake console, proof explorer - all running the compiled circuits, not a mock | [passport.vin](https://passport.vin/) |
 | **On-chain runs from the browser, self-funded**, after a hosted sponsor turned out to be a single point of failure in a demo a judge runs unattended | [D24](docs/DECISIONS.md#settled) |
 | **The regulatory basis read from the Official Journal** rather than secondary analysis - which caught two wrong article citations that had survived months of work | [REGULATION.md](docs/REGULATION.md) |
@@ -748,7 +749,7 @@ scripts/
 test/
   passport-simulator.mjs             harness: compiled circuits + a local ledger
   passport.test.mjs, listing.test.mjs 176 contract tests
-  app/                               388 tests on the paths around the circuits
+  app/                               394 tests on the paths around the circuits
   fixtures/golden-vectors.json       what the ledger 8 build computed, checked against this one
   sdk-assumptions.mjs                24 assertions pinning @odatano/dpp-sdk behaviour
 ```

@@ -1,0 +1,28 @@
+/*
+  Shared layout for the link-preview images in design/og/ (1200 x 630), rendered by
+  scripts/build-og.mjs. The passport card, verdict rows, stamps, chips and colours come from the
+  site's own stylesheet (site/assets/vp.css), so a preview shows the same card as the page it
+  links to. Only the frame lives here: logo, eyebrow, headline, lede, address and the wave.
+  SPDX-License-Identifier: Apache-2.0
+*/
+html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; background: var(--paper); }
+body.tint { background: var(--blue-tint); }
+.og { position: relative; width: 1200px; height: 630px; overflow: hidden; }
+.og .wave { position: absolute; left: 0; right: 0; bottom: 30px; height: 170px; opacity: .45; display: flex; }
+.og .wave img { width: 50%; height: 100%; flex: none; display: block; }
+.og .side { position: absolute; left: 64px; top: 60px; bottom: 58px; width: 548px; display: flex; flex-direction: column; }
+.og .logo { height: 56px; width: auto; align-self: flex-start; margin-left: -2px; }
+.og .words { margin: auto 0; display: flex; flex-direction: column; gap: 18px; }
+.og .eyebrow { font-family: var(--font-label); font-weight: 600; font-size: 17px; letter-spacing: .14em; text-transform: uppercase; color: var(--passport-blue); }
+.og .title { margin: 0 0 0 -2px; font-family: var(--font-display); font-weight: 600; font-size: 56px; line-height: 1.08; letter-spacing: -.02em; color: var(--ink); text-wrap: balance; }
+.og .lede { margin: 0; font-family: var(--font-sans); font-size: 24px; line-height: 1.4; color: var(--ink-muted); }
+.og .url { font-family: var(--font-mono); font-weight: 500; font-size: 22px; color: var(--passport-blue); }
+
+/* The right-hand card: the page's own passport, tilted as if laid on the desk. */
+.og .card-at { position: absolute; left: 660px; top: 44px; width: 476px; }
+.og .card-at.tilt { transform: rotate(1.6deg); transform-origin: 50% 0; }
+.og .vp-datapage { padding: 24px 26px; }
+.og .vp-datapage__head img { width: 56px !important; height: 56px !important; }
+.og .vp-fields { padding: 14px 0; gap: 12px 24px; }
+.og .vp-mrz { white-space: nowrap; overflow: hidden; word-break: normal; }
+.og .stamp-at { position: absolute; right: -22px; top: 96px; z-index: 2; background: var(--paper-raised); }

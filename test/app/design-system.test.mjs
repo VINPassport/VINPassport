@@ -87,7 +87,7 @@ test('the manifest names icons that exist at the sizes it declares', () => {
 
 test('every link preview is 1200 x 630', () => {
     const og = readdirSync(join(SITE, 'og')).filter((f) => f.endsWith('.png'));
-    for (const name of ['home', 'manufacturers', 'compliance', 'developers', 'lifestyle', 'verdict']) {
+    for (const name of ['home', 'manufacturers', 'compliance', 'developers', 'lifestyle']) {
         assert.ok(og.includes(`og-${name}.png`), `og-${name}.png`);
     }
     for (const f of og) assert.deepEqual(pngSize(join(SITE, 'og', f)), [1200, 630], f);

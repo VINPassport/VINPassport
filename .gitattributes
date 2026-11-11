@@ -13,3 +13,7 @@ contracts/**/managed/**/zkir/*.bzkir       binary
 
 # The .compact source itself is the input to that check.
 *.compact                                   text eol=lf
+
+# Vendored third-party files are pinned by SHA-256 in their SOURCES.md, so they
+# must reach every clone and the live site byte for byte: no line-ending rewrites.
+site/assets/vendor/**                       -text

@@ -131,6 +131,7 @@ test('the sitemap lists every page once, and no moved address', () => {
 test('every page carries its own title, description and link preview', () => {
     const titles = new Set();
     const descriptions = new Set();
+    const images = new Set();
     for (const { file } of PAGES.filter((p) => p.file !== '404.html')) {
         const head = read(file).split('</head>')[0];
         const meta = (re) => head.match(re)?.[1];
@@ -149,7 +150,13 @@ test('every page carries its own title, description and link preview', () => {
         assert.ok(existsSync(join(SITE, image.slice(ORIGIN.length))), `${file}: ${image} is not on the site`);
         assert.equal(meta(/<meta name="twitter:card" content="([^"]+)">/), 'summary_large_image', `${file}: twitter:card`);
         assert.equal(meta(/<meta name="twitter:image" content="([^"]+)">/), image, `${file}: twitter:image`);
+        images.add(image.slice(`${ORIGIN}og/`.length, -'.png'.length));
     }
+    // Each preview is rendered from a template built on the site's own stylesheet (scripts/build-og.mjs),
+    // so a change of font or wording reaches the pictures too; a picture no page names is not kept.
+    for (const name of images) assert.ok(existsSync(join(ROOT, 'design', 'og', `${name}.html`)), `site/og/${name}.png has no template in design/og/`);
+    const kept = readdirSync(join(SITE, 'og')).filter((f) => f.endsWith('.png')).map((f) => f.slice(0, -4));
+    assert.deepEqual(kept.sort(), [...images].sort(), 'site/og/ holds exactly the previews the pages name');
     assert.match(read('404.html'), /<meta name="robots" content="noindex">/);
 });
 

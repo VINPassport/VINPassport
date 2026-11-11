@@ -74,6 +74,7 @@
     "check:pages": "node scripts/check-pages.mjs",
     "check:facts": "node --test test/app/site-facts.test.mjs",
     "check:a11y": "node scripts/check-a11y.mjs",
+    "check:camera": "node scripts/check-camera.mjs",
     "check:browser": "node scripts/check-browser-circuits.mjs",
     "check:upstream": "node scripts/check-upstream.mjs"
   },

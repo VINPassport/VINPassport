@@ -1,0 +1,46 @@
+<!doctype html>
+<!--
+  Link-preview image for /compliance/ (1200 x 630), rendered by scripts/build-og.mjs to
+  site/og/og-compliance.png. The card is the page's timeline: each passport's date, name and what
+  VINPassport does with it (carries the first, links to the battery passport, is designed to grow
+  into the 2032 one). The headline reads true before and after 29 November 2026, because a preview
+  cannot switch tense the way the page does.
+  Change a word here, then run: node scripts/build-og.mjs og-compliance
+  SPDX-License-Identifier: Apache-2.0
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>og-compliance</title>
+<link rel="stylesheet" href="../../site/assets/vp.css">
+<link rel="stylesheet" href="og.css">
+<style>
+  .og .when { background: var(--paper-raised); border: 1px solid var(--rule); border-radius: var(--radius-doc); box-shadow: var(--shadow-doc); padding: 6px 30px; }
+  .og .when article { display: grid; gap: 6px; padding: 22px 0; border-top: 1px solid var(--rule); }
+  .og .when article:first-child { border-top: 0; }
+  .og .when h2 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 25px; line-height: 1.2; letter-spacing: -.01em; color: var(--ink); }
+  .og .when .chip { justify-self: start; font-size: 15px; }
+  .og .when .chip--ours { border-color: var(--passport-blue); color: var(--passport-blue); }
+</style>
+</head>
+<body>
+<div class="og">
+  <div class="wave" aria-hidden="true"><img src="../../site/assets/brand/wave-a.svg" alt=""><img src="../../site/assets/brand/wave-a.svg" alt=""></div>
+  <div class="side">
+    <img class="logo" src="../../site/assets/brand/vinpassport-logo-horizontal-primary.svg" alt="VINPassport">
+    <div class="words">
+      <div class="eyebrow">Compliance</div>
+      <h1 class="title">Three EU vehicle passports, and when each applies.</h1>
+    </div>
+    <div class="url">passport.vin/compliance</div>
+  </div>
+  <div class="card-at" style="top: 58px;">
+    <div class="when">
+      <article><div class="vp-date">29 NOV 2026</div><h2>Environmental Vehicle Passport</h2><span class="chip chip--ours">VINPassport carries this</span></article>
+      <article><div class="vp-date">18 FEB 2027</div><h2>Battery passport</h2><span class="chip">VINPassport links to it</span></article>
+      <article><div class="vp-date">1 SEP 2032</div><h2>Digital Circularity Vehicle Passport</h2><span class="chip">Designed to grow into it</span></article>
+    </div>
+  </div>
+</div>
+</body>
+</html>

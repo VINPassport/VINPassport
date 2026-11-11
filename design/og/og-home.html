@@ -1,0 +1,55 @@
+<!doctype html>
+<!--
+  Link-preview image for the home page and the pages that share it (1200 x 630), rendered by
+  scripts/build-og.mjs to site/og/og-home.png. The headline is the home page's h1, and the card is
+  the home hero's sample passport, line for line. It carries no stamp: /v/ shares this picture,
+  and a preview must not show a result the linked passport may not have.
+  Change a word here, then run: node scripts/build-og.mjs og-home
+  SPDX-License-Identifier: Apache-2.0
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>og-home</title>
+<link rel="stylesheet" href="../../site/assets/vp.css">
+<link rel="stylesheet" href="og.css">
+</head>
+<body>
+<div class="og">
+  <div class="wave" aria-hidden="true"><img src="../../site/assets/brand/wave-a.svg" alt=""><img src="../../site/assets/brand/wave-a.svg" alt=""></div>
+  <div class="side">
+    <img class="logo" src="../../site/assets/brand/vinpassport-logo-horizontal-primary.svg" alt="VINPassport">
+    <div class="words">
+      <div class="eyebrow">Vehicle passports for Euro 7 and beyond</div>
+      <h1 class="title">The vehicle passport, issued at the factory.</h1>
+      <p class="lede">Buyers check it with a scan. Each reader sees only their page.</p>
+    </div>
+    <div class="url">passport.vin</div>
+  </div>
+  <div class="card-at tilt">
+    <div class="vp-datapage">
+      <div class="vp-datapage__head">
+        <div>
+          <div class="vp-label">Sample passport · Page 01</div>
+          <p class="vp-datapage__title">2027 Volta EX4, Glacier White</p>
+        </div>
+        <img src="../../site/assets/brand/vinpassport-icon-primary.svg" alt="" style="flex: none;">
+      </div>
+      <div class="vp-fields">
+        <div><div class="vp-label">Issued by</div><div class="vp-field__value">Volta Automotive AG</div></div>
+        <div><div class="vp-label">Date of issue</div><div class="vp-field__value">14 MAR 2027</div></div>
+        <div><div class="vp-label">Vehicle type</div><div class="vp-field__value">M1 · EURO 7</div></div>
+        <div><div class="vp-label">VIN ends</div><div class="vp-field__value">4417</div></div>
+      </div>
+      <ul class="vp-verdicts">
+        <li class="vp-verdict vp-verdict--verified"><span class="vp-verdict__icon"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"></path></svg></span><span class="vp-verdict__q">Never written off</span><span class="vp-verdict__state">Verified</span></li>
+        <li class="vp-verdict vp-verdict--verified"><span class="vp-verdict__icon"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"></path></svg></span><span class="vp-verdict__q">No reported accidents</span><span class="vp-verdict__state">Verified</span></li>
+        <li class="vp-verdict vp-verdict--verified"><span class="vp-verdict__icon"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"></path></svg></span><span class="vp-verdict__q">One keeper from new</span><span class="vp-verdict__state">Verified</span></li>
+        <li class="vp-verdict vp-verdict--verified"><span class="vp-verdict__icon"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"></path></svg></span><span class="vp-verdict__q">Under 150,000&nbsp;km</span><span class="vp-verdict__state">Verified</span></li>
+      </ul>
+      <div class="vp-mrz" aria-hidden="true" style="margin-top: 14px;">P&lt;VINPASSPORT&lt;&lt;VOLTA&lt;EX4&lt;&lt;&lt;&lt;4417&lt;270314</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -219,8 +219,11 @@ textarea.input{padding:10px 12px;min-height:110px;resize:vertical}
 .vp-menu>a[aria-current="page"]{color:var(--passport-blue)}
 .vp-menu .vp-btn{justify-content:center;margin-top:8px}
 .vp-menu .vp-btn--primary{margin-top:20px}
+/* With the menu, the bar's last piece is the menu button, whose icon sits 10 px inside its 44 px
+   target; the bar gives up those 10 px on the right so the icon, not the invisible target, meets
+   the content's edge. */
 @media (max-width:1199px){
-  .vp-bar{gap:4px}
+  .vp-bar{gap:4px;padding-right:14px}
   .vp-menu{padding-left:24px;padding-right:24px}
   .vp-nav,.vp-actions{display:none}
   .vp-icon-btn{display:grid}
@@ -231,7 +234,7 @@ textarea.input{padding:10px 12px;min-height:110px;resize:vertical}
 @media (max-width:899px){
   .vp-band__long{display:none}
   .vp-band__short{display:inline}
-  .vp-bar{padding:8px clamp(16px,4vw,24px);gap:2px}
+  .vp-bar{padding:8px calc(clamp(16px,4vw,24px) - 10px) 8px clamp(16px,4vw,24px);gap:2px}
   .vp-menu{padding-left:clamp(16px,4vw,24px);padding-right:clamp(16px,4vw,24px)}
   .vp-bar .vp-logo img{height:36px}
 }
@@ -308,13 +311,25 @@ textarea.input{padding:10px 12px;min-height:110px;resize:vertical}
 .scan-qr svg{width:176px;height:176px}
 .scan-frame{display:none;position:relative;width:100%;max-width:300px;height:220px;border-radius:var(--radius-doc);background:var(--paper-deep);border:1px solid var(--rule)}
 .scan-frame i{position:absolute;width:34px;height:34px;border:4px solid var(--passport-blue);box-sizing:border-box}
-.scan-frame i:nth-child(1){left:calc(50% - 85px);top:25px;border-right:0;border-bottom:0;border-top-left-radius:10px}
-.scan-frame i:nth-child(2){right:calc(50% - 85px);top:25px;border-left:0;border-bottom:0;border-top-right-radius:10px}
-.scan-frame i:nth-child(3){left:calc(50% - 85px);bottom:25px;border-right:0;border-top:0;border-bottom-left-radius:10px}
-.scan-frame i:nth-child(4){right:calc(50% - 85px);bottom:25px;border-left:0;border-top:0;border-bottom-right-radius:10px}
+.scan-frame i:nth-of-type(1){left:calc(50% - 85px);top:25px;border-right:0;border-bottom:0;border-top-left-radius:10px}
+.scan-frame i:nth-of-type(2){right:calc(50% - 85px);top:25px;border-left:0;border-bottom:0;border-top-right-radius:10px}
+.scan-frame i:nth-of-type(3){left:calc(50% - 85px);bottom:25px;border-right:0;border-top:0;border-bottom-left-radius:10px}
+.scan-frame i:nth-of-type(4){right:calc(50% - 85px);bottom:25px;border-left:0;border-top:0;border-bottom-right-radius:10px}
 .scan-demo__ids{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;align-items:baseline;margin:4px 0 8px}
 .scan-demo__ids dd{margin:0;overflow-wrap:anywhere}
 @media (max-width:899px){.scan-qr,.scan-qr__note{display:none}.scan-frame{display:block}}
+/* The camera scan (scan/camera.mjs). The button shows where the camera view does, on a phone or any
+   touch screen, and only once the browser offers a camera; while it runs, the frame holds the live
+   view in place of the drawing (or of the QR code, on a tablet held wide). */
+.scan-cam{display:none;justify-content:center}
+@media (max-width:899px),(pointer:coarse){.scan-cam{display:inline-flex}}
+.scan-cam[hidden]{display:none}
+.scan-cam__status:empty{display:none}
+.scan-video{display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.scan-frame i{z-index:1}
+.scan-phone.is-scanning .scan-qr,.scan-phone.is-scanning .scan-qr__note{display:none}
+.scan-phone.is-scanning .scan-frame{display:block;height:280px;overflow:hidden}
+.scan-phone.is-scanning .scan-video{display:block}
 /* The stamp lands from 1.6 times its size; near the right edge that overshoot would widen the page
    for a moment (a sideways wobble on phones). The section is full width, so clipping it cuts only
    what is off screen. clip, not hidden: no scroll container, so nothing sticky breaks. */

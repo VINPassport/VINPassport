@@ -1,5 +1,5 @@
 /**
- * Render the link-preview images that carry numbers, so a number that moves is
+ * Render the link-preview images, so a word or number that moves is
  * one edit and one command, not a trip back to a design tool.
  *
  *   node scripts/build-og.mjs              every design/og/*.html to site/og/<name>.png
