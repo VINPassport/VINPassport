@@ -242,7 +242,7 @@ export ledger grants: Map<Bytes<32>, Tier>;
 // membership. Two powers, two sets of hands.
 //
 // proposal -> approvals so far, for a change not yet carried out.
-export ledger registrarApprovals: Map<Bytes<32>, Uint<8>>;
+export ledger registrarApprovals: Map<Bytes<32>, Uint<64>>;
 // hash(proposal, approver): who has approved what, so nobody approves twice.
 export ledger registrarBallots: Set<Bytes<32>>;
 // Moves on every change carried out. A proposal names the epoch it was made
@@ -253,6 +253,7 @@ constructor(registrars: Vector<4, Bytes<32>>) {
   for (const id of registrars) {
     allowedRegistrars.insert(disclose(id));
   }
+  assert(allowedRegistrars.size() >= 2, "at least two distinct registrars, or the set can never change");
 }
 
 // ---------------------------------------------------------------- private state
@@ -418,6 +419,24 @@ circuit actingRegistrar(vinHash: Bytes<32>): Bytes<32> {
   return id;
 }
 
+// The caller, proven to be a current registrar that may take rights away on
+// this vehicle: its own registrar, or any current registrar once the vehicle's
+// registrar was removed. Only withdrawing and revoking use it, so a removed
+// registrar's writers and grants can be ended without anyone gaining a right.
+circuit stewardFor(vinHash: Bytes<32>): Bytes<32> {
+  const id = disclose(registrarIdOf(registrarSecret()));
+  assert(allowedRegistrars.member(id), "not an authorised registrar");
+  const owner = registrar.lookup(vinHash);
+  assert(owner == id || !allowedRegistrars.member(owner), "not the registrar for this vehicle");
+  return id;
+}
+
+// More than half of the current registrars, for every change to the set or to
+// a passport. With two registrars both must approve, with four three must.
+circuit isMajority(approvals: Uint<64>): Boolean {
+  return (approvals as Uint<66>) + (approvals as Uint<66>) > (allowedRegistrars.size() as Uint<66>);
+}
+
 // Announce a state change (D29): its kind, a constant at every call site, and
 // its subject. See PassportEvent.
 circuit announce(kind: Bytes<32>, subject: Bytes<32>): [] {
@@ -487,7 +506,7 @@ export circuit withdrawWriter(
   writerId: Bytes<32>
 ): [] {
   assert(passports.member(disclose(vinHash)), "unknown passport");
-  const id = actingRegistrar(disclose(vinHash));
+  const id = stewardFor(disclose(vinHash));
   const key = writerKeyOf(disclose(vinHash), disclose(writerId));
   assert(writers.member(key), "not a writer for this vehicle");
   writers.remove(key);
@@ -526,7 +545,7 @@ export circuit revokeDisclosure(
   granteeId: Bytes<32>
 ): [] {
   assert(passports.member(disclose(vinHash)), "unknown passport");
-  const id = actingRegistrar(disclose(vinHash));
+  const id = stewardFor(disclose(vinHash));
   const key = grantKeyOf(disclose(vinHash), disclose(granteeId));
   assert(grants.member(key), "no grant for this identity on this vehicle");
   grants.remove(key);
@@ -542,10 +561,10 @@ export circuit initialiseField(
 ): [] {
   assert(passports.member(disclose(vinHash)), "unknown passport");
 
-  // The registrar for this vehicle, or an identity it authorised. The caller
-  // proves they hold the secret behind one of those identities; the identity
-  // itself is recorded against the field below.
-  const writer = writerFor(disclose(vinHash));
+  // Only the vehicle's registrar creates a field, because creating it fixes
+  // its rule. A writer it admitted records values under that rule, and could
+  // otherwise create the odometer under the rule that lets it fall.
+  const writer = actingRegistrar(disclose(vinHash));
 
   const slot = slotOf(
     disclose(vinHash), disclose(fieldKey), passports.lookup(disclose(vinHash))
@@ -873,12 +892,12 @@ export circuit proposalKeyOf(add: Boolean, registrarId: Bytes<32>, epoch: Uint<6
 
 // Approve adding (`add` true) or removing a registrar. The caller proves it is
 // a current registrar, as everywhere else, by the secret behind its identity.
-// The second distinct approval of the same change, in the same epoch, carries
-// it out; the epoch then moves, and every approval given before it is spent.
+// The approval that makes a majority of the current set carries the change
+// out; the epoch then moves, and every approval given before it is spent.
 //
 // A removal may not leave fewer than two registrars, or the set could never
 // change again. Removing a registrar does not touch what it registered: see
-// writerFor and actingRegistrar.
+// writerFor, actingRegistrar and stewardFor.
 export circuit approveRegistrarChange(add: Boolean, registrarId: Bytes<32>): [] {
   const approver = disclose(registrarIdOf(registrarSecret()));
   assert(allowedRegistrars.member(approver), "not an authorised registrar");
@@ -890,15 +909,7 @@ export circuit approveRegistrarChange(add: Boolean, registrarId: Bytes<32>): [] 
   assert(adding || allowedRegistrars.size() > 2, "removing it would leave fewer than two registrars");
 
   const proposal = proposalKeyOf(adding, id, registrarEpoch.read());
-  const ballot = persistentHash<Vector<3, Bytes<32>>>([pad(32, "vinpassport:ballot:v1"), proposal, approver]);
-  assert(!registrarBallots.member(ballot), "already approved by this registrar");
-  registrarBallots.insert(ballot);
-
-  const before = registrarApprovals.member(proposal) ? registrarApprovals.lookup(proposal) : 0 as Uint<8>;
-  const count = (before + 1) as Uint<8>;
-  announce(pad(32, "registrarApproval"), proposal);
-
-  if (count >= 2) {
+  if (castBallot(proposal, approver)) {
     if (adding) {
       allowedRegistrars.insert(id);
       announce(pad(32, "registrarAdded"), proposal);
@@ -906,11 +917,95 @@ export circuit approveRegistrarChange(add: Boolean, registrarId: Bytes<32>): [] 
       allowedRegistrars.remove(id);
       announce(pad(32, "registrarRemoved"), proposal);
     }
+    registrarEpoch.increment(1);
+  }
+}
+
+// A change to one passport: its content root and its registrar, named for the
+// epoch it was proposed in. Exported for the same reason as proposalKeyOf.
+export circuit passportProposalKeyOf(
+  vinHash: Bytes<32>,
+  contentRoot: Bytes<32>,
+  newRegistrar: Bytes<32>,
+  epoch: Uint<64>
+): Bytes<32> {
+  return persistentHash<Vector<5, Bytes<32>>>([
+    pad(32, "vinpassport:passport-change:v1"), vinHash, contentRoot, newRegistrar, epoch as Bytes<32>
+  ]);
+}
+
+// Approve giving a registered vehicle a new content root and a registrar. It
+// corrects a wrong registration, replaces one made by a registrar that should
+// not have, and hands a removed registrar's vehicle to a successor.
+//
+// Every field starts again under the new root, because the slot binds the
+// root; the earlier history stays on the ledger under the earlier slots.
+// Writers and grants are kept per vehicle, so the new registrar withdraws the
+// ones it does not want.
+export circuit approvePassportChange(
+  vinHash: Bytes<32>,
+  contentRoot: Bytes<32>,
+  newRegistrar: Bytes<32>
+): [] {
+  const approver = disclose(registrarIdOf(registrarSecret()));
+  assert(allowedRegistrars.member(approver), "not an authorised registrar");
+  const vin = disclose(vinHash);
+  const root = disclose(contentRoot);
+  const next = disclose(newRegistrar);
+  assert(passports.member(vin), "unknown passport");
+  assert(allowedRegistrars.member(next), "the new registrar is not a registrar");
+  assert(passports.lookup(vin) != root || registrar.lookup(vin) != next, "the passport already has this root and registrar");
+
+  const proposal = passportProposalKeyOf(vin, root, next, registrarEpoch.read());
+  if (castBallot(proposal, approver)) {
+    passports.insert(vin, root);
+    registrar.insert(vin, next);
+    announce(pad(32, "passportChanged"), vin);
+    registrarEpoch.increment(1);
+  }
+}
+
+// Take back an approval not yet carried out. Every proposal key names its
+// epoch, so an approval of a spent epoch has nothing left to withdraw.
+export circuit withdrawApproval(proposal: Bytes<32>): [] {
+  const approver = disclose(registrarIdOf(registrarSecret()));
+  assert(allowedRegistrars.member(approver), "not an authorised registrar");
+  const key = disclose(proposal);
+  const ballot = ballotOf(key, approver);
+  assert(registrarBallots.member(ballot), "no approval of this proposal by this registrar");
+  assert(registrarApprovals.member(key), "this proposal was already carried out");
+  registrarBallots.remove(ballot);
+  const left = (registrarApprovals.lookup(key) - 1) as Uint<64>;
+  if (left == 0) {
+    registrarApprovals.remove(key);
+  } else {
+    registrarApprovals.insert(key, left);
+  }
+  announce(pad(32, "approvalWithdrawn"), key);
+}
+
+circuit ballotOf(proposal: Bytes<32>, approver: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>([pad(32, "vinpassport:ballot:v1"), proposal, approver]);
+}
+
+// Records one approval of `proposal` and answers whether the change is now
+// carried out. A carried-out proposal leaves no count behind.
+circuit castBallot(proposal: Bytes<32>, approver: Bytes<32>): Boolean {
+  const ballot = ballotOf(proposal, approver);
+  assert(!registrarBallots.member(ballot), "already approved by this registrar");
+  registrarBallots.insert(ballot);
+
+  const before = registrarApprovals.member(proposal) ? registrarApprovals.lookup(proposal) : 0 as Uint<64>;
+  const count = (before + 1) as Uint<64>;
+  announce(pad(32, "registrarApproval"), proposal);
+
+  const carried = isMajority(count);
+  if (carried) {
     if (registrarApprovals.member(proposal)) {
       registrarApprovals.remove(proposal);
     }
-    registrarEpoch.increment(1);
   } else {
     registrarApprovals.insert(proposal, count);
   }
+  return carried;
 }

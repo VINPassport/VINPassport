@@ -16,7 +16,7 @@
 import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
 import { createHash, randomBytes } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join } from 'node:path';
 import { CompiledContract, hashVerifierKey } from '@midnight-ntwrk/midnight-js-protocol/v9/compact-js';
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
 import { NodeZkConfigProvider } from '@midnight-ntwrk/midnight-js-node-zk-config-provider';
@@ -26,7 +26,7 @@ import { SigningKey } from '@midnight-ntwrk/platform-js';
 import { sampleSigningKey, signatureVerifyingKey } from '@midnightntwrk/ledger-v9';
 import { Contract, pureCircuits } from '../../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
 import { networkEndpoints, guardLogs } from './endpoints.mjs';
-import { credentialPath, LOCAL_DIR } from './local-credentials.mjs';
+import { credentialPath, LOCAL_DIR, custodyKeyFile, secretFileFor } from './local-credentials.mjs';
 import { midnightJsProviders } from './wallet9.mjs';
 import { inProcessProofProvider } from './prover9.mjs';
 
@@ -34,7 +34,6 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const BUILD_DIR = join(ROOT, 'contracts', 'vinpassport', 'src', 'managed', 'vinpassport');
 export const MANIFEST = join(BUILD_DIR, 'compiler', 'contract-manifest.json');
 export const recordPath = (network) => join(ROOT, 'deploy', `${network}.json`);
-const SYNCED_FOLDER = /onedrive|dropbox|icloud|google ?drive/i;
 
 /** Circuits with proving keys: every exported circuit that is not pure. */
 export const PROVABLE = Object.freeze([...readFileSync(join(ROOT, 'contracts', 'vinpassport', 'src', 'vinpassport.compact'), 'utf8')
@@ -96,13 +95,15 @@ function keyFile(path, name, make, note) {
  * location and refuses a synced folder.
  */
 export function custodyKey(network, { create = false } = {}) {
-    let path = process.env.VINPASSPORT_CUSTODY_KEY_FILE?.trim();
-    if (network === 'mainnet') {
-        if (!path) throw new Error('mainnet needs VINPASSPORT_CUSTODY_KEY_FILE; there is no default location.');
-        if (SYNCED_FOLDER.test(resolve(path))) throw new Error(`refusing ${resolve(path)}: a synced folder copies the key off this machine.`);
+    // custodyKeyFile: mainnet needs VINPASSPORT_CUSTODY_KEY_FILE and refuses a synced folder.
+    const path = custodyKeyFile(network);
+    if (!existsSync(path)) {
+        // A mainnet key is made on purpose, never as a side effect of a deploy:
+        // a mistyped path would otherwise create a fresh, unbacked authority.
+        if (!create || network === 'mainnet') {
+            throw new Error(`no custody key at ${path}. Create it with: node scripts/make-custody-key.mjs --network ${network}`);
+        }
     }
-    path = resolve(path || credentialPath(`CUSTODY-KEY.${network}.env`));
-    if (!create && !existsSync(path)) throw new Error(`no custody key at ${path}`);
     const hex = keyFile(path, 'VINPASSPORT_CUSTODY_KEY_HEX', () => sampleSigningKey('schnorr').value,
         `Maintenance custody key for ${network} (schnorr). Never print it, never commit it.`);
     const key = SigningKey.make(hex, 'schnorr');
@@ -117,8 +118,22 @@ function statePassword(network) {
             try { validatePassword(p); return p; } catch { /* rare: a run or sequence; draw again */ }
         }
     };
-    return keyFile(credentialPath(`STATE-PASSWORD.${network}.env`), 'VINPASSPORT_STATE_PASSWORD', make,
+    const path = secretFileFor(network, credentialPath(`STATE-PASSWORD.${network}.env`), 'the state password');
+    return keyFile(path, 'VINPASSPORT_STATE_PASSWORD', make,
         `Encrypts the Midnight.js private state store for ${network}. Losing it loses the stored copy of the custody key.`);
+}
+
+/**
+ * The keys and circuits of a build, checked against its integrity manifest:
+ * by default the one the deploy record on `network` pins.
+ */
+export function zkConfigProvider(network, { buildDir = BUILD_DIR, expectedManifestHash } = {}) {
+    const record = existsSync(recordPath(network)) ? JSON.parse(readFileSync(recordPath(network), 'utf8')) : null;
+    return new NodeZkConfigProvider(buildDir, {
+        verify: 'require',
+        ...(buildDir === BUILD_DIR && record?.build?.manifestSha256 ? { expectedManifestHash: record.build.manifestSha256 } : {}),
+        ...(expectedManifestHash ? { expectedManifestHash } : {})
+    });
 }
 
 /**
@@ -138,18 +153,13 @@ export async function contractProviders(w, state, {
     const { walletProvider, midnightProvider, coinPublicKey } = midnightJsProviders(w, state, {
         onSubmit: (id) => log(`  submitted, transaction id ${id}`)
     });
-    const record = existsSync(recordPath(network)) ? JSON.parse(readFileSync(recordPath(network), 'utf8')) : null;
     const password = statePassword(network);
     const storeDir = join(LOCAL_DIR, 'state', network);
     mkdirSync(storeDir, { recursive: true });
 
     return {
         publicDataProvider: indexerPublicDataProvider({ queryURL: ep.indexerHttpUrl, subscriptionURL: ep.indexerWsUrl }),
-        zkConfigProvider: new NodeZkConfigProvider(buildDir, {
-            verify: 'require',
-            ...(buildDir === BUILD_DIR && record?.build?.manifestSha256 ? { expectedManifestHash: record.build.manifestSha256 } : {}),
-            ...(expectedManifestHash ? { expectedManifestHash } : {})
-        }),
+        zkConfigProvider: zkConfigProvider(network, { buildDir, expectedManifestHash }),
         proofProvider: inProcessProofProvider(proveFrom ?? buildDir, { log }),
         ...(contractModuleProvider ? { contractModuleProvider } : {}),
         privateStateProvider: levelPrivateStateProvider({

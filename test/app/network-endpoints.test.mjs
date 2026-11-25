@@ -163,20 +163,26 @@ test('REPOSITORY ASSERTION: a mainnet deploy needs its vin key first', () => {
     assert.notEqual(at, -1, 'the mainnet guard is missing');
     const block = s.slice(at, at + s.slice(at).indexOf('\n}\n') + 2);
     assert.match(block, /loadVinKeys\('mainnet'\)/);
-    assert.ok(!/sponsor/i.test(s.replace(/^\s*(\*|\/\/).*$/gm, '')), 'a sponsor path is back in the deploy code');
+    // A sponsor pays only through submitPrepared, which falls back to the own wallet (D37).
+    const code = s.replace(/^\s*(\*|\/\/).*$/gm, '');
+    assert.ok(!/sponsorUnbound|sponsorFinalized|buildDeploySponsorable|buildMaintenanceSponsorable/.test(code), 'the deploy hands a transaction to a sponsor outside submitPrepared');
+    assert.match(code, /submitPrepared\(\{ wallet: ownWallet, sponsor, tx: dep\.tx, ttl,/);
 });
 
 test('REPOSITORY ASSERTION: mainnet pins its own registrars, never the demo secrets', () => {
-    assert.match(deploySrc(), /NETWORK === 'mainnet' \? 'REGISTRAR-SECRETS\.mainnet\.env' : 'REGISTRAR-SECRETS\.env'/);
+    // registrarFile has no default on mainnet (test/app/local-secrets.test.mjs).
+    assert.match(deploySrc(), /readRegistrarSlots\(registrarFile\(NETWORK\)\)/);
 });
 
 test('REPOSITORY ASSERTION: mainnet keys have no default location and never sit in a synced folder', () => {
-    for (const [file, envVar] of [[['lib', 'wallet9.mjs'], 'VINPASSPORT_SEED_FILE'], [['lib', 'contract9.mjs'], 'VINPASSPORT_CUSTODY_KEY_FILE']]) {
+    for (const [file, envVar] of [[['lib', 'wallet9.mjs'], 'VINPASSPORT_SEED_FILE'], [['lib', 'local-credentials.mjs'], 'VINPASSPORT_CUSTODY_KEY_FILE'],
+        [['lib', 'local-credentials.mjs'], 'VINPASSPORT_REGISTRAR_FILE']]) {
         const s = src(...file);
         assert.match(s, new RegExp(`mainnet needs ${envVar}`), `${file.join('/')} lets mainnet fall back to a default`);
         assert.match(s, /SYNCED_FOLDER = \/onedrive\|dropbox\|icloud\|google \?drive\/i/);
         assert.match(s, /SYNCED_FOLDER\.test\(resolve\(/);
     }
+    assert.match(src('lib', 'contract9.mjs'), /custodyKeyFile\(network\)/, 'the custody key path comes from custodyKeyFile');
 });
 
 test('REPOSITORY ASSERTION: the wallet reads endpoints for the network it was opened on', () => {

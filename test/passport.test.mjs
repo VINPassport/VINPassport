@@ -20,8 +20,10 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
     PassportSimulator, Rule, Tier, bytes32, hex, fieldKey, pureCircuits,
     REGISTRAR_SECRET, REGISTRAR_ID, SECOND_SECRET, SECOND_ID, OUTSIDER_SECRET,
-    DEALER_SECRET, DEALER_ID, GARAGE_SECRET, GARAGE_ID, AUTHORITY_ID
+    DEALER_SECRET, DEALER_ID, GARAGE_SECRET, GARAGE_ID, AUTHORITY_ID, witnesses
 } from './passport-simulator.mjs';
+import { createConstructorContext } from '@midnight-ntwrk/compact-runtime';
+import { Contract } from '../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
 
 const VIN_A = bytes32(0x11);
 const VIN_B = bytes32(0x22);
@@ -230,13 +232,13 @@ describe('registrar authority', () => {
         expect(sim.ledger.registrar.isEmpty()).toBe(true);
     });
 
-    it('cannot be widened by any circuit: the deploy list is the whole list', async () => {
+    it('registering and writing leave the registrar set alone: only a majority approval changes it (D38)', async () => {
         const before = sim.ledger.allowedRegistrars.size();
         await registered();
 
         expect(sim.ledger.allowedRegistrars.size()).toBe(before);
         expect(sim.ledger.allowedRegistrars.member(REGISTRAR_ID)).toBe(true);
-        expect(sim.ledger.allowedRegistrars.member(SECOND_ID)).toBe(false);
+        expect(sim.ledger.allowedRegistrars.member(pureCircuits.registrarIdOf(OUTSIDER_SECRET))).toBe(false);
     });
 
     it('stops another listed registrar creating a field on a vehicle it did not register', async () => {
@@ -1333,7 +1335,9 @@ describe('tiered disclosure: one vehicle, three audiences (D26)', () => {
 
         const authority = buildBundle(receipt, 'authority', { fields: ['recycledPlasticPct'] });
         expect(authority.vin).toBe(VIN);
-        expect(verifyBundle(authority, ledger).vinMatchesHash).toBe(true);
+        // The reader names the scheme of the ledger it checks; the bundle's label does not decide it.
+        expect(verifyBundle(authority, { ...ledger, expect: { vinHashScheme: 'blake2b-256' } }).vinMatchesHash).toBe(true);
+        expect(verifyBundle(authority, ledger).vinStatus).toBe('unverified');
 
         const leaky = { ...buildBundle(receipt, 'public'), vin: VIN };
         expect(verifyBundle(leaky, ledger).overDisclosed).toContain('VIN');
@@ -1398,10 +1402,18 @@ describe('a vehicle changes hands', () => {
         await registered();
         await expect(sim.recordField(VIN_A, OWNERS, 2n, S2, undefined, DEALER_SECRET))
             .rejects.toThrow(rejects('not the registrar for this vehicle, and not authorised to write it'));
-        // And it cannot create a field either, which is the other half of
-        // writing and was gated by the same line.
+        // Creating a field fixes its rule, so only the registrar creates one.
         await expect(sim.initialiseField(VIN_A, DECLINING, Rule.neverRises, 1n, S2, DEALER_SECRET))
-            .rejects.toThrow(rejects('not the registrar for this vehicle, and not authorised to write it'));
+            .rejects.toThrow(rejects('not the registrar for this vehicle'));
+    });
+
+    it('a writer it let in records values but never creates a field, so it cannot choose a rule', async () => {
+        await registered();
+        await sim.authoriseWriter(VIN_A, DEALER_ID, REGISTRAR);
+        const fresh = fieldKey('odometerKm.second');
+        await expect(sim.initialiseField(VIN_A, fresh, Rule.neverRises, 300_000n, S2, DEALER_SECRET))
+            .rejects.toThrow(rejects('not the registrar for this vehicle'));
+        expect(sim.ledger.fieldCommitment.member(slotOf(VIN_A, fresh))).toBe(false);
     });
 
     it('the registrar lets it in, and then it can', async () => {
@@ -1534,7 +1546,7 @@ describe('a vehicle changes hands', () => {
         await expect(sim.withdrawWriter(VIN_A, DEALER_ID, SECOND_SECRET))
             .rejects.toThrow(rejects('not the registrar for this vehicle'));
         await expect(sim.withdrawWriter(VIN_A, DEALER_ID, DEALER_SECRET))
-            .rejects.toThrow(rejects('not the registrar for this vehicle'));
+            .rejects.toThrow(rejects('not an authorised registrar'));
         // Still there, so the refusals refused rather than half-applied.
         expect(sim.ledger.writers.member(pureCircuits.writerKeyOf(VIN_A, DEALER_ID))).toBe(true);
     });
@@ -1988,7 +2000,7 @@ describe('events: every state change says which record changed, and how (D29)', 
 
 // ---------------------------------------------------------------- registrar governance (D32)
 
-describe('registrar governance: two current registrars change the set (D32)', () => {
+describe('registrar governance: a majority of the current registrars changes the set (D32)', () => {
     const THIRD_SECRET = bytes32(0x99);
     const THIRD_ID = pureCircuits.registrarIdOf(THIRD_SECRET);
     let gov;
@@ -2069,5 +2081,107 @@ describe('registrar governance: two current registrars change the set (D32)', ()
         expect(gov.ledger.registrarApprovals.lookup(key)).toBe(1n);
         expect(await gov.read('isRegistrar', REGISTRAR_ID)).toBe(true);
         expect(await gov.read('isRegistrar', THIRD_ID)).toBe(false);
+    });
+
+    const addThird = async () => {
+        await gov.approveRegistrarChange(true, THIRD_ID, REGISTRAR_SECRET);
+        await gov.approveRegistrarChange(true, THIRD_ID, SECOND_SECRET);
+    };
+
+    it('a change needs a majority of the set: with four registrars two approvals are not enough', async () => {
+        const FOURTH_SECRET = bytes32(0x98);
+        const FOURTH_ID = pureCircuits.registrarIdOf(FOURTH_SECRET);
+        const FIFTH_ID = pureCircuits.registrarIdOf(bytes32(0x97));
+        await addThird();
+        await gov.approveRegistrarChange(true, FOURTH_ID, REGISTRAR_SECRET);
+        await gov.approveRegistrarChange(true, FOURTH_ID, THIRD_SECRET);
+        expect(isRegistrar(FOURTH_ID)).toBe(true);
+        await gov.approveRegistrarChange(true, FIFTH_ID, REGISTRAR_SECRET);
+        await gov.approveRegistrarChange(true, FIFTH_ID, SECOND_SECRET);
+        expect(isRegistrar(FIFTH_ID)).toBe(false);
+        await gov.approveRegistrarChange(true, FIFTH_ID, FOURTH_SECRET);
+        expect(isRegistrar(FIFTH_ID)).toBe(true);
+    });
+
+    it('an approval can be taken back before it is carried out, and not after', async () => {
+        await addThird();
+        const FOURTH_ID = pureCircuits.registrarIdOf(bytes32(0x98));
+        const key = pureCircuits.proposalKeyOf(true, FOURTH_ID, 1n);
+        await gov.approveRegistrarChange(true, FOURTH_ID, REGISTRAR_SECRET);
+        await gov.withdrawApproval(key, REGISTRAR_SECRET);
+        expect(gov.ledger.registrarApprovals.member(key)).toBe(false);
+        await expect(gov.withdrawApproval(key, REGISTRAR_SECRET)).rejects.toThrow(rejects('no approval of this proposal by this registrar'));
+        await gov.approveRegistrarChange(true, FOURTH_ID, SECOND_SECRET);
+        expect(isRegistrar(FOURTH_ID)).toBe(false);
+        await gov.approveRegistrarChange(true, FOURTH_ID, THIRD_SECRET);
+        expect(isRegistrar(FOURTH_ID)).toBe(true);
+        await expect(gov.withdrawApproval(key, SECOND_SECRET)).rejects.toThrow(rejects('this proposal was already carried out'));
+    });
+
+    it('a removed registrar cannot take back an approval it gave while it was one', async () => {
+        await addThird();
+        const FOURTH_ID = pureCircuits.registrarIdOf(bytes32(0x98));
+        const pending = pureCircuits.proposalKeyOf(true, FOURTH_ID, 1n);
+        await gov.approveRegistrarChange(true, FOURTH_ID, SECOND_SECRET);
+        await gov.approveRegistrarChange(false, SECOND_ID, REGISTRAR_SECRET);
+        await gov.approveRegistrarChange(false, SECOND_ID, THIRD_SECRET);
+        expect(isRegistrar(SECOND_ID)).toBe(false);
+        await expect(gov.withdrawApproval(pending, SECOND_SECRET)).rejects.toThrow(rejects('not an authorised registrar'));
+        expect(gov.ledger.registrarApprovals.member(pending)).toBe(true);
+    });
+
+    it("any current registrar ends the writers and grants on a removed registrar's vehicle, and gives none", async () => {
+        await addThird();
+        await gov.registerPassport(VIN_A, ROOT, SECOND_SECRET);
+        await gov.authoriseWriter(VIN_A, DEALER_ID, SECOND_SECRET);
+        await gov.grantDisclosure(VIN_A, GARAGE_ID, Tier.trade, SECOND_SECRET);
+        await expect(gov.withdrawWriter(VIN_A, DEALER_ID, THIRD_SECRET)).rejects.toThrow(rejects('not the registrar for this vehicle'));
+
+        await gov.approveRegistrarChange(false, SECOND_ID, REGISTRAR_SECRET);
+        await gov.approveRegistrarChange(false, SECOND_ID, THIRD_SECRET);
+        await gov.withdrawWriter(VIN_A, DEALER_ID, THIRD_SECRET);
+        await gov.revokeDisclosure(VIN_A, GARAGE_ID, REGISTRAR_SECRET);
+        expect(gov.ledger.writers.member(pureCircuits.writerKeyOf(VIN_A, DEALER_ID))).toBe(false);
+        expect(gov.ledger.grants.member(pureCircuits.grantKeyOf(VIN_A, GARAGE_ID))).toBe(false);
+        await expect(gov.authoriseWriter(VIN_A, GARAGE_ID, THIRD_SECRET)).rejects.toThrow(rejects('not the registrar for this vehicle'));
+        await expect(gov.grantDisclosure(VIN_A, DEALER_ID, Tier.trade, THIRD_SECRET)).rejects.toThrow(rejects('not the registrar for this vehicle'));
+    });
+
+    it('a majority gives a passport a new root and registrar, and its fields start again', async () => {
+        const NEW_ROOT = bytes32(0x5a);
+        await gov.registerPassport(VIN_A, ROOT, REGISTRAR_SECRET);
+        await gov.initialiseField(VIN_A, ODO, Rule.neverFalls, 12n, S1, REGISTRAR_SECRET);
+        const n = gov.events.length;
+        await gov.approvePassportChange(VIN_A, NEW_ROOT, SECOND_ID, REGISTRAR_SECRET);
+        expect(hex(gov.ledger.passports.lookup(VIN_A))).toBe(hex(ROOT));
+        await gov.approvePassportChange(VIN_A, NEW_ROOT, SECOND_ID, SECOND_SECRET);
+        expect(hex(gov.ledger.passports.lookup(VIN_A))).toBe(hex(NEW_ROOT));
+        expect(hex(gov.ledger.registrar.lookup(VIN_A))).toBe(hex(SECOND_ID));
+        expect(gov.ledger.registrarEpoch).toBe(1n);
+        expect(gov.eventsSince(n).map((e) => e.kind)).toEqual(['registrarApproval', 'registrarApproval', 'passportChanged']);
+
+        // The old field stays under the old slot; the new root has none yet.
+        expect(gov.ledger.fieldCommitment.member(pureCircuits.slotOf(VIN_A, ODO, ROOT))).toBe(true);
+        expect(gov.ledger.fieldCommitment.member(pureCircuits.slotOf(VIN_A, ODO, NEW_ROOT))).toBe(false);
+        await expect(gov.initialiseField(VIN_A, ODO, Rule.neverFalls, 13n, S2, REGISTRAR_SECRET))
+            .rejects.toThrow(rejects('not the registrar for this vehicle'));
+        await gov.initialiseField(VIN_A, ODO, Rule.neverFalls, 13n, S2, SECOND_SECRET);
+    });
+
+    it('a passport change is refused for an unknown vehicle, a stranger as registrar, or no change at all', async () => {
+        await gov.registerPassport(VIN_A, ROOT, REGISTRAR_SECRET);
+        await expect(gov.approvePassportChange(VIN_B, ROOT, SECOND_ID, REGISTRAR_SECRET)).rejects.toThrow(rejects('unknown passport'));
+        await expect(gov.approvePassportChange(VIN_A, ROOT, THIRD_ID, REGISTRAR_SECRET)).rejects.toThrow(rejects('the new registrar is not a registrar'));
+        await expect(gov.approvePassportChange(VIN_A, ROOT, REGISTRAR_ID, REGISTRAR_SECRET)).rejects.toThrow(rejects('the passport already has this root and registrar'));
+        await expect(gov.approvePassportChange(VIN_A, ROOT, SECOND_ID, OUTSIDER_SECRET)).rejects.toThrow(rejects('not an authorised registrar'));
+    });
+});
+
+describe('deployment', () => {
+    it('refuses a registrar list with fewer than two distinct registrars', async () => {
+        const contract = new Contract(witnesses);
+        const ctx = createConstructorContext({ store: {}, pending: { slot: null, value: 0n, salt: bytes32(0) }, other: null, actor: REGISTRAR_SECRET }, '0'.repeat(64));
+        await expect(contract.initialState(ctx, [REGISTRAR_ID, REGISTRAR_ID, REGISTRAR_ID, REGISTRAR_ID]))
+            .rejects.toThrow(/at least two distinct registrars/);
     });
 });

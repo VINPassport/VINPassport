@@ -50,15 +50,85 @@ function fakeChain(dealer, { failAt = new Map() } = {}) {
             return { public: { txId: `id${height}`, txHash: `${height}`.padStart(64, '0'), blockHeight: height, fees: { paidFees: '1000', estimatedFees: '1100' } } };
         }
     });
+    const synced = async () => ({ unshielded: { availableCoins: [], balances: {} }, dust: { balance: () => 5n, availableCoins: [] } });
+    const self = { found: { callTx }, w: { synced, wallet: { waitForSyncedState: synced } } };
+    const chain = {
+        network: 'preview', record: { contractAddress: 'ab'.repeat(32), ledger: 'v9' },
+        registrar, dealer, holder, witnesses, arm, sponsor: null, self,
+        openSelf: async () => { chain.self = self; return self; }
+    };
+    return { calls, chain, witnesses, holder };
+}
+
+/**
+ * A sponsor that builds the way nightgate-tx does: it runs the call's `before`
+ * hook, then the circuit reads the witnesses. `outcomes` maps a call number to
+ * the error that call ends with.
+ */
+function fakeSponsor({ witnesses, holder }, { outcomes = new Map() } = {}) {
+    const calls = [];
+    let height = 500;
     return {
         calls,
-        chain: {
-            network: 'preview', record: { contractAddress: 'ab'.repeat(32), ledger: 'v9' },
-            registrar, dealer, holder, arm, found: { callTx },
-            w: { wallet: { waitForSyncedState: async () => ({ unshielded: { availableCoins: [], balances: {} }, dust: { balance: () => 5n, availableCoins: [] } }) } }
+        sponsor: {
+            baseUrl: 'https://sponsor.example',
+            async call({ call, idempotencyKey }) {
+                const n = calls.length + 1;
+                call.before();
+                const ctx = { privateState: undefined };
+                calls.push({ circuitId: call.circuitId, idempotencyKey, armed: holder.armed, newValue: witnesses.newValue(ctx)[1] });
+                if (outcomes.has(n)) throw outcomes.get(n);
+                height += 1;
+                return { txId: `sp${height}`, txHash: `${height}`.padStart(64, '0'), blockHeight: height };
+            },
+            close: async () => { }
         }
     };
 }
+
+test('with a sponsor every call goes to it, armed, each under its own key, and the own wallet is never opened', async () => {
+    await identities();
+    const { chain, calls: own, witnesses, holder } = fakeChain(null);
+    const { sponsor, calls } = fakeSponsor({ witnesses, holder });
+    Object.assign(chain, { sponsor, self: null });
+    const receipt = await executeRun(chain, { ...guidedIntake(null), kind: 'guided' }, { save: false });
+    assert.equal(own.length, 0);
+    assert.equal(chain.self, null);
+    assert.equal(calls.length, receipt.onChain.length);
+    assert.ok(receipt.onChain.every((c) => c.paidBy === 'sponsor' && c.dustBefore === null));
+    assert.ok(calls.every((c, i) => c.armed === receipt.onChain[i].calls[0]));
+    assert.equal(new Set(calls.map((c) => c.idempotencyKey)).size, calls.length);
+});
+
+test('a sponsored call that cannot have changed the contract is paid by the own wallet instead', async () => {
+    await identities();
+    const { chain, calls: own, witnesses, holder } = fakeChain(null);
+    const refused = Object.assign(new Error('403 not in the grant'), { outcome: 'not-applied' });
+    const { sponsor } = fakeSponsor({ witnesses, holder }, { outcomes: new Map([[2, refused]]) });
+    Object.assign(chain, { sponsor, self: null });
+    const receipt = await executeRun(chain, { ...guidedIntake(null), kind: 'guided' }, { save: false });
+    assert.equal(own.length, 1);
+    assert.equal(receipt.onChain[1].paidBy, 'own wallet');
+    assert.equal(receipt.onChain[2].paidBy, 'sponsor');
+});
+
+test('a call with no known outcome stops the run, is never sent again, and its opening stays in the receipt', async () => {
+    await identities();
+    const { chain, calls: own, witnesses, holder } = fakeChain(null);
+    const lost = Object.assign(new Error('socket hang up'), { outcome: 'unknown' });
+    const intake = { ...guidedIntake(null), kind: 'guided' };
+    // The first call registers; the second creates a field, whose opening must survive.
+    const { sponsor, calls } = fakeSponsor({ witnesses, holder }, { outcomes: new Map([[2, lost]]) });
+    Object.assign(chain, { sponsor, self: null });
+    const err = await executeRun(chain, intake, { save: false }).then(() => null, (e) => e);
+    assert.ok(err);
+    assert.equal(err.outcome, 'unknown');
+    assert.equal(calls.length, 2);
+    assert.equal(own.length, 0);
+    assert.equal(err.partial.unconfirmed.call, 2);
+    const written = Object.values(err.partial.receipt.fields).flat();
+    assert.ok(written.some((w) => w.value === String(calls[1].newValue)), 'the unconfirmed write keeps its opening');
+});
 
 test('the guided run: one call per transaction, each armed, values matching the receipt', async () => {
     await identities();

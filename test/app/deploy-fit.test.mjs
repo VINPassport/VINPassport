@@ -19,8 +19,10 @@ import { createConstructorContext, ContractMaintenanceAuthority } from '@midnigh
 import { ContractState, LedgerParameters, sampleSigningKey, signatureVerifyingKey } from '@midnightntwrk/ledger-v9';
 import { Contract } from '../../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
 import { BUILD_DIR, PROVABLE, refusingWitnesses } from '../../scripts/lib/contract9.mjs';
-import { BLOCK_BUDGET, READ_CIRCUITS, deployOrder, planDeploy, custodyInserts, blockShare, deployTx, subsetState } from '../../scripts/lib/deploy-fit.mjs';
-import { checkSignatures } from '../../scripts/lib/maintenance9.mjs';
+import {
+    BLOCK_BUDGET, READ_CIRCUITS, deployOrder, planDeploy, custodyInserts, custodyInsertStep, blockShare, deployTx, subsetState
+} from '../../scripts/lib/deploy-fit.mjs';
+import { checkSignatures, fingerprint } from '../../scripts/lib/maintenance9.mjs';
 
 const fixture = JSON.parse(readFileSync(new URL('../fixtures/ledger-parameters.preview.json', import.meta.url), 'utf8'));
 const params = LedgerParameters.deserialize(Buffer.from(fixture.hex, 'hex'));
@@ -81,6 +83,25 @@ test('a key nobody holds cannot sign the inserts', async () => {
         network: 'preview', contractAddress: 'ab'.repeat(32), circuits: plan.rest,
         keysDir: join(BUILD_DIR, 'keys'), custody: stranger, counter: 0n, params, ttl
     }), /not a member of the authority/);
+});
+
+test('a step rebuilt just before it is sent signs the same update the plan fitted', async () => {
+    // deploy.mjs plans every step at once, then builds each again with a fresh
+    // ttl right before sending it. The rebuild must sign exactly what was planned.
+    const full = await fullState();
+    const plan = planDeploy(full, PROVABLE, params, { network: 'preview', ttl });
+    const [planned] = custodyInserts({
+        network: 'preview', contractAddress: 'ab'.repeat(32), circuits: plan.rest,
+        keysDir: join(BUILD_DIR, 'keys'), custody, counter: 0n, params, ttl
+    });
+    const later = new Date(ttl.getTime() + 45 * 60_000);
+    const rebuilt = custodyInsertStep({
+        network: 'preview', contractAddress: 'ab'.repeat(32), circuits: planned.circuits,
+        keysDir: join(BUILD_DIR, 'keys'), custody, counter: planned.counter, ttl: later
+    });
+    assert.equal(fingerprint(rebuilt.proposal), fingerprint(planned.proposal));
+    assert.equal(checkSignatures(rebuilt.proposal).valid.length, 1);
+    assert.ok(blockShare(rebuilt.tx, params).share <= BLOCK_BUDGET);
 });
 
 test('a build that fits deploys in one transaction', async () => {

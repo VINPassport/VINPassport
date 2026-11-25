@@ -1,7 +1,13 @@
 /**
  * Generate the registrar authority secrets and derive their public identities.
  *
- *   node scripts/make-registrar-secrets.mjs
+ *   node scripts/make-registrar-secrets.mjs [--network preview]
+ *   VINPASSPORT_REGISTRAR_FILE=<path outside any synced folder> node scripts/make-registrar-secrets.mjs --network mainnet
+ *
+ * The file is the one every reader uses (`registrarFile` in
+ * scripts/lib/local-credentials.mjs): VINPASSPORT_REGISTRAR_FILE when set,
+ * else `_local-tracking/REGISTRAR-SECRETS.env`. Mainnet has no default: the
+ * variable must name the file, and a synced folder is refused.
  *
  * A registrar's SECRET is what it holds; its ID is what the chain records. The
  * id is derived here with the contract's own `registrarIdOf`, never
@@ -33,15 +39,19 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-import { writeFileSync, readFileSync, existsSync, mkdirSync, renameSync, copyFileSync } from 'node:fs';
+import { readFileSync, existsSync, copyFileSync } from 'node:fs';
 import { randomBytes } from 'node:crypto';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
 import { pureCircuits } from '../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
+import { checkNetwork } from './lib/endpoints.mjs';
+import { registrarFile } from './lib/local-credentials.mjs';
+import { writeFileAtomic } from './lib/files.mjs';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const OUT_DIR = join(ROOT, '..', '_local-tracking');
-const OUT = join(OUT_DIR, 'REGISTRAR-SECRETS.env');
+const networkArg = process.argv.indexOf('--network');
+let OUT;
+try { OUT = registrarFile(checkNetwork(networkArg === -1 ? 'preview' : process.argv[networkArg + 1])); } catch (e) {
+    console.error(`make-registrar-secrets: ${e.message}`);
+    process.exit(1);
+}
 
 const LABELS = ['A', 'B', 'C', 'D'];
 const ROLE = {
@@ -125,13 +135,10 @@ for (const r of registrars) {
     lines.push('');
 }
 
-mkdirSync(OUT_DIR, { recursive: true });
 if (existsSync(OUT)) copyFileSync(OUT, `${OUT}.bak`);
 // temp then rename, so an interrupted write cannot leave a half file where
 // the only copy of a secret used to be
-const tmp = `${OUT}.tmp`;
-writeFileSync(tmp, lines.join('\n'), { encoding: 'utf8', mode: 0o600 });
-renameSync(tmp, OUT);
+writeFileAtomic(OUT, lines.join('\n'), { mode: 0o600 });
 
 console.log(`added registrar${added.length > 1 ? 's' : ''} ${added.join(', ')} to ${OUT}`);
 if (existsSync(`${OUT}.bak`)) console.log(`previous file kept at ${OUT}.bak`);

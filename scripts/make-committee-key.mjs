@@ -23,7 +23,8 @@ import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sampleSigningKey, signatureVerifyingKey } from '@midnightntwrk/ledger-v9';
 import { requireBuildableNetwork } from './lib/eras.mjs';
-import { credentialPath } from './lib/local-credentials.mjs';
+import { credentialPath, refuseSyncedFolder } from './lib/local-credentials.mjs';
+import { writeJsonAtomic } from './lib/files.mjs';
 
 const arg = (flag) => {
     const i = process.argv.indexOf(flag);
@@ -39,11 +40,10 @@ try { requireBuildableNetwork(network); } catch (e) { fail(e.message); }
 if (!/^[a-z0-9-]{1,32}$/.test(member)) fail('--member is a short name: lower case letters, digits and hyphens');
 if (!['schnorr', 'ecdsa'].includes(kind)) fail('--kind is schnorr or ecdsa');
 
-const SYNCED = /onedrive|dropbox|icloud|google ?drive/i;
 let out = arg('--out');
 if (network === 'mainnet') {
     if (!out) fail('mainnet has no default location. Pass --out with a path outside any synced folder.');
-    if (SYNCED.test(resolve(out))) fail(`refusing ${resolve(out)}: a synced folder copies the key off this machine.`);
+    try { refuseSyncedFolder(out); } catch (e) { fail(e.message); }
 }
 out = resolve(out ?? credentialPath(`COMMITTEE-KEY.${network}.${member}.env`));
 if (existsSync(out)) fail(`${out} exists. A key file is never overwritten.`);
@@ -68,8 +68,7 @@ writeFileSync(out, [
 ].join('\n'), { mode: 0o600, flag: 'wx' });
 
 list.members.push({ name: member, verifyingKey: vk, addedAt: new Date().toISOString().slice(0, 10) });
-mkdirSync(dirname(listPath), { recursive: true });
-writeFileSync(listPath, JSON.stringify(list, null, 2) + '\n');
+writeJsonAtomic(listPath, list);
 
 console.log(`key written to ${out}`);
 console.log(`verifying key (${kind}): ${vk.value}`);

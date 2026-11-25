@@ -95,6 +95,12 @@ export type ImpureCircuits<PS> = {
   approveRegistrarChange(context: __compactRuntime.CircuitContext<PS>,
                          add_0: boolean,
                          registrarId_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
+  approvePassportChange(context: __compactRuntime.CircuitContext<PS>,
+                        vinHash_0: Uint8Array,
+                        contentRoot_0: Uint8Array,
+                        newRegistrar_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
+  withdrawApproval(context: __compactRuntime.CircuitContext<PS>,
+                   proposal_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
 }
 
 export type ProvableCircuits<PS> = {
@@ -158,6 +164,12 @@ export type ProvableCircuits<PS> = {
   approveRegistrarChange(context: __compactRuntime.CircuitContext<PS>,
                          add_0: boolean,
                          registrarId_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
+  approvePassportChange(context: __compactRuntime.CircuitContext<PS>,
+                        vinHash_0: Uint8Array,
+                        contentRoot_0: Uint8Array,
+                        newRegistrar_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
+  withdrawApproval(context: __compactRuntime.CircuitContext<PS>,
+                   proposal_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
 }
 
 export type PureCircuits = {
@@ -168,6 +180,10 @@ export type PureCircuits = {
   writerKeyOf(vinHash_0: Uint8Array, writerId_0: Uint8Array): Uint8Array;
   grantKeyOf(vinHash_0: Uint8Array, granteeId_0: Uint8Array): Uint8Array;
   proposalKeyOf(add_0: boolean, registrarId_0: Uint8Array, epoch_0: bigint): Uint8Array;
+  passportProposalKeyOf(vinHash_0: Uint8Array,
+                        contentRoot_0: Uint8Array,
+                        newRegistrar_0: Uint8Array,
+                        epoch_0: bigint): Uint8Array;
 }
 
 export type Circuits<PS> = {
@@ -247,6 +263,17 @@ export type Circuits<PS> = {
   approveRegistrarChange(context: __compactRuntime.CircuitContext<PS>,
                          add_0: boolean,
                          registrarId_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
+  passportProposalKeyOf(context: __compactRuntime.CircuitContext<PS>,
+                        vinHash_0: Uint8Array,
+                        contentRoot_0: Uint8Array,
+                        newRegistrar_0: Uint8Array,
+                        epoch_0: bigint): Promise<__compactRuntime.CircuitResults<PS, Uint8Array>>;
+  approvePassportChange(context: __compactRuntime.CircuitContext<PS>,
+                        vinHash_0: Uint8Array,
+                        contentRoot_0: Uint8Array,
+                        newRegistrar_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
+  withdrawApproval(context: __compactRuntime.CircuitContext<PS>,
+                   proposal_0: Uint8Array): Promise<__compactRuntime.CircuitResults<PS, []>>;
 }
 
 export type Ledger = {

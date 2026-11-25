@@ -644,6 +644,97 @@
         "types": [
         ]
       }
+    },
+    {
+      "name": "passportProposalKeyOf",
+      "pure": true,
+      "proof": false,
+      "arguments": [
+        {
+          "name": "vinHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "contentRoot",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "newRegistrar",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "epoch",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 18446744073709551615
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
+      "name": "approvePassportChange",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "vinHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "contentRoot",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "newRegistrar",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "withdrawApproval",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "proposal",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
     }
   ],
   "witnesses": [
@@ -967,7 +1058,7 @@
       },
       "value": {
         "type-name": "Uint",
-        "maxval": 255
+        "maxval": 18446744073709551615
       }
     },
     {

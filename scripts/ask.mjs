@@ -30,10 +30,9 @@
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { createCircuitContext, ContractState as RuntimeState } from '@midnight-ntwrk/compact-runtime';
-import { ContractState } from '@midnightntwrk/ledger-v9';
-import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
 import { Contract, Tier } from '../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
-import { networkEndpoints, guardLogs } from './lib/endpoints.mjs';
+import { guardLogs } from './lib/endpoints.mjs';
+import { chainReads } from './lib/chain-read9.mjs';
 import { requireBuildableNetwork } from './lib/eras.mjs';
 import { recordPath, refusingWitnesses } from './lib/contract9.mjs';
 import { K } from './lib/scenario.mjs';
@@ -75,13 +74,11 @@ console.log(`contract  ${record.contractAddress} (${network})`);
 console.log(`ask       ${circuit}(${raw.join(', ')})`);
 
 if (!SUBMIT) {
-    const ep = networkEndpoints(network);
-    const pdp = indexerPublicDataProvider({ queryURL: ep.indexerHttpUrl, subscriptionURL: ep.indexerWsUrl });
-    const read = await pdp.queryContractState(record.contractAddress);
-    if (!read) fail('the indexer has no state for this contract');
-    const onChain = read.contractState.deserialize({ v9: ContractState });
-    if (!onChain.operation(circuit)) fail(`${circuit} has no verifier key on chain, so the chain would refuse the call`);
-    const state = RuntimeState.deserialize(read.contractState.serialize());
+    const reads = chainReads(network);
+    const read = await reads.contractState(record.contractAddress);
+    if (!read) fail(`${reads.source} has no state for this contract`);
+    if (!read.state.operation(circuit)) fail(`${circuit} has no verifier key on chain, so the chain would refuse the call`);
+    const state = RuntimeState.deserialize(read.bytes);
     const contract = new Contract(refusingWitnesses());
     const ctx = createCircuitContext({
         circuitId: circuit, contractAddress: record.contractAddress, coinPublicKeyOrZswapState: '0'.repeat(64),
@@ -97,7 +94,8 @@ const chain = await openChain(network, { log: () => { } });
 let code = 0;
 try {
     const t0 = Date.now();
-    const r = await chain.found.callTx[circuit](...args);
+    // The answer comes back only from a call this process submits itself.
+    const r = await (await chain.openSelf()).found.callTx[circuit](...args);
     const pub = r.public;
     console.log(`answer    ${show(r.private.result)}   (accepted by the chain)`);
     console.log(`tx        ${pub.txHash} (id ${pub.txId}) in block ${pub.blockHeight}`);

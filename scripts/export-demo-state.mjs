@@ -92,7 +92,7 @@ const grantAt = (key) => ledger.grants[key] ?? null;
 mkdirSync(BUNDLES, { recursive: true });
 for (const [tier, options] of Object.entries(audiences)) {
     const bundle = buildBundle(receipt, tier, options);
-    const check = verifyBundle(bundle, { commitmentAt, claimAt, grantAt });
+    const check = verifyBundle(bundle, { commitmentAt, claimAt, grantAt, expect: { network: 'local-simulator' } });
     if (!check.ok || check.overDisclosed.length || (tier !== 'public' && !check.grant?.covers)) {
         throw new Error(`the ${tier} bundle does not check against the ledger just written: ${JSON.stringify(check)}`);
     }

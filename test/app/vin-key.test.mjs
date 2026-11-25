@@ -36,7 +36,7 @@ import {
 import { validateManualIntake, randomDemoVin } from '../../scripts/lib/intake-rules.mjs';
 import { vinHash, contentRoot } from '../../scripts/lib/scenario.mjs';
 import {
-    buildBundle, verifyBundle, buildDisclosure, verifyDisclosure, PLAIN_VIN_SCHEME
+    buildBundle, verifyBundle, buildDisclosure, verifyDisclosure, PLAIN_VIN_SCHEME, NETWORK_VIN_SCHEME
 } from '../../scripts/lib/disclosure.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -248,9 +248,20 @@ test('a keyed bundle names its scheme, and a reader reports the VIN unchecked ra
     const bundle = buildBundle(keyedReceipt(), 'authority', { fields: ['odometerKm'] });
     assert.equal(bundle.vinHashScheme, VINKEY_SCHEME);
     assert.equal(bundle.vin, VIN);
-    const r = verifyBundle(bundle);
+    // The reader names the ledger it checks against; preprod keys with the vin key.
+    const r = verifyBundle(bundle, { expect: { network: 'preprod' } });
     assert.equal(r.vinMatchesHash, null);
+    assert.equal(r.vinStatus, 'unverified');
     assert.ok(!r.problems.some((p) => /vin does not hash/.test(p)), 'a keyed VIN was failed as if it were a plain hash');
+    // Stripping the label does not turn a keyed vehicle into a plain one.
+    const stripped = { ...bundle };
+    delete stripped.vinHashScheme;
+    assert.equal(verifyBundle(stripped, { expect: { network: 'preprod' } }).vinStatus, 'unverified');
+});
+
+test('disclosure.mjs names the vin key scheme exactly as vin-key.mjs does', () => {
+    // disclosure.mjs is bundled for the browser and cannot import vin-key.mjs.
+    assert.equal(NETWORK_VIN_SCHEME, VINKEY_SCHEME);
 });
 
 test('a plain receipt still names the plain scheme and is still checked', () => {
@@ -258,8 +269,9 @@ test('a plain receipt still names the plain scheme and is still checked', () => 
     delete plain.vinHashScheme;
     const bundle = buildBundle(plain, 'authority', { fields: ['odometerKm'] });
     assert.equal(bundle.vinHashScheme, PLAIN_VIN_SCHEME);
-    assert.equal(verifyBundle(bundle).vinMatchesHash, true);
-    assert.equal(verifyBundle({ ...bundle, vin: 'WAUZZZF47GA067891' }).vinMatchesHash, false);
+    const local = { expect: { network: 'local-simulator' } };
+    assert.equal(verifyBundle({ ...bundle, network: 'local-simulator' }, local).vinMatchesHash, true);
+    assert.equal(verifyBundle({ ...bundle, network: 'local-simulator', vin: 'WAUZZZF47GA067891' }, local).vinMatchesHash, false);
 });
 
 test('a keyed v1 disclosure carries its scheme and is not failed on the VIN', () => {

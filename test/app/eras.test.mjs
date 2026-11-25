@@ -8,7 +8,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BUILD, NETWORK_LEDGER, BUILDABLE, requireBuildableNetwork, requireRecordLedger } from '../../scripts/lib/eras.mjs';
@@ -34,10 +34,15 @@ test('the compile script pins the compiler, so a routine rebuild cannot change t
 test('package.json installs the runtime and SDK versions BUILD names', () => {
     assert.equal(pkg.dependencies['@midnight-ntwrk/compact-runtime'], BUILD.runtime);
     assert.equal(pkg.dependencies['@midnight-ntwrk/midnight-js-contracts'], BUILD.midnightJs);
-    // Wallet SDK 2.0.0 is facade 5.0.0 (wallet SDK 2.0.0 release notes).
-    assert.equal(pkg.dependencies['@midnightntwrk/wallet-sdk-facade'], '5.0.0');
-    assert.equal(pkg.dependencies['@odatano/nightgate-tx'], undefined,
-        'nightgate-tx is ledger 8 only; it stays at the ledger8-preprod tag');
+    assert.equal(pkg.dependencies['@midnightntwrk/wallet-sdk-facade'], '5.0.1');
+});
+
+test('nightgate-tx pins the same Midnight versions as this package', () => {
+    // Two copies of a wasm package reject each other's objects, so both trees must agree.
+    const tx = JSON.parse(readFileSync(new URL('../../node_modules/@odatano/nightgate-tx/package.json', import.meta.url), 'utf8'));
+    for (const [name, version] of Object.entries(tx.dependencies)) {
+        if (name in pkg.dependencies && /^@midnight/.test(name)) assert.equal(pkg.dependencies[name], version, name);
+    }
 });
 
 test('every known network has a ledger, and only ledger 9 networks are buildable', () => {
@@ -55,11 +60,16 @@ test('a ledger 8 network is refused with a sentence that says where the ledger 8
 });
 
 test('preprod\'s ledger 8 record is not taken for a contract this build can call', () => {
-    // The network moved; the 1 Nov contract and its record did not.
-    assert.throws(() => requireRecordLedger(read('deploy/preprod.json'), 'deploy/preprod.json'), (e) =>
+    // The 1 Nov contract's record, kept as superseded when the ledger 9 deploy replaced it.
+    const old = readdirSync(join(ROOT, 'deploy')).filter((f) => /^preprod-superseded-\d+\.json$/.test(f))
+        .map((f) => `deploy/${f}`).find((p) => read(p).ledger === undefined);
+    assert.ok(old, 'the ledger 8 preprod record is gone');
+    assert.throws(() => requireRecordLedger(read(old), old), (e) =>
         /records a ledger 8 deployment/.test(e.message) && /ledger8-preprod/.test(e.message) && /--redeploy/.test(e.message));
-    const preview = read('deploy/preview.json');
-    assert.equal(requireRecordLedger(preview, 'deploy/preview.json'), preview);
+    for (const p of ['deploy/preview.json', 'deploy/preprod.json']) {
+        const record = read(p);
+        assert.equal(requireRecordLedger(record, p), record);
+    }
 });
 
 test('the listing demo is built by the same pinned compiler', () => {

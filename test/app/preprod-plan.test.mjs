@@ -156,16 +156,26 @@ test('GROWS names the map each inserting circuit grows, read from the contract',
     // freely and could cross a size; this keeps the table in step.
     const src = readFileSync(join(ROOT, 'contracts', 'vinpassport', 'src', 'vinpassport.compact'), 'utf8');
     const grows = {};
+    const calls = {};
     let circuit = null;
     for (const line of src.split(/\r?\n/)) {
-        const head = /^export circuit (\w+)/.exec(line);
+        const head = /^(?:export )?circuit (\w+)/.exec(line);
         if (head) circuit = head[1];
         const ins = /(\w+)\.insert\(/.exec(line);
         if (circuit && ins) (grows[circuit] ??= new Set()).add(ins[1]);
+        if (circuit) for (const m of line.matchAll(/\b(\w+)\(/g)) (calls[circuit] ??= new Set()).add(m[1]);
+    }
+    // A helper's inserts belong to the exported circuits that call it.
+    const helpers = Object.keys(grows).filter((c) => !new RegExp(`^export circuit ${c}\\b`, 'm').test(src));
+    for (const h of helpers) {
+        for (const [c, called] of Object.entries(calls)) if (c !== h && called.has(h)) for (const m of grows[h]) (grows[c] ??= new Set()).add(m);
+        delete grows[h];
     }
     // recordField inserts over keys that must already exist (it asserts the
-    // field is initialised), so it overwrites and grows nothing.
+    // field is initialised), and withdrawApproval only lowers a count that
+    // exists, so both overwrite and grow nothing.
     delete grows.recordField;
+    delete grows.withdrawApproval;
     for (const [c, maps] of Object.entries(grows)) {
         assert.ok(c in GROWS, `${c} inserts into ${[...maps].join(', ')} but GROWS does not list it`);
         assert.ok(maps.has(GROWS[c]), `GROWS says ${c} grows ${GROWS[c]}; the contract inserts into ${[...maps].join(', ')}`);

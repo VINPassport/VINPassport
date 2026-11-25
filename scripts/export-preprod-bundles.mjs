@@ -13,7 +13,8 @@
  *   site/disclose/bundles/preprod/trade.json    the dealer's file: the run's five readings
  *
  * Without a receipt it needs only a Blockfrost project id, so anyone can
- * regenerate the snapshot and diff it against the committed copy. The bundles
+ * regenerate the snapshot and diff it against the committed copy. A proxy in
+ * front of the same indexer works too, through VINPASSPORT_INDEXER_URL. The bundles
  * need the run's receipt, which holds the salts and stays outside the
  * repository. No authority bundle: the run granted the dealership the trade
  * view and nobody the authority view, so an authority file could only report
@@ -45,23 +46,28 @@ const hex = (u) => Buffer.from(u).toString('hex');
 const write = (path, obj) => {
     const text = JSON.stringify(obj, null, 2) + '\n';
     assertNoSecrets(text);
+    if (INDEXER_TOKEN && text.includes(INDEXER_TOKEN)) throw new Error(`${path} would carry the indexer key`);
     writeFileSync(path, text);
 };
 
 const { contractAddress } = JSON.parse(readFileSync(join(ROOT, 'deploy', 'preprod.json'), 'utf8'));
 
 // -- the chain, as anyone can read it
-const res = await fetch(networkEndpoints('preprod').indexerHttpUrl, {
+// VINPASSPORT_INDEXER_URL names another preprod indexer, such as a gateway's, with VINPASSPORT_INDEXER_TOKEN as its bearer key.
+const INDEXER = process.env.VINPASSPORT_INDEXER_URL?.trim() || null;
+const INDEXER_TOKEN = process.env.VINPASSPORT_INDEXER_TOKEN?.trim() || null;
+const res = await fetch(INDEXER ?? networkEndpoints('preprod').indexerHttpUrl, {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', ...(INDEXER && INDEXER_TOKEN ? { authorization: `Bearer ${INDEXER_TOKEN}` } : {}) },
     body: JSON.stringify({ query: `{ contractAction(address: "${contractAddress}") { state transaction { hash block { height } } } }` })
 });
+if (!res.ok) throw new Error(`the indexer answered ${res.status}`);
 const action = (await res.json())?.data?.contractAction;
 if (!action?.state) throw new Error(`the indexer returned no state for ${contractAddress}`);
 const L = ledger(ContractState.deserialize(Buffer.from(action.state, 'hex')).data);
 
 const snapshot = {
-    source: 'the Midnight preprod indexer (Blockfrost), decoded with the contract\'s own ledger() reader',
+    source: `the Midnight preprod indexer (Blockfrost${INDEXER ? `, through ${new URL(INDEXER).host}` : ''}), decoded with the contract's own ledger() reader`,
     note: 'Public chain state only: commitments, claims and grants. Regenerate it with '
         + 'node scripts/export-preprod-bundles.mjs and compare.',
     network: 'preprod',
@@ -99,7 +105,7 @@ const grantAt = (key) => snapshot.grants[key] ?? null;
 mkdirSync(BUNDLES, { recursive: true });
 for (const [tier, options] of Object.entries(audiences)) {
     const bundle = buildBundle(receipt, tier, options);
-    const check = verifyBundle(bundle, { commitmentAt, claimAt, grantAt });
+    const check = verifyBundle(bundle, { commitmentAt, claimAt, grantAt, expect: { network: 'preprod', contractAddress } });
     if (!check.ok || check.overDisclosed.length || (tier !== 'public' && !check.grant?.covers)) {
         throw new Error(`the ${tier} bundle does not check against the chain: ${JSON.stringify(check)}`);
     }

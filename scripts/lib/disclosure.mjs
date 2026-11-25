@@ -77,6 +77,25 @@ export const vinHashOf = (vin) => b2b(utf8(String(vin)));
 export const PLAIN_VIN_SCHEME = 'blake2b-256';
 const schemeOf = (doc) => doc?.vinHashScheme ?? PLAIN_VIN_SCHEME;
 
+/**
+ * The scheme a network's runs key vehicles with (VINKEY_SCHEME in
+ * scripts/lib/vin-key.mjs, which this browser-bundled file cannot import; a
+ * test holds the two equal). The local simulator keys with the plain hash.
+ */
+export const NETWORK_VIN_SCHEME = 'vinkey-voprf-ristretto255-sha512-v1';
+const KEYED_NETWORKS = Object.freeze(['preview', 'preprod', 'mainnet']);
+
+/**
+ * The scheme a reader expects for the ledger it checks against, decided by
+ * the reader and never by the document: an explicit `vinHashScheme`, else the
+ * network's. Null when the reader named neither, and then a VIN is unverified.
+ */
+export function expectedVinScheme({ network, vinHashScheme } = {}) {
+    if (vinHashScheme) return vinHashScheme;
+    if (network == null) return null;
+    return KEYED_NETWORKS.includes(network) ? NETWORK_VIN_SCHEME : PLAIN_VIN_SCHEME;
+}
+
 /** The receipt's vehicle key, recomputed from the VIN only where that is possible. */
 function vinHashOfReceipt(receipt) {
     if (receipt.vinHash) return receipt.vinHash;
@@ -356,8 +375,18 @@ export function buildBundle(receipt, tier, { fields: named, claims = [], audienc
  * holds NOW. A claim proven against an earlier value is reported as
  * superseded and does not count: under a rule like neverFalls, an old bound
  * can mislead about the current value.
+ *
+ * `expect` names the ledger the caller checks against: `{ network,
+ * contractAddress, vinHashScheme }`, any of them. A bundle for another network
+ * or contract is a problem. The VIN scheme comes from `expect`
+ * (expectedVinScheme), never from the bundle, so removing or changing the
+ * bundle's label cannot skip the VIN check. A label that differs from the
+ * expected scheme is a problem. `vinStatus` says what became of a named VIN:
+ * 'checked', 'mismatch', or 'unverified' when the reader cannot recompute it
+ * (no expectation given, or a keyed scheme that needs the network key).
+ * `ok` speaks for the VIN only when `vinStatus` is 'checked'.
  */
-export function verifyBundle(bundle, { commitmentAt = () => null, claimAt = () => null, grantAt = () => null } = {}) {
+export function verifyBundle(bundle, { commitmentAt = () => null, claimAt = () => null, grantAt = () => null, expect = {} } = {}) {
     const problems = [];
     if (bundle?.kind !== BUNDLE_KIND) problems.push(`unknown kind '${bundle?.kind}', expected '${BUNDLE_KIND}'`);
     if (bundle?.policy !== POLICY_VERSION) problems.push(`unknown policy '${bundle?.policy}', expected '${POLICY_VERSION}'`);
@@ -366,15 +395,29 @@ export function verifyBundle(bundle, { commitmentAt = () => null, claimAt = () =
     for (const banned of ['runSeed', 'saltRule', 'seed']) {
         if (bundle && banned in bundle) problems.push(`bundle carries '${banned}', which it must not`);
     }
+    if (expect.network != null && bundle?.network !== expect.network) {
+        problems.push(`bundle is for network '${bundle?.network}', checked against '${expect.network}'`);
+    }
+    if (expect.contractAddress != null && bare(bundle?.contractAddress ?? '') !== bare(expect.contractAddress)) {
+        problems.push(`bundle is for contract '${bundle?.contractAddress}', checked against '${bare(expect.contractAddress)}'`);
+    }
+    const scheme = expectedVinScheme(expect);
+    if (scheme && bundle?.vinHashScheme !== undefined && bundle.vinHashScheme !== scheme) {
+        problems.push(`bundle says vinHashScheme '${bundle.vinHashScheme}', the ledger it is checked against keys vehicles with '${scheme}'`);
+    }
 
     const overDisclosed = [];
     let vinMatchesHash = null;
+    let vinStatus = 'absent';
     if (bundle?.vin) {
         if (tier && !vinAllowed(tier)) overDisclosed.push('VIN');
-        // A scheme this reader cannot compute offline is reported, not guessed.
-        if (bundle.vinHashScheme === PLAIN_VIN_SCHEME) {
+        // Only the plain hash can be recomputed offline; anything else is reported, not guessed.
+        if (scheme === PLAIN_VIN_SCHEME) {
             vinMatchesHash = hex(vinHashOf(bundle.vin)) === bare(bundle.vinHash);
+            vinStatus = vinMatchesHash ? 'checked' : 'mismatch';
             if (!vinMatchesHash) problems.push('vin does not hash to vinHash');
+        } else {
+            vinStatus = 'unverified';
         }
     }
 
@@ -419,6 +462,8 @@ export function verifyBundle(bundle, { commitmentAt = () => null, claimAt = () =
         opened: fields.filter((f) => f.ok).map((f) => f.fieldName),
         overDisclosed,
         vinMatchesHash,
+        vinStatus,
+        expectedVinScheme: scheme,
         grant,
         fields,
         claims

@@ -26,6 +26,8 @@
 import { isInsufficientDustForFeeError } from '@midnightntwrk/wallet-sdk-dust-wallet';
 import { Token } from '@midnightntwrk/wallet-sdk-abstractions';
 import { openWallet, describe, summarize } from './lib/wallet9.mjs';
+import { requireBuildableNetwork } from './lib/eras.mjs';
+import { takeSeedLock } from './lib/files.mjs';
 
 const arg = (flag) => {
     const i = process.argv.indexOf(flag);
@@ -42,6 +44,8 @@ if (SPLIT && REGISTER) { console.error('dust: run --split and --register separat
 const WAIT_MS = Number(arg('--wait-minutes') ?? 60) * 60_000;
 const log = (...a) => console.log(...a);
 
+// One process per seed (scripts/lib/files.mjs); the name is checked before it names a lock file.
+try { requireBuildableNetwork(network); takeSeedLock(network); } catch (e) { console.error(`dust: ${e.message}`); process.exit(1); }
 const w = await openWallet(network, { log });
 let code = 0;
 try {

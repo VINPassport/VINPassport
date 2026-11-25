@@ -13,7 +13,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
     PassportSimulator, REGISTRAR_SECRET, REGISTRAR_ID, SECOND_SECRET, SECOND_ID,
-    DEALER_ID, GARAGE_SECRET, GARAGE_ID, hex
+    DEALER_ID, DEALER_SECRET, GARAGE_SECRET, GARAGE_ID, hex
 } from '../passport-simulator.mjs';
 import { resolveRegistrar, expectedRegistrars, sameMembers, parseGovernArgs } from '../../scripts/lib/governance.mjs';
 
@@ -35,11 +35,13 @@ test('the expected set follows the contract through a removal and an addition', 
         changes.push({ add, id, executed: !sameMembers(before, after) });
     };
 
-    // Remove D: A's approval counts, B's carries it out.
+    // Remove D: four registrars need three approvals (D38), so A's and B's count and C's carries it out.
     await approve(false, pinned[3].id, REGISTRAR_SECRET);
     assert.ok(sameMembers(expectedRegistrars(pinned, changes), onChain(sim)), 'one approval changes nothing');
     assert.equal(changes.at(-1).executed, false);
     await approve(false, pinned[3].id, SECOND_SECRET);
+    assert.equal(changes.at(-1).executed, false);
+    await approve(false, pinned[3].id, DEALER_SECRET);
     assert.equal(changes.at(-1).executed, true);
     assert.ok(sameMembers(expectedRegistrars(pinned, changes), onChain(sim)));
     assert.equal(onChain(sim).size, 3);

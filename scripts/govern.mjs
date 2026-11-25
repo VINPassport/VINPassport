@@ -28,17 +28,17 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { createCircuitContext, ContractState as RuntimeState } from '@midnight-ntwrk/compact-runtime';
-import { ContractState } from '@midnightntwrk/ledger-v9';
-import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
 import { Contract, ledger, pureCircuits } from '../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
-import { networkEndpoints, guardLogs, assertNoSecrets } from './lib/endpoints.mjs';
+import { guardLogs, assertNoSecrets } from './lib/endpoints.mjs';
+import { chainReads } from './lib/chain-read9.mjs';
 import { requireBuildableNetwork } from './lib/eras.mjs';
 import { recordPath } from './lib/contract9.mjs';
-import { credentialPath } from './lib/local-credentials.mjs';
+import { registrarFile } from './lib/local-credentials.mjs';
+import { writeJsonAtomic, takeSeedLock } from './lib/files.mjs';
 import { makeWitnessHolder } from './lib/preprod-plan.mjs';
-import { openChain, explainFailure } from './lib/runner9.mjs';
+import { openChain, explainFailure, sendCall } from './lib/runner9.mjs';
 import { decodeEvents } from './lib/events.mjs';
 import { resolveRegistrar, sameMembers, parseGovernArgs } from './lib/governance.mjs';
 
@@ -67,8 +67,8 @@ try {
 
 /** The approving registrar's secret, from the local file; checked against its pinned identity. */
 function approverSecret() {
-    const file = process.env.VINPASSPORT_REGISTRAR_FILE
-        ?? credentialPath(opts.network === 'mainnet' ? 'REGISTRAR-SECRETS.mainnet.env' : 'REGISTRAR-SECRETS.env');
+    let file;
+    try { file = registrarFile(opts.network); } catch (e) { fail(e.message); }
     if (!existsSync(file)) fail(`no registrar secrets at ${file}`);
     const prefix = `VINPASSPORT_REGISTRAR_${approver.label}_SECRET_HEX=`;
     const v = readFileSync(file, 'utf8').split(/\r?\n/).find((l) => l.startsWith(prefix))?.slice(prefix.length).trim();
@@ -80,16 +80,15 @@ function approverSecret() {
     return secret;
 }
 
+/** The contract's state now: from the NIGHTGATE server when one is configured, else from the public indexer. */
 async function indexerState() {
-    const ep = networkEndpoints(opts.network);
-    const pdp = indexerPublicDataProvider({ queryURL: ep.indexerHttpUrl, subscriptionURL: ep.indexerWsUrl });
-    const read = await pdp.queryContractState(record.contractAddress);
-    if (!read) fail('the indexer has no state for this contract');
-    const onChain = read.contractState.deserialize({ v9: ContractState });
-    if (!onChain.operation('approveRegistrarChange')) {
+    const reads = chainReads(opts.network);
+    const read = await reads.contractState(record.contractAddress);
+    if (!read) fail(`${reads.source} has no state for this contract`);
+    if (!read.state.operation('approveRegistrarChange')) {
         fail('this contract has no approveRegistrarChange circuit on chain: the deployed build predates governance');
     }
-    return RuntimeState.deserialize(read.contractState.serialize());
+    return RuntimeState.deserialize(read.bytes);
 }
 
 const registrarSet = (L) => new Set([...L.allowedRegistrars].map(hex));
@@ -137,22 +136,25 @@ if (!opts.submit) {
 }
 
 // ---- submit: one approval, one transaction
+// One process per seed (scripts/lib/files.mjs); the dry run above opens no wallet.
+try { takeSeedLock(opts.network); } catch (e) { fail(e.message); }
 const chain = await openChain(opts.network, { log: () => { } });
 let code = 0;
 try {
     const t0 = Date.now();
-    chain.holder.armed = null;
-    chain.arm(`approveRegistrarChange ${verb} ${target.label ?? target.id}`, { secret })();
-    const r = await chain.found.callTx.approveRegistrarChange(opts.add, bytes(target.id));
-    const pub = r.public;
+    const label = `approveRegistrarChange ${verb} ${target.label ?? target.id}`;
+    const call = { circuitId: 'approveRegistrarChange', args: [opts.add, bytes(target.id)], before: chain.arm(label, { secret }) };
+    const pub = await sendCall(chain, call, { idempotencyKey: `vinpassport:govern:${hex(proposal)}:${approver.id}`, label });
     console.log(`\ntx         ${pub.txHash} (id ${pub.txId}) in block ${pub.blockHeight}`);
-    console.log(`fee        ${pub.fees?.paidFees ?? '?'} SPECK paid, ${pub.fees?.estimatedFees ?? '?'} estimated; ${Math.round((Date.now() - t0) / 1000)} s`);
+    console.log(pub.paidBy === 'sponsor'
+        ? `fee        paid by the NIGHTGATE sponsor; ${Math.round((Date.now() - t0) / 1000)} s`
+        : `fee        ${pub.fees?.paidFees ?? '?'} SPECK paid, ${pub.fees?.estimatedFees ?? '?'} estimated; ${Math.round((Date.now() - t0) / 1000)} s`);
 
     const after = registrarSet(ledger((await indexerState()).data));
     const executed = !sameMembers(before, after);
     console.log(executed
         ? `registrars ${[...after].map(nameOf).join(', ')} (changed)`
-        : 'registrars unchanged; the change waits for a second registrar');
+        : 'registrars unchanged; the change waits for more approvals, a majority of the registrars');
     if (executed !== predicted.carries) console.log('NOTE       the outcome differs from the dry run: the state moved between the two');
 
     const entry = {
@@ -164,7 +166,7 @@ try {
     assertNoSecrets(entry, 'the governance record');
     const fresh = JSON.parse(readFileSync(RECORD, 'utf8'));
     fresh.registrarChanges = [...(fresh.registrarChanges ?? []), entry];
-    writeFileSync(RECORD, JSON.stringify(fresh, null, 2) + '\n');
+    writeJsonAtomic(RECORD, fresh);
     console.log(`recorded   deploy/${opts.network}.json registrarChanges[${fresh.registrarChanges.length - 1}]`);
 } catch (e) {
     console.error(`govern: ${explainFailure(e)}`);

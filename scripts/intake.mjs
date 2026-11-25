@@ -1,9 +1,12 @@
 /**
- * Run an intake file, produced by the console page at app/console/, through
- * the real compiled circuits, and regenerate the scan page's ledger with the
- * new vehicle in it.
+ * Run an intake file, produced by the intake page at site/intake/, through
+ * the real compiled circuits, and regenerate the verdict page's demo ledger
+ * (site/verify/demo-data.json and fields.json, the files
+ * scripts/export-demo-state.mjs writes) with the new vehicle in it.
  *
  *   node scripts/intake.mjs private/my-vehicle.json
+ *
+ * `npm run demo:export` puts the committed demo ledger back.
  *
  * The intake file holds the ACTUAL VALUES and the VIN, which is why it
  * belongs in `private/` (gitignored) and must never be committed: the whole
@@ -16,7 +19,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import {
@@ -24,7 +27,12 @@ import {
 } from './lib/scenario.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const OUT = join(ROOT, 'app', 'scan');
+const OUT = join(ROOT, 'site', 'verify');
+// The ledger the site reads lives here; a moved site fails loudly, not with a stray file.
+if (!existsSync(join(OUT, 'demo-data.json'))) {
+    console.error(`no demo ledger at ${join(OUT, 'demo-data.json')}: the site layout moved. Point OUT in scripts/intake.mjs at it.`);
+    process.exit(1);
+}
 
 const file = process.argv[2];
 if (!file) {

@@ -5,14 +5,14 @@
   "audience": "a buyer",
   "note": "A public disclosure. It opens only the fields listed here and carries no seed, so it cannot open any other field of this vehicle. Each claim listed was proven on the public ledger and reveals a bound, never a value.",
   "network": "preprod",
-  "contractAddress": "c9a4733e3d9187e4487014e038a99af16cad0c29fb9fc9fcaa6b0f5350ad10ac",
+  "contractAddress": "980a3fd62d8dc67c027e057b082a21c429679df2e179b6f18659da3b02f1d665",
   "vinHashScheme": "vinkey-voprf-ristretto255-sha512-v1",
-  "vinHash": "e8a25094272be32eb45eecc9ed9f0dc42da04b03abbee8f01b83befa9b04e23c",
-  "contentRoot": "d47842c4ba066f42e6bbaa2e701e008c774e78e977eabced5d52b97af6816ab4",
+  "vinHash": "51db9078aa3e99ca5731a792e86223729c7e179fc1ee9a645eb49125cbe08876",
+  "contentRoot": "0795d115330634c66ebad800a61babefa3a9a3c77218fb2d8678d50d3dfe08dc",
   "fields": [],
   "claims": [
-    "8c2994156bdeab70730a739474ef02eed531bdc0e189f500b2efd78f2634a587",
-    "c46582666da8ca1da643b858da1b12aa5a0e2fdd2c5550f1b4353601d110e6f0",
-    "9cbdf4293eec381b6765cbb88465ce55453fcc03dd5c0cf7bae182dd56bc26c7"
+    "deabc65f983f91c3fff6b779acaebbb48eee509fc2903d2facba330aa151b11c",
+    "917414e99728a96fa992cc25b6aad4038528ad094b58a0e4148f2f7d658021e0",
+    "5cb118c7a5d36fe9bd42d62250623f09dfc091685637a6a688ddeb16cce28e01"
   ]
 }

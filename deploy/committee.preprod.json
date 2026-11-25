@@ -1,0 +1,31 @@
+{
+  "network": "preprod",
+  "threshold": 2,
+  "members": [
+    {
+      "name": "rehearsal-1",
+      "verifyingKey": {
+        "tag": "schnorr",
+        "value": "ea4f27c715175442f79561f8640c53bc7d9075706977bd917388abd8d1dbd677"
+      },
+      "addedAt": "2026-11-24"
+    },
+    {
+      "name": "rehearsal-2",
+      "verifyingKey": {
+        "tag": "schnorr",
+        "value": "0aa18f416e884763ef4944efb489536de3954b11654e61cc207bd8321369ca2b"
+      },
+      "addedAt": "2026-11-24"
+    },
+    {
+      "name": "rehearsal-3",
+      "verifyingKey": {
+        "tag": "schnorr",
+        "value": "499c4a8079fde8d2b655c6ced95be8b1b24d6df0a0cacf257a7899e9f252df5b"
+      },
+      "addedAt": "2026-11-24"
+    }
+  ],
+  "note": "Public verifying keys of the maintenance committee (DECISIONS D28). Signing keys stay with each member."
+}
