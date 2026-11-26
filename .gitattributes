@@ -17,3 +17,9 @@ contracts/**/managed/**/zkir/*.bzkir       binary
 # Vendored third-party files are pinned by SHA-256 in their SOURCES.md, so they
 # must reach every clone and the live site byte for byte: no line-ending rewrites.
 site/assets/vendor/**                       -text
+
+# The site pages are checked against the header and footer that
+# scripts/build-nav.mjs writes, character for character. Keep them LF on every
+# platform, so a Windows clone runs the same tests as CI and holds the same
+# bytes as the live site.
+site/**/*.html                              text eol=lf
