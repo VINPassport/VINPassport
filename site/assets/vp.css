@@ -591,7 +591,7 @@ a.vp-verdict:hover .vp-verdict__state{text-decoration:underline}
 .mini--phone{align-self:flex-start;width:100%;max-width:300px;padding:0;gap:0;border-radius:24px;overflow:hidden;background:var(--paper)}
 .mini__bar{background:var(--paper-deep);font-family:var(--font-mono);font-size:12px;line-height:16px;color:var(--ink-muted);padding:10px 14px;text-align:center}
 .mini__screen{padding:14px;display:flex;flex-direction:column;gap:10px}
-.mini__title{font-family:var(--font-display);font-weight:600;font-size:18px;line-height:24px;color:var(--ink)}
+.mini__title{font-family:var(--font-display);font-weight:600;font-size:18px;line-height:24px;color:var(--ink);text-wrap:balance}
 .mini .vp-verdict{padding:8px 10px}
 .mini .vp-verdict__q{font-size:13px;line-height:18px}
 .mini .vp-verdict__state{font-size:11px}

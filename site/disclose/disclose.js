@@ -339,7 +339,8 @@ for (const b of ledgerButtons) {
 
 (async () => {
     const askedLedger = new URL(location.href).searchParams.get('ledger');
-    const start = askedLedger in LEDGERS ? askedLedger : 'demo';
+    // Own keys only: `in` would also accept "constructor" and every other name an object inherits.
+    const start = askedLedger && Object.hasOwn(LEDGERS, askedLedger) ? askedLedger : 'demo';
     const asked = location.hash.slice(1);
     if (LEDGERS[start].tiers.includes(asked)) select(asked);
     try {

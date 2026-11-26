@@ -6,7 +6,7 @@
  * as a YUV4MPEG2 file. Then, on a 390 px touch screen:
  *
  *   allowed   pressing Scan with your camera asks for the camera (granted here), the code is read,
- *             and the browser lands on /v/ showing "This passport is genuine"
+ *             and the browser lands on /v/ showing "This sample passport checks out"
  *   denied    with the camera refused, nothing is read, the page says why and what to do instead,
  *             and the typed box is still there
  *   at rest   before the press the camera is off and the button is the only way to start it
@@ -130,9 +130,9 @@ try {
     if (rest.shown) ok('the Scan with your camera button shows on a phone'); else fail('no Scan with your camera button on a 390 px touch screen');
     if (!rest.scanning && !rest.live) ok('the camera is off until the button is pressed'); else fail('the camera was on before anyone pressed the button');
     await yes.ev(`document.querySelector('[data-camera-start]').click()`, true);
-    const landed = await until(yes.ev, `location.pathname === '/v/' && /This passport is genuine/.test(document.getElementById('v-h1')?.textContent ?? '')`, 20000);
+    const landed = await until(yes.ev, `location.pathname === '/v/' && /This sample passport checks out/.test(document.getElementById('v-h1')?.textContent ?? '')`, 20000);
     const where = await yes.ev('location.pathname + location.search').catch(() => '?');
-    if (landed) ok(`the camera read the sample QR code with ${rest.reader} and opened ${where}: "This passport is genuine"`);
+    if (landed) ok(`the camera read the sample QR code with ${rest.reader} and opened ${where}: "This sample passport checks out"`);
     else fail(`the camera did not open the passport (at ${where}; status: ${await yes.ev(`document.querySelector('[data-camera-status]')?.textContent ?? ''`).catch(() => '?')})`);
     yes.close();
 

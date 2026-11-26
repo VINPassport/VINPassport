@@ -28,7 +28,10 @@ test('a scanned passport link leads to this site\'s verdict page, whatever host 
 });
 
 test('a code that is not a passport\'s is turned away with one plain sentence', () => {
-    for (const text of ['https://elsewhere.example/', 'WIFI:S:cafe;T:WPA;P:secret;;', 'hello', '']) {
+    // A broken escape in a scanned link must answer like any other stranger, never throw: an
+    // exception would stop the scan loop with the camera still on.
+    for (const text of ['https://elsewhere.example/', 'WIFI:S:cafe;T:WPA;P:secret;;', 'hello', '',
+        'https://passport.vin/v/?c=%', 'https://passport.vin/v/?c=%E0%A4%A', 'https://passport.vin/v/?c=VP-%zz']) {
         const got = readScanned(text);
         assert.equal(got.href, undefined, `${JSON.stringify(text)} must lead nowhere`);
         assert.match(got.error, /not a VINPassport code/);

@@ -14,7 +14,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { readRequest, headline, tally, verdictRows, fullRecord, mrzOf, shareUrl, FOUR } from '../../site/v/v.mjs';
+import { readRequest, headline, tally, verdictRows, fullRecord, mrzOf, shareUrl, FOUR, headlineOf, earnsStamp } from '../../site/v/v.mjs';
 import { readEntry } from '../../site/scan/scan.mjs';
 import { passportView, QUESTIONS } from '../../site/assets/verdict.mjs';
 import { passportCode } from '../../site/assets/passport-code.mjs';
@@ -70,17 +70,35 @@ test('the four answers come from the ledger, in the design order', () => {
     assert.equal((rows.match(/vp-verdict--verified/g) ?? []).length, 4);
     assert.match(rows, /Mileage under 150,000 km\?/);
     assert.equal((rows.match(/<span class="vp-sr">Verified: <\/span>/g) ?? []).length, 4, 'the state is spoken, not only coloured');
+    assert.ok(earnsStamp(golf), 'four verified answers earn the Verified stamp');
+    // Only a record read from a chain is called genuine; samples and a tab's own record say what they are.
+    assert.equal(headlineOf('chain'), 'This passport is genuine');
+    assert.equal(headlineOf('static'), 'This sample passport checks out');
+    assert.equal(headlineOf('server'), 'This sample passport checks out');
+    assert.equal(headlineOf('local'), 'Your test passport, in this tab only');
 });
 
 test('silence is not proven, links to what that means, and never reads as a yes', () => {
+    // The 320d proves only that its mileage is under 200,000 km: true, and shown in the full
+    // record, but no answer to the buyer's 150,000 km question.
     const bmw = headline(view(BMW));
-    assert.equal(tally(bmw), '1 answer verified, 3 not proven');
+    assert.equal(tally(bmw), 'No answers verified, 4 not proven');
+    assert.ok(!earnsStamp(bmw), 'no Verified stamp without four verified answers');
     const rows = verdictRows(bmw);
-    assert.equal((rows.match(/href="#meanings"/g) ?? []).length, 3);
+    assert.equal((rows.match(/href="#meanings"/g) ?? []).length, 4);
     for (const li of rows.split('</li>').filter((r) => /not-proven/.test(r))) {
         assert.doesNotMatch(li, />(Never|None|Yes)</, 'a not-proven row must not carry an answer');
     }
-    assert.match(rows, /Mileage under 200,000 km\?/);
+    assert.match(rows, /Mileage under 150,000 km\?/);
+    assert.doesNotMatch(rows, /200,000/);
+    assert.match(fullRecord(view(BMW), { key: BMW, title: '320d' }), /Mileage under 200,000 km/);
+
+    // A ceiling every car meets proves nothing a buyer asked, so it never counts as verified.
+    const vacuous = structuredClone(ledger);
+    vacuous.claims.find((c) => c.vinHash === GOLF && c.bound === '150000').bound = '10000000';
+    const four = headline(view(GOLF, vacuous));
+    assert.equal(tally(four), '3 answers verified, 1 not proven');
+    assert.ok(!earnsStamp(four));
 });
 
 test('a claim whose field has moved on reads as superseded', () => {
@@ -148,6 +166,8 @@ test('scan: a code goes to ?c=, and a VIN goes as its key, never as itself', () 
     assert.ok(!vin.href.includes(GOLF_VIN));
     assert.deepEqual(readEntry(`https://passport.vin/v/?v=${GOLF}`), { href: `../v/?v=${GOLF}` });
     assert.deepEqual(readEntry('https://passport.vin/v/?c=VP-74EE-0J74'), { href: '../v/?c=VP-74EE-0J74' });
+    // A link with a broken escape is a mistyped code, answered in words, never an exception.
+    assert.match(readEntry('https://passport.vin/v/?c=%E0%A4%A').error, /passport code/);
 });
 
 test('scan: a refusal says what is wrong', () => {

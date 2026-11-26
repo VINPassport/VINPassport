@@ -260,7 +260,7 @@ for (const { from, to } of MOVED) {
     let ok = at === `/${to}${ask}#probe`;
     if (ok && from === 'verify/') {
         const shown = await evaluate(`[document.getElementById('v-h1')?.textContent, document.body.innerText.includes('VP-74EE-0J74')].join('|')`);
-        ok = shown === 'This passport is genuine|true';
+        ok = shown === 'This sample passport checks out|true';
         if (!ok) console.error(`          the verdict shown was ${shown}`);
     }
     if (ok) { console.log(`  ok    /${from} -> ${at}`); continue; }

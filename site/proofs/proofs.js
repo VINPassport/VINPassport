@@ -36,7 +36,7 @@ function claimRow(meta, c, current) {
         : current ? '<span class="ev-chip ev-chip--current">Current</span>'
             : '<span class="ev-chip ev-chip--superseded">Superseded</span>';
     return `<div class="ev-claim">
-      <div class="ev-claim__text"><b>${esc(claimTitle(meta, c))}</b><span>${esc(meta?.name ?? short(c.fieldKey))} · slot ${short(c.slot)} · proven against ${short(c.commitment)}</span></div>
+      <div class="ev-claim__text"><b>${esc(claimTitle(meta, c))}</b><span>${esc(meta?.name ?? short(c.fieldKey))} · slot ${esc(short(c.slot))} · proven against ${esc(short(c.commitment))}</span></div>
       ${chip}
     </div>`;
 }
@@ -58,9 +58,9 @@ function vehicleSection(vin, claims, ledger, vinfo, fields) {
     <div class="ev-panel__head">
       <h3 class="ev-panel__title">${esc(vinfo?.title ?? 'Unlabelled vehicle')}</h3>
       <span class="small">${esc(summary)}</span>
-      <a class="link ev-panel__link" href="../v/?v=${vin}">Verdict view →</a>
+      <a class="link ev-panel__link" href="../v/?v=${esc(encodeURIComponent(vin))}">Verdict view →</a>
     </div>
-    <div class="ev-key">VIN HASH ${vin}</div>
+    <div class="ev-key">VIN HASH ${esc(vin)}</div>
     ${body}
     ${note}
   </section>`;

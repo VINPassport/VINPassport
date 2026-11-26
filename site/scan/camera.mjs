@@ -37,7 +37,10 @@ export function cameraTrouble(name) {
 
 /** Where a code the camera read should lead: a verdict page of this site, or nowhere. */
 export function readScanned(text) {
-    const got = readEntry(text);
+    // Whatever a code holds, the answer is a verdict page or one plain sentence: never an exception,
+    // which would stop the scan loop with the camera still on.
+    let got = {};
+    try { got = readEntry(text); } catch { got = {}; }
     return got.href ? { href: got.href } : { error: 'That code is not a VINPassport code. Keep it in the frame, or type the passport code.' };
 }
 

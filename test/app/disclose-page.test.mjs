@@ -241,6 +241,9 @@ test('REPOSITORY ASSERTION: the page checks with the shared verifier, through th
 });
 
 test('REPOSITORY ASSERTION: the bundles it loads are the committed files', () => {
+    // ?ledger= picks one of the page's own ledgers; a name every object inherits ("constructor") is not one.
+    assert.match(js, /Object\.hasOwn\(LEDGERS, askedLedger\)/);
+    assert.doesNotMatch(js, /askedLedger in LEDGERS/);
     assert.match(js, /ledger: '\.\.\/verify\/demo-data\.json',\s+base: 'bundles\/'/);
     assert.match(js, /ledger: `\$\{network\}\/ledger\.json`,\s+run: `\$\{network\}\/run\.json`,\s+base: `bundles\/\$\{network\}\/`/);
     assert.match(js, /preview: chainLedger\('preview'\),\s+preprod: chainLedger\('preprod'\)/);

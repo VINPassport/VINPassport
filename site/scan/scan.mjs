@@ -26,7 +26,10 @@ export function readEntry(typed) {
     // A link we handed out, pasted whole.
     const inCode = raw.match(/[?&]c=([^&#\s]+)/i);
     if (inCode) {
-        const code = parseCode(decodeURIComponent(inCode[1]));
+        // A broken escape (a stray "%") is a mistyped code, not a reason to stop.
+        let text;
+        try { text = decodeURIComponent(inCode[1]); } catch { text = inCode[1]; }
+        const code = parseCode(text);
         return code.error ? { error: code.error } : { href: `../v/?c=${encodeURIComponent(code.code)}` };
     }
     if (/[?&]v=[0-9a-f]{64}/i.test(raw) || HASH_RE.test(flat.toLowerCase()) || flat.length === 17) {

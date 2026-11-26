@@ -71,6 +71,11 @@ test('the scripts set states, never colours: the look lives in vp.css', () => {
         assert.doesNotMatch(js, /style="|\.style\.|cssText/, `${file} still writes inline styles`);
         assert.doesNotMatch(js, /#004AAD|#EDE4D8|#8B95FF|#0E1726/i, `${file} still names an old colour`);
     }
+    // The proof explorer escapes every ledger value it writes into markup, so a ledger read from a
+    // chain cannot write markup of its own.
+    const proofs = read('proofs/proofs.js');
+    assert.doesNotMatch(proofs, /\$\{vin\}|slot \$\{short\(|against \$\{short\(/, 'proofs.js writes a ledger value unescaped');
+    assert.match(proofs, /<b>\$\{esc\(claimTitle\(meta, c\)\)\}<\/b>/, 'the claim title, which names an unknown key, is escaped where it is written');
 });
 
 // A Web2 face on a Web3 backbone (D36): the project pays every fee from its own wallet

@@ -23,18 +23,34 @@ import { parseEntry, HASH_RE } from '../assets/vin.mjs';
 /** The buyer's four questions, in the design's fixed order. */
 export const FOUR = ['neverWrittenOff', 'noAccidents', 'oneKeeper', 'mileageUnder'];
 
+/**
+ * The buyer's mileage question has one fixed ceiling, the one the site promises. A claim at or
+ * under it answers the question; a higher ceiling (under 10,000,000 km is true of every car) is
+ * still shown, with its number, in the full record, but it does not answer this question.
+ */
+export const MILEAGE_CEILING = 150000n;
+
 /** How each of the four reads as a question, and the word a verified answer gives. */
 const ASK = {
     neverWrittenOff: { q: () => 'Has it ever been written off?', yes: 'Never' },
     noAccidents: { q: () => 'Any reported accidents?', yes: 'None' },
     oneKeeper: { q: () => 'One keeper from new?', yes: 'Yes' },
-    mileageUnder: {
-        q: (claim) => (claim && claim.bound !== undefined
-            ? `Mileage under ${fmt(claim.bound)} km?`
-            : 'Mileage under a stated ceiling?'),
-        yes: 'Yes'
-    }
+    mileageUnder: { q: () => `Mileage under ${fmt(MILEAGE_CEILING)} km?`, yes: 'Yes' }
 };
+
+/**
+ * What the headline may say, by where the record was read. Only a record read from a chain is
+ * called genuine. The demo ledger and a demo server hold sample passports, and a record this
+ * browser tab registered exists nowhere else.
+ */
+export function headlineOf(mode) {
+    if (mode === 'chain') return 'This passport is genuine';
+    if (mode === 'local') return 'Your test passport, in this tab only';
+    return 'This sample passport checks out';
+}
+
+/** The Verified stamp is earned by all four answers, never by a passport merely existing. */
+export const earnsStamp = (four) => four.length === FOUR.length && four.every((a) => a.status === 'proven');
 
 /** Brands that have a sample white-label verdict. Volta is made up. */
 export const BRANDS = { volta: { name: 'Volta', band: 'VOLTA' } };
@@ -76,8 +92,11 @@ export function readRequest(params, keys) {
     return first ? { kind: 'found', key: first, via: 'sample' } : { kind: 'missing', via: 'sample' };
 }
 
-/** The four headline answers, from a passportView. */
-export const headline = (view) => FOUR.map((id) => view.answers.find((a) => a.id === id)).filter(Boolean);
+/** The four headline answers, from a passportView, with the mileage question held to its ceiling. */
+export const headline = (view) => FOUR.map((id) => view.answers.find((a) => a.id === id)).filter(Boolean)
+    .map((a) => (a.id === 'mileageUnder' && a.status !== 'not-proven' && a.claim && BigInt(a.claim.bound) > MILEAGE_CEILING
+        ? { ...a, status: 'not-proven', claim: null, aboveCeiling: a.claim }
+        : a));
 
 /** "3 answers verified, 1 not proven": counted over the four, in that order. */
 export function tally(four) {
@@ -240,11 +259,11 @@ ${b ? `<div class="v-oem"><div class="wrap v-oem__bar"><span class="v-oem__name"
   <div class="wrap v-head">
     <div class="stack" style="gap: 6px;">
       <nav aria-label="Breadcrumb" class="small v-crumb"><a class="link" href="../scan/">Scan a vehicle</a> › ${sample ? 'Sample verdict' : 'Verdict'}</nav>
-      <h1 id="v-h1" class="h1 v-title">This passport is genuine</h1>
+      <h1 id="v-h1" class="h1 v-title">${esc(headlineOf(state.mode))}</h1>
       <p class="copy">${esc(tally(four))} · Checked ${esc(checkedAt)}</p>
       ${sample ? '<p class="small">This is the sample passport, a fictional vehicle on the demo ledger.</p>' : ''}
     </div>
-    <span class="vp-stamp vp-stamp--verified" data-animate>Verified</span>
+    ${earnsStamp(four) ? '<span class="vp-stamp vp-stamp--verified" data-animate>Verified</span>' : ''}
   </div>
 </section>
 
@@ -484,7 +503,7 @@ export async function start(doc = document) {
             key: req.key, view: passportView(ledger, req.key, vocabulary), vinfo: byKey[req.key],
             state, brand, via: req.via, checkedAt, others: othersOf(req.key)
         });
-        doc.title = 'This passport is genuine · VINPassport';
+        doc.title = `${headlineOf(state.mode)} · VINPassport`;
         // A typed code becomes the full key in the address, so a reload or a
         // shared address opens exactly this passport, whatever is added later.
         if (req.via === 'code') history.replaceState(null, '', '?v=' + req.key + (brand ? '&brand=' + brand : ''));

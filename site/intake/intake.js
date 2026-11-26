@@ -477,7 +477,7 @@ ppBox.addEventListener('change', () => {
     if (ppLabel) ppLabel.textContent = `Submit to ${chainNet.name}`;
     ppReady = Boolean(status?.enabled && status?.ready && !status?.error && status.remaining > 0);
     if (ppReady) {
-        ppNote.textContent = `${status.remaining} of ${status.capacity} runs on ${chainNet.name} left today. Switch this on and the fields below become real transactions on the deployed contract, with every fee paid by us, ending in a receipt only you can open. The VIN is replaced with a generated demo one, so a real vehicle is never claimed on a test chain.`;
+        ppNote.textContent = `${status.remaining} of ${status.capacity} runs on ${chainNet.name} left today. Switch this on and the fields below become real transactions on the deployed contract, with every fee paid by us, ending in a receipt that opens your passport. The demo server keeps a copy. The VIN is replaced with a generated demo one, so a real vehicle is never claimed on a test chain.`;
     } else if (status?.enabled && !status?.ready) {
         ppNote.textContent = 'Our signing service is catching up to the chain tip. Until it is level, the circuits below still run here.';
     } else if (status?.enabled && status?.remaining <= 0) {
