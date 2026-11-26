@@ -12,7 +12,7 @@
  */
 import { readFileSync, existsSync } from 'node:fs';
 import { ContractState } from '@midnight-ntwrk/compact-runtime';
-import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
+import { indexerPublicDataProvider } from '@midnightntwrk/midnight-js-indexer-public-data-provider';
 import { ledger } from '../../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
 import { networkEndpoints } from './endpoints.mjs';
 import { requireBuildableNetwork, requireRecordLedger } from './eras.mjs';

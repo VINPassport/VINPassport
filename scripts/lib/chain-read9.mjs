@@ -11,8 +11,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import { ContractState, LedgerParameters } from '@midnightntwrk/ledger-v9';
-import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
-import { ledgerVersionOfContractState } from '@midnight-ntwrk/midnight-js-utils';
+import { indexerPublicDataProvider } from '@midnightntwrk/midnight-js-indexer-public-data-provider';
+import { ledgerVersionOfContractState } from '@midnightntwrk/midnight-js-utils';
 import { connect } from '@odatano/nightgate-tx';
 import { waitLanded } from '@odatano/nightgate-tx/txbuilder';
 import { networkEndpoints } from './endpoints.mjs';

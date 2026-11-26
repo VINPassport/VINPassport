@@ -33,7 +33,7 @@ test('the compile script pins the compiler, so a routine rebuild cannot change t
 
 test('package.json installs the runtime and SDK versions BUILD names', () => {
     assert.equal(pkg.dependencies['@midnight-ntwrk/compact-runtime'], BUILD.runtime);
-    assert.equal(pkg.dependencies['@midnight-ntwrk/midnight-js-contracts'], BUILD.midnightJs);
+    assert.equal(pkg.dependencies['@midnightntwrk/midnight-js-contracts'], BUILD.midnightJs);
     assert.equal(pkg.dependencies['@midnightntwrk/wallet-sdk-facade'], '5.0.1');
 });
 

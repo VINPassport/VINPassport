@@ -27,8 +27,8 @@ import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import * as zkir from '@midnightntwrk/zkir-v3';
 import { WasmProver } from '@midnightntwrk/wallet-sdk-prover-client/effect';
-import { createLedger9ProofProvider } from '@midnight-ntwrk/midnight-js-types';
-import { parseContractKeyLocation } from '@midnight-ntwrk/midnight-js-protocol/v9/compact-js';
+import { createLedger9ProofProvider } from '@midnightntwrk/midnight-js-types';
+import { parseContractKeyLocation } from '@midnightntwrk/midnight-js-protocol/v9/compact-js';
 
 /** A KeyMaterialProvider over one or more compiled contract directories plus Midnight's parameters. */
 export function keyMaterial(buildDirs, { log = () => { } } = {}) {

@@ -35,9 +35,9 @@ import { fileURLToPath } from 'node:url';
 import {
     createConstructorContext, createCircuitContext, encodeContractAddress, ContractState as RuntimeState
 } from '@midnight-ntwrk/compact-runtime';
-import { CompiledContract } from '@midnight-ntwrk/midnight-js-protocol/v9/compact-js';
-import { deployContract, findDeployedContract, createLedger9UnprovenDeployTx } from '@midnight-ntwrk/midnight-js-contracts';
-import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
+import { CompiledContract } from '@midnightntwrk/midnight-js-protocol/v9/compact-js';
+import { deployContract, findDeployedContract, createLedger9UnprovenDeployTx } from '@midnightntwrk/midnight-js-contracts';
+import { indexerPublicDataProvider } from '@midnightntwrk/midnight-js-indexer-public-data-provider';
 import { Contract as Listing, ledger as listingLedger } from '../contracts/listing/src/managed/listing/contract/index.js';
 import { networkEndpoints, guardLogs } from './lib/endpoints.mjs';
 import { requireBuildableNetwork } from './lib/eras.mjs';

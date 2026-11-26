@@ -32,7 +32,7 @@ import { DustWallet } from '@midnightntwrk/wallet-sdk-dust-wallet';
 import { InMemoryTransactionHistoryStorage, Token } from '@midnightntwrk/wallet-sdk-abstractions';
 import {
     createLedger9MidnightProvider, createLedger9WalletProvider
-} from '@midnight-ntwrk/midnight-js-types';
+} from '@midnightntwrk/midnight-js-types';
 import { networkEndpoints, guardLogs } from './endpoints.mjs';
 import { requireBuildableNetwork } from './eras.mjs';
 import { credentialPath } from './local-credentials.mjs';

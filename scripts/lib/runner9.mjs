@@ -29,7 +29,7 @@ import { readFileSync, writeFileSync, renameSync, existsSync, mkdirSync } from '
 import { join } from 'node:path';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { blake2b } from '@noble/hashes/blake2';
-import { findDeployedContract } from '@midnight-ntwrk/midnight-js-contracts';
+import { findDeployedContract } from '@midnightntwrk/midnight-js-contracts';
 import { PassportSimulator, hex, FIELDS, K, contentRoot } from './scenario.mjs';
 import { CLAIM_DEFS, claimLabel, planCalls, makeStage, stepLabel, makeWitnessHolder } from './preprod-plan.mjs';
 import { dryRunStages } from './preprod-dryrun.mjs';

@@ -38,8 +38,8 @@
 import { existsSync, readFileSync, copyFileSync, mkdirSync, constants } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { randomBytes } from 'node:crypto';
-import { submitTx, createLedger9UnprovenDeployTx, createLedger9UnprovenDeployTxFromVerifierKeys } from '@midnight-ntwrk/midnight-js-contracts';
-import { SucceedEntirely } from '@midnight-ntwrk/midnight-js-types';
+import { submitTx, createLedger9UnprovenDeployTx, createLedger9UnprovenDeployTxFromVerifierKeys } from '@midnightntwrk/midnight-js-contracts';
+import { SucceedEntirely } from '@midnightntwrk/midnight-js-types';
 import { BUILD, requireBuildableNetwork } from './lib/eras.mjs';
 import { publicEndpoints, guardLogs } from './lib/endpoints.mjs';
 import { openWallet, describe, summarize } from './lib/wallet9.mjs';

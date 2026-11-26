@@ -29,7 +29,7 @@ import {
     NETWORKS, CREDENTIALED, isOpenNetwork, checkNetwork, networkEndpoints, publicEndpoints,
     preprodEndpoints, publicPreprodEndpoints, blockfrostToken, assertNoSecrets
 } from '../../scripts/lib/endpoints.mjs';
-import { networks } from '@midnight-ntwrk/midnight-js-utils';
+import { networks } from '@midnightntwrk/midnight-js-utils';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const FAKE = { preprod: 'preprodFAKEtoken0001', mainnet: 'mainnetFAKEtoken0002' };

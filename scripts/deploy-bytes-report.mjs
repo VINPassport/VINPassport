@@ -34,7 +34,7 @@ const TAG_SETS = [
 
 console.log('versions');
 for (const p of ['@midnightntwrk/ledger-v9', '@midnight-ntwrk/compact-runtime',
-    '@midnight-ntwrk/midnight-js-contracts', '@midnightntwrk/wallet-sdk-facade']) {
+    '@midnightntwrk/midnight-js-contracts', '@midnightntwrk/wallet-sdk-facade']) {
     let v = null;
     // Some of these do not export ./package.json, so fall back to reading it
     // off disk rather than reporting a version we could not confirm.

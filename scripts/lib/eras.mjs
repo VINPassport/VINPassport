@@ -40,7 +40,7 @@ export const BUILD = Object.freeze({
     compiler: '0.36.0',
     language: '0.28.0',
     runtime: '0.21.0',
-    midnightJs: '5.0.1',
+    midnightJs: '5.0.3',
     walletSdk: '2.0.0'
 });
 
