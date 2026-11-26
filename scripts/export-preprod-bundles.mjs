@@ -14,7 +14,8 @@
  *
  * Without a receipt it needs only a Blockfrost project id, so anyone can
  * regenerate the snapshot and diff it against the committed copy. A proxy in
- * front of the same indexer works too, through VINPASSPORT_INDEXER_URL. The bundles
+ * front of the same indexer works too, through VINPASSPORT_INDEXER_URL and
+ * VINPASSPORT_INDEXER_TOKEN, read like the server settings in lib/sponsor9.mjs. The bundles
  * need the run's receipt, which holds the salts and stays outside the
  * repository. No authority bundle: the run granted the dealership the trade
  * view and nobody the authority view, so an authority file could only report
@@ -34,6 +35,7 @@ import { ledger } from '../contracts/vinpassport/src/managed/vinpassport/contrac
 import { networkEndpoints, guardLogs, assertNoSecrets } from './lib/endpoints.mjs';
 import { buildBundle, verifyBundle } from './lib/disclosure.mjs';
 import { readRegistrarSlots } from './lib/registrar-slots.mjs';
+import { indexerConfig } from './lib/sponsor9.mjs';
 
 guardLogs();
 
@@ -53,12 +55,11 @@ const write = (path, obj) => {
 const { contractAddress } = JSON.parse(readFileSync(join(ROOT, 'deploy', 'preprod.json'), 'utf8'));
 
 // -- the chain, as anyone can read it
-// VINPASSPORT_INDEXER_URL names another preprod indexer, such as a gateway's, with VINPASSPORT_INDEXER_TOKEN as its bearer key.
-const INDEXER = process.env.VINPASSPORT_INDEXER_URL?.trim() || null;
-const INDEXER_TOKEN = process.env.VINPASSPORT_INDEXER_TOKEN?.trim() || null;
-const res = await fetch(INDEXER ?? networkEndpoints('preprod').indexerHttpUrl, {
+const INDEXER = indexerConfig('preprod');
+const INDEXER_TOKEN = INDEXER?.token ?? null;
+const res = await fetch(INDEXER?.url ?? networkEndpoints('preprod').indexerHttpUrl, {
     method: 'POST',
-    headers: { 'content-type': 'application/json', ...(INDEXER && INDEXER_TOKEN ? { authorization: `Bearer ${INDEXER_TOKEN}` } : {}) },
+    headers: { 'content-type': 'application/json', ...(INDEXER ? { authorization: `Bearer ${INDEXER.token}` } : {}) },
     body: JSON.stringify({ query: `{ contractAction(address: "${contractAddress}") { state transaction { hash block { height } } } }` })
 });
 if (!res.ok) throw new Error(`the indexer answered ${res.status}`);

@@ -8,8 +8,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { writeFileSync, rmSync } from 'node:fs';
 import { NightgateApiError, NightgateJobError } from '@odatano/nightgate-tx';
-import { nightgateConfig, failureOutcome, preparedAction } from '../../scripts/lib/sponsor9.mjs';
+import { nightgateConfig, indexerConfig, failureOutcome, preparedAction } from '../../scripts/lib/sponsor9.mjs';
 
 const none = join(tmpdir(), 'vinpassport-no-such-nightgate.env');
 
@@ -29,6 +30,20 @@ test('the token is sent the way its kind is sent, and the server must be https',
     assert.deepEqual(gateway, { baseUrl: 'https://ng.example', token: 'oda_abc' });
     assert.throws(() => nightgateConfig('preprod', { env: { VINPASSPORT_NIGHTGATE_URL: 'http://ng.example', VINPASSPORT_NIGHTGATE_TOKEN: 'ngat_abc' }, file: none }), /must be https/);
     assert.ok(nightgateConfig('preview', { env: { VINPASSPORT_NIGHTGATE_URL: 'http://127.0.0.1:4004', VINPASSPORT_NIGHTGATE_TOKEN: 'ngat_abc' }, file: none }));
+});
+
+test('another indexer is read like the server: environment first, then the file, both values or neither', () => {
+    assert.equal(indexerConfig('preprod', { env: {}, file: none }), null);
+    assert.throws(() => indexerConfig('preprod', { env: { VINPASSPORT_INDEXER_URL: 'https://ix.example' }, file: none }), /go together/);
+    assert.throws(() => indexerConfig('preprod', { env: { VINPASSPORT_INDEXER_URL: 'http://ix.example', VINPASSPORT_INDEXER_TOKEN: 'oda_abc' }, file: none }), /must be https/);
+    const file = join(tmpdir(), `vinpassport-indexer-${process.pid}.env`);
+    writeFileSync(file, 'VINPASSPORT_INDEXER_URL=https://ix.example/graphql\r\nVINPASSPORT_INDEXER_TOKEN=oda_file\r\n');
+    try {
+        assert.deepEqual(indexerConfig('preprod', { env: {}, file }), { url: 'https://ix.example/graphql', token: 'oda_file' });
+        assert.equal(indexerConfig('preprod', { env: { VINPASSPORT_INDEXER_TOKEN: 'oda_env' }, file }).token, 'oda_env');
+    } finally {
+        rmSync(file, { force: true });
+    }
 });
 
 test('a deploy step or an update is handed over as its one action, and nothing else is', async () => {

@@ -236,7 +236,7 @@ try {
             txHash: pub.txHash,
             txId: pub.txId,
             blockHeight: pub.blockHeight,
-            deployedAt: new Date(pub.blockTimestamp ?? Date.now()).toISOString(),
+            deployedAt: isoOf(pub.blockTimestamp),
             fees: pub.fees ?? null,
             ledger: BUILD.ledger,
             buildId: buildId(),
@@ -327,7 +327,13 @@ async function untilChain(address, test, what) {
 // const below it is initialised (it cost a crash between the deploy and its
 // record on 9 November 2026; `--resume` exists because of it).
 function pick(o, keys) { return Object.fromEntries(keys.map((k) => [k, o[k]])); }
-function isoOf(ts) { return new Date(ts == null ? Date.now() : (/^\d+$/.test(String(ts)) ? Number(ts) : ts)).toISOString(); }
+// Ledger 9 block times are seconds, older records carry milliseconds.
+function isoOf(ts) {
+    if (ts == null) return new Date().toISOString();
+    if (!/^\d+$/.test(String(ts))) return new Date(ts).toISOString();
+    const n = Number(ts);
+    return new Date(n < 1e11 ? n * 1000 : n).toISOString();
+}
 
 /**
  * A deploy too large for one block: the contract with the circuits that fit,

@@ -20,6 +20,8 @@
  * `_local-tracking/NIGHTGATE.<network>.env`:
  *   VINPASSPORT_NIGHTGATE_URL     the server, for example https://api.preprod.odatano.dev
  *   VINPASSPORT_NIGHTGATE_TOKEN   an agent token (ngat_...) or a gateway key (oda_...)
+ *   VINPASSPORT_INDEXER_URL       optional; another indexer for chain snapshots, such as the gateway's
+ *   VINPASSPORT_INDEXER_TOKEN     its bearer key; for the gateway the same key as the server's
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -35,19 +37,32 @@ import { BUILD_DIR } from './contract9.mjs';
 
 const LANDED_WAIT_MS = 5 * 60_000;
 
-/** The server and token for `network`, or null when none is configured. */
-export function nightgateConfig(network, { env = process.env, file = credentialPath(`NIGHTGATE.${network}.env`) } = {}) {
+/** A URL and its token from the environment, else from the file; null when neither is set. */
+function urlAndToken(urlName, tokenName, { env, file }) {
     const lines = existsSync(file) ? readFileSync(file, 'utf8').split(/\r?\n/) : [];
     const read = (name) => env[name]?.trim() || lines.find((l) => l.startsWith(`${name}=`))?.slice(name.length + 1).trim() || '';
-    const baseUrl = read('VINPASSPORT_NIGHTGATE_URL');
-    const token = read('VINPASSPORT_NIGHTGATE_TOKEN');
-    if (!baseUrl && !token) return null;
-    if (!baseUrl || !token) throw new Error('VINPASSPORT_NIGHTGATE_URL and VINPASSPORT_NIGHTGATE_TOKEN go together: set both or neither');
-    if (!/^https:\/\//.test(baseUrl) && !/^http:\/\/(127\.0\.0\.1|localhost)[:/]/.test(baseUrl)) {
-        throw new Error(`VINPASSPORT_NIGHTGATE_URL must be https (or a loopback http address): ${baseUrl}`);
+    const url = read(urlName);
+    const token = read(tokenName);
+    if (!url && !token) return null;
+    if (!url || !token) throw new Error(`${urlName} and ${tokenName} go together: set both or neither`);
+    if (!/^https:\/\//.test(url) && !/^http:\/\/(127\.0\.0\.1|localhost)[:/]/.test(url)) {
+        throw new Error(`${urlName} must be https (or a loopback http address): ${url}`);
     }
     guardLogs({ alsoRedact: [token] });
-    return { baseUrl: baseUrl.replace(/\/+$/, ''), ...(token.startsWith('ngat_') ? { agentToken: token } : { token }) };
+    return { url, token };
+}
+
+/** The server and token for `network`, or null when none is configured. */
+export function nightgateConfig(network, { env = process.env, file = credentialPath(`NIGHTGATE.${network}.env`) } = {}) {
+    const found = urlAndToken('VINPASSPORT_NIGHTGATE_URL', 'VINPASSPORT_NIGHTGATE_TOKEN', { env, file });
+    if (!found) return null;
+    const { url, token } = found;
+    return { baseUrl: url.replace(/\/+$/, ''), ...(token.startsWith('ngat_') ? { agentToken: token } : { token }) };
+}
+
+/** Another indexer for `network` and its bearer key, such as a gateway's, or null for the public one. */
+export function indexerConfig(network, { env = process.env, file = credentialPath(`NIGHTGATE.${network}.env`) } = {}) {
+    return urlAndToken('VINPASSPORT_INDEXER_URL', 'VINPASSPORT_INDEXER_TOKEN', { env, file });
 }
 
 /**

@@ -209,16 +209,16 @@ npm install
 npm test
 ```
 
-Expected: **184 contract tests, 447 app tests and 24 SDK assertions, all passing**, in about fifteen
+Expected: **184 contract tests, 451 app tests and 24 SDK assertions, all passing**, in about fifteen
 seconds. On a fresh clone one app test skips itself and says why: the script it checks is a local
-spike, gitignored, so the clone reports 393 passed and 1 skipped, as CI does.
+spike, gitignored, so the clone reports 450 passed and 1 skipped, as CI does.
 
 ```
  Test Files  2 passed (2)
-      Tests  176 passed (176)
+      Tests  184 passed (184)
 
-ℹ tests 394
-ℹ pass 393
+ℹ tests 451
+ℹ pass 450
 ℹ skipped 1
 
 ================ 24 passed, 0 failed ================
@@ -229,7 +229,7 @@ spike, gitignored, so the clone reports 393 passed and 1 skipped, as CI does.
 | `npm test` | Everything below, in one run |
 | `npm run test:contract` | The 184 contract tests, against the compiled circuits, including a cross-contract call tree run in memory |
 | `npm run test:watch` | The same, re-running on change |
-| `npm run test:app` | 394 tests on the application paths: verdicts, the deploy's registrar list and witness set, the runner's per-call wiring, the committee handover and committee proposals, registrar governance bookkeeping against the compiled contract, DUST coin selection, hash parity with the ledger 8 build, the chain-sees panel, the QR encoder and where a scanned code may lead, via `node --test`. **Most import and run product code; a minority assert on what is written in the repository** (that each page carries the shared header and footer, that every page names its content with one `<main>` and offers a way past the header, that every pairing of a text colour and a background clears the contrast floor, that a moved address keeps its query, that a link to a verdict previews as a check and never as a verdict). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
+| `npm run test:app` | 451 tests on the application paths: verdicts, the deploy's registrar list and witness set, the runner's per-call wiring, the committee handover and committee proposals, registrar governance bookkeeping against the compiled contract, DUST coin selection, hash parity with the ledger 8 build, the chain-sees panel, the QR encoder and where a scanned code may lead, via `node --test`. **Most import and run product code; a minority assert on what is written in the repository** (that each page carries the shared header and footer, that every page names its content with one `<main>` and offers a way past the header, that every pairing of a text colour and a background clears the contrast floor, that a moved address keeps its query, that a link to a verdict previews as a check and never as a verdict). Both kinds have caught real regressions, but they are not the same kind of evidence and the split is stated rather than averaged |
 | `npm run test:sdk` | 24 assertions pinning our assumptions about `@odatano/dpp-sdk` |
 | `npm run app` | All three surfaces + the circuits, one dependency-free server |
 | `npm run serve:site` | The site statically, as GitHub Pages serves it: no circuits, demo state only |
@@ -780,7 +780,7 @@ scripts/
 test/
   passport-simulator.mjs             harness: compiled circuits + a local ledger
   passport.test.mjs, listing.test.mjs 184 contract tests
-  app/                               394 tests on the paths around the circuits
+  app/                               451 tests on the paths around the circuits
   fixtures/golden-vectors.json       what the ledger 8 build computed, checked against this one
   sdk-assumptions.mjs                24 assertions pinning @odatano/dpp-sdk behaviour
 ```
