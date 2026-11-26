@@ -125,6 +125,28 @@ test('the README\'s sample run and test table carry the README\'s counts', () =>
     }
 });
 
+/** A number from 1 to 99 written in words, such as "fifty-three"; NaN otherwise. */
+const fromWords = (text) => {
+    const units = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
+        'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+    const tens = ['twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+    const [a, b] = text.toLowerCase().split('-');
+    if (units.includes(a) && !b) return units.indexOf(a) + 1;
+    if (!tens.includes(a)) return NaN;
+    if (!b) return (tens.indexOf(a) + 2) * 10;
+    const u = units.indexOf(b);
+    return u >= 0 && u < 9 ? (tens.indexOf(a) + 2) * 10 + u + 1 : NaN;
+};
+
+test('the README\'s test total and its guard count in words carry the README\'s counts', () => {
+    const m = README.match(/\*\*(\d+) tests today\*\* - (\d+) contract, (\d+) application, (\d+) SDK assumption assertions; all ([a-z-]+) guards/);
+    assert.ok(m, 'the README states the test total');
+    const [total, contract, app, sdk] = m.slice(1, 5).map(Number);
+    assert.deepEqual([contract, app, sdk], [SOURCE.contractTests, SOURCE.appTests, SOURCE.sdkChecks], `README: "${m[0]}"`);
+    assert.equal(total, contract + app + sdk, `README: "${m[0]}" does not add up`);
+    assert.equal(fromWords(m[5]), SOURCE.guards[1], `README: "${m[0]}"`);
+});
+
 test('every guard count on the site is the README\'s', () => {
     const found = every(/\b(\d+) of (\d+)\b(?=[^.]{0,40}(?:guard|mutation|killed))|(?:guard|mutation)[^.]{0,40}?\b(\d+) of (\d+)\b/gi);
     assert.ok(found.length >= 2, 'the site states the guard count');
