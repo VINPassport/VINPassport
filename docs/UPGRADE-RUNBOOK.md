@@ -2,9 +2,13 @@
 
 How to move the contract to a new toolchain, a new ledger, or a new version of its own circuits,
 from first check to published evidence. Every step below was done for real on Midnight Preview
-between 8 and 9 November 2026; the decision each step rests on is linked.
+between 8 and 9 November 2026; the decision each step rests on is linked. The 27 November 2026 build
+was then deployed and handed over to our committee on preprod, the network that mirrors mainnet,
+with our own keys ([`deploy/preprod.json`](../deploy/preprod.json)).
 
-Every step that writes to a chain needs the owner's approval, each time. Preview first, always.
+Every step that writes to a chain needs the owner's approval, each time. Preview first, always,
+while Preview runs. After judging (15 December 2026) Preview is retired and this runbook targets
+preprod: read `--network preprod` wherever a command below says `preview`.
 
 ## 0. See what moved
 
@@ -79,6 +83,11 @@ node scripts/deploy.mjs --network preview --redeploy --resume <address> --submit
 The previous record is archived beside the new one; its maintenance audit trail stays in its own
 directory under `deploy/maintenance/<network>/`.
 
+**Who pays.** With `VINPASSPORT_NIGHTGATE_URL` and `VINPASSPORT_NIGHTGATE_TOKEN` set, the deploy
+steps and the committee's updates are handed to a NIGHTGATE sponsor ([D37](DECISIONS.md#settled)).
+The grant then needs `allowDeploy` and `allowMaintenance`, and a sponsor pays an update only for a
+contract that grant deployed. A deploy that fits one block, and `scripts/ask.mjs`, stay self-paid.
+
 ## 5. Exercise and read back
 
 ```bash
@@ -106,7 +115,9 @@ way. A push to `main` that touches `site/` redeploys passport.vin.
 
 ## 7. Mainnet
 
-The same steps, once the open questions allow it: who funds mainnet DUST and how
-([Q7](DECISIONS.md#open)), who holds the committee keys ([Q8](DECISIONS.md#open)), and demo
-vehicles only until counsel has advised on real VINs. Mainnet's block limits and prices are read
-live by the same tools, never assumed from Preview's.
+VINPassport has not deployed to mainnet. The same steps, once every gate is met: our own keys held
+outside synced folders; who holds the committee keys ([Q8](DECISIONS.md#open)); legal advice before
+real VINs, so demo vehicles only until counsel has advised; the site reading a real chain; and a
+mainnet fee source ([Q7](DECISIONS.md#open): a NIGHTGATE grant if its operator enables mainnet,
+else our own NIGHT). Mainnet's block limits and prices are read live by the same tools, never
+assumed from Preview's.

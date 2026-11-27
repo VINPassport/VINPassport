@@ -1,7 +1,7 @@
 /**
  * `npm run app:chain` - the app server with the chain demo switched on: the
  * site's "run it on chain" buttons submit real transactions to the contract
- * deployed on VINPASSPORT_NETWORK_ID (default preview), through the ledger 9
+ * deployed on VINPASSPORT_NETWORK_ID (default preprod), through the ledger 9
  * runner (scripts/lib/runner9.mjs).
  *
  * Every value here is a default; anything already set in the environment
@@ -22,7 +22,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const fallback = (name, value) => { process.env[name] ??= value; };
 
 process.env.VINPASSPORT_CHAIN = '1';
-fallback('VINPASSPORT_NETWORK_ID', 'preview');
+fallback('VINPASSPORT_NETWORK_ID', 'preprod');
 fallback('VINPASSPORT_DEMO_CAP', '20');
 // Not the plain server's 8790: two processes on one seed spend the same DUST
 // twice, so this one refuses a taken port rather than shifting to another.

@@ -3,53 +3,53 @@
   "policy": "vinpassport-tiers/v1",
   "tier": "trade",
   "audience": "the dealership the run granted the trade view",
-  "audienceId": "77553f28f0f03bcd9d00e9545900e4c800e9cf3977759baa63c63ccf037b7a33",
+  "audienceId": "413eb23af7a1c4cd7c522b86d1bd7ee2be66683e167459f4e85d8761675ad04c",
   "note": "A trade disclosure. It opens only the fields listed here and carries no seed, so it cannot open any other field of this vehicle. Each claim listed was proven on the public ledger and reveals a bound, never a value.",
   "network": "preprod",
-  "contractAddress": "980a3fd62d8dc67c027e057b082a21c429679df2e179b6f18659da3b02f1d665",
+  "contractAddress": "ae25d20140b308a1dc2afdabab4295858c398f9cc6fd36a47df9f2d04cf260cc",
   "vinHashScheme": "vinkey-voprf-ristretto255-sha512-v1",
-  "vinHash": "51db9078aa3e99ca5731a792e86223729c7e179fc1ee9a645eb49125cbe08876",
-  "contentRoot": "0795d115330634c66ebad800a61babefa3a9a3c77218fb2d8678d50d3dfe08dc",
+  "vinHash": "46f363bb3baaab09555f8c753197c29418447db56977f4d868292c96864832be",
+  "contentRoot": "d18878e51689f0d3eb28116934649b5f648fb803a5925ca0f8cfc78bf7543959",
   "fields": [
     {
       "fieldName": "odometerKm",
       "fieldKey": "2dd69ded11554ddb3306be039e80f3f82824b0d4af96b9bc287055558ea92fe7",
-      "slot": "83f50485dffd7ded32160d835aa782b9bfeda9ddd65e911ae5a058bfce3bbfce",
+      "slot": "e1e9bd717dc4ba94f8ac2f2fff6463746d9cb7ea7a1ce3fca3cc949df2a0b014",
       "writeIndex": 1,
-      "value": "53386",
-      "salt": "543f2561543845a031b2ac8bbd6192db17cd796eaf7a781b9f2f23c1442a9914"
+      "value": "56901",
+      "salt": "d5ccfa54054a8bab63ab8b4e174e01263a4ca9217f08fe4d58f6b1cd1b7d8bc0"
     },
     {
       "fieldName": "accidentCount",
       "fieldKey": "aeb322aa379bd01ecb61ca57719f40e3c4a0368533dd62b1c7b5d2d995da98eb",
-      "slot": "2c2bf55b7b635e78e19c9f4f8e4c3032a0e87353a53fcc407c00921936045a92",
+      "slot": "015d61efe27e06496f9b124e3a0df32f7129ee69c6337519afad26b5dc212070",
       "writeIndex": 0,
       "value": "0",
-      "salt": "b36e10e0d2a12b90e78d73d622b6a7481650bc5744ba4657fa372f8424185366"
+      "salt": "e34167420738ddc97acbc9bf0baae407e719d5197c817a3d2abe633a41f3eac2"
     },
     {
       "fieldName": "ownerCount",
       "fieldKey": "7567eb36429241cb257b43d05709400ac5e7400e088048071b387d7d0548b25c",
-      "slot": "4a1293dae7ce6e0d2f94112812fa1591154955b6914eda1b010234082d986ed3",
+      "slot": "7fa001acab644519dc62c48c5d1a378f3cc4cb03e3d8e72fa5fa1e3da0658618",
       "writeIndex": 0,
       "value": "2",
-      "salt": "fe71085bca08f0550d123e81a536c73d791777e7c1c87c0828b9febffd5682f6"
+      "salt": "56d483cf96a8d26fab7fcf4efe1258253e4c077cae110d5ad515725f4b4ebe77"
     },
     {
       "fieldName": "serviceCount",
       "fieldKey": "48bdd789ee03fb0debd23d7e156228d3233f0110d48ed2d7dda663fb22521aff",
-      "slot": "225f5f683067c6f1e272de6a02ac3a075b3fff63178901629f5a9b670cc98a0f",
+      "slot": "d748793df7e28b8712cf6c17ffce2f160f4a030e4badfaef79543573cd9eea01",
       "writeIndex": 0,
       "value": "6",
-      "salt": "eb577b77b4f520ef6012a6004ed7af6bdb4a2570c2eb1e55aeb2a4f384c0fb76"
+      "salt": "3e18bf868562f7a6da3d57a06a31aef1e3a310c74fa83cfa0a2e92986172d448"
     },
     {
       "fieldName": "lastServiceOdometerKm",
       "fieldKey": "b6239d97e7a609a21328561a13192631ead5b420e16044e3e498a6c20b77f824",
-      "slot": "a5f4abe9e0b64c4a23b4307f522db3d2988238c0aa4d0f1f2dd30a6c855b3b99",
+      "slot": "9e5c4053b80bee7bd1eb51083f46ed0a9bcf7e8738d8c7759734a7537ae7f2f6",
       "writeIndex": 0,
-      "value": "40342",
-      "salt": "04cd4eac189f91dc2f511e9e83644fc1bc6be49619b57d08632bf8dc6e12c448"
+      "value": "44397",
+      "salt": "74105c7db617047ec6a7219b47500e7eeed3da6d8a4a610aca4e2ecb62a87fc8"
     }
   ],
   "claims": []

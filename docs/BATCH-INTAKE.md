@@ -92,8 +92,10 @@ going back never loses entered data; nothing writes to the ledger until step 5 s
   chips from `filterVocabulary` (powertrain, segment, market status) narrowing the list;
   a search box matching brand and parent names.
 - **Selected brand card:** name, parent, HQ, powertrains offered, EU manufacturing sites.
-- **Rule:** exactly one brand per batch. The brand is recorded as the registrar identity
-  prefix (`registrar: "Audi (Volkswagen Group)"`) on every passport in the batch.
+- **Rule:** exactly one brand per batch. The batch runs under the manufacturer's registrar
+  identity, which the ledger records on every passport in the batch as an identity derived
+  from that registrar's secret (`registrarIdOf`). The brand name (for example
+  "Audi (Volkswagen Group)") stays off chain.
 
 ### Step 2 · Model specification (the shared template)
 
@@ -166,7 +168,8 @@ passport.vin origins, JSON in and out, values never echoed beyond the submitting
   real compiled circuits, shared in-memory ledger, resets on restart. This is what ships
   first and what the public demo runs.
 - **Chain mode (after preprod wiring):** the same five steps, but step 5 submits real
-  transactions to the deployed preprod contract, fees paid in dust from the project wallet.
+  transactions to the deployed preprod contract, fees paid by a NIGHTGATE sponsor under our
+  grant, with the project wallet as fallback ([D37](DECISIONS.md#settled)).
   The step-5 screen gains per-VIN transaction status (proving → submitted → in block) and
   realistic timing expectations. Nothing in steps 1 to 4 changes, which is the point of
   designing the wizard now.
@@ -193,7 +196,8 @@ passport.vin origins, JSON in and out, values never echoed beyond the submitting
   (colour is the classic candidate; the panel currently has no colour field, and adding one
   is a FIELDS.md decision, not a UI one).
 - Where manufacturer authentication lives when this leaves demo mode (the demo needs none;
-  chain mode spending our dust on strangers' batches obviously does).
+  chain mode spending our sponsor grant, or our wallet's DUST as fallback, on strangers'
+  batches obviously does).
 - Whether batch receipts should also be retrievable server-side later (`GET /api/batch/:id`)
   or remain download-only; download-only keeps the server stateless and is the default.
 

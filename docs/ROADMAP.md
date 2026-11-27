@@ -11,14 +11,14 @@ finished. Between windows the phases win.
 
 [Q3](DECISIONS.md#resolved) settled 2026-09-18: enter every wave, starting at Wave 1. The
 [Midnight Buildathon](https://midnight.network/hackathon/buildathon) runs three separately judged
-waves. **Wave 1** closed 16 Sep (we submitted on the 9th). **Wave 2** opened 29 Sep and closes
-**19 Oct, 15:00 UTC**; judging runs to 26 Oct. Wave 3 follows, on dates the organiser has not yet
-published. Each wave is scored fresh on progress made inside its own window, so a weak wave is not
-a handicap and a strong one is not credit carried forward.
+waves. **Wave 1** closed 16 Sep (we submitted on the 9th). **Wave 2** opened 29 Sep and closed
+**19 Oct, 15:00 UTC**; judging ran to 26 Oct. **Wave 3** closes **30 Nov 2026, 15:00 UTC**, and
+judging runs to 15 Dec. Each wave is scored fresh on progress made inside its own window, so a weak
+wave is not a handicap and a strong one is not credit carried forward.
 
 Dates here are the organiser's, read from the AKINDO API
-(`api.akindo.io/public/wave-hacks/jaMZjqPOBsLXvjdG/waves`) on 10 Oct, not transcribed from the
-announcement. An earlier revision of this file said Wave 2 opened on the 27th and closed on the
+(`api.akindo.io/public/wave-hacks/jaMZjqPOBsLXvjdG/waves`) on 10 Oct, and again for Wave 3, not
+transcribed from the announcement. An earlier revision of this file said Wave 2 opened on the 27th and closed on the
 17th; both were wrong by two days, in the direction that costs you time.
 
 ---
@@ -102,8 +102,8 @@ anything *new*: do not wire a field whose predicate has never run.
 
 ### Wave 3: from 31 Oct
 
-Dates to be confirmed from the buildathon's published schedule; the 27 Oct to 16 Nov estimate
-written here earlier was a guess. **The headline is [Phase 1](#phase-1-tiered-disclosure-and-a-real-audience),
+Submission closes **30 Nov 2026, 15:00 UTC**, and judging runs to 15 Dec. The 27 Oct to 16 Nov
+estimate written here earlier was a guess. **The headline is [Phase 1](#phase-1-tiered-disclosure-and-a-real-audience),
 tiered disclosure**, as settled in [D26](DECISIONS.md#settled): the one promise on the home page
 ("reveal only what the asker is entitled to see") that Wave 2 openly deferred.
 
@@ -113,7 +113,35 @@ tiered disclosure**, as settled in [D26](DECISIONS.md#settled): the one promise 
    [`/disclose/`](https://passport.vin/disclose/) on demo data**, linked from `/verify/`
 3. `grantDisclosure` and `revokeDisclosure` in the contract (**done 31 Oct**, compiled and tested;
    the guided preprod run grants the dealership the trade view), then one redeploy and a fresh run,
-   so the sample bundles on the site come from real chain data
+   so the sample bundles on the site come from real chain data. Redeployed 1 November; the current
+   build, where revoking is also open to any current registrar once the vehicle's registrar was
+   removed ([D38](DECISIONS.md#settled)), is live on preprod as our contract `ae25d201…` since
+   27 November 2026
+
+Also shipped in Wave 3:
+
+- [x] Fees paid by a NIGHTGATE sponsor under our grant, our own wallet as fallback, for calls,
+      deploy steps and committee updates ([D37](DECISIONS.md#settled)). **Live on preprod**
+- [x] Rights after a registrar leaves, field rules fixed by the vehicle's registrar, passport
+      changes and majority governance ([D38](DECISIONS.md#settled)). **Live on preprod**
+- [x] Our own preprod deployment, 27 November 2026: `ae25d201…`, deployed with our own keys in two
+      steps, handed to our 2-of-3 committee, every fee paid by a NIGHTGATE sponsor. All 20 on-chain
+      verifier keys match this build, and it was exercised with a full guided run
+      ([`deploy/preprod.json`](../deploy/preprod.json))
+
+### After judging (from 15 Dec 2026): preprod only
+
+From then on the work targets preprod only; Preview is retired once the next build is live there.
+
+- [ ] The next build carries contract changes agreed with ODATANO: refuse a root a vehicle has used
+      before (a predecessor map keyed by hash(VIN, root), which also lets a reader walk the root
+      history); two event kinds, a re-root and a registrar-only change; and an approval event under
+      the VIN
+- [ ] Deploy it on preprod with our own keys, then retire Preview
+- [ ] Mainnet stays gated on: our own keys held outside synced folders; the committee holders
+      ([Q8](DECISIONS.md#open)); legal advice before real VINs; the site reading a real chain; and a
+      mainnet fee source ([Q7](DECISIONS.md#open): a NIGHTGATE grant if its operator enables
+      mainnet, else our own NIGHT). VINPassport has not deployed to mainnet
 
 ### Standing check
 
@@ -162,9 +190,10 @@ circuit here.
       `site/verify/`, not the planned `app/scan/`)
 - [x] Seed data and a demo scenario: `npm run demo:export` regenerates `site/verify/` from the
       real compiled circuits, so the committed fixture cannot drift from the contract
-- [x] Fee funding: **not** the planned treasury pool. [D24](DECISIONS.md#settled): one wallet,
-      self-renewing DUST from registered NIGHT. Per-organisation sessions, and the attribution that
-      comes with them, are Phase 1
+- [x] Fee funding: **not** the planned treasury pool. A NIGHTGATE sponsor pays under our grant
+      ([D37](DECISIONS.md#settled)); one wallet of our own, self-renewing DUST from registered
+      NIGHT, stands by ([D24](DECISIONS.md#settled)). Per-organisation sessions, and the
+      attribution that comes with them, are Phase 1
 - [x] **Measure DUST cost per anchor and per proof, batched versus unbatched.** DONE
       14 Oct, and it reversed the assumption this plan was built on: batching is
       fee-neutral for register+init (0.3%) and costs **15% more** for two proofs, because
@@ -212,9 +241,11 @@ bundles the holder hands over, not redaction in a service, so the service-side i
       every field a bundle opens and flags any above its declared tier (`scripts/disclose.mjs --tier`)
 - [x] A `public` bundle opens nothing above `public`, held by a test against real ledger state
 - [x] Browser check of a bundle: one vehicle, three audiences, at `/disclose/` (linked from `/verify/`),
-      against the demo ledger; sample bundles from a preprod run follow the redeploy
-- [x] `grantDisclosure` and `revokeDisclosure`, registrar-only, with a guard test per assert and the
-      mutation harness re-run; a bundle may name its audience and the reader reports the grant.
+      against the demo ledger. The preprod redeploy has happened (our contract `ae25d201…`,
+      27 November 2026), and the preprod sample bundles follow its full guided run
+- [x] `grantDisclosure` and `revokeDisclosure`, by the vehicle's registrar (revoking also by any
+      current registrar once that registrar was removed, [D38](DECISIONS.md#settled)), with a guard
+      test per assert and the mutation harness re-run; a bundle may name its audience and the reader reports the grant.
       On preprod after the redeploy
 - [ ] Consumer viewer: the buyer-facing scan
 - [ ] Remaining predicates: accident count, recycled content, battery health
@@ -232,7 +263,8 @@ one, and the difference is visible to a verifier.
 
 - [x] Writer identity in-circuit: DONE in Wave 2. `registrarIdOf(registrarSecret())` derives
       the identity from a witness secret and compares it against `allowedRegistrars`,
-      pinned at deployment. Never `ownPublicKey()`, which a caller controls. Closes
+      set at deployment and changed since only by a majority of the current registrars
+      ([D32](DECISIONS.md#settled), [D38](DECISIONS.md#settled)). Never `ownPublicKey()`, which a caller controls. Closes
       [D23](DECISIONS.md#settled) item 1
 - [ ] Provenance marking: an authoritative-source write distinguishable from a self-declared one,
       and rendered as such on the verification surface rather than left in the data

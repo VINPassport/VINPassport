@@ -185,17 +185,18 @@ goBtn.addEventListener('click', async () => {
 
 /**
  * No server answering does not have to mean nothing to show. Guided runs
- * really happened, on Preview (ledger 9) and earlier on preprod (ledger 8);
+ * really happened: on preprod against the current contract (27 Nov 2026) and on
+ * Preview against the 9 November build, both on ledger 9;
  * render one from its public half, labelled as a recording so nobody mistakes
  * it for a live one. Everything in the file is already on the chain, which is
  * also the point: it is all a stranger can see.
  *
- * `?recorded=preprod` shows the older one. Each recording names its network,
+ * The preprod one is the default; `?recorded=preview` shows the Preview one. Each recording names its network,
  * and the page takes its links and its indexer query from that.
  */
 const RECORDINGS = { preview: 'recorded-run.preview.json', preprod: 'recorded-run.preprod.json' };
 const askedRecording = new URLSearchParams(location.search).get('recorded');
-const recordingName = askedRecording in RECORDINGS ? askedRecording : 'preview';
+const recordingName = askedRecording in RECORDINGS ? askedRecording : 'preprod';
 
 /** The refused step's own label, falling back to its identifier. */
 function refusedLabel(run) {

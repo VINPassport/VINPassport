@@ -14,7 +14,8 @@ Everything below is downstream of these. They are settled; see
 
 1. **Simple enough for anyone.** No user of any kind ever sees a wallet, a key, or the word
    "blockchain" unless they go looking for it.
-2. **Every transaction is sponsored from a VINPassport treasury.** Customers never hold DUST or NIGHT.
+2. **Every transaction is paid for by the project**, through a NIGHTGATE sponsor under our grant or
+   our own wallet ([D37](DECISIONS.md#settled)). Customers never hold DUST or NIGHT.
 3. **Every payment is fiat.** One-off, subscription or annual. No crypto payment path exists.
 
 ---
@@ -38,9 +39,10 @@ Three rules follow, and they bind every consumer-facing surface:
 
 ## Sponsoring model
 
-> **Scope: this is the product design, not the Wave 1 build.** Wave 1 signs every transaction with
-> a single VINPassport wallet and pays the fee from its own DUST ([D24](DECISIONS.md#settled)): no
-> per-organisation sessions, no `sponsorSessionId`, no lease pool. Everything below describes where
+> **Scope: this is the product design, not the build that runs today.** Today each call is signed
+> in this process and its fee paid by a NIGHTGATE sponsor under our grant, with one project wallet
+> as fallback ([D37](DECISIONS.md#settled), [D24](DECISIONS.md#settled)): no per-organisation
+> sessions, no `sponsorSessionId`, no lease pool. Everything below describes where
 > custody and sponsoring are going once organisations onboard; treat the present tense as intent.
 > The distinction matters for attribution: today the record says VINPassport asserted the fact,
 > which is exactly Model A, and Model A is rejected below. Reaching Model B is Phase 1 work.
@@ -237,24 +239,24 @@ same module for the same reason.
 
 ## Stack
 
-**What is actually installed and running**, verified against `package.json` and `node_modules` on 2026-10-13:
+**What is actually installed and running**, verified against `package.json`, `node_modules` and the deploy records on 2026-11-27:
 
 | Layer | Choice | Why |
 |---|---|---|
 | Runtime | Node ≥22, plain `.mjs` | No build step, per [D11](DECISIONS.md#settled) / [D21](DECISIONS.md#settled) |
 | Framework | none | One dependency-free Node server (D21). No CAP, no database |
-| Contract | `vinpassport`, our own Compact contract | [D16](DECISIONS.md#settled) / [D18](DECISIONS.md#settled); compiler 0.31.1, language 0.23.0 |
-| Chain runtime | `@midnight-ntwrk/compact-runtime` **0.16.0**, `ledger-v8` 8.1.3 | Must match what the contract was compiled against |
+| Contract | `vinpassport`, our own Compact contract | [D16](DECISIONS.md#settled) / [D18](DECISIONS.md#settled); compiler 0.36.0, language 0.28.0, build `f4b451e98c848285`: 26 exported circuits, 20 provable, 6 pure helpers |
+| Chain runtime | `@midnight-ntwrk/compact-runtime` **0.21.0**, `@midnightntwrk/ledger-v9` 1.0.2 | Must match what the contract was compiled against |
 | DPP core | `@odatano/dpp-sdk` **0.2.0**, exact | Width-aware Merkle helpers |
-| Tx building | `@odatano/nightgate-tx` **0.11.0**, exact | Local build, batch ordering, in-process wasm proving |
-| Proving | in-process wasm | No proof server, no Docker |
-| Fees | our own wallet's DUST | [D24](DECISIONS.md#settled), not sponsored |
-| Submission | `@polkadot/api` 16.5.6 → `author_submitExtrinsic` | Straight to the public preprod node |
-| Contract tests | **vitest**, 128 | Midnight's own convention; see D17 |
-| App unit tests | `node --test`, 155 | Platform runner, no `tsx` needed without TypeScript |
+| Tx building | `@odatano/nightgate-tx` **0.26.0** and Midnight.js **5.0.3**, exact | Each call built, proven and signed locally, one per transaction ([D27](DECISIONS.md#settled), [D37](DECISIONS.md#settled)) |
+| Proving | in-process wasm, `@midnightntwrk/zkir-v3` 3.2.1 | No proof server, no Docker |
+| Fees | a NIGHTGATE sponsor under our grant; our own wallet's DUST as fallback | [D37](DECISIONS.md#settled), [D24](DECISIONS.md#settled) |
+| Submission | the NIGHTGATE server for a sponsored call; Wallet SDK facade 5.0.1 for a self-paid one | A self-paid call goes straight to the public node |
+| Contract tests | **vitest**, 184 | Midnight's own convention; see D17 |
+| App unit tests | `node --test`, 452 | Platform runner, no `tsx` needed without TypeScript |
 | SDK guard | `node test/sdk-assumptions.mjs`, 24 | Pins our assumptions about `dpp-sdk` |
 | All UI | Plain HTML / CSS / JS | See below |
-| Network | Preprod | Mainnet submission is gated off |
+| Network | Preprod: our contract `ae25d201…`, the current build, deployed 27 Nov 2026. Preview: `22723f4a…`, the 9 November build | No mainnet deployment |
 
 **Planned for Phase 1, not installed:** `@sap/cds` ^10 and the `@odatano/nightgate` CAP plugin
 (0.32.0 pinned), a SQLite→Postgres database, Playwright for E2E, and the `attestation-vault-32`
@@ -268,9 +270,14 @@ independent dealer, who since [R6](DECISIONS.md#reversed) is stage three of the 
 rather than the beachhead, and is still someone the console has to suit.
 
 **On version pinning:** ODATANO uses caret ranges on their own packages. We pin exact. Different risk
-position when you are not the author. `@midnight-ntwrk/compact-runtime` is pinned to **0.16.0**
-because it has to equal the `runtime-version` the compiler stamps into the contract, and a caret range
-would silently allow a mismatch.
+position when you are not the author. `@midnight-ntwrk/compact-runtime` is pinned to **0.21.0**
+because it has to equal the `runtime-version` the compiler stamps into the contract (compactc 0.36.0
+stamps 0.21.0, [D27](DECISIONS.md#settled)), and a caret range would silently allow a mismatch.
+
+> **Superseded 2026-11-08 by [D27](DECISIONS.md#settled).** Ledger 9 reached mainnet on
+> 6 November 2026, the pin was reviewed as promised below, and the build moved to compactc 0.36.0,
+> language 0.28.0, runtime 0.21.0. The 0.31.1 / 0.23.0 / 0.16.0 build is history at the git tag
+> `ledger8-preprod`. The text below is the reasoning of 14 October, kept as written.
 
 **On being deliberately behind.** Checked 14 Oct 2026: the current Compact toolchain is **0.35.0**
 (language 0.27.0, released 29 Sep 2026) and the current `compact-runtime` is **0.20.0**. We build with

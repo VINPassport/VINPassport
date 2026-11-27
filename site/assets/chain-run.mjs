@@ -254,7 +254,7 @@ export function renderJob(host, job, base) {
     const outOfDust = job.status === 'failed' && /out of dust|balance dust|insufficient funds/i.test(job.error ?? '');
     const sub = job.status === 'failed'
         ? (outOfDust
-            ? `${esc(job.error ?? '')} Fees here are paid in DUST, which regenerates from NIGHT we hold, so our signing service needs a top-up; nothing is wrong with the passport or the circuits.`
+            ? `${esc(job.error ?? '')} This call fell back to our own fee account, which pays in DUST regenerated from NIGHT we hold, and it needs a top-up; nothing is wrong with the passport or the circuits.`
             : esc(job.error ?? 'the run did not finish'))
         : done
             ? `Every transaction below is on the public ${net.name} chain.`

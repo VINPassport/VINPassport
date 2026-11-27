@@ -2,46 +2,46 @@
   "source": "the Midnight preprod indexer (Blockfrost, through api.preprod.odatano.dev), decoded with the contract's own ledger() reader",
   "note": "Public chain state only: commitments, claims and grants. Regenerate it with node scripts/export-preprod-bundles.mjs and compare.",
   "network": "preprod",
-  "contractAddress": "980a3fd62d8dc67c027e057b082a21c429679df2e179b6f18659da3b02f1d665",
-  "readAtBlock": 3571648,
-  "latestTransaction": "5c35fa5431036c6293cc019928fb6ea0b9fc6772ecd0a63f018c529f292e6ef8",
+  "contractAddress": "ae25d20140b308a1dc2afdabab4295858c398f9cc6fd36a47df9f2d04cf260cc",
+  "readAtBlock": 3603212,
+  "latestTransaction": "ae2a740539c44a89ce9b2bb1b42b436683f87a0c3c3466e6ac62fb49282ea51b",
   "fieldCommitment": {
-    "83f50485dffd7ded32160d835aa782b9bfeda9ddd65e911ae5a058bfce3bbfce": "e733d30567b3e3650ec016ee630c162887ec96f85aca7a9196a3e3ff0bfbde8b",
-    "2c2bf55b7b635e78e19c9f4f8e4c3032a0e87353a53fcc407c00921936045a92": "168c47cc0b50a2b15f571437846d97b4b68c85aac1d12d151773cb52cd083b21",
-    "225f5f683067c6f1e272de6a02ac3a075b3fff63178901629f5a9b670cc98a0f": "b15ad9530d7bdb9eae15093470e81b2a1b2161d1bcc02dbbeca4941f42388bc2",
-    "a5f4abe9e0b64c4a23b4307f522db3d2988238c0aa4d0f1f2dd30a6c855b3b99": "fb02e3cdcf260996e7975479da703e3a68bdcca5d25d8e4f5dbb9b90b2c7ff14",
-    "4a1293dae7ce6e0d2f94112812fa1591154955b6914eda1b010234082d986ed3": "f2f663d28aefc2fff4d86e13d39897e726bb2dbba69c4e29676bff3bbc9e691e"
+    "e1e9bd717dc4ba94f8ac2f2fff6463746d9cb7ea7a1ce3fca3cc949df2a0b014": "ddce5283376b472e69e749050c0e7243bfe787827289ae82b0cb8afe7bf942fe",
+    "9e5c4053b80bee7bd1eb51083f46ed0a9bcf7e8738d8c7759734a7537ae7f2f6": "542058fa34708d930cfed363be09c878d36ccb1c2fb2c5bad55574a69dce2251",
+    "7fa001acab644519dc62c48c5d1a378f3cc4cb03e3d8e72fa5fa1e3da0658618": "2437018e437c9169ce7e5bbb809a290ee6391b4c0abb21d5aa3279242c64a8e3",
+    "015d61efe27e06496f9b124e3a0df32f7129ee69c6337519afad26b5dc212070": "7bee9f56ba2d7a541c81ffe3c5d6b964f0a9a24bed648200b25500a6ca898a72",
+    "d748793df7e28b8712cf6c17ffce2f160f4a030e4badfaef79543573cd9eea01": "1af56404c0ecacb80a807b18827dcceca684ffcd01f157ecec3085ba3aab71a5"
   },
   "claims": [
     {
-      "key": "deabc65f983f91c3fff6b779acaebbb48eee509fc2903d2facba330aa151b11c",
-      "slot": "225f5f683067c6f1e272de6a02ac3a075b3fff63178901629f5a9b670cc98a0f",
-      "vinHash": "51db9078aa3e99ca5731a792e86223729c7e179fc1ee9a645eb49125cbe08876",
+      "key": "f28129c27a6487288c583a30e56c132a827b437cbab112310460ea3940bc3a04",
+      "slot": "d748793df7e28b8712cf6c17ffce2f160f4a030e4badfaef79543573cd9eea01",
+      "vinHash": "46f363bb3baaab09555f8c753197c29418447db56977f4d868292c96864832be",
       "fieldKey": "48bdd789ee03fb0debd23d7e156228d3233f0110d48ed2d7dda663fb22521aff",
-      "commitment": "b15ad9530d7bdb9eae15093470e81b2a1b2161d1bcc02dbbeca4941f42388bc2",
+      "commitment": "1af56404c0ecacb80a807b18827dcceca684ffcd01f157ecec3085ba3aab71a5",
       "bound": "4",
       "atMost": false
     },
     {
-      "key": "917414e99728a96fa992cc25b6aad4038528ad094b58a0e4148f2f7d658021e0",
-      "slot": "83f50485dffd7ded32160d835aa782b9bfeda9ddd65e911ae5a058bfce3bbfce",
-      "vinHash": "51db9078aa3e99ca5731a792e86223729c7e179fc1ee9a645eb49125cbe08876",
-      "fieldKey": "2dd69ded11554ddb3306be039e80f3f82824b0d4af96b9bc287055558ea92fe7",
-      "commitment": "e733d30567b3e3650ec016ee630c162887ec96f85aca7a9196a3e3ff0bfbde8b",
-      "bound": "150000",
+      "key": "54a8c0c911a7c98f93f3b0c9152f187a3eecf95fd049c43b28f8404016dcdfde",
+      "slot": "015d61efe27e06496f9b124e3a0df32f7129ee69c6337519afad26b5dc212070",
+      "vinHash": "46f363bb3baaab09555f8c753197c29418447db56977f4d868292c96864832be",
+      "fieldKey": "aeb322aa379bd01ecb61ca57719f40e3c4a0368533dd62b1c7b5d2d995da98eb",
+      "commitment": "7bee9f56ba2d7a541c81ffe3c5d6b964f0a9a24bed648200b25500a6ca898a72",
+      "bound": "0",
       "atMost": true
     },
     {
-      "key": "5cb118c7a5d36fe9bd42d62250623f09dfc091685637a6a688ddeb16cce28e01",
-      "slot": "2c2bf55b7b635e78e19c9f4f8e4c3032a0e87353a53fcc407c00921936045a92",
-      "vinHash": "51db9078aa3e99ca5731a792e86223729c7e179fc1ee9a645eb49125cbe08876",
-      "fieldKey": "aeb322aa379bd01ecb61ca57719f40e3c4a0368533dd62b1c7b5d2d995da98eb",
-      "commitment": "168c47cc0b50a2b15f571437846d97b4b68c85aac1d12d151773cb52cd083b21",
-      "bound": "0",
+      "key": "2a226e18e4abdd6a681cf5b3b42a4a129b79cbe353b7417f1391d2c4b9b8ae89",
+      "slot": "e1e9bd717dc4ba94f8ac2f2fff6463746d9cb7ea7a1ce3fca3cc949df2a0b014",
+      "vinHash": "46f363bb3baaab09555f8c753197c29418447db56977f4d868292c96864832be",
+      "fieldKey": "2dd69ded11554ddb3306be039e80f3f82824b0d4af96b9bc287055558ea92fe7",
+      "commitment": "ddce5283376b472e69e749050c0e7243bfe787827289ae82b0cb8afe7bf942fe",
+      "bound": "150000",
       "atMost": true
     }
   ],
   "grants": {
-    "736bacc4215c7175d8b1b3fb91048466b58776512ef22f93cc65eb5fc5328225": 0
+    "34a3d5fe6799b74b7c5f29ad48a4348be9502c689d55e3738aafb30c3100bbd0": 0
   }
 }

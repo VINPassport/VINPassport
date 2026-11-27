@@ -2,7 +2,7 @@
  * Read the deployed contract back from the public indexer and say what the
  * chain holds, decoded with the contract's own `ledger()` reader.
  *
- *   node scripts/chain-readback.mjs                      what is on chain (Preview)
+ *   node scripts/chain-readback.mjs                      what is on chain (preprod)
  *   node scripts/chain-readback.mjs --receipt <file>     and check it against a receipt
  *   node scripts/chain-readback.mjs --network mainnet    another network's record
  *
@@ -41,7 +41,7 @@ import { expectedRegistrars, sameMembers } from './lib/governance.mjs';
 guardLogs();
 
 const arg = (name) => { const i = process.argv.indexOf(name); return i === -1 ? null : process.argv[i + 1]; };
-const NETWORK = checkNetwork(arg('--network') ?? 'preview');
+const NETWORK = checkNetwork(arg('--network') ?? 'preprod');
 const RECEIPT = arg('--receipt');
 const hex = (u) => Buffer.from(u).toString('hex');
 const fail = (m) => { console.error(`\nSTOP: ${m}`); process.exit(1); };

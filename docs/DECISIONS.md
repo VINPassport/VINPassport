@@ -87,7 +87,12 @@ genuinely needs to ship on its own cadence.
 
 ### D9: Preprod is the deployment target · 2026-08-21 · **AMENDED** 2026-11-08 by [D27](#settled)
 Not mainnet. NIGHTGATE hard-gates mainnet submission off pending an unresolved node issue.
-Since ledger 9, Preview is the rehearsal network and the preprod build is kept at a tag ([D27](#settled)).
+Since ledger 9, Preview is the rehearsal network and the ledger 8 preprod build is kept at a tag ([D27](#settled)).
+
+**Amended 2026-11-27:** NIGHTGATE now submits on mainnet only when its operator turns it on
+([ARCHITECTURE.md](ARCHITECTURE.md), "Hard constraints"). Preprod moved to ledger 9 on
+9 November ([D27](#settled)), and the current build is live there as our contract `ae25d201…`,
+deployed on 27 November 2026 with our own keys ([`deploy/preprod.json`](../deploy/preprod.json)).
 
 ### D10: Pin exact `@odatano/*` versions · 2026-08-21
 Never a `^` or `~` range on any ODATANO package.
@@ -117,6 +122,10 @@ Pair every attestation with an authenticated intent record. See [BUILD-SCOPE.md]
 
 ### D13: Every transaction sponsored from a VINPassport treasury pool · 2026-08-22, amended 2026-08-23
 No customer ever holds DUST or NIGHT. A **pool** of treasury sponsor sessions pays all fees.
+
+> **Amended 2026-08-31 by [D24](#settled) and 2026-11-24 by [D37](#settled):** a NIGHTGATE
+> sponsor pays under our grant, with our own wallet as fallback. Still no customer holds DUST or
+> NIGHT.
 
 **Amendment (2026-08-23):** this originally said "a designated treasury session", singular. That was
 wrong. Since NIGHTGATE 0.17.2 `NIGHTGATE_FEE_SPONSOR_SESSION` is a lease pool, because *"a dust
@@ -279,6 +288,9 @@ ceiling from a floor.
 > submit our own transactions now. The library half, `nightgate-tx` for building, batching and
 > proving, is unchanged and still on every run. Read the attribution paragraph below as history:
 > it was accurate when written, and D24 carries the current wording.
+>
+> **Amended again 2026-11-24 by [D37](#settled):** sponsored fees are back with our own wallet as
+> fallback, and `nightgate-tx` 0.26.0 is on the ledger 9 run path, one call per transaction.
 
 VINPassport deploys and calls `vinpassport` through **`@odatano/nightgate-tx` 0.4.0**, with
 ODATANO's hosted NIGHTGATE sponsoring the preprod fees. No SAP CAP application, no Postgres, no
@@ -567,6 +579,10 @@ own. A grant records who was entitled to which tier, when, and on whose authorit
 same chain of accountability as [D25](#settled). **It cannot recall data already handed over.**
 Disclosure is a one-way door; the grant makes the door auditable, not lockable.
 
+**AMENDED 2026-11-24 by [D38](#settled):** `revokeDisclosure` is also callable by any current
+registrar once the vehicle's registrar was removed (`stewardFor`). Granting stays with the
+vehicle's registrar.
+
 *Built 31 Oct.* The `Tier` type has only `trade` and `authority`: the public view needs no grant,
 and Annex V 4.2.3 rules one out. Granting again replaces the tier; revoking a grant that does not
 exist is refused; a grant never confers write access, because `writerFor` never reads `grants`.
@@ -744,6 +760,10 @@ identities, which the ledger deliberately keys per vehicle so that one party's w
 cannot be linked across vehicles; a test now snapshots the ledger around every call of a full run and
 checks every event's subject against it.
 
+**Corrected 2026-11-27:** `fieldWriter` still stores the writer's identity itself, not a key per
+vehicle, so a party's field writes can be linked across vehicles ([ARCHITECTURE.md](ARCHITECTURE.md),
+"What holds").
+
 **Basis.** No provision asks for an event stream; it is a reading aid over records the contract
 already keeps. The rule is data minimisation, Regulation (EU) 2016/679 (GDPR), Article 5(1)(c):
 personal data shall be *"adequate, relevant and limited to what is necessary in relation to the
@@ -900,13 +920,17 @@ node enforces on every transaction.
 Kept as a numbered stub so D35 is not reused. The decision, its reasoning and its reversal are
 recorded in full at [R8](#reversed).
 
-### D36: No one who uses VINPassport meets a wallet · 2026-11-10
+### D36: No one who uses VINPassport meets a wallet · 2026-11-10 · **AMENDED** 2026-11-24 by [D37](#settled)
 
 A Web2 face on a Web3 backbone. A buyer, a dealer, a manufacturer, an authority or a visitor to
 passport.vin never connects, holds or sees a wallet, a token or a network fee. Midnight is the
 backbone: it proves and records, and the project's own wallet pays every fee in DUST generated from
 NIGHT it holds ([D24](#settled)). Every payment for the service goes through fiat routes
 ([D5](#settled), [D14](#settled)); there is no crypto payment path.
+
+> **AMENDED 2026-11-24 by [D37](#settled):** a NIGHTGATE sponsor now pays each fee under our
+> grant, and the project's own wallet pays only a call the sponsor did not take. Nobody who uses
+> VINPassport meets a wallet either way.
 
 **What it removes.** The wallet page ([R8](#reversed)), its engine and its two CI checks, retired
 the day after they were built. `/wallet/` forwards to Developers, which names the live contract.
@@ -926,8 +950,8 @@ its address, and anyone can read it back from the public indexer.
 
 ### D37: Fees are paid by a NIGHTGATE sponsor, the own wallet stands by · 2026-11-24
 
-`@odatano/nightgate-tx` 0.25.0 runs on ledger 9 and pins the same Midnight versions as this
-package, so it is back in the run path. Every contract call of a run is built, proven and signed in
+`@odatano/nightgate-tx` (0.25.0 when decided, 0.26.0 now) runs on ledger 9 and pins the same
+Midnight versions as this package, so it is back in the run path. Every contract call of a run is built, proven and signed in
 this process (`scripts/lib/sponsor9.mjs`) and handed to a NIGHTGATE server without a fee
 (`sponsorUnbound`). The server adds its DUST spend, binds and submits. **Amends [D24](#settled) and
 [D27](#settled).**
@@ -1141,7 +1165,7 @@ to be cached before a 45 MB key is offered.
 | Q4 | Is SAP CAP acceptable as a permanent dependency? | Everything downstream | Us, inherited from D1, worth being deliberate about |
 | Q5 | Proving cost at width 32 versus 16 | Whether D15 holds under real cost | Phase 0 measurement |
 | Q6 | Fiat provider: merchant of record or direct? | Billing build | Deferred to Phase 1, turns on EU VAT |
-| Q7 | Mainnet DUST source. Preview and preprod are paid by a NIGHTGATE sponsor ([D37](#settled)); for mainnet a NIGHTGATE grant is one of the choices (D31 when settled): DUST designated to our DUST address from a cNIGHT holder's rewards, NIGHTGATE fee sponsoring (needs `@odatano/nightgate-tx` on ledger 9), or our own NIGHT | The mainnet deploy | Us, with ODATANO |
+| Q7 | Mainnet DUST source. Preview and preprod are paid by a NIGHTGATE sponsor ([D37](#settled)), with `@odatano/nightgate-tx` 0.26.0 on ledger 9. For mainnet (D31 when settled): a NIGHTGATE grant if its operator enables mainnet submission, else our own NIGHT | The mainnet deploy | Us, with ODATANO |
 | Q8 | Who holds the three mainnet committee keys of [D28](#settled), on which devices, and with what recovery path | The mainnet deploy | Us |
 | Q9 | How a removed or ceased registrar's vehicles pass to a successor ([D32](#settled)): approved by the registrars, by the vehicle's keeper, or both; 2026/1738 Art. 13(6)(b)(iii) leaves it to an implementing act not yet adopted. The mechanism exists: a majority of the registrars approves the hand-over ([D38](#settled) 3); who must agree is the open part | A registrar leaving with vehicles registered | Us, with counsel |
 
@@ -1159,7 +1183,7 @@ regulation citations, deck corrections and a README: real work, but almost all o
 
 The answer now: enter every wave. Each is judged fresh on progress made inside its own window, so
 a weak wave is not a handicap and a strong one is not credit carried forward. Wave 2 runs
-27 September to 17 October, Wave 3 27 October to 16 November. See [the wave plan](ROADMAP.md#wave-plan).
+27 September to 17 October; Wave 3 closes 30 November 2026, 15:00 UTC, judged to 15 December (the organiser moved it after this was first written). See [the wave plan](ROADMAP.md#wave-plan).
 
 **Q1: "Will ODATANO consider Merkle depth 5 (32 slots)?" YES, shipped 2026-08-22.**
 NIGHTGATE 0.19.0 introduced `attestation-vault-32`, and `@odatano/dpp-sdk@0.2.0` exposes

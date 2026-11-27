@@ -232,10 +232,10 @@ th { color: var(--ink); font-family: var(--font-label); font-weight: 600; font-s
     <div class="box">
       <h3>On chain</h3>
       <ol>
-        <li><strong>Who may see what is on the ledger.</strong> New circuits <code>grantDisclosure</code> and <code>revokeDisclosure</code> record which identity was given which view. On preprod from 1 Nov 2026 (block 3228852), where a dealership was granted the trade view in block 3229987. The same grant is in the live contract on Preview on 9 Nov (block 29425). Both read back from the public indexer.</li>
+        <li><strong>Who may see what is on the ledger.</strong> New circuits <code>grantDisclosure</code> and <code>revokeDisclosure</code> record which identity was given which view. First on preprod from 1 Nov 2026 (block 3228852), where a dealership was granted the trade view in block 3229987. The same grant is in our current contract on preprod on 27 Nov (block 3603064), and on Preview on 9 Nov (block 29425). All read back from the indexer.</li>
         <li><strong>Ledger 9.</strong> Ported to Compact 0.36.0, Midnight.js 5 and Wallet SDK 2, reproducing every hash and commitment of the old build (13 of 13 golden vectors). <strong>Live on Preview since 9 Nov 2026, block 28785.</strong></li>
         <li><strong>Events.</strong> Every write announces itself once, and the public indexer serves it.</li>
-        <li><strong>Registrar governance.</strong> Two current registrars add or remove one, each in their own transaction: exercised in blocks 29162 and 29247.</li>
+        <li><strong>Registrar governance.</strong> A majority of the current registrars adds or removes one, each approval in its own transaction: exercised on Preview in blocks 29162 and 29247.</li>
         <li><strong>Upgrades by committee.</strong> A 2-of-3 maintenance committee (Schnorr and ECDSA keys) added six read circuits to a live contract (block 19822) without changing any existing verifier key.</li>
       </ol>
     </div>
@@ -260,11 +260,11 @@ th { color: var(--ink); font-family: var(--font-label); font-weight: 600; font-s
     <div class="box">
       <h3>Our own Compact contract</h3>
       <ul>
-        <li><strong>26 circuits: 20 provable, 6 pure helpers.</strong> Register, authorise and withdraw a writer, grant and revoke a view, initialise, record, three kinds of claim, six reads and the registrar change; the helpers derive slots and keys</li>
+        <li><strong>26 circuits: 20 provable, 6 pure helpers.</strong> Register, authorise and withdraw a writer, grant and revoke a view, initialise, record, three kinds of claim, seven reads, the registrar change, the passport change and withdrawing an approval; the helpers derive slots and keys</li>
         <li>A commitment per (vehicle, field); values never reach the ledger</li>
         <li><strong>Claims ledger</strong>: every successful proof leaves a public, checkable record of the claim, never the value, bound to the record version it proved</li>
-        <li>Every write emits one event; changing the registrars takes two of them</li>
-        <li>Live on Midnight Preview: <code>22723f4a…8af7cd</code>, with 18 verifier keys on chain (<span class="url">deploy/preview.json</span>)</li>
+        <li>Every write emits one event; a change to the registrars or to a passport takes a majority of them</li>
+        <li>Live on Midnight preprod: <code>ae25d201…f260cc</code>, with 20 verifier keys on chain (<span class="url">deploy/preprod.json</span>); the 9 November build runs on Preview</li>
       </ul>
     </div>
     <div class="box">
@@ -274,7 +274,7 @@ th { color: var(--ink); font-family: var(--font-label); font-weight: 600; font-s
         <li><strong>Disclose</strong>: one vehicle, three audiences, every value checked in your browser</li>
         <li><strong>Intake console</strong>: fill the full regulation panel and run the compiled circuits in your browser; watch refusals render</li>
         <li><strong>Proof explorer</strong>: every claim, current or superseded</li>
-        <li><strong>No wallet, anywhere</strong>: our NIGHT pays every fee in DUST, so no one who uses it sees crypto</li>
+        <li><strong>No wallet, anywhere</strong>: every fee is paid in DUST, by a NIGHTGATE sponsor or from NIGHT we hold, so no one who uses it sees crypto</li>
         <li>A 26-vehicle demo fleet: new (BEV to diesel) and retrofit</li>
       </ul>
       <p class="url" style="font-size:14px"><code>npm run app</code> runs all of it locally against the compiled circuits</p>
@@ -466,7 +466,7 @@ th { color: var(--ink); font-family: var(--font-label); font-weight: 600; font-s
         <li><strong>Zero-knowledge circuits</strong> in Compact 0.36.0: values stay private inputs; only commitments, claims and grants reach the ledger</li>
         <li><strong>Events</strong> on ledger 9: one per write, served by the public indexer</li>
         <li><strong>Contract maintenance authority</strong>: a 2-of-3 committee mixing Schnorr and ECDSA keys, exercised on chain</li>
-        <li><strong>DUST from held NIGHT</strong> pays every fee, so no customer holds crypto or pays a network fee</li>
+        <li><strong>DUST pays every fee</strong>, from a NIGHTGATE sponsor or NIGHT we hold, so no customer holds crypto or pays a network fee</li>
         <li>Our tooling proves in-process with <code>zkir-v3</code>, no proof server, so <strong>no private input leaves</strong> the machine that holds it</li>
       </ul>
     </div>
@@ -475,8 +475,8 @@ th { color: var(--ink); font-family: var(--font-label); font-weight: 600; font-s
       <ul>
         <li><strong>Ours</strong>: the Compact contract (not a fork of <code>attestation-vault</code>), the 32-slot vehicle field panel, the 68-field tier map, every surface, the demo fleet, the tests</li>
         <li><code>@odatano/dpp-sdk</code>: key derivation, value scaling, Merkle construction, with 24 assertions guarding what we rely on</li>
-        <li>Hosted NIGHTGATE <strong>sponsored our first two deploys</strong> under a metered grant, on 28 Aug and 13 Oct. Every deploy since has been <strong>self-funded</strong> from DUST this project's own wallet generates</li>
-        <li>On ledger 9 our transactions are built with Midnight.js 5 and Wallet SDK 2; the ledger 8 build and its <code>nightgate-tx</code> tooling are kept at a git tag</li>
+        <li>Hosted NIGHTGATE <strong>sponsored our first two deploys</strong> under a metered grant, on 28 Aug and 13 Oct. Later deploys, to 9 Nov, were <strong>self-funded</strong> from DUST our own wallet generates. Since 24 Nov a NIGHTGATE sponsor pays again, our wallet standing by: our own preprod deploy of 27 Nov cost us nothing</li>
+        <li>On ledger 9, <code>nightgate-tx</code> 0.26.0 builds, proves and signs each call here and hands it to the sponsor; Midnight.js 5 and Wallet SDK 2 pay anything it does not take</li>
       </ul>
       <p>Not used: the CAP service, the OData layer, <code>attestation-vault</code>.</p>
     </div>
@@ -496,7 +496,7 @@ th { color: var(--ink); font-family: var(--font-label); font-weight: 600; font-s
         <li><strong>A second product:</strong> the service and ownership history the regulated passport does not hold, paid for by second-hand dealers, who also get the trade view. A hypothesis until a dealer says yes</li>
         <li><strong>Who answers for a value:</strong> whoever wrote it. The ledger names the identity behind every write; the contract refuses a rollback but does not vouch for truth</li>
         <li><strong>Reading is free, always:</strong> the law forbids asking a reader to register (2025/1707 Annex V 4.2.3). Every scanned code is a buyer learning to demand proof</li>
-        <li><strong>Every payment is fiat.</strong> No customer holds crypto or pays a network fee: we pay in DUST from NIGHT we hold</li>
+        <li><strong>Every payment is fiat.</strong> No customer holds crypto or pays a network fee: DUST is paid by a NIGHTGATE sponsor or from NIGHT we hold</li>
       </ul>
     </div>
     <div class="box">
@@ -526,13 +526,13 @@ th { color: var(--ink); font-family: var(--font-label); font-weight: 600; font-s
   <h2>Each wave states its delta in advance, and reports it after</h2>
   <table style="flex:1">
     <tr><th style="width:150px">Wave 3<br><span style="font-weight:400;opacity:.7">planned, shipped</span></th>
-        <td><strong>Tiered disclosure, the Wave 2 deferral</strong>: a tier on all 68 fields, bundles a buyer, a dealer and an authority each check against the ledger, live at passport.vin/disclose/; disclosure grants in the contract, granted on preprod on 1 Nov (block 3229987) and on Preview on 9 Nov (block 29425), both read back from the indexer</td></tr>
+        <td><strong>Tiered disclosure, the Wave 2 deferral</strong>: a tier on all 68 fields, bundles a buyer, a dealer and an authority each check against the ledger, live at passport.vin/disclose/; disclosure grants in the contract, granted on preprod on 27 Nov (block 3603064) and on Preview on 9 Nov (block 29425), both read back from the indexer</td></tr>
     <tr><th>Wave 3<br><span style="font-weight:400;opacity:.7">beyond the plan</span></th>
         <td><strong>Ledger 9</strong>, live on Preview since 9 Nov with events, two-registrar governance and upgrades by a 2-of-3 committee; CI that reproduces the verifier keys; a new site with typed passport codes, every date cited and lifestyle vehicles</td></tr>
     <tr><th>Wave 3<br><span style="font-weight:400;opacity:.7">not done</span></th>
         <td><strong>A real pilot conversation with a manufacturer</strong>: the outreach is written and passport.vin/manufacturers/ takes pilot requests, but no pilot partner has signed. <strong>Hosted live runs</strong>: the host was cancelled on 10 Oct, so the site shows recorded runs and every chain write runs from a clone</td></tr>
     <tr><th>Next</th>
-        <td><strong>A pilot</strong>, and a randomised dealer trial already designed: the badge shown on half the stock by coin flip. <strong>Mainnet</strong>: the contract already builds for ledger 9, which mainnet runs; who holds the mainnet maintenance keys is the open question. Handing a removed registrar's vehicles to a successor</td></tr>
+        <td><strong>A pilot</strong>, and a randomised dealer trial already designed: the badge shown on half the stock by coin flip. <strong>Mainnet</strong>: the contract already builds for ledger 9, which mainnet runs; who holds the mainnet maintenance keys is the open question. Deciding who must agree when a removed registrar's vehicles are handed on: the contract already does it by majority</td></tr>
     <tr><th>Horizon</th>
         <td><strong>Closing the trust gap</strong>: a proof inherits the trust of whoever wrote the value, so the open problem is provenance of the writer, not tamper resistance. Authoritative sources (registries, testers, insurers) writing under an accountable identity, and marking that lets a verifier tell an authoritative write from a self-declared one. That distinction becomes the product</td></tr>
   </table>
@@ -553,7 +553,7 @@ th { color: var(--ink); font-family: var(--font-label); font-weight: 600; font-s
     <div>npm run app&nbsp;&nbsp;<span class="dim"># the whole product on localhost</span></div>
   </div>
   <p style="margin:6px 0 0">
-    <span class="url">deploy/preview.json</span>: the live contract ·
+    <span class="url">deploy/preprod.json</span>: the live contract ·
     <span class="url">docs/DEMO.md</span>: the walkthrough ·
     Apache-2.0, fully open source
   </p>

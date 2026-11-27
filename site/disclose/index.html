@@ -127,7 +127,7 @@
       <h1 id="ds-h1" class="h1">One vehicle, three audiences</h1>
       <p class="lead">A buyer, a dealer and an authority are entitled to see different things about the same car. The holder of the passport hands each of them a <b>bundle</b>: a file that opens some of the vehicle's committed values and nothing that opens the rest. This page checks every value in each bundle against the commitment the ledger holds for it, <b>in your browser</b>, with the same code the command line and the tests run. No server decides what you see.</p>
     </div>
-    <div class="ev-banner"><span class="ev-tag">Ledger</span><p><strong>Which ledger this checks against.</strong> Three, and you choose below. The demo record is a 2019 Golf with 68 fields, the compiled contract run locally. The Preview chain is a real guided run of 9 November 2026 on ledger 9, on the contract with events and registrar governance, and the preprod chain one of 1 November 2026 on ledger 8, each checked against contract state read from that chain's public indexer.</p></div>
+    <div class="ev-banner"><span class="ev-tag">Ledger</span><p><strong>Which ledger this checks against.</strong> Three, and you choose below. The demo record is a 2019 Golf with 68 fields, the compiled contract run locally. The Preview chain is a real guided run of 9 November 2026 on ledger 9, on the contract with events and registrar governance, and the preprod chain our guided run of 27 November 2026 on the current contract, each checked against contract state read from that chain's public indexer.</p></div>
   </div>
 </section>
 
@@ -167,7 +167,7 @@
   <div class="wrap ev-sec">
     <div class="ev-sec__head"><div class="vp-label">03 · What this does not do</div><h2 id="limits" class="h2">Stated, so nobody has to find it</h2></div>
     <ul class="ds-limits">
-      <li><b>A bundle cannot be recalled.</b> Once handed over, the values in it are known to whoever holds it. What the ledger records is who was granted which view, by the vehicle's registrar (<code>grantDisclosure</code>, shown here on the demo record, on preprod since 1 November 2026 and on Preview since 8 November). That makes a disclosure auditable, never reversible.</li>
+      <li><b>A bundle cannot be recalled.</b> Once handed over, the values in it are known to whoever holds it. What the ledger records is who was granted which view, by the vehicle's registrar (<code>grantDisclosure</code>, shown here on the demo record, on Preview in the run of 9 November 2026 and on preprod in the run of 27 November 2026). That makes a disclosure auditable, never reversible.</li>
       <li><b>Which audience sees which field is our design for now.</b> The access conditions for a circularity passport are left to an implementing act under Reg (EU) 2026/1738 Art. 13(6)(d), due by 14 August 2030 and not yet adopted. The tiers will be revisited when it is.</li>
       <li><b>Presence is not private.</b> Anyone can tell which fields this vehicle has on the ledger, because each field's slot follows from public anchors. That is how this page lists what a bundle leaves closed. The values stay hidden.</li>
       <li><b>The registrar decides who is given a tier today.</b> The keeper's consent is not modelled in the contract yet.</li>
@@ -182,7 +182,7 @@
     <code class="ev-code ev-code--line">node scripts/disclose.mjs --verify site/disclose/bundles/trade.json --against site/verify/demo-data.json</code>
     <p class="ev-copy">The chain files check the same way. The snapshot they check against is public chain state. For Preview, <code>node scripts/export-bundles.mjs --network preview</code> reads it again from the indexer, with no key, so you can compare:</p>
     <code class="ev-code ev-code--line">node scripts/disclose.mjs --verify site/disclose/bundles/preview/trade.json --against site/disclose/preview/ledger.json</code>
-    <p class="ev-copy">The preprod files check the same way. Reading their snapshot again needs a free Blockfrost project id and the ledger 8 tooling, which stays at the <code>ledger8-preprod</code> tag (<code>node scripts/export-preprod-bundles.mjs</code> there).</p>
+    <p class="ev-copy">The preprod files check the same way. Reading their snapshot again needs only a free Blockfrost project id: run <code>node scripts/export-preprod-bundles.mjs</code> and compare.</p>
     <code class="ev-code ev-code--line">node scripts/disclose.mjs --verify site/disclose/bundles/preprod/trade.json --against site/disclose/preprod/ledger.json</code>
     <p class="ev-note">The policy is <code>scripts/lib/tiers.mjs</code>, one tier for each of the 68 fields, and the reasoning is decision D26 in <a class="link" href="https://github.com/VINPassport/VINPassport/blob/main/docs/DECISIONS.md">docs/DECISIONS.md</a>.</p>
   </div>

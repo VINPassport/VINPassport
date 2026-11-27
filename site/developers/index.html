@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#F5F0E6">
 <title>Open-source vehicle passport contract · VINPassport</title>
-<meta name="description" content="Apache-2.0 contract on Midnight: 26 circuits, 184 contract tests, every guard mutation-checked. Live on Midnight's Preview test network.">
+<meta name="description" content="Apache-2.0 contract on Midnight: 26 circuits, 184 contract tests, every guard mutation-checked. Live on Midnight's preprod test network.">
 <link rel="canonical" href="https://passport.vin/developers/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="VINPassport">
@@ -73,32 +73,42 @@
   <div class="wrap sec stack-lg">
     <div class="stack" style="flex-direction: row; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 12px;">
       <div class="stack" style="gap: 8px;"><div class="vp-label">The contract at a glance</div><h2 id="glance-title" class="h2">Numbers from the test suite, not the brochure</h2></div>
-      <div class="chips"><span class="chip">Compact 0.36.0</span><span class="chip">Ledger 9</span><span class="chip">Apache-2.0</span><span class="chip">Live on Preview</span></div>
+      <div class="chips"><span class="chip">Compact 0.36.0</span><span class="chip">Ledger 9</span><span class="chip">Apache-2.0</span><span class="chip">Live on Preview and preprod</span></div>
     </div>
     <div class="grid-4">
       <div class="card"><div class="stat">26</div><h3 class="h3" style="font-size: 17px;">Circuits</h3><p class="small">20 provable, each with its own prover and verifier key, plus 6 pure helpers.</p></div>
       <div class="card"><div class="stat">184</div><h3 class="h3" style="font-size: 17px;">Contract tests passing</h3><p class="small">Every guard mutation-checked: 53 of 53.</p></div>
       <div class="card"><div class="stat">32</div><h3 class="h3" style="font-size: 17px;">Provable field slots</h3><p class="small">26 in use, 6 reserved. Depth 5, width permanent. <a class="link" href="https://github.com/VINPassport/VINPassport/blob/main/docs/FIELDS.md" target="_blank" rel="noopener">The field list<span class="vp-sr"> (opens in a new tab)</span></a></p></div>
-      <div class="card"><div class="stat">18</div><h3 class="h3" style="font-size: 17px;">Verifier keys on chain</h3><p class="small">Each pinned by hash in the deploy record.</p></div>
+      <div class="card"><div class="stat">20</div><h3 class="h3" style="font-size: 17px;">Verifier keys on chain</h3><p class="small">On our preprod contract, each pinned by hash in its deploy record.</p></div>
     </div>
   </div>
 </section>
 
 <section id="try" aria-labelledby="try-title">
   <div class="wrap sec stack-lg">
-    <div class="stack" style="max-width: 780px;"><div class="vp-label">Try it live</div><h2 id="try-title" class="h2">See it work against the live contract.</h2><p class="lead">Every page below works on Midnight's Preview test network or on circuits running in your browser.</p></div>
+    <div class="stack" style="max-width: 780px;"><div class="vp-label">Try it live</div><h2 id="try-title" class="h2">See it work against the live contract.</h2><p class="lead">Every page below works on Midnight's test networks or on circuits running in your browser.</p></div>
     <div class="grid-4">
-      <div class="card"><h3 class="h3">Live chain demo</h3><p class="copy">Watch a real run on the deployed Preview contract: a passport registered, its history recorded, claims proven and one refused, in blocks you can look up yourself. This site has no server, so the run is a recording; clone the repository to start one.</p><a class="link" href="../demo/">Open the demo →</a></div>
+      <div class="card"><h3 class="h3">Live chain demo</h3><p class="copy">Watch a real run on our preprod contract: a passport registered, its history recorded, claims proven and one refused, in blocks you can look up yourself. This site has no server, so the run is a recording; clone the repository to start one.</p><a class="link" href="../demo/">Open the demo →</a></div>
       <div class="card"><h3 class="h3">Check a disclosure</h3><p class="copy">One vehicle, three audiences. A buyer, a dealer and an authority each receive a different bundle, and this page checks every value in it against the ledger, in your browser.</p><a class="link" href="../disclose/">Check a disclosure →</a></div>
       <div class="card"><h3 class="h3">Intake console</h3><p class="copy">Register a vehicle passport and watch the real circuits accept and refuse, in your browser. Values never leave your machine, and nothing here writes to a chain.</p><a class="link" href="../intake/">Open the console →</a></div>
     </div>
     <div class="card" style="gap: 12px;">
-      <div class="vp-label">The contract on Midnight Preview</div>
+      <div class="vp-label">The contract on Midnight preprod</div>
+      <p class="vp-addr">ae25d20140b308a1dc2afdabab4295858c398f9cc6fd36a47df9f2d04cf260cc</p>
+      <ul class="ticks">
+        <li><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="stroke: var(--verified);"><path d="M3.5 8.5l3 3 6-7"></path></svg><span>Deployed 27 November 2026 in two steps, blocks 3602844 and 3602851, every fee paid by a NIGHTGATE sponsor.</span></li>
+        <li><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="stroke: var(--verified);"><path d="M3.5 8.5l3 3 6-7"></path></svg><span>A full guided run of 14 transactions, blocks 3602910 to 3603212, read back from the indexer: 13 checks of 13.</span></li>
+        <li><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="stroke: var(--verified);"><path d="M3.5 8.5l3 3 6-7"></path></svg><span>Our own registrars, and maintenance handed to our 2-of-3 committee. All 20 of its verifier keys match this source.</span></li>
+      </ul>
+      <p class="small"><a class="link" href="https://github.com/VINPassport/VINPassport/blob/main/deploy/preprod.json" target="_blank" rel="noopener">The deploy record<span class="vp-sr"> (opens in a new tab)</span></a> · <a class="link" href="https://github.com/VINPassport/VINPassport#evaluating-this-repository" target="_blank" rel="noopener">Check it yourself: a free Blockfrost project id reads it<span class="vp-sr"> (opens in a new tab)</span></a></p>
+    </div>
+    <div class="card" style="gap: 12px;">
+      <div class="vp-label">Our earlier contract, on Midnight Preview</div>
       <p class="vp-addr">22723f4a56a61d2c8f87f7327b8b40cba13612a493ea6282ed6607d9788af7cd</p>
       <ul class="ticks">
-        <li><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="stroke: var(--verified);"><path d="M3.5 8.5l3 3 6-7"></path></svg><span>Deployed 9 November 2026 in two steps, blocks 28785 and 28830.</span></li>
+        <li><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="stroke: var(--verified);"><path d="M3.5 8.5l3 3 6-7"></path></svg><span>Deployed 9 November 2026 in two steps, blocks 28785 and 28830, running the 9 November version of the contract.</span></li>
         <li><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="stroke: var(--verified);"><path d="M3.5 8.5l3 3 6-7"></path></svg><span>A full guided run, blocks 29328 to 29516, read back from the public indexer: 13 checks of 13.</span></li>
-        <li><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="stroke: var(--verified);"><path d="M3.5 8.5l3 3 6-7"></path></svg><span>Registrar governance on chain (blocks 29162 and 29247), and maintenance handed to a 2-of-3 committee (block 29549).</span></li>
+        <li><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="stroke: var(--verified);"><path d="M3.5 8.5l3 3 6-7"></path></svg><span>Registrar governance on chain (blocks 29162 and 29247), and maintenance handed to a 2-of-3 committee (block 29549). To drive it, clone the repository at the tag <code class="vp-code">preview-2026-11-09</code>.</span></li>
       </ul>
       <p class="small"><a class="link" href="https://github.com/VINPassport/VINPassport/blob/main/deploy/preview.json" target="_blank" rel="noopener">The deploy record<span class="vp-sr"> (opens in a new tab)</span></a> · <a class="link" href="https://github.com/VINPassport/VINPassport#evaluating-this-repository" target="_blank" rel="noopener">Check it yourself: the indexer query needs no key<span class="vp-sr"> (opens in a new tab)</span></a></p>
     </div>
@@ -111,7 +121,7 @@
     <ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 16px;">
       <li class="card"><div class="vp-label">Store</div><p style="margin: 0;">The ledger keeps <code class="vp-code">persistentCommit(value, salt)</code> for each field, never the value or the salt. Records are keyed by the hash of an identifier.</p></li>
       <li class="card"><div class="vp-label">Prove</div><p style="margin: 0;">A check proves a value satisfies a bound, such as mileage under 150,000 km, without publishing the value. Transactions are built, proven and signed locally.</p></li>
-      <li class="card"><div class="vp-label">Refuse</div><p style="margin: 0;">Each field's rule is fixed at creation. Under <code class="vp-code">neverFalls</code>, a lower later reading fails in-circuit and writes nothing. Writes are bound to a named registrar, and changing who may register takes two registrars' approval.</p></li>
+      <li class="card"><div class="vp-label">Refuse</div><p style="margin: 0;">Only the vehicle's registrar creates a field, and its rule is fixed then. Under <code class="vp-code">neverFalls</code>, a lower later reading fails in-circuit and writes nothing. Writes are bound to the vehicle's registrar or a writer it authorised, and changing who may register needs a majority of the current registrars.</p></li>
     </ol>
   </div>
 </section>

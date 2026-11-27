@@ -149,7 +149,8 @@ Preserve it:
 - Do not soften the "what this does not prove" panel on `/`. A valid proof of a
   falsely committed value is a real limitation and the site says so on purpose.
 - Section 6 on `/` states precisely which parts are ours and which two ODATANO
-  libraries are used, each for one narrow job. Do not broaden either claim.
+  libraries are used, each for one narrow job. It may also state that a NIGHTGATE sponsor
+  pays the fees ([D37](DECISIONS.md#settled)). Do not claim more.
 
 ## Deploying to passport.vin on GitHub Pages
 

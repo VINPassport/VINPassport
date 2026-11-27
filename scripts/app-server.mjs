@@ -68,14 +68,14 @@ const demo = await buildDemoVehicles(sim, salt);
 // Off by default: `npm run app` stays the dependency-light judge path. With
 // VINPASSPORT_CHAIN=1 (`npm run app:chain` sets it), /api/demo/* runs REAL
 // transactions against the contract deployed on VINPASSPORT_NETWORK_ID
-// (default preview; ledger 9 runner, scripts/lib/runner9.mjs) - capped per UTC
+// (default preprod; ledger 9 runner, scripts/lib/runner9.mjs) - capped per UTC
 // day, one at a time, fresh random VPD VINs.
 const DEMO_ENABLED = process.env.VINPASSPORT_CHAIN === '1';
 let runner = null;
 let runnerError = null;
 if (DEMO_ENABLED) {
     // One process per seed (scripts/lib/files.mjs), taken before the wallet opens.
-    try { takeSeedLock(process.env.VINPASSPORT_NETWORK_ID ?? 'preview'); } catch (e) {
+    try { takeSeedLock(process.env.VINPASSPORT_NETWORK_ID ?? 'preprod'); } catch (e) {
         console.error(e.message);
         process.exit(1);
     }

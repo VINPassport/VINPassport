@@ -1,11 +1,11 @@
 {
   "network": "preprod",
   "contract": "vinpassport",
-  "contractAddress": "980a3fd62d8dc67c027e057b082a21c429679df2e179b6f18659da3b02f1d665",
-  "txHash": "11ac860d8042ff9951c0a610608a4db79bd478ed29ae872c46292b7c53c40d4b",
-  "txId": "00d9d82a3f3a356257fa522b29d1ce97316448d61987929883f1797ae7288b3a8a",
-  "blockHeight": 3571232,
-  "deployedAt": "2026-11-25T09:59:30.000Z",
+  "contractAddress": "ae25d20140b308a1dc2afdabab4295858c398f9cc6fd36a47df9f2d04cf260cc",
+  "txHash": "a210edc14a95923310dfb1109e60eb4f9688d2e9c8021ff647877b23a637d7da",
+  "txId": "00e197a364c61ce26f7008eecfbca39fa6c08b9b4cc28df2531028e45d7c0a4c55",
+  "blockHeight": 3602844,
+  "deployedAt": "2026-11-27T14:56:00.000Z",
   "fees": null,
   "ledger": "v9",
   "buildId": "f4b451e98c848285",
@@ -67,19 +67,19 @@
   "registrars": [
     {
       "label": "A",
-      "id": "ed90b6444390a6b3bce33feb374fc6e70f41ba073be572b15921b6b60e55173a"
+      "id": "9ecd472baaaa93fe3f1dd92b610c7ae4fff14bed398f3e48530402812a2938be"
     },
     {
       "label": "B",
-      "id": "d42862dffa705ce99544d7a12aa6bb4274970aebd528aedc0cca3745b17983a0"
+      "id": "0fa7b6dd3596e2d971ce0b6d8c97b02ec053871e6b7d6928d31de7b594a09d0d"
     },
     {
       "label": "C",
-      "id": "77553f28f0f03bcd9d00e9545900e4c800e9cf3977759baa63c63ccf037b7a33"
+      "id": "413eb23af7a1c4cd7c522b86d1bd7ee2be66683e167459f4e85d8761675ad04c"
     },
     {
       "label": "D",
-      "id": "d18cf5bc9e89cad1a79641ea991942a6cb56f367536e40e287806671d74690ff"
+      "id": "fc37e966de08806ce1333e3b45d34b131c9fdd9bdfcf8f97bd3b40d3e5e44b9a"
     }
   ],
   "authority": {
@@ -89,15 +89,15 @@
     "committee": [
       {
         "tag": "schnorr",
-        "value": "ea4f27c715175442f79561f8640c53bc7d9075706977bd917388abd8d1dbd677"
+        "value": "9cbde32ead9877a07b22dc9fcfe37e193fce70448986aa507fd1ff0d8174e185"
       },
       {
         "tag": "schnorr",
-        "value": "0aa18f416e884763ef4944efb489536de3954b11654e61cc207bd8321369ca2b"
+        "value": "3fb0f9dbb9295a5756756c8dc987c5928c44400a91f1144248d908f2370c5a39"
       },
       {
-        "tag": "schnorr",
-        "value": "499c4a8079fde8d2b655c6ced95be8b1b24d6df0a0cacf257a7899e9f252df5b"
+        "tag": "ecdsa",
+        "value": "02d84ae6a9ceb6b4bd38f64d04f04eced2d2d0911bfb3906e6d4f56a1bc0d44804"
       }
     ],
     "members": [
@@ -105,21 +105,21 @@
       "rehearsal-2",
       "rehearsal-3"
     ],
-    "handoverTxId": "0009cce04e5038e9f0a37bc917d6457c4bf392dd8154c33f2fb6ccb99144a356e1",
-    "handedOverAt": "2026-11-25T10:01:14.515Z",
+    "handoverTxId": "006ec7115228c3a62a24334305f37c862d7687aa341dc19290022b510f976add1e",
+    "handedOverAt": "2026-11-27T14:58:23.122Z",
     "note": "Committee per DECISIONS D28. The custody key no longer has any power over this contract."
   },
   "note": "Public record of the deployment. Address, hashes and verifying keys are public by definition. build.manifestSha256 pins the compiler integrity manifest; build.verifierKeys are the SHA-256 hashes of the verifier keys this address holds.",
   "maintenance": [
     {
       "counter": 0,
-      "txId": "000087ead0801853e4593f0e69a7ffe82161921e39829ab226453e0be5eaadfdd4",
-      "txHash": "01374db65a774ebf92db90283df39b86acc2e02814405125751854d22a540141",
-      "blockHeight": 3571236,
+      "txId": "00c1e28c5bd3d52d63fa9c2863b0b71ed78cd53091da989281c53aabd46c25de87",
+      "txHash": "19df6e5e0b98f6922982967dec372b51832dfd2138a35859b299c4481422c8d6",
+      "blockHeight": 3602851,
       "fees": null,
-      "at": "2026-11-25T10:00:14.123Z",
+      "at": "2026-11-27T14:57:21.195Z",
       "newCounter": 1,
-      "fingerprint": "d9170993309a2e1d227a03b110b7c66965ac2c62ccf35a50f0d71ff59a840809",
+      "fingerprint": "cbcc77663c2cbee8c05cc7476557aadcb08b5f885e15ce62146b0764957dca5f",
       "signedBy": [
         "custody"
       ],

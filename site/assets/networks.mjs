@@ -36,9 +36,10 @@ export const NETWORKS = Object.freeze({
         id: 'preprod',
         label: 'preprod',
         name: 'Midnight preprod',
-        // The ledger the site's preprod recording and snapshot were made on (1 Nov 2026). Preprod
-        // itself moved to ledger 9 on 9 Nov 2026 (block 3348434); change this only with a new run.
-        ledger: 'ledger 8',
+        // The ledger the site's preprod recording and snapshot were made on: our guided run of
+        // 27 Nov 2026 on the current contract. Preprod moved to ledger 9 on 9 Nov 2026 (block
+        // 3348434); the 1 Nov ledger 8 recording is in git history. Change this only with a new run.
+        ledger: 'ledger 9',
         explorer: 'https://preprod.midnightexplorer.com',
         // Blockfrost since 2026-10-09: a free project id goes in this header.
         // The placeholder is printed, never a real id.

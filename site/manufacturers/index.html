@@ -72,7 +72,7 @@
     <ol class="grid-4" style="list-style: none; margin: 0; padding: 0;">
       <li class="card" style="gap: 12px;"><div class="num">01</div><h3 class="h3">Tell us what's launching</h3><p class="copy">The vehicle types you are approving after 29 November 2026, and when.</p></li>
       <li class="card" style="gap: 12px;"><div class="num">02</div><h3 class="h3">Map your data</h3><p class="copy">We map your type-approval data to passport fields and agree what each reader may see.</p></li>
-      <li class="card" style="gap: 12px;"><div class="num">03</div><h3 class="h3">Issue on the line</h3><p class="copy">Passports open as vehicles are built. Your registrars are named at setup, and changes to them are approved by registrars on the ledger.</p></li>
+      <li class="card" style="gap: 12px;"><div class="num">03</div><h3 class="h3">Issue on the line</h3><p class="copy">Passports open as vehicles are built. Your registrars are named at setup, and a change to them needs a majority of the current registrars, on the ledger.</p></li>
       <li class="card" style="gap: 12px;"><div class="num">04</div><h3 class="h3">Keep it current</h3><p class="copy">Your approved service network adds readings and repairs for the life of the vehicle.</p></li>
     </ol>
   </div>
@@ -112,13 +112,13 @@
         <tbody>
           <tr><td><strong>On the ledger</strong></td><td>A sealed fingerprint of each value, never the value and never the key that seals it.</td></tr>
           <tr><td><strong>Vehicle identifiers</strong></td><td>Records are found by a fingerprint of the identifier, derived under a network key; the identifier itself is never written to the ledger.</td></tr>
-          <tr><td><strong>Who can write</strong></td><td>A named set of registrars. Adding or removing one takes two registrars' approval, and every change is announced on the ledger.</td></tr>
-          <tr><td><strong>Integrity rules</strong></td><td>Fixed per field at creation. Forward-only fields refuse a lower value inside the proof.</td></tr>
+          <tr><td><strong>Who can write</strong></td><td>The vehicle's registrar, and any writer it authorises for that vehicle. Adding or removing a registrar needs a majority of the current registrars, and every change is announced on the ledger.</td></tr>
+          <tr><td><strong>Integrity rules</strong></td><td>Fixed per field when the vehicle's registrar creates it, and authorised writers record values under that rule. Forward-only fields refuse a lower value inside the proof.</td></tr>
           <tr><td><strong>Proofs</strong></td><td>Transactions are built, proven and signed by the registrar.</td></tr>
           <tr><td><strong>Fees</strong></td><td>Checking a passport is free for everyone. Network fees for issuing and updating are agreed with each manufacturer.</td></tr>
           <tr><td><strong>Source code</strong></td><td>Open source under Apache-2.0. <a class="link" href="../developers/">Read the contract</a></td></tr>
           <tr><td><strong>Data protection</strong></td><td>What you send us through this site, and why, is in the <a class="link" href="../privacy/">privacy notice</a>. Passport data has its own statement, written with counsel before any real vehicle is recorded.</td></tr>
-          <tr><td><strong>Status</strong></td><td>Running on Midnight's Preview test network since 9 November 2026: deployed, exercised end to end and read back from the public indexer. 184 contract tests. Mainnet launch coming.</td></tr>
+          <tr><td><strong>Status</strong></td><td>The current version, with 184 contract tests, runs on Midnight's preprod test network: deployed on 27 November 2026, exercised end to end and read back from the indexer. An earlier version has run on Midnight's Preview test network since 9 November 2026. Mainnet launch coming.</td></tr>
         </tbody>
       </table>
     </div>

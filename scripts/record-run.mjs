@@ -78,7 +78,8 @@ const out = {
         label: readingFree(s.label),
         calls: (s.calls ?? []).map(readingFree),
         txHash: s.txHash,
-        blockHeight: s.blockHeight,
+        // A sponsored call reports its block as a string, a self-paid one as a number.
+        blockHeight: Number(s.blockHeight),
         explorer: explorerUrl(net, 'transactions', s.txHash)
     })),
     claims: r.claims ?? [],

@@ -68,7 +68,7 @@ if (!action?.state) throw new Error(`the indexer returned no state for ${contrac
 const L = ledger(ContractState.deserialize(Buffer.from(action.state, 'hex')).data);
 
 const snapshot = {
-    source: `the Midnight preprod indexer (Blockfrost${INDEXER ? `, through ${new URL(INDEXER).host}` : ''}), decoded with the contract's own ledger() reader`,
+    source: `the Midnight preprod indexer (Blockfrost${INDEXER ? `, through ${new URL(INDEXER.url).host}` : ''}), decoded with the contract's own ledger() reader`,
     note: 'Public chain state only: commitments, claims and grants. Regenerate it with '
         + 'node scripts/export-preprod-bundles.mjs and compare.',
     network: 'preprod',
@@ -121,7 +121,8 @@ for (const [tier, options] of Object.entries(audiences)) {
         + `${check.grant ? `, grant held: ${check.grant.held}` : ''} -> site/disclose/bundles/preprod/`);
 }
 
-const blocks = receipt.onChain.map((s) => s.block ?? s.blockHeight);
+// A sponsored call reports its block as a string, a self-paid one as a number.
+const blocks = receipt.onChain.map((s) => Number(s.block ?? s.blockHeight));
 const grant = receipt.onChain.find((s) => /grantDisclosure/.test(s.label));
 write(join(OUT, 'run.json'), {
     note: 'The guided run these bundles come from. Every transaction is on the public preprod chain.',
@@ -130,6 +131,6 @@ write(join(OUT, 'run.json'), {
     lastBlock: Math.max(...blocks),
     date: String(receipt.finishedAt).slice(0, 10),
     transactions: receipt.onChain.length,
-    grant: grant ? { block: grant.block ?? grant.blockHeight, txHash: grant.txHash, explorer: EXPLORER + grant.txHash } : null
+    grant: grant ? { block: Number(grant.block ?? grant.blockHeight), txHash: grant.txHash, explorer: EXPLORER + grant.txHash } : null
 });
 console.log(`run: blocks ${Math.min(...blocks)} to ${Math.max(...blocks)}, grant in block ${grant?.block ?? grant?.blockHeight}`);

@@ -17,7 +17,24 @@
 
 ---
 
-### Deployed on Midnight Preview (ledger 9)
+### Live on Midnight preprod (ledger 9)
+
+| | |
+|---|---|
+| **Contract address** | `ae25d20140b308a1dc2afdabab4295858c398f9cc6fd36a47df9f2d04cf260cc` |
+| **Deployed** | 27 November 2026, by VINPassport with its own keys, in two steps, because all 20 verifier keys write more than one block allows ([D34](docs/DECISIONS.md#settled)): 11 circuits in block **3602844**, then the other 9 inserted by our custody key in block **3602851** |
+| **Deploy transaction** | `a210edc14a95923310dfb1109e60eb4f9688d2e9c8021ff647877b23a637d7da` |
+| **Exercised on chain** | full passport run, 14 transactions in blocks 3602910 to 3603212, one claim refused in-circuit and not submitted; read back **13 of 13** against its receipt, including its events |
+| **Fees** | every one paid by a NIGHTGATE fee sponsor ([D37](docs/DECISIONS.md#settled)): the deploy, the insert, the handover and the 14 calls. Our own wallet stood by and paid nothing |
+| **Registrars** | our four, A to D: the same identities as on Preview |
+| **Maintenance authority** | our 2-of-3 committee (two Schnorr keys, one ECDSA), handed over from the custody key (counter 2, [D28](docs/DECISIONS.md#settled)) |
+| **This repository** | The build at that address (`buildId` `f4b451e98c848285`, compactc 0.36.0). Recompiling this tree reproduces all 20 verifier keys byte for byte (checked 27 Nov 2026); the insert's signed proposal is at [`deploy/maintenance/preprod/ae25d20140b308a1/`](deploy/maintenance/preprod/ae25d20140b308a1/) |
+| **Check it yourself** | [`deploy/preprod.json`](deploy/preprod.json); `node scripts/chain-readback.mjs` reads it back from the indexer, which needs a free Blockfrost project id |
+
+### Our earlier contract on Midnight Preview (9 November 2026)
+
+It runs the build before [D37](docs/DECISIONS.md#settled) and [D38](docs/DECISIONS.md#settled), stays on chain and still answers. The tag
+`preview-2026-11-09` holds the source that drives it.
 
 | | |
 |---|---|
@@ -29,7 +46,7 @@
 | **Registrar governance** | registrars A and B removed registrar D, each in their own transaction: A's approval in block **29162**, B's, which carried it out, in block **29247** ([D32](docs/DECISIONS.md#settled)). `isRegistrar` now answers `false` for D |
 | **Maintenance authority** | a 2-of-3 committee (two Schnorr keys, one ECDSA), handed over from the deploy key in block **29549** ([D28](docs/DECISIONS.md#settled)) |
 | **Called by another contract** | A demo listing contract (`59cca7460496386e192313676ca80c1e88a036f563f1a57d2d200a34709fb364`, block 30043) lists a vehicle only if VINPassport holds a current mileage claim for it, asking through a cross-contract call. One transaction, two calls (`list`, then `holdsAtMost` here), block **30071**, 0.42 DUST ([`deploy/listing.preview.json`](deploy/listing.preview.json); [D33](docs/DECISIONS.md#settled)) |
-| **This repository** | The build at that address (`buildId` `f9859ecfb77e6e74`, compactc 0.36.0); the deploy record pins its integrity manifest and verifier-key hashes, and the inserts' signed proposal is at [`deploy/maintenance/preview/22723f4a56a61d2c/`](deploy/maintenance/preview/22723f4a56a61d2c/) |
+| **This repository** | The 9 November build (`buildId` `f9859ecfb77e6e74`, compactc 0.36.0, 23 circuits, 18 verifier keys), at the tag `preview-2026-11-09`; the deploy record pins its integrity manifest and verifier-key hashes, and the inserts' signed proposal is at [`deploy/maintenance/preview/22723f4a56a61d2c/`](deploy/maintenance/preview/22723f4a56a61d2c/) |
 | **Check it yourself** | [`deploy/preview.json`](deploy/preview.json); Preview's indexer is open, so the query under [Evaluating this repository](#evaluating-this-repository) needs no key |
 
 ### The previous Preview contract (8 November 2026)
@@ -44,18 +61,14 @@ It stays on chain and still answers. Two things were shown there first:
 | **Upgraded in place** | Block **19822**: the committee added six read circuits ([D33](docs/DECISIONS.md#settled)) with a proposal signed by one Schnorr and one ECDSA member, 5.49 DUST. Every existing verifier key was unchanged, so no redeploy and no record lost; the signed proposal is at [`deploy/maintenance/preview/counter-1.json`](deploy/maintenance/preview/counter-1.json) |
 | **Called by another contract** | A demo listing contract (`ca44281f9667b21c3023ed30de01d21f31a6699cecf2b9cb5f2eaaf8c7532e70`) lists a vehicle only if VINPassport holds a current mileage claim for it, asking through a cross-contract call. One transaction, two calls (`list`, then `holdsAtMost` there), block **20774**, 0.42 DUST ([`deploy/listing.preview-superseded-1794193761228.json`](deploy/listing.preview-superseded-1794193761228.json)) |
 
-### Deployed on Midnight preprod (ledger 9)
+### ODATANO's deployments of this build on preprod (24 and 25 November 2026)
 
-| | |
-|---|---|
-| **Contract address** | `980a3fd62d8dc67c027e057b082a21c429679df2e179b6f18659da3b02f1d665` |
-| **Deployed** | 25 November 2026, in two steps, because all 20 verifier keys write more than one block allows ([D34](docs/DECISIONS.md#settled)): the 11 circuits that write in block **3571232**, then the other 9 as a custody-signed maintenance update in block **3571236** |
-| **Deploy transaction** | `11ac860d8042ff9951c0a610608a4db79bd478ed29ae872c46292b7c53c40d4b` |
-| **Exercised on chain** | full passport run including a disclosure grant, 14 transactions in blocks 3571270 to 3571648 |
-| **Fees** | paid by a NIGHTGATE fee sponsor through one grant, with the self-paid fallback off: about 26 DUST for the deploy, the update, the handover and the run |
-| **Maintenance authority** | a 2-of-3 committee, handed over from the custody key (counter 2, [D28](docs/DECISIONS.md#settled)) |
-| **This repository** | The build at that address (`buildId` `f4b451e98c848285`, compactc 0.36.0); the update's signed proposal is at [`deploy/maintenance/preprod/980a3fd62d8dc67c/`](deploy/maintenance/preprod/980a3fd62d8dc67c/) |
-| **Check it yourself** | [`deploy/preprod.json`](deploy/preprod.json), and the indexer query under [Evaluating this repository](#evaluating-this-repository) |
+Before ours, ODATANO, the author of NIGHTGATE, deployed this same build on preprod with its own
+keys and its own sponsor grant, and ran it end to end: `980a3fd62d8dc67c027e057b082a21c429679df2e179b6f18659da3b02f1d665`
+(25 Nov, a full run in blocks 3571270 to 3571648; all 20 of its verifier keys match this tree),
+after a first one on 24 Nov. Their records are archived at
+[`deploy/preprod-superseded-1795791398953.json`](deploy/preprod-superseded-1795791398953.json) and
+[`deploy/preprod-superseded-1795600789557.json`](deploy/preprod-superseded-1795600789557.json).
 
 ### The earlier preprod contract (ledger 8)
 
@@ -69,31 +82,30 @@ It stays on chain and still answers. Two things were shown there first:
 | **Its build** | At the git tag `ledger8-preprod` (`buildId` `a32cf3b309d8a4ac`, compactc 0.31.1), with the tooling that drives it ([D27](docs/DECISIONS.md#settled)) |
 | **Its record** | [`deploy/preprod-superseded-1795558430270.json`](deploy/preprod-superseded-1795558430270.json) |
 
-> **Ledger 9.** Midnight mainnet moved to ledger 9 on 6 November 2026 and Preview on 7 November.
-> This tree builds the same contract with Compact 0.36.0, Midnight.js 5 and Wallet SDK 2, and the new
-> build reproduces every hash and commitment of the ledger 8 build, so receipts and bundles carry
-> over. It has been rehearsed end to end on Preview: deploy, the full guided run, readback, sample
-> bundles, and the handover of the maintenance authority to a 2-of-3 committee
-> ([D27](docs/DECISIONS.md#settled), [D28](docs/DECISIONS.md#settled)). Preprod followed on
-> 9 November (block 3348434), and the ledger 9 build was deployed there on 25 November. The earlier
-> contract above was deployed on ledger 8; the indexer still serves its state, and the paragraph
-> below describes that deployment, whose build is at the tag `ledger8-preprod`.
+> **Ledger 9.** Midnight mainnet moved to ledger 9 on 6 November 2026, Preview on 7 November and
+> preprod on 9 November (block 3348434). This tree builds the contract with Compact 0.36.0,
+> Midnight.js 5 and Wallet SDK 2, and reproduces every hash and commitment of the ledger 8 build,
+> so receipts and bundles carry over. It was rehearsed end to end on Preview first, then deployed
+> on preprod with our own keys on 27 November: deploy, the full guided run, readback, sample
+> bundles, and the handover of the maintenance authority to a 2-of-3 committee ([D27](docs/DECISIONS.md#settled), [D28](docs/DECISIONS.md#settled)).
+> The ledger 8 contract above is still served by the indexer; its build is at the tag
+> `ledger8-preprod`.
 
 > **Status: pre-alpha, under active development.** The Compact contract is written, compiles and is
 > covered by tests, and the three application surfaces (verification, intake console, proof
 > explorer) run against the compiled circuits with one command (`npm run app`). The contract is
-> **deployed on Midnight preprod** (1 Nov 2026, block 3228852,
-> [`deploy/preprod-superseded-1795558430270.json`](deploy/preprod-superseded-1795558430270.json)) and has been **exercised end to end on chain**:
+> **deployed on Midnight preprod** (27 Nov 2026, block 3602844,
+> [`deploy/preprod.json`](deploy/preprod.json)) and has been **exercised end to end on chain**:
 > registration, five field initialisations, a disclosure grant, a delegated update and four
-> proven claims, in eight transactions across blocks 3229920 to 3230032, with a fifth claim
+> proven claims, in 14 transactions across blocks 3602910 to 3603212, with a fifth claim
 > refused in-circuit because the rule held. The run
 > **authorises a dealership to write that one vehicle, has the dealership write it, then takes
 > the authorisation back**, so a delegation's whole life cycle is on the public chain rather than
 > only in the test suite. The reading the dealership wrote stays written and stays stamped with
 > it, because revoking a grant cannot make it untrue that they wrote it. The same dealership is
 > **granted the trade view** ([D26](docs/DECISIONS.md#settled)), and that grant outlives the
-> withdrawal, as the contract documents. **Nine of the ten circuits the contract proves with
-> have run on a public ledger**; `revokeDisclosure` has not yet.
+> withdrawal, as the contract documents. **Nine of the thirteen circuits that write ran in this
+> run**; registrar governance ran on Preview, and the other three are covered by the contract tests.
 > [`scripts/chain-readback.mjs`](scripts/chain-readback.mjs) reads the address back from the
 > public indexer and checks it against the run's receipt: every field's latest commitment and
 > the grant are on chain, and neither the VIN nor any salt appears in the contract state.
@@ -101,8 +113,8 @@ It stays on chain and still answers. Two things were shown there first:
 > compares two of the vehicle's own hidden fields and publishes only how far apart they are
 > allowed to be.
 > The `/demo/` surface and the intake console write **real transactions to the deployed contract**,
-> paying their own DUST, capped per UTC day: on this tree, the Preview contract, under
-> `npm run app:chain`. The hosted copy reports chain runs as unavailable, because the host that
+> their fees paid by a NIGHTGATE sponsor with our own wallet standing by ([D37](docs/DECISIONS.md#settled)), capped per UTC
+> day: on this tree, the preprod contract, under `npm run app:chain`. The hosted copy reports chain runs as unavailable, because the host that
 > served them was cancelled on 10 Oct 2026.
 > The other pages read committed demo state, so the site
 > stays fully functional as a static export. The table under
@@ -234,8 +246,8 @@ spike, gitignored, so the clone reports 451 passed and 1 skipped, as CI does.
 | `npm run app` | All three surfaces + the circuits, one dependency-free server |
 | `npm run serve:site` | The site statically, as GitHub Pages serves it: no circuits, demo state only |
 | `npm run demo:export` | Regenerate `site/verify/` demo ledger by running the compiled circuits, and the three sample bundles in `site/disclose/bundles/` that open it |
-| `node scripts/chain-readback.mjs --network preview` | Read the deployed contract back from the public indexer; with `--receipt`, check a run against it |
-| `node scripts/export-bundles.mjs --network preview` | Re-read the Preview contract into `site/disclose/preview/ledger.json` (no key needed); with `--receipt`, also the sample bundles |
+| `node scripts/chain-readback.mjs` | Read our preprod contract back from the indexer (a Blockfrost project id, or `VINPASSPORT_INDEXER_URL` for a proxy); with `--receipt`, check a run against it. For Preview, run it from the tag `preview-2026-11-09` |
+| `node scripts/export-bundles.mjs --network preview` | Re-read the Preview contract into `site/disclose/preview/ledger.json` (no key needed); with `--receipt`, also the sample bundles. Run it from the tag `preview-2026-11-09`, the build Preview holds |
 | `node scripts/export-preprod-bundles.mjs` | The same for the preprod contract, into `site/disclose/preprod/`; it needs a Blockfrost project id, or `VINPASSPORT_INDEXER_URL` for a proxy in front of the same indexer |
 | `node scripts/build-og.mjs` | Re-render the link previews (`design/og/*.html` to `site/og/*.png`) in Brave, after a word or number on them changes |
 | `node scripts/record-run.mjs <receipt>` | Turn a guided-run receipt into the public recording `/demo/` shows (`site/demo/recorded-run.<network>.json`); it refuses to write if the VIN or any reading survives |
@@ -245,21 +257,21 @@ spike, gitignored, so the clone reports 451 passed and 1 skipped, as CI does.
 | `npm run check:camera` | The scan page in Brave with a fake camera showing the sample passport's QR code: the button asks for the camera, the code is read in the browser and opens its passport, and a refused camera is explained with the typed box still there |
 | `npm run check:upstream` | What moved upstream, read only: pinned Midnight packages against npm, the pinned compiler against its latest release, and the state of every issue a workaround here depends on, with its removal steps ([`scripts/lib/known-issues.mjs`](scripts/lib/known-issues.mjs)) |
 
-On a chain, with a funded deploy wallet (see [Running it on the real chain](#running-it-on-the-real-chain)):
+On a chain, with a NIGHTGATE grant or a funded deploy wallet (see [Running it on the real chain](#running-it-on-the-real-chain)):
 
 | Command | What it does |
 |---|---|
-| `node scripts/make-deploy-seed.mjs --network preview` | Create the deploy wallet's seed outside the repository; prints only the address to fund |
-| `node scripts/dust.mjs --network preview` | NIGHT and DUST in the deploy wallet; `--register` registers NIGHT for DUST, `--split N` splits it into N UTXOs |
-| `node scripts/deploy.mjs --network preview` | Build the deploy and estimate its fee; `--submit` deploys, paying in DUST |
-| `node scripts/run.mjs --network preview` | Plan and simulate the guided run; `--submit` puts it on chain, one call per transaction |
-| `node scripts/make-committee-key.mjs --network preview --member <name>` | Create one maintenance committee member's key; only the verifying key is published |
-| `node scripts/maintenance.mjs status --network preview` | The contract's maintenance authority and circuits as the chain holds them; `handover --submit` hands the authority to the committee |
+| `node scripts/make-deploy-seed.mjs --network preprod` | Create the deploy wallet's seed outside the repository; prints only the address to fund. Needed only when our own wallet pays, not when a NIGHTGATE sponsor does |
+| `node scripts/dust.mjs --network preprod` | NIGHT and DUST in the deploy wallet; `--register` registers NIGHT for DUST, `--split N` splits it into N UTXOs |
+| `node scripts/deploy.mjs --network preprod` | Build the deploy and plan its steps; `--submit` deploys, paid by the NIGHTGATE sponsor when one is configured ([D37](docs/DECISIONS.md#settled)), else in DUST from the deploy wallet |
+| `node scripts/run.mjs --network preprod` | Plan and simulate the guided run; `--submit` puts it on chain, one call per transaction |
+| `node scripts/make-committee-key.mjs --network preprod --member <name>` | Create one maintenance committee member's key; only the verifying key is published |
+| `node scripts/maintenance.mjs status --network preprod` | The contract's maintenance authority and circuits as the chain holds them; `handover --submit` hands the authority to the committee |
 | `node scripts/maintenance.mjs propose\|sign\|submit` | A committee update: `propose` writes a proposal against the chain's counter, each member `sign`s it on their own machine (the tool rebuilds the update from its readable parts and prints its fingerprint), `submit` checks the signatures and the counter and sends it |
-| `node scripts/listing.mjs list --network preview <vinHash>` | The composability demo: runs the listing's call tree against the live states (`--submit` sends it); `deploy` deploys a listing |
-| `node scripts/ask.mjs --network preview holdsAtMost <vinHash> odometerKm 150000` | Ask the contract one of its read circuits: computed against the indexer's state, or with `--submit` checked by the chain |
-| `node scripts/govern.mjs --network preview --remove D --as A` | One registrar's approval of a change to the registrar set ([D32](docs/DECISIONS.md#settled)): the dry run shows whether the contract would refuse it, count it, or carry the change out; `--submit` sends it and records it in the deploy record. A second registrar's approval carries the change |
-| `npm run app:chain` | The app with the chain demo on, against the deployed Preview contract |
+| `node scripts/listing.mjs list --network preprod <vinHash>` | The composability demo: runs the listing's call tree against the live states (`--submit` sends it); `deploy` deploys a listing |
+| `node scripts/ask.mjs --network preprod holdsAtMost <vinHash> odometerKm 150000` | Ask the contract one of its read circuits: computed against the indexer's state, or with `--submit` checked by the chain |
+| `node scripts/govern.mjs --network preprod --remove D --as A` | One registrar's approval of a change to the registrar set ([D32](docs/DECISIONS.md#settled), [D38](docs/DECISIONS.md#settled)): the dry run shows whether the contract would refuse it, count it, or carry the change out; `--submit` sends it and records it in the deploy record. The approval that makes a majority of the current registrars carries the change: both of two, two of three, three of four |
+| `npm run app:chain` | The app with the chain demo on, against the deployed preprod contract (`VINPASSPORT_NETWORK_ID` picks another) |
 
 ### The app: every surface, one command
 
@@ -276,7 +288,7 @@ npm run app        # -> http://localhost:8790
 | **Intake console** | `/intake/` | A registrar: fill in the fields, submit, watch the circuits accept and refuse |
 | **Proof explorer** | `/proofs/` | An auditor: every claim on the ledger, marked current or superseded |
 | **Check a disclosure** | `/disclose/` | A buyer, a dealer and an authority each get a different bundle; every value in it is checked against the ledger in the browser |
-| **Live chain demo** | `/demo/` | Anyone: one click writes a real passport to the deployed contract. With no server answering, it shows a recorded guided run instead: Preview (ledger 9) by default, preprod (ledger 8) at `?recorded=preprod` |
+| **Live chain demo** | `/demo/` | Anyone: one click writes a real passport to the deployed contract. With no server answering, it shows a recorded guided run instead: our preprod contract's (27 Nov 2026) by default, the Preview one (the 9 November build) at `?recorded=preview` |
 
 `/verify/`, `/guide/`, `/regulation/` and `/console/` are kept as redirects to `/v/`, `/how-it-works/`, `/compliance/` and `/intake/`. They carry the query and the section across, because those addresses were shared and every QR code made before November 2026 encodes `/verify/?v=<key>`. `/wallet/` forwards to `/developers/`: the wallet page is retired ([D36](docs/DECISIONS.md#settled)).
 
@@ -292,24 +304,28 @@ All three are plain HTML/CSS/JS with no build step, by decision
 ### Running it on the real chain
 
 A fourth surface, `/demo/`, does the same intake against the **deployed contract**
-instead of an in-process ledger: real proving, real DUST fees from our own wallet, real
+instead of an in-process ledger: real proving, real DUST fees (paid by a NIGHTGATE sponsor,
+or by our own wallet for a call the sponsor did not take, [D37](docs/DECISIONS.md#settled)), real
 blocks, and a receipt holding the values and salts that the chain never saw. It is
 capped per UTC day and gives every run a fresh random VIN. The intake console carries
 the same thing as a submit toggle.
 
-This needs a funded wallet, so it is off unless the server is started with
-`npm run app:chain`, which runs against the contract in `deploy/preview.json`. A plain
+This needs a NIGHTGATE grant or a funded wallet, so it is off unless the server is started with
+`npm run app:chain`, which runs against the contract in `deploy/preprod.json`. A plain
 `npm run app` is unchanged and needs no secrets. The same run is a command line too:
 
 ```bash
-node scripts/run.mjs --network preview            # plan and simulate, submit nothing
-node scripts/run.mjs --network preview --submit   # 14 transactions, about 16 minutes
-node scripts/chain-readback.mjs --network preview --receipt <the receipt it names>
+node scripts/run.mjs --network preprod            # plan and simulate, submit nothing
+node scripts/run.mjs --network preprod --submit   # 14 transactions, about 30 minutes
+node scripts/chain-readback.mjs --network preprod --receipt <the receipt it names>
 ```
 
-On ledger 9 every call is its own transaction, proved in this process with
-`@midnightntwrk/zkir-v3`, balanced and submitted through Midnight.js 5 and Wallet SDK 2, with
-the fee paid from at least two DUST coins ([D27](docs/DECISIONS.md#settled)). The deploy wallet's
+On ledger 9 every call is its own transaction, proved and signed in this process with
+`@midnightntwrk/zkir-v3`, then handed without a fee to a NIGHTGATE sponsor, which adds its DUST
+and submits ([D37](docs/DECISIONS.md#settled)). Without a sponsor, or for a call it did not take,
+our wallet balances it through Midnight.js 5 and Wallet SDK 2, paying from at least two DUST coins
+([D27](docs/DECISIONS.md#settled)). Our Preview contract runs the 9 November build, which this
+tree refuses; to drive it, check out the tag `preview-2026-11-09`. The deploy wallet's
 seed, the receipts and every key stay in a directory beside the repository, never inside it.
 
 The pages take the network from the server's status, the recording or the snapshot, never from
@@ -354,16 +370,17 @@ cat contracts/vinpassport/src/managed/vinpassport/compiler/contract-info.json
 ```
 
 > `"compiler-version": "0.36.0"`, `"language-version": "0.28.0"`, `"runtime-version": "0.21.0"`,
-> the ledger 9 line ([D27](docs/DECISIONS.md#settled)). Twenty-three exported circuits: eighteen
-> proving ones, plus five pure helpers. Seven of the proving ones only read (`isRegistered`,
+> the ledger 9 line ([D27](docs/DECISIONS.md#settled)). Twenty-six exported circuits: twenty
+> proving ones, plus six pure helpers. Seven of the proving ones only read (`isRegistered`,
 > `registrarOf`, `commitmentOf`, `holdsAtMost`, `holdsAtLeast`, `holdsGrant`, `isRegistrar`), so
 > another contract can ask this one in the same transaction ([D33](docs/DECISIONS.md#settled)); every
 > one that writes emits an event naming the record it changed ([D29](docs/DECISIONS.md#settled)), and
-> `approveRegistrarChange` lets two registrars change the registrar set ([D32](docs/DECISIONS.md#settled)). `registrarIdOf` derives a registrar's public identity from a
+> `approveRegistrarChange` changes the registrar set and `approvePassportChange` corrects a passport or hands it to another registrar, each once a majority of the current registrars approve, while `withdrawApproval` takes an approval back ([D32](docs/DECISIONS.md#settled), [D38](docs/DECISIONS.md#settled)). `registrarIdOf` derives a registrar's public identity from a
 > secret the chain never sees, `slotOf` derives where a field lives from the
 > vehicle, the field and the document root, `writerKeyOf` derives the entry that says a
-> given party may write a given vehicle, and `grantKeyOf` the entry that records which view a
-> given party was granted. All four are exported so a verifier can
+> given party may write a given vehicle, `grantKeyOf` the entry that records which view a
+> given party was granted, and `proposalKeyOf` and `passportProposalKeyOf` the key an approval is
+> counted under. All six are exported so a verifier can
 > recompute them instead of trusting that we did. `compiler/contract-manifest.json` beside it is
 > the compiler's integrity manifest: Midnight.js refuses keys or IR that do not match it, and the
 > deploy record pins the manifest's own hash.
@@ -373,23 +390,24 @@ cat contracts/vinpassport/src/managed/vinpassport/compiler/contract-info.json
 > `test/fixtures/golden-vectors.json`; `test/app/golden-vectors.test.mjs` checks the new build
 > against them, so a compiler change that moved any of those values would fail the suite.
 
-**2. The deploys are real.** On ledger 9 the contract is live on **Midnight Preview**; address,
+**2. The deploys are real.** On ledger 9 the contract is live on **Midnight preprod**; address,
 transaction hash, the build's integrity-manifest hash and every verifier-key hash are committed at
+[`deploy/preprod.json`](deploy/preprod.json). Preprod's indexer is served by Blockfrost, so reading
+it needs a free project id: with one set, `node scripts/chain-readback.mjs` reads the contract back,
+and `node scripts/maintenance.mjs status --network preprod` reads its maintenance authority and
+compares both with the record.
+
+Our earlier contract on **Midnight Preview**, the 9 November build, is committed at
 [`deploy/preview.json`](deploy/preview.json). Preview's indexer is open, so this needs no key:
 
 ```bash
-curl -s -X POST https://indexer.preview.midnight.network/api/v4/graphql -H 'Content-Type: application/json' -d '{"query":"{ contractAction(address: \"68e25627e92e3e3809be1700d12ac77b32ffd946d2876a1ebe9a6f47bcec48f4\", offset: { transactionOffset: { hash: \"d2f7e19134790f82f55a0e5d003f3bd7064c4de46b70894cfd51a569aaeb0ce3\" } }) { __typename transaction { hash block { height } } } }"}'
+curl -s -X POST https://indexer.preview.midnight.network/api/v4/graphql -H 'Content-Type: application/json' -d '{"query":"{ contractAction(address: \"22723f4a56a61d2c8f87f7327b8b40cba13612a493ea6282ed6607d9788af7cd\", offset: { transactionOffset: { hash: \"bc1a94072237ee6173db865f06d6cc9f034c4aedb7792e12616d9bba90eb0b5b\" } }) { __typename transaction { hash block { height } } } }"}'
 ```
 
-> Returns a `ContractDeploy` with that transaction hash in block 17102, which is what it returned
-> when this command was last run on 8 November 2026. Before anything submits, the deploy and the
-> runner compare the build on disk with the record's manifest and verifier-key hashes, and
-> `node scripts/maintenance.mjs status --network preview` reads the contract's maintenance
-> authority back from the same indexer and compares it with the record.
-
-On ledger 9 the contract is also live on **Midnight preprod**, deployed on 25 November 2026 with
-its fees paid by a sponsor. Address, transaction hash, the build's integrity-manifest hash and
-every verifier-key hash are committed at [`deploy/preprod.json`](deploy/preprod.json).
+> Returns a `ContractDeploy` with that transaction hash in block 28785, which is what it returned
+> when this command was last run on 27 November 2026. Before anything submits, the deploy and the
+> runner compare the build on disk with the record's manifest and verifier-key hashes, so this tree
+> refuses the Preview contract; drive it from the tag `preview-2026-11-09`.
 
 On ledger 8 the contract was deployed to preprod before it moved to ledger 9 on
 9 November 2026 (block 3348434); the indexer still serves its state, and its record is
@@ -401,7 +419,8 @@ dust this project's own wallet generates.
 
 > **Whether a build matches that address is checked, not asserted.**
 > Each deploy record carries a `buildId`: a sha256 over the compiled `contract/index.js` and
-> every circuit `.bzkir`. It is `f4b451e98c848285` for the ledger 9 contract and
+> every circuit `.bzkir`. It is `f4b451e98c848285` for the preprod contract (this tree),
+> `f9859ecfb77e6e74` for the Preview contract (the tag `preview-2026-11-09`), and
 > `a32cf3b309d8a4ac`, the build at the tag `ledger8-preprod`, for the ledger 8 one.
 > The tooling compares its own build against it before anything submits. A circuit's verifier key is fixed at deployment, so a working tree
 > ahead of the chain produces calls the node refuses with nothing useful to say, and the check
@@ -409,11 +428,11 @@ dust this project's own wallet generates.
 > `deploy/preprod-superseded-*.json` so they can be compared. Ask the public indexer yourself:
 
 ```bash
-curl -s -X POST https://midnight-preprod.blockfrost.io/api/v0   -H 'Content-Type: application/json'   -H "project_id: $BLOCKFROST_MIDNIGHT_PREPROD"   -d '{"query":"{ contractAction(address: \"980a3fd62d8dc67c027e057b082a21c429679df2e179b6f18659da3b02f1d665\", offset: { transactionOffset: { hash: \"11ac860d8042ff9951c0a610608a4db79bd478ed29ae872c46292b7c53c40d4b\" } }) { __typename transaction { hash block { height } } } }"}'
+curl -s -X POST https://midnight-preprod.blockfrost.io/api/v0   -H 'Content-Type: application/json'   -H "project_id: $BLOCKFROST_MIDNIGHT_PREPROD"   -d '{"query":"{ contractAction(address: \"ae25d20140b308a1dc2afdabab4295858c398f9cc6fd36a47df9f2d04cf260cc\", offset: { transactionOffset: { hash: \"a210edc14a95923310dfb1109e60eb4f9688d2e9c8021ff647877b23a637d7da\" } }) { __typename transaction { hash block { height } } } }"}'
 ```
 
 > Returns a `ContractDeploy` whose transaction hash matches the committed record, in block
-> 3571232, which is what it returned when this query was last run on 25 November. For the
+> 3602844, which is what it returned when this query was last run on 27 November. For the
 > ledger 8 contract, the same query with its address and `7581acbc...` returned block 3228852. The offset
 > pins the query to that deployment; without it the indexer answers with the contract's *most
 > recent* action, which changes as the contract is called.
@@ -544,7 +563,7 @@ already know both the vehicle and the field cannot tell which slot holds what.
 
 ### Private state
 
-Four witnesses, none of which ever reach the ledger:
+Seven witnesses, none of which ever reach the ledger:
 
 | Witness | Type | Why it is private |
 |---|---|---|
@@ -552,18 +571,25 @@ Four witnesses, none of which ever reach the ledger:
 | `previousValue` | `Uint<64>` | The current value, needed to open the stored commitment |
 | `previousSalt` | `Bytes<32>` | The opening for that commitment |
 | `newSalt` | `Bytes<32>` | A fresh opening, so equal values do not produce equal commitments |
+| `otherValue` | `Uint<64>` | A second field's value, for the claim that compares two fields |
+| `otherSalt` | `Bytes<32>` | The opening for that second field's commitment |
+| `registrarSecret` | `Bytes<32>` | The secret a registrar's public identity is derived from, in-circuit |
 
 ### Circuits
 
 | Circuit | Public arguments | Proves |
 |---|---|---|
 | `registerPassport` | VIN hash, content root, registrar id | This vehicle is registered once, by a named registrar |
-| `initialiseField` | VIN hash, field key, rule | A field exists under a rule fixed for good: without publishing its value |
+| `initialiseField` | VIN hash, field key, rule | A field exists under a rule fixed for good, without publishing its value; only the vehicle's registrar may create it ([D38](docs/DECISIONS.md#settled)) |
 | `recordField` | VIN hash, field key | The caller **knows the current value**, and the change **respects the field's rule** |
 | `proveFieldAtMost` | VIN hash, field key, bound | The hidden value is **at or below a public bound** |
 | `proveFieldAtLeast` | VIN hash, field key, bound | The hidden value is **at or above a public bound** |
+| `proveFieldAtMostField` | VIN hash, two field keys, slack | One hidden field is **at most another hidden field plus a public slack**, publishing only the slack |
 
-Both proof circuits **record the claim** on success. A circuit that only asserted would leave a
+The other fourteen proving circuits (writers, grants, reads and governance) are listed under
+[Evaluating this repository](#evaluating-this-repository), step 1.
+
+All three proof circuits **record the claim** on success. A circuit that only asserted would leave a
 verifier nothing to read: the transaction succeeding *is* the proof, but nothing would index it by
 vehicle, so a scan-to-verdict page would have no state to query. A failed proof aborts before the
 write, so the claims ledger only ever holds claims that held.
@@ -655,10 +681,11 @@ write of a field, and all three are in the deployed circuits:
 
 1. **The write is attributable.** `registerPassport` derives the caller's identity in-circuit from
    a witness secret, never from `ownPublicKey()`, and refuses any identity outside
-   `allowedRegistrars`, a set fixed in the constructor with no circuit that adds to it.
-   `initialiseField` and `recordField` then refuse anyone but that vehicle's registrar and the
-   writers it has authorised by name, and each field records which identity last wrote it
-   ([D25](docs/DECISIONS.md#settled)). Who wrote what is on the ledger and stays there.
+   `allowedRegistrars`, a set given in the constructor (at least two distinct registrars) that
+   changes only when a majority of the current registrars approve ([D32](docs/DECISIONS.md#settled), [D38](docs/DECISIONS.md#settled)).
+   Only the vehicle's registrar may create a field with `initialiseField`, which fixes its rule;
+   `recordField` also accepts the writers it has authorised by name, and each field records which
+   identity last wrote it ([D25](docs/DECISIONS.md#settled), [D38](docs/DECISIONS.md#settled)). Who wrote what is on the ledger and stays there.
 2. **The rule precedes the value.** A field's integrity rule is written when the field is created
    and cannot be rewritten, so a flattering rule cannot be chosen later ([D18](docs/DECISIONS.md#settled)).
 3. **The correction is refused.** Under `neverFalls` a later, lower value fails in-circuit. The
@@ -679,7 +706,7 @@ repository begins with no contract at all.
 | What was built | Where to look |
 |---|---|
 | **The contract** - five exported circuits at Wave 1's close, field-generic, with each field's integrity rule fixed on the ledger at creation so a caller cannot pick a flattering one | [`vinpassport.compact`](contracts/vinpassport/src/vinpassport.compact), [D18](docs/DECISIONS.md#settled) |
-| **Deployed to Midnight preprod**, 28 August, built and signed locally | [`deploy/preprod.json`](deploy/preprod.json) |
+| **Deployed to Midnight preprod**, 28 August, built and signed locally | [`deploy/preprod-superseded-1791890717873.json`](deploy/preprod-superseded-1791890717873.json) |
 | **660 tests today** - 184 contract, 452 application, 24 SDK assumption assertions; all fifty-three guards mutation-checked | [`test/`](test/), and [Evaluating this repository](#evaluating-this-repository) |
 | **Three surfaces** - verification, intake console, proof explorer - all running the compiled circuits, not a mock | [passport.vin](https://passport.vin/) |
 | **On-chain runs from the browser, self-funded**, after a hosted sponsor turned out to be a single point of failure in a demo a judge runs unattended | [D24](docs/DECISIONS.md#settled) |
@@ -733,24 +760,24 @@ line of comparison rather than two days of reading tag names.
 
 | Component | Status |
 |---|---|
-| Compact contract: 29 circuits, 23 exported, 18 of them proving | **Done.** Compiles clean, artifacts committed and reproducible from source. The six read circuits were added on 8 Nov 2026 without changing any existing verifier key ([D33](docs/DECISIONS.md#settled)) |
+| Compact contract: 36 circuits, 26 exported, 20 of them proving, 6 pure helpers | **Done.** Compiles clean, artifacts committed and reproducible from source. The six read circuits were added on 8 Nov 2026 without changing any existing verifier key ([D33](docs/DECISIONS.md#settled)) |
 | Events | **Done, on Preview since 9 Nov 2026** ([D29](docs/DECISIONS.md#settled)). Every write emits one event naming the vehicle and the kind of change, and the public indexer serves them; the readback checks every call announced itself once, in its own transaction, and that no event names anything but a record. Measured first: a six-field event made each write about four minutes to prove, the adopted one adds a few seconds |
-| Registrar governance | **Done, exercised on Preview 9 Nov 2026** ([D32](docs/DECISIONS.md#settled)). Two current registrars add or remove one, each in their own transaction: A and B removed D in blocks 29162 and 29247 with `scripts/govern.mjs`, which dry runs each approval against the chain first. A removed registrar keeps its name on what it registered and loses the power to act for it. Passing its vehicles to a successor is open ([Q9](docs/DECISIONS.md#open)) |
+| Registrar governance | **Done, exercised on Preview 9 Nov 2026** ([D32](docs/DECISIONS.md#settled)). Since [D38](docs/DECISIONS.md#settled), a majority of the current registrars adds or removes one, each approval in its own transaction (on Preview, under the 9 November build, two approvals did it: A and B removed D in blocks 29162 and 29247 with `scripts/govern.mjs`, which dry runs each approval against the chain first). A removed registrar keeps its name on what it registered and loses the power to act for it; any current registrar can end its writers and grants, and `approvePassportChange` hands its vehicles to a successor once a majority approves. Who must agree to such a hand-over is still open ([Q9](docs/DECISIONS.md#open)) |
 | ECDSA registrar keys | **Measured, deferred** ([D30](docs/DECISIONS.md#settled)). In-circuit secp256k1 verification works but proves about seven times slower than today's check (167 s against 24 s); revisited when a manufacturer needs HSM-held keys |
 | Contract test suite | **Done.** 184 tests; every guard mutation-checked, 53 of 53 |
-| Continuous integration | **Done, 9 Nov 2026.** Every push runs the three suites, the generated-file checks and the disclosure rule over the lines it adds ([`ci.yml`](.github/workflows/ci.yml)). When the contracts change, and weekly, a job downloads `compactc` 0.36.0 from its release, checks it against a recorded sha256, recompiles both contracts and fails on any changed committed byte, verifier keys included ([`compile.yml`](.github/workflows/compile.yml)): key generation is deterministic, so the keys whose hashes the deploy records pin are reproduced from source. A weekly job reports what moved upstream and fails when an issue a workaround depends on closes ([`upstream.yml`](.github/workflows/upstream.yml)). How an upgrade goes end to end: [docs/UPGRADE-RUNBOOK.md](docs/UPGRADE-RUNBOOK.md) |
+| Continuous integration | **Done, 9 Nov 2026.** Every push runs the three suites, the generated-file checks and the disclosure rule over the lines it adds ([`ci.yml`](.github/workflows/ci.yml)). When the contracts change, and weekly, a job downloads `compactc` 0.36.0 from its release, checks it against a recorded sha256, recompiles both contracts and fails on any changed committed byte, verifier keys included ([`compile.yml`](.github/workflows/compile.yml)): key generation is deterministic, so the keys whose hashes `deploy/preprod.json` pins are reproduced from this source, and `deploy/preview.json`'s from the tag `preview-2026-11-09`. A weekly job reports what moved upstream and fails when an issue a workaround depends on closes ([`upstream.yml`](.github/workflows/upstream.yml)). How an upgrade goes end to end: [docs/UPGRADE-RUNBOOK.md](docs/UPGRADE-RUNBOOK.md) |
 | SDK assumption guard | **Done.** 24 assertions against `@odatano/dpp-sdk` 0.2.0 |
 | Proving cost, the three circuits a verifier waits on | **Re-measured 14 Oct 2026 against the build deployed that day**, wasm in-process, no proof server, 32 cores, n=3 each. Build, prove and sign: `registerPassport` **17.5s** (5,229 B), `proveFieldAtMost` **27.6s** (5,567 B), `proveFieldAtLeast` **27.0s** (5,568 B). Within noise of the 13 October build (16.6s, 29.4s, 27.1s), so **the writer circuits and the two ledger collections they added cost these three nothing measurable**, which is the question re-measuring was there to answer. Registration is 3.7x Wave 1's 4.77s, the cost of the registrar identity derived in-circuit and the field commitments bound to the content root. **`initialiseField` was measured for the first time on 16 Oct and is the most expensive circuit here: 37.4s median (min 35.8 / max 53.2, n=5, 5,516 B).** It had never been timed because the three above are the ones a verifier's experience depends on, and it is the one an issuer runs most: a vehicle carrying the full 68-field registry is one registration and 68 of these, about **42.6 minutes of proving**. Batching does not reduce that, because batching removes block confirmations and not proofs. That number, rather than any wallet count, is the real ceiling on how many vehicles a day one writer can issue, and it is why [FIELDS.md](docs/FIELDS.md)'s whole-registry rule has never once been satisfied by a real vehicle. **These are the times to ISSUE a claim, paid once by whoever writes it.** A verifier reads the verdict off the ledger and waits on a query, never on a proof, which is why a proven claim is recorded rather than re-proven on demand ([D19](docs/DECISIONS.md#settled)). DUST cost per anchor and per proof was **measured on 14 Oct 2026** against the deployed contract with real proofs, and is published in [BUILD-SCOPE](docs/BUILD-SCOPE.md); latency is not cost |
 | Provable-field registry, 32 slots | **Settled** ([FIELDS.md](docs/FIELDS.md)). 26 in use, reserve 17 to 21, and 31. Slots 0 to 16 are wired end to end and provable; the rest are salted into the content root but carry no rule yet |
-| Deployment to Midnight preprod | **Done. The ledger 9 contract is live (25 Nov 2026), block 3571232**, exercised by a full run in blocks 3571270 to 3571648, every fee paid by a sponsor through one grant. Before it, the ledger 8 contract with disclosure grants (1 Nov 2026, block 3228852) was exercised in blocks 3229920 to 3230032 and read back from the public indexer by [`scripts/chain-readback.mjs`](scripts/chain-readback.mjs); its fee came out of our own dust ([D24](docs/DECISIONS.md#settled)). The Wave 2 contract of 16 Oct 2026 is archived as superseded. Address and the indexer-resolvable tx hash committed at [`deploy/preprod.json`](deploy/preprod.json), with a `buildId` fingerprinting the artefacts that address holds, so a working tree ahead of the chain is caught before a fee is spent. Earlier addresses kept alongside it as `preprod-superseded-*.json` |
+| Deployment to Midnight preprod | **Done. Our own contract is live (27 Nov 2026), block 3602844**, exercised by a full run in blocks 3602910 to 3603212 and read back 13 of 13, every fee paid by a NIGHTGATE sponsor. ODATANO deployed the same build there on 24 and 25 Nov. Before it, the ledger 8 contract with disclosure grants (1 Nov 2026, block 3228852) was exercised in blocks 3229920 to 3230032 and read back from the public indexer by [`scripts/chain-readback.mjs`](scripts/chain-readback.mjs); its fee came out of our own dust ([D24](docs/DECISIONS.md#settled)). The Wave 2 contract of 16 Oct 2026 is archived as superseded. Address and the indexer-resolvable tx hash committed at [`deploy/preprod.json`](deploy/preprod.json), with a `buildId` fingerprinting the artefacts that address holds, so a working tree ahead of the chain is caught before a fee is spent. Earlier addresses kept alongside it as `preprod-superseded-*.json` |
 | Ledger 9 port | **Done and rehearsed on Preview, 8 Nov 2026** ([D27](docs/DECISIONS.md#settled)). Compact 0.36.0, Midnight.js 5, Wallet SDK 2; the new build reproduces every hash and commitment of the ledger 8 build (golden vectors, 13 of 13). Deployed at block 17102, a full guided run of 14 single-call transactions in blocks 17890 to 18038, read back 9 of 9 against its receipt, sample bundles in [`site/disclose/preview/`](site/disclose/preview/). Proving in this process with `@midnightntwrk/zkir-v3`, no proof server; in a probe, `registerPassport` proved in 14.8 s and `proveFieldAtMost` in 30.9 s, and a full call from proving to its block took 48 to 101 s |
 | DUST fees on ledger 9 | **Measured on Preview, 8 Nov 2026**, as paid on chain. Deploy **13.63 DUST** (it carries all ten verifier keys). `registerPassport` **0.590**; every other call **0.307 to 0.311**, except one `initialiseField` at 0.083; the whole 14-call run **4.38 DUST**. **With events, 9 Nov 2026:** deploy **20.70 DUST** in two steps ([D34](docs/DECISIONS.md#settled)); in a run where the fee price held steady, `registerPassport` **0.603** and every other call **0.319 to 0.321**, about 2 to 4% more, which a price move alone could also explain; in the complete run the price moved, 0.33 to 0.94 a call, **6.13 DUST** for 14. A fee is cost times the price of the moment, so per-call cost is read across runs with care. The wallet's estimate before submitting is conservative: 0.73 for `registerPassport`, including the fee payment, against 0.59 paid. with 5,000 tNIGHT registered, the wallet projects about 61 DUST of generation an hour |
 | Maintenance authority | **A 2-of-3 committee on Preview** ([D28](docs/DECISIONS.md#settled)): handed over from the deploy key by a `ReplaceAuthority` update, two Schnorr keys and one ECDSA key, read back from the indexer; done for both Preview contracts, the current one in block 29549. **Exercised** on the previous contract: a proposal signed by two members (one Schnorr, one ECDSA) inserted six verifier keys into the live contract, counter 1 to 2, block 19822, 5.49 DUST, and a call to one of the new circuits was accepted. Who holds the mainnet keys is open ([Q8](docs/DECISIONS.md#open)) |
 | Frontend: verification, intake console, proof explorer | **Done.** Three surfaces against the compiled circuits (`npm run app`), live for anyone at [passport.vin](https://passport.vin/) |
-| Live chain runs from the browser | **Built, not currently hosted.** `/demo/` and the intake console write real transactions to the deployed contract, paying their own DUST ([D24](docs/DECISIONS.md#settled)), capped per UTC day; on this tree the Preview contract, under `npm run app:chain`. Hashes link to the network's explorer where one follows the chain (the [preprod explorer](https://preprod.midnightexplorer.com) does; Preview has none yet, so the keyless indexer query stands in). The host that served them was cancelled on 10 Oct 2026, so the hosted page says no run can start and shows the recorded Preview run of 8 Nov 2026 instead, with the ledger 8 preprod run of 1 Nov one click away |
+| Live chain runs from the browser | **Built, not currently hosted.** `/demo/` and the intake console write real transactions to the deployed contract, their fees paid by a NIGHTGATE sponsor with our own wallet standing by ([D37](docs/DECISIONS.md#settled)), capped per UTC day; on this tree the preprod contract, under `npm run app:chain`. Hashes link to the network's explorer where one follows the chain (the [preprod explorer](https://preprod.midnightexplorer.com) does; Preview has none yet, so the keyless indexer query stands in). The host that served them was cancelled on 10 Oct 2026, so the hosted page says no run can start and shows the recorded Preview run of 8 Nov 2026 instead, with the ledger 8 preprod run of 1 Nov one click away |
 | A visitor's own wallet | **Retired, 10 Nov 2026** ([D36](docs/DECISIONS.md#settled)). Built on 9 Nov and removed the next day, because VINPassport asks no one for a wallet. `/wallet/` forwards to Developers; what it found is kept at [R8](docs/DECISIONS.md#reversed) |
 | CAP service layer | **Not in this submission, and not in Wave 2.** See [D20](docs/DECISIONS.md#settled) |
-| Tiered disclosure | **Wave 3, in progress.** Not by redaction in a service, which was reversed before it was built ([R7](docs/DECISIONS.md#reversed)), but as bundles the holder hands over and the reader checks against the ledger ([D26](docs/DECISIONS.md#settled)). **Try it: [passport.vin/disclose](https://passport.vin/disclose/)**, one demo vehicle and three audiences checked in the browser against the demo ledger, and a buyer's and a dealer's bundle from the preprod run of 25 Nov 2026 checked against contract state read from the public indexer |
+| Tiered disclosure | **Done, Wave 3.** Not by redaction in a service, which was reversed before it was built ([R7](docs/DECISIONS.md#reversed)), but as bundles the holder hands over and the reader checks against the ledger ([D26](docs/DECISIONS.md#settled)). **Try it: [passport.vin/disclose](https://passport.vin/disclose/)**, one demo vehicle and three audiences checked in the browser against the demo ledger, and a buyer's and a dealer's bundle from our preprod run of 27 Nov 2026 checked against contract state read from the public indexer |
 
 ## Repository map
 
@@ -792,7 +819,7 @@ test/
 | [Midnight Network](https://midnight.network) | Zero-knowledge blockchain; ledger 9, Compact 0.36.0 (the ledger 8 build, Compact 0.31.1, is at the tag `ledger8-preprod`) |
 | [Midnight.js](https://github.com/midnightntwrk/midnight-js) 5 and Wallet SDK 2 | Ledger 9 transaction building, balancing and submission; `@midnightntwrk/zkir-v3` for in-process proving |
 | [`@odatano/dpp-sdk`](https://github.com/ODATANO) | Salted-Merkle field panel: key derivation, value scaling, tree construction |
-| [`@odatano/nightgate-tx`](https://github.com/ODATANO/NIGHTGATE) 0.25.0 | Ledger 9: every contract call of a run built, proven and signed locally and handed to a NIGHTGATE fee sponsor ([D37](docs/DECISIONS.md#settled)); ledger 8 at the tag |
+| [`@odatano/nightgate-tx`](https://github.com/ODATANO/NIGHTGATE) 0.26.0 | Ledger 9: every contract call of a run built, proven and signed locally and handed to a NIGHTGATE fee sponsor ([D37](docs/DECISIONS.md#settled)); ledger 8 at the tag |
 
 **Where the line falls.** VINPassport's Compact contract is its own work: twenty-six exported circuits,
 its own ledger, its own integrity rules. It is not a fork, and it does not extend NIGHTGATE's
@@ -802,8 +829,9 @@ design, built on `@odatano/dpp-sdk` for key derivation, value scaling and Merkle
 VINPassport builds on ODATANO in three ways. The field panel uses `@odatano/dpp-sdk` for key
 derivation, value scaling and Merkle construction, on every run. `@odatano/nightgate-tx` builds,
 proves and signs every contract call of a run locally against our own key, on ledger 9 since
-its 0.25.0 ([D37](docs/DECISIONS.md#settled)); the deploy and the committee's maintenance
-updates go through Midnight.js 5 directly.
+its 0.25.0, at 0.26.0 now ([D37](docs/DECISIONS.md#settled)). The steps of a deploy too large
+for one block and the committee's maintenance updates are built here and handed to the sponsor
+the same way; only a deploy that fits one block, and `scripts/ask.mjs`, are always self-paid.
 And ODATANO's hosted NIGHTGATE **sponsored the contract deployment** on 28 August 2026 under a
 metered grant.
 
@@ -830,7 +858,7 @@ that implements this panel end-to-end on Midnight preprod.
 |---|---|
 | [Explainer video](https://passport.vin/how-it-works/#explained) | Watch it first: the shortest route to what this does, embedded on How it works |
 | [DEMO.md](docs/DEMO.md) | The ninety-second walkthrough: the script behind the video, and a guided run you can do yourself |
-| [deck/](deck/index.html) | The Wave 1 slide deck: [present it live](https://passport.vin/deck/), arrow keys to advance, Ctrl+P for the PDF |
+| [deck/](deck/index.html) | The Wave 3 slide deck: [present it live](https://passport.vin/deck/), arrow keys to advance, Ctrl+P for the PDF |
 | [REGULATION.md](docs/REGULATION.md) | Primary legal sources, with direct EUR-Lex links |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, the trust model, and its honest limits |
 | [BUILD-SCOPE.md](docs/BUILD-SCOPE.md) | Structure, stack, sponsoring and billing models |

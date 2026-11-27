@@ -398,7 +398,7 @@ function saveReceipt(network, receipt) {
  * The app server's interface (scripts/app-server.mjs, /api/demo/*): one run
  * at a time, a cap per UTC day, jobs the page polls.
  */
-export async function createRunner({ log = console.log, network = process.env.VINPASSPORT_NETWORK_ID ?? 'preview' } = {}) {
+export async function createRunner({ log = console.log, network = process.env.VINPASSPORT_NETWORK_ID ?? 'preprod' } = {}) {
     const capacity = Number(process.env.VINPASSPORT_DEMO_CAP ?? 20);
     const chain = await openChain(network, { log });
     // The own wallet's latest state, for the page's funds line. With a sponsor

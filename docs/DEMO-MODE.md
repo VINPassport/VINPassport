@@ -3,8 +3,12 @@
 > **Ledger 8.** This page describes the ledger 8 engine, which packed calls into batches through
 > `@odatano/nightgate-tx` against the preprod contract. It is kept, with its scripts, at the git tag
 > `ledger8-preprod` ([D27](DECISIONS.md#settled)). On ledger 9 the engine is
-> `scripts/lib/runner9.mjs`: one call per transaction through Midnight.js 5, started with
-> `npm run app:chain` or `node scripts/run.mjs --network preview`.
+> `scripts/lib/runner9.mjs`: one call per transaction, built, proven and signed in this process,
+> then handed through `@odatano/nightgate-tx` to a NIGHTGATE sponsor that pays the fee, with our own
+> wallet as fallback ([D37](DECISIONS.md#settled)). Start it with `npm run app:chain` or
+> `node scripts/run.mjs --network preprod`. The current build is live on preprod as our contract
+> `ae25d201…` (`deploy/preprod.json`). Our Preview contract runs the 9 November build, which this
+> tree refuses; to drive it, check out the tag `preview-2026-11-09`.
 
 Wave 1 status: **shipped, public and live.** Engine, API and the visitor-facing
 UI all landed in Wave 1: anyone can start a real preprod run at

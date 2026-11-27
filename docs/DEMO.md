@@ -47,16 +47,16 @@ equally the order to click through live for anyone evaluating the repository.
 
 *On screen: the contract source, then the test run.*
 
-> Seven circuits in Compact, Midnight's zero-knowledge language. Every field of the passport is a
-> separate private commitment under an integrity rule fixed at creation: mileage, accidents,
-> keepers, write-off status can never fall. Ninety contract tests run against the compiled
-> circuits, and we mutation-check them: delete a rule from the contract and exactly the tests for
-> that rule fail, nothing else.
+> Twenty provable circuits in Compact, Midnight's zero-knowledge language, plus six pure helpers.
+> Every field of the passport is a separate private commitment under an integrity rule fixed at
+> creation: mileage, accidents, keepers, write-off status can never fall. 184 contract tests run
+> against the compiled circuits, and we mutation-check them: delete a rule from the contract and
+> exactly the tests for that rule fail, nothing else. That holds for 53 of 53 guards.
 
 ## 1:15 · Close
 
-> Proofs are built and signed locally, and the fee is paid from our own wallet, so no private value
-> ever leaves the process, and nothing off-box is in the path. The record
+> Proofs are built and signed locally, and a NIGHTGATE sponsor pays the fee without seeing a
+> value, a salt or a secret; our own wallet stands by. No private value ever leaves the process. The record
 > stays with the vehicle; the verdicts live on the chain, where anyone can check them.
 > VINPassport: the vehicle passport the EU mandates, without the disclosure it forbids.
 
@@ -68,7 +68,7 @@ equally the order to click through live for anyone evaluating the repository.
 
 ```bash
 npm install
-npm test              # 176 contract + 394 app + 24 SDK, all green
+npm test              # 184 contract + 452 app + 24 SDK (660), all green
 npm run demo:export   # regenerate site/verify/demo-data.json from the circuits,
                       # and the sample bundles in site/disclose/bundles/
 npm run serve:site    # the same pages as the live URL, locally

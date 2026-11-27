@@ -9,12 +9,16 @@ may claim.
 
 > **What actually ships is smaller than the diagram below.** Per
 > [D20](DECISIONS.md#settled), the submission deploys and calls `vinpassport` through
-> **`@odatano/nightgate-tx`**: transactions are built, batched, proven and signed locally.
-> Per [D37](DECISIONS.md#settled), a run's calls are built with `@odatano/nightgate-tx` 0.25.0 and
+> **`@odatano/nightgate-tx`**: each call is built, proven and signed locally, one call per
+> transaction ([D27](DECISIONS.md#settled)).
+> Per [D37](DECISIONS.md#settled), a run's calls are built with `@odatano/nightgate-tx` 0.26.0 and
 > paid by a NIGHTGATE fee sponsor when one is configured; otherwise, and for any call the sponsor
 > did not take, the fee is balanced from **our own DUST** ([D24](DECISIONS.md#settled)) and submitted
-> straight to the node. ODATANO's hosted NIGHTGATE sponsored the Wave 1 deployment
-> and is in no path now: the contract deployed on 14 October 2026 paid its own fee as well. Either way no witness ever leaves the process. There is no CAP
+> straight to the node. ODATANO's hosted NIGHTGATE sponsored the Wave 1 deployment, and since D37
+> it is back in the path as the fee sponsor. The current build is live on Midnight preprod as our
+> contract `ae25d201…`, deployed on 27 November 2026 with our own keys, every fee paid by a
+> NIGHTGATE sponsor ([`deploy/preprod.json`](../deploy/preprod.json)). Our Preview contract
+> `22723f4a…` still runs the 9 November build. Either way no witness ever leaves the process. There is no CAP
 > application. The `@odatano/nightgate` *plugin* below is not built, in Wave 1 or Wave 2.
 > The target architecture is unchanged; this note exists so nobody reads the diagram as a
 > description of what is running today.
@@ -40,7 +44,7 @@ surfaces.
 └────────────────────────┬────────────────────────────────┘
                          │
 ┌────────────────────────▼────────────────────────────────┐
-│  Midnight - preprod (ledger 8)                          │
+│  Midnight preprod and Preview (ledger 9)                │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -59,7 +63,10 @@ toolchain, but they need WSL2, macOS or Linux, because Compact has no native Win
 **Provided by NIGHTGATE (not in this submission, see [D20](DECISIONS.md#settled)):** document anchoring,
 salted-Merkle field proofs, six predicate kinds,
 three-level on-chain disclosure grants, async job orchestration, wallet and proving infrastructure,
-OData V4 query semantics over all of it, and transaction fee sponsoring.
+and OData V4 query semantics over all of it.
+
+**Provided by NIGHTGATE and in use since [D37](DECISIONS.md#settled):** transaction fee
+sponsoring, with our own wallet as fallback.
 
 **Ours to build:** the passport contract itself, the vehicle domain model, the provable-field
 registry, the disclosure tiers ([D26](DECISIONS.md#settled)), both UIs, document storage, the auth strategy,
@@ -101,7 +108,7 @@ pseudonyms derived from the grantee's own secret, never PII.
 | Never had a reported accident | `proveFieldAtMost`, `accidentCount ≤ 0` | A clean-history claim that discloses nothing about incidents |
 | One keeper from new | `proveFieldAtMost`, `ownerCount ≤ 1` | Provenance, without naming anybody |
 | Mileage has never decreased | `recordField` under `neverFalls` | The fraud everyone recognises, proven without revealing a reading |
-| Nothing changed but the service fields | `documentComparison` across anchor versions | The general detector: catches the frauds nobody thought to ask about. **Not buildable yet: it needs two or more anchored roots per vehicle, and the contract stores one immutable `contentRoot`** |
+| Nothing changed but the service fields | `documentComparison` across anchor versions | The general detector: catches the frauds nobody thought to ask about. **Not buildable yet: it needs two or more anchored roots per vehicle, and the contract keeps one `contentRoot` per vehicle. A majority of the registrars can replace it ([D38](DECISIONS.md#settled) 3), which restarts every field under the new root** |
 | Recycled content meets threshold | `proveFieldAtMost` / `AtLeast` on slots 8 to 11 | Compliance proof that does not leak supplier economics |
 
 **Build the write-off and accident claims first.** They are one circuit call each, they are what a
@@ -161,7 +168,7 @@ So:
 > mid-life is only as good as the party that entered it. Response 3 below is therefore half
 > delivered in-circuit and half still a relationship problem.
 
-> **What holds as of 24 November 2026.** Read the two notes above with these corrections.
+> **What holds as of 27 November 2026.** Read the two notes above with these corrections.
 >
 > *Binding is to the document's identity, not to its values.* The slot binds the content root, so
 > a claim about another document lands elsewhere. But no circuit checks a committed value against
@@ -170,11 +177,23 @@ So:
 > [D23](DECISIONS.md#settled) #3 is not built.
 >
 > *Attribution.* `allowedRegistrars` changes after deployment when a majority of the current
-> registrars approves ([D32](DECISIONS.md#settled), [D38](DECISIONS.md#settled)).
+> registrars approves ([D32](DECISIONS.md#settled), [D38](DECISIONS.md#settled)). The ledger
+> names each vehicle's current registrar: the one that registered it, unless a passport change
+> handed it on (below).
 >
 > *Custody.* Only the vehicle's registrar creates a field, so only it chooses the rule; an
 > authorised writer records values under that rule ([D38](DECISIONS.md#settled) 2). That is what
 > makes "cannot record a lower odometer" hold for every writer.
+>
+> *Passport changes.* A majority of the current registrars can give any registered vehicle a new
+> content root and registrar (`approvePassportChange`, [D38](DECISIONS.md#settled) 3). Its fields
+> restart under new slots, because the slot binds the root. Earlier commitments and claims stay on
+> the ledger under the old slots.
+>
+> *After a registrar leaves.* Any current registrar can withdraw a removed registrar's writers and
+> revoke its grants (`stewardFor`, [D38](DECISIONS.md#settled) 1). Writers it admitted can still
+> update fields that exist. Nobody can create a field on that vehicle until a passport change hands
+> it on.
 >
 > *Two powers, one stronger.* The maintenance committee ([D28](DECISIONS.md#settled)) can add a
 > verifier key for a new circuit, and a new circuit can write any part of the state, the registrar
@@ -229,7 +248,7 @@ detectable. That is a real claim; the stronger one would be false.
 
 | Constraint | Consequence |
 |---|---|
-| **No in-circuit signature verification on mainnet.** Compact 0.31.x / ledger 8 has none. `jubjubSchnorrVerify` exists only on the ledger-9 RC line (0.33+), undocumented and deployed nowhere public. | No signature of any kind can be verified in-circuit on a public network today, so nothing in the design may depend on one. This is a constraint on Compact, not a scheduling note: [R5](DECISIONS.md#reversed) removed the hardware work, so there is no signature spec left to write. |
+| **In-circuit signature verification is possible on ledger 9, and costly.** Measured on 8 November 2026, an ECDSA (secp256k1) check made a registration about seven times slower to prove (k = 16 against k = 13, 166.7 s against 23.8 s). | Deferred by [D30](DECISIONS.md#settled): registrar authentication stays knowledge of a secret, and nothing in the design depends on a signature verified in-circuit. It is revisited when a manufacturer requires HSM-held keys or proving gets cheaper. [R5](DECISIONS.md#reversed) removed the hardware work, so there is no sensor signature spec to write. |
 | **NIGHTGATE submits on mainnet only when its operator turns it on** (`NIGHTGATE_ALLOW_MAINNET_SUBMISSION`), and sponsors only for a grant that names the contract. | Preview and preprod run on a sponsor today. A mainnet sponsor needs that operator's grant; without one the own wallet pays ([D37](DECISIONS.md#settled)). |
 | **32 provable slots** via `attestation-vault-32` (NIGHTGATE 0.19.0). Width is effectively permanent: cross-root proofs relate same-width documents only. | 26 in use, 6 reserved. See [FIELDS.md](FIELDS.md). The width choice is one-way. **Updated 18 Oct: the reserve is not enough.** Appendix 1 to Annex V needs about 18 further values for a conventional M1 and nearer 40 for a plug-in hybrid, against 6 free slots, so the EVP cannot sit beside the circularity panel. The answer is **section roots**, several same-width trees under one top root, which is also what the vault maintainer recommends for width beyond 32. One section each for the EVP, the circularity panel and history. |
 | **Proving time is the real throughput ceiling**, not wallets and not treasury. Measured 16 Oct: `initialiseField` 37.4 s, `registerPassport` 17.5 s. | A 68-field vehicle is **42.7 minutes of proving**, and batching cannot reduce it because batching removes block confirmations, not proofs. With one dust spend in flight per wallet that is **16 to 34 vehicles a day per pipeline**. Size-to-time is linear in prover key: about **11.2 s fixed plus 2.83 s per MB**, refitted 18 Oct after a logarithmic fit mispredicted an external 76 MB circuit by 8.6x. |

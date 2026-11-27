@@ -75,7 +75,7 @@ a re-anchor but no reordering.
 
 | # | Field | Serves | Note |
 |---|---|---|---|
-| 22 | `vinHash` | Fraud | Identity. **Public on-chain and VIN-reversible**: `vinHash = blake2b(VIN)`, unsalted, and a VIN is on the windscreen. It is the passport's public address, not a confidential field, and tiered disclosure applies to the *values*, not to the VIN key. See [D23](DECISIONS.md#settled) |
+| 22 | `vinHash` | Fraud | Identity. **Public on-chain.** On a network the key is an RFC 9497 VOPRF of the VIN under that network's key (`scripts/lib/vin-key.mjs`), so it cannot be recomputed from a VIN without that key; the local simulator keys with plain `blake2b(VIN)`. It is the passport's public address, not a confidential field, and tiered disclosure applies to the *values*, not to the VIN key. See [D23](DECISIONS.md#settled) |
 | 23 | `vehicleCategory` | Art 13 | M1 / N1 / etc. |
 | 24 | `euTypeApprovalNumber` | Art 13 | Binds to type approval |
 | 25 | `manufacturerBPN` | Supply chain | Business partner number |
@@ -148,6 +148,9 @@ the manufacturer never named records a service twelve years later. Since **2026-
 contract expresses that: the registrar for a vehicle may authorise another identity to write that
 vehicle's fields, and every field records which identity last wrote it. See
 [D25](DECISIONS.md#settled) for the shape and for what it costs in privacy.
+
+Only the registrar creates a field. Creating a field fixes its rule, so an authorised writer records
+values on fields that already exist ([D38](DECISIONS.md#settled) 2).
 
 Two things that do not change when someone else writes:
 
@@ -222,7 +225,7 @@ few slots.**
 
 | Appendix 1 parameter | CoC field | Panel slot |
 |---|---|---|
-| Vehicle Identification Number | 0.10 | **22 `vinHash`.** Held as `blake2b(VIN)`, which is the passport's public address. A reader supplies the VIN to reach the page at all, per Annex V 4.2.3, so the hash is the right shape |
+| Vehicle Identification Number | 0.10 | **22 `vinHash`.** Held as `blake2b(VIN)` (on a network, now a VOPRF of the VIN under that network's key: `scripts/lib/vin-key.mjs`), which is the passport's public address. A reader supplies the VIN to reach the page at all, per Annex V 4.2.3, so the hash is the right shape |
 | Approval certificate number | 0.11(b) | **24 `euTypeApprovalNumber`** |
 | Date approval granted | 0.11(b) | none |
 | Make, trade name of manufacturer | 0.1 | none. `manufacturerBPN` is a business partner number, not the trade name |
@@ -313,6 +316,10 @@ to bound its wall clock, and because the static demo was built before the rule w
 real passport must carry the whole set. Said here rather than left for a reader to notice.
 
 ## What a field costs, and the one line that sets the price
+
+> **History.** This section describes the ledger 8 contract. `updateCount` is no longer in the
+> contract, and on ledger 9 every call is its own transaction ([D27](DECISIONS.md#settled)), so the
+> batching weighed below does not apply. Kept for the reasoning.
 
 Each `initialiseField` **closes its transaction**, so N fields is N transactions. The cause is not
 the field write:

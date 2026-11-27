@@ -3,9 +3,9 @@
  *
  * Separate from the deploy script on purpose. `allowedRegistrars` is written
  * in the constructor, and afterwards only by `approveRegistrarChange`, which
- * needs two current registrars to agree, one transaction each (DECISIONS D32).
- * A wrong list at deploy can therefore be corrected, but only by registrars on
- * that list, at two fees per change. That makes it the one input worth testing
+ * needs a majority of the current registrars to agree, one transaction each
+ * (DECISIONS D32, D38). A wrong list at deploy can therefore be corrected, but
+ * only by registrars on that list, at one fee per approval. That makes it the one input worth testing
  * on its own, away from anything that needs a network, a seed or a sponsor.
  *
  * Identities only. The secrets behind them are never read here, because a
@@ -39,7 +39,7 @@ export function readRegistrarSlots(secretsPath, labels = REGISTRAR_LABELS) {
     if (!existsSync(secretsPath)) {
         throw new Error(`no registrar identities at ${secretsPath}. `
             + 'Run `node scripts/make-registrar-secrets.mjs` first. The list is pinned '
-            + 'at deploy, and changing it later takes two registrars and two transactions.');
+            + 'at deploy, and changing it later takes a majority of the registrars, one transaction each.');
     }
     const text = readFileSync(secretsPath, 'utf8');
     const lines = text.split(/\r?\n/);
@@ -56,7 +56,7 @@ export function readRegistrarSlots(secretsPath, labels = REGISTRAR_LABELS) {
 
     // The ledger holds the allowlist in a Set, so a repeated id is kept once
     // and the duplicate slot is spent for nothing. Winning it back later takes
-    // two registrars' approvals, so a duplicate here is a slot given away.
+    // a majority of the registrars' approvals, so a duplicate here is a slot given away.
     const distinct = new Set(regs.map((r) => r.hex));
     if (distinct.size !== labels.length) {
         throw new Error('two registrars share an identity, which would silently shrink '

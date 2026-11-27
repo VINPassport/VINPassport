@@ -11,8 +11,9 @@
  *   test counts      the README's stated counts (contract, app, SDK), which its
  *                    sample run and test table repeat
  *   guards           the README's "Where this actually stands"
- *   live contract    deploy/preview.json, the deploy record (address, network,
- *                    verifier keys, compiler)
+ *   live contract    deploy/preprod.json, the deploy record (address, network,
+ *                    verifier keys, compiler); deploy/preview.json is the one other
+ *                    contract a page may name, as the 9 November build on Preview
  *   field slots      PANEL in scripts/lib/scenario.mjs (the slot map docs/FIELDS.md lays out)
  *   pages            PAGES in scripts/build-nav.mjs, the pages check:a11y drives
  *
@@ -48,7 +49,8 @@ const SOURCE = {
     guards: NOW.match(/every guard mutation-checked, (\d+) of (\d+)/)?.slice(1).map(Number),
     slotsInUse: Object.keys(PANEL).length,
     pages: PAGES.length,
-    deploy: json('deploy', 'preview.json')
+    deploy: json('deploy', 'preprod.json'),
+    preview: json('deploy', 'preview.json')
 };
 
 /** Visible text of an HTML page, with its meta and alt text. */
@@ -165,19 +167,24 @@ test('the live contract the site names is the deployed one, built as the record 
         const text = texts.find((t) => t.file === file).text;
         const at = text.indexOf(m[0]);
         if (!/contract/i.test(text.slice(Math.max(0, at - 80), at))) continue;
-        if (/preprod|superseded|ledger 8/i.test(text.slice(Math.max(0, at - 160), at))) continue;
-        assert.equal(m[0], SOURCE.deploy.contractAddress, `${file} names a contract that is not deploy/preview.json's`);
+        if (/superseded|ledger 8/i.test(text.slice(Math.max(0, at - 160), at))) continue;
+        assert.ok([SOURCE.deploy.contractAddress, SOURCE.preview.contractAddress].includes(m[0]),
+            `${file} names a contract that is neither deploy/preprod.json's nor deploy/preview.json's`);
     }
-    assert.equal(SOURCE.deploy.network, 'preview');
-    assert.match(dev, /Live on Preview/, 'the Developers page names the network');
+    assert.equal(SOURCE.deploy.network, 'preprod');
+    assert.equal(SOURCE.preview.network, 'preview');
+    assert.match(dev, /Live on (?:Preview and )?preprod/i, 'the Developers page names the network');
     allEqual(/\b(\d+) Verifier keys on chain\b/gi, Object.keys(SOURCE.deploy.build.verifierKeys).length, 'the verifier keys');
     for (const { file, m } of every(/\bCompact (\d+\.\d+\.\d+)\b/g)) assert.equal(m[1], SOURCE.deploy.build.compiler, `${file}: "${m[0]}"`);
     assert.match(dev, /\bLedger 9\b/);
     assert.equal(SOURCE.deploy.ledger, 'v9');
-    // The disclosure grant on Preview is the recorded guided run's (site/disclose/preview/run.json),
-    // in the contract the deploy record names.
+    // Each network's disclosure grant is its recorded guided run's (site/disclose/<network>/run.json),
+    // in the contract that network's deploy record names.
+    const live = json('site', 'disclose', 'preprod', 'run.json');
+    assert.equal(live.contractAddress, SOURCE.deploy.contractAddress, 'the recorded preprod run is against the live contract');
+    allEqual(/\bon preprod on \d+ Nov \(block (\d+)\)/gi, live.grant.block, 'the preprod grant block', 2);
     const run = json('site', 'disclose', 'preview', 'run.json');
-    assert.equal(run.contractAddress, SOURCE.deploy.contractAddress, 'the recorded Preview run is against the live contract');
+    assert.equal(run.contractAddress, SOURCE.preview.contractAddress, 'the recorded Preview run is against the Preview contract');
     allEqual(/\bon Preview on \d+ Nov \(block (\d+)\)/gi, run.grant.block, 'the Preview grant block', 2);
 });
 

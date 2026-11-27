@@ -6,7 +6,7 @@ VINPassport's own Compact contracts. Layout follows
 
 | Contract | Circuits | Purpose |
 |---|---|---|
-| `vinpassport` | registration, field writes (`initialiseField`, `recordField`), writers and grants, three claim circuits, registrar governance (`approveRegistrarChange`), seven read circuits, five pure helpers | The vehicle passport: registration, and any panel field held as private state under its own integrity rule. Every write emits an event naming the vehicle and the kind of change ([D29](../docs/DECISIONS.md#settled)); two registrars change the registrar set ([D32](../docs/DECISIONS.md#settled)); the read circuits (`isRegistered`, `registrarOf`, `commitmentOf`, `holdsAtMost`, `holdsAtLeast`, `holdsGrant`, `isRegistrar`) let another contract ask it in the same transaction ([D33](../docs/DECISIONS.md#settled)) |
+| `vinpassport` | registration, field writes (`initialiseField`, `recordField`), writers and grants, three claim circuits, registrar and passport governance by majority (`approveRegistrarChange`, `approvePassportChange`, `withdrawApproval`), seven read circuits, six pure helpers | The vehicle passport: registration, and any panel field held as private state under its own integrity rule. Every write emits an event naming the vehicle and the kind of change ([D29](../docs/DECISIONS.md#settled)); a majority of the current registrars changes the registrar set or a passport's root and registrar ([D32](../docs/DECISIONS.md#settled), [D38](../docs/DECISIONS.md#settled)); the read circuits (`isRegistered`, `registrarOf`, `commitmentOf`, `holdsAtMost`, `holdsAtLeast`, `holdsGrant`, `isRegistrar`) let another contract ask it in the same transaction ([D33](../docs/DECISIONS.md#settled)) |
 | `listing` | `list` | Composability demo: lists a vehicle only if VINPassport holds a current claim meeting a rule fixed at deploy, asked through a cross-contract call. Deployed on Preview, see [`../deploy/listing.preview.json`](../deploy/listing.preview.json) |
 
 ## Building
@@ -21,12 +21,14 @@ npm run compile:listing    # compact compile +0.36.0 contracts/listing/src/listi
 
 Both pin the compiler, because a different compiler version produces different verifier keys,
 and the keys on chain are what a build has to match. Add `--skip-zk` for a fast syntax and type
-check that skips key generation. Keys land in `src/managed/<name>/keys/`, which is gitignored;
-everything else the compiler writes is committed.
+check that skips key generation. Keys land in `src/managed/<name>/keys/`. Prover keys are gitignored, because they are large and
+regenerate from source; verifier keys are committed, because the deploy records pin their hashes.
+Everything else the compiler writes is committed too.
 
 Verified with **Compact CLI 0.5.2, compiler 0.36.0 (language 0.28.0, runtime 0.21.0, ledger 9)**,
-the toolchain of Preview and mainnet since 6 to 7 November 2026. The ledger 8 build (compiler
-0.31.1) for preprod is kept at the git tag `ledger8-preprod`.
+the toolchain of every Midnight network since 9 November 2026 (mainnet from 6 November, Preview
+from 7, preprod from 9). The ledger 8 build (compiler 0.31.1) that ran on preprod before then is
+kept at the git tag `ledger8-preprod`.
 
 ## The private-state model
 

@@ -127,7 +127,7 @@ try {
 }
 console.log(predicted.carries
     ? `dry run    this approval carries the change: ${before.size} registrars become ${predicted.after.size} (${[...predicted.after].map(nameOf).join(', ')})`
-    : `dry run    the chain would count this approval (${approvalsSoFar + 1} of 2); the set does not change yet`);
+    : `dry run    the chain would count this approval (${approvalsSoFar + 1} of the ${Math.floor(before.size / 2) + 1} a majority of ${before.size} needs); the set does not change yet`);
 for (const e of predicted.events) console.log(`event      ${e.kind}  ${e.subject}`);
 
 if (!opts.submit) {

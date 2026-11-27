@@ -77,7 +77,7 @@
       <li class="card" style="gap: 14px;">
         <div class="num">02</div>
         <h3 class="h3">Kept current by registrars</h3>
-        <p class="copy">Approved registrars, such as the manufacturer's service network, add readings, services and repairs. Every write names its writer. Adding or removing a registrar takes two registrars' approval, and every change is announced on the ledger.</p>
+        <p class="copy">Approved registrars, such as the manufacturer's service network, add readings, services and repairs. Every write names its writer. Adding or removing a registrar needs a majority of the current registrars, and every change is announced on the ledger.</p>
         <div class="vp-who"><span class="vp-label">Who</span><span>Approved registrars</span></div>
       </li>
       <li class="card" style="gap: 14px;">
@@ -148,8 +148,8 @@
       <p class="lead">If an issuer records a false value, the proof will faithfully prove a false fact. We say that plainly, and limit it to the first write.</p>
     </div>
     <div class="stack" style="gap: 12px;">
-      <div class="card"><h3 class="h3">The writer is named</h3><p class="copy">Every value is bound to one identity from a named set of writers. The set changes only with two registrars' approval, announced on the ledger.</p></div>
-      <div class="card"><h3 class="h3">The rule comes first</h3><p class="copy">A field's integrity rule is set when the passport is created. The contract's code changes only with two of three maintenance keys, in public on the ledger.</p></div>
+      <div class="card"><h3 class="h3">The writer is named</h3><p class="copy">Every value is bound to the identity that wrote it: the vehicle's registrar or a writer that registrar authorised. The set of registrars changes only when a majority of them approve, announced on the ledger.</p></div>
+      <div class="card"><h3 class="h3">The rule comes first</h3><p class="copy">A field's integrity rule is fixed when the vehicle's registrar creates the field, and never changes after that. The contract's code changes only with two of three maintenance keys, in public on the ledger.</p></div>
       <div class="card"><h3 class="h3">The second version is refused</h3><p class="copy">A lower later reading, such as a rolled-back odometer, fails inside the proof and nothing is written.</p></div>
       <p class="small">Still open: the first entry for a vehicle that joins mid-life. Readings signed by the vehicle's own sensors are planned for a later phase.</p>
     </div>
@@ -164,7 +164,7 @@
       <details><summary>What if someone swaps the QR sticker onto another car?</summary><p>The verdict page has a Match this car check: type the VIN from the windscreen plate and the page confirms whether the passport belongs to that car. The VIN is never stored or shown.</p></details>
       <details><summary>Is this the same as the EU's Euro 7 passport?</summary><p>VINPassport carries what Euro 7 requires, the environmental data, and adds the history buyers ask about. The history layer is voluntary; the manufacturer chooses to issue it.</p></details>
       <details><summary>What does "Not proven" mean?</summary><p>No claim has been recorded for that question. It is shown as unknown, never as a no.</p></details>
-      <details><summary>Who can write to a passport?</summary><p>Only the manufacturer and its named registrars. Adding or removing a registrar takes two registrars' approval, announced on the ledger.</p></details>
+      <details><summary>Who can write to a passport?</summary><p>The vehicle's registrar, such as the manufacturer, and any dealer or garage it authorises for that vehicle. Only the registrar creates a field and fixes its rule; a writer records values under that rule. Adding or removing a registrar needs a majority of the current registrars, announced on the ledger.</p></details>
     </div>
   </div>
 </section>

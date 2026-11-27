@@ -10,7 +10,7 @@
  * What a deploy fixes for the contract's lifetime, printed before anything is
  * built so it can be read first:
  *   - the initial registrar allowlist (constructor argument; afterwards it changes
- *     only when two current registrars approve, `scripts/govern.mjs`, D32);
+ *     only when a majority of the current registrars approve, `scripts/govern.mjs`, D32, D38);
  *   - the verifier keys of this build (pinned in the record by hash, with the
  *     integrity manifest's own hash);
  *   - the maintenance authority: the custody key, at threshold 1, until
@@ -107,7 +107,7 @@ log(`network    ${NETWORK} (${publicEndpoints(NETWORK).nodeWsUrl})`);
 log(`build      compactc ${facts.compiler}, runtime ${facts.runtime}, build id ${buildId()}, manifest ${facts.manifestSha256.slice(0, 16)}`);
 log(`circuits   ${PROVABLE.length} with keys: ${PROVABLE.join(', ')}`);
 for (const r of regs) log(`registrar  ${r.label} ${r.hex}  (${REGISTRAR_ROLES[r.label]})`);
-log('           afterwards it changes only when two of them approve (scripts/govern.mjs, D32)');
+log(`           afterwards it changes only when a majority of the current registrars approve (${Math.floor(regs.length / 2) + 1} of ${regs.length} at deploy; scripts/govern.mjs, D38)`);
 log(`authority  custody key ${custody.verifyingKey.value.slice(0, 16)}... (threshold 1) until handed to the committee`);
 // The NIGHTGATE sponsor, when configured, pays the deploy and its steps and answers every chain read (D37).
 let nightgate;

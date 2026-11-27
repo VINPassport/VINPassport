@@ -15,7 +15,7 @@
  * same value the circuit will compute at call time.
  *
  * Four registrars, because the constructor pins exactly four; afterwards the
- * set changes only when two of them approve (`scripts/govern.mjs`, D32):
+ * set changes only when a majority of them approve (`scripts/govern.mjs`, D32, D38):
  *
  *   A  the demo registrar, which registers vehicles
  *   B  a second listed authority that registers nothing. It exists so that
