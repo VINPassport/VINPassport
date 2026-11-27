@@ -2,50 +2,40 @@
 /**
  * What moved upstream since this tree was pinned (build plan 3.5). Read only.
  *
- *   npm run check:upstream            report
+ *   npm run check:upstream            report; exit 1 when an installed Midnight
+ *                                       package is behind the newest patch of its line
  *   npm run check:upstream -- --strict  also exit 1 when an issue a workaround
  *                                       depends on is closed (time to remove it)
  *
  * Three things, from public sources only, with no credential:
- *   - every Midnight package pinned in package.json against its latest version
- *     on npm (registry.npmjs.org);
+ *   - every Midnight package pinned in package.json, in `dependencies` and in
+ *     `overrides`, against npm (registry.npmjs.org): the installed version
+ *     must be the newest patch of its pinned minor, and a newer minor or major
+ *     is reported (scripts/lib/upstream.mjs);
  *   - the pinned Compact compiler (scripts/lib/eras.mjs BUILD) against the
  *     latest compactc release on GitHub;
  *   - the state of every issue in scripts/lib/known-issues.mjs, with what to
  *     do when one closes.
  *
- * A newer version is reported, never acted on: upgrades are deliberate, and
- * the runbook (docs/UPGRADE-RUNBOOK.md) says how. A closed issue is different:
- * it means a workaround in this tree may have outlived its reason.
+ * A newer minor or major is reported, never acted on: upgrades are deliberate,
+ * and the runbook (docs/UPGRADE-RUNBOOK.md) says how. A missed patch of the
+ * pinned line fails the check. A closed issue means a workaround in this tree
+ * may have outlived its reason.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { BUILD } from './lib/eras.mjs';
 import { KNOWN_ISSUES, issueUrl } from './lib/known-issues.mjs';
+import { cmp, midnightPins, checkPins } from './lib/upstream.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const STRICT = process.argv.includes('--strict');
 const UA = { 'user-agent': 'vinpassport-check-upstream', accept: 'application/vnd.github+json' };
 
 const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'));
-const pinned = Object.entries({ ...pkg.dependencies, ...pkg.devDependencies })
-    .filter(([name]) => /^@midnight-?ntwrk\//.test(name))
-    .map(([name, v]) => [name, String(v).replace(/^[\^~=]/, '')]);
-
-const cmp = (a, b) => {
-    const pa = a.split(/[.-]/).map((x) => (/^\d+$/.test(x) ? Number(x) : x));
-    const pb = b.split(/[.-]/).map((x) => (/^\d+$/.test(x) ? Number(x) : x));
-    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
-        if (pa[i] === pb[i]) continue;
-        if (pa[i] === undefined) return 1;      // 1.0.0 > 1.0.0-rc.1
-        if (pb[i] === undefined) return -1;
-        return typeof pa[i] === 'number' && typeof pb[i] === 'number' ? Math.sign(pa[i] - pb[i]) : String(pa[i]).localeCompare(String(pb[i]));
-    }
-    return 0;
-};
 
 async function json(url, headers = {}) {
     const res = await fetch(url, { headers });
@@ -53,19 +43,32 @@ async function json(url, headers = {}) {
     return res.json();
 }
 
+const installed = (name) => {
+    const file = join(ROOT, 'node_modules', ...name.split('/'), 'package.json');
+    return existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')).version : null;
+};
+// The abbreviated document lists every version without the full metadata.
+const versions = async (name) => Object.keys((await json(`https://registry.npmjs.org/${name.replace('/', '%2f')}`,
+    { accept: 'application/vnd.npm.install-v1+json' })).versions ?? {});
+
 let failures = 0;
+let behind = 0;
 let unreachable = 0;
 
-console.log('npm packages (pinned in package.json, latest on npm)');
-for (const [name, have] of pinned) {
-    try {
-        const latest = (await json(`https://registry.npmjs.org/${name.replace('/', '%2f')}/latest`)).version;
-        const state = cmp(have, latest) >= 0 ? 'current' : 'NEWER AVAILABLE';
-        console.log(`  ${name.padEnd(58)} ${have.padEnd(10)} ${latest.padEnd(10)} ${state}`);
-    } catch (e) {
+console.log('npm packages (dependencies and overrides; installed, newest patch of the pinned line, latest on npm)');
+for (const r of await checkPins(midnightPins(pkg), { installed, versions })) {
+    const where = r.sources.includes('overrides') ? (r.sources.includes('dependencies') ? 'dep+ovr' : 'override') : 'dep';
+    const head = `  ${r.name.padEnd(54)} ${where.padEnd(8)} ${String(r.installed ?? '-').padEnd(10)}`;
+    if (r.error) {
         unreachable += 1;
-        console.log(`  ${name.padEnd(58)} ${have.padEnd(10)} ?          could not read: ${e.message}`);
+        console.log(`${head} ?          could not read: ${r.error}`);
+        continue;
     }
+    if (r.behind) behind += 1;
+    const state = r.missing ? 'not installed'
+        : r.behind ? `BEHIND: ${r.newestPatch} is the newest patch of ${r.pinned}`
+            : r.newerLine ? 'NEWER LINE AVAILABLE' : 'current';
+    console.log(`${head} ${String(r.newestPatch ?? '-').padEnd(10)} ${String(r.latest ?? '-').padEnd(10)} ${state}`);
 }
 
 console.log('\nCompact compiler (scripts/lib/eras.mjs, latest compactc release on GitHub)');
@@ -97,6 +100,7 @@ for (const i of KNOWN_ISSUES) {
     }
 }
 
-console.log(`\n${failures ? `${failures} workaround(s) may have outlived their issue.` : 'No workaround has outlived its issue.'}`
+console.log(`\n${behind ? `${behind} installed Midnight package(s) behind the newest patch of their line.` : 'Every installed Midnight package is on the newest patch of its line.'}`);
+console.log(`${failures ? `${failures} workaround(s) may have outlived their issue.` : 'No workaround has outlived its issue.'}`
     + `${unreachable ? ` ${unreachable} source(s) could not be read.` : ''}`);
-process.exit(STRICT && failures ? 1 : 0);
+process.exit(behind || (STRICT && failures) ? 1 : 0);

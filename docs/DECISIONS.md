@@ -398,7 +398,7 @@ disclosures for Wave 1 and fixes for Wave 2, not pre-submission patches.
 
 The demo-data generator's salts are a separate, off-contract item tracked in the open-issues list.
 
-### D24: We pay our own fees; the sponsor path is retired · 2026-08-31
+### D24: We pay our own fees; the sponsor path is retired · 2026-08-31 · **AMENDED** 2026-11-24 by [D37](#settled)
 
 The live demo funds its own transactions. Fees are balanced from DUST held in a VINPassport wallet
 and submitted straight to the public preprod node with `author_submitExtrinsic`. ODATANO's hosted
@@ -435,7 +435,7 @@ because `@odatano/nightgate-tx` targets ledger 8. The attribution above holds fo
 preprod build at the tag `ledger8-preprod`; on ledger 9 the ODATANO package on every run is
 `@odatano/dpp-sdk`.
 
-### D25: A vehicle's registrar admits other writers, per vehicle · 2026-10-14
+### D25: A vehicle's registrar admits other writers, per vehicle · 2026-10-14 · **AMENDED** 2026-11-24 by [D38](#settled)
 
 Until today one identity could write a passport for its whole life: the registrar that registered
 it. `allowedRegistrars` is fixed in the constructor with no circuit that adds to it, and
@@ -606,7 +606,7 @@ follow the redeploy.
 what a bundle answers and cannot ask a new question of it. And a bundle can be forwarded. A tier
 bounds what the holder hands over, not what a recipient does with it afterwards.
 
-### D27: Ledger 9 is the main line; the ledger 8 preprod build is kept at a tag · 2026-11-08
+### D27: Ledger 9 is the main line; the ledger 8 preprod build is kept at a tag · 2026-11-08 · **AMENDED** 2026-11-24 by [D37](#settled)
 
 Midnight mainnet has run ledger 9 since 6 November 2026 and Preview since its relaunch on
 7 November; preprod is still on ledger 8
@@ -786,7 +786,7 @@ when proving gets cheaper (a native proof server instead of wasm). The measureme
 path works: a `@noble/curves` signature over the circuit's own SHA-256 digest of the action verifies
 in-circuit. No regulatory basis is claimed either way; this is a cost decision.
 
-### D32: Registrars change their own set, two approvals per change · 2026-11-08
+### D32: Registrars change their own set, two approvals per change · 2026-11-08 · **AMENDED** 2026-11-24 by [D38](#settled)
 
 The registrar set used to be fixed at deployment, so adding or removing one meant a new contract,
 whose ledger starts empty.
@@ -923,6 +923,80 @@ even an optional one, says they might. The contract stays verifiable without one
 its address, and anyone can read it back from the public indexer.
 
 **Basis.** A commercial choice: no provision requires or prohibits a wallet.
+
+### D37: Fees are paid by a NIGHTGATE sponsor, the own wallet stands by · 2026-11-24
+
+`@odatano/nightgate-tx` 0.25.0 runs on ledger 9 and pins the same Midnight versions as this
+package, so it is back in the run path. Every contract call of a run is built, proven and signed in
+this process (`scripts/lib/sponsor9.mjs`) and handed to a NIGHTGATE server without a fee
+(`sponsorUnbound`). The server adds its DUST spend, binds and submits. **Amends [D24](#settled) and
+[D27](#settled).**
+
+**Why.** It answers [Q7](#open) for the networks a sponsor serves: the project needs no NIGHT of its
+own to run, only a grant. The reason D24 retired the sponsor still holds, so the own wallet stays:
+it pays a call the sponsor did not take.
+
+**When the own wallet pays.** Only when the sponsored call cannot have changed the contract: the
+build failed before anything was sent, the server refused the start with an answer, the job
+failed, or the call failed in its block. A start without an answer, a job the server has to
+reconcile, or a call that did not finish in time may still land. The run then stops with the
+outcome unknown, keeps the opening of that write in the receipt, and the app server takes no
+further run until it is restarted. `VINPASSPORT_SELF_PAY_FALLBACK=off` stops on every sponsor
+failure instead.
+
+**Deploys and maintenance too.** The steps of a deploy too large for one block ([D34](#settled)) and
+the maintenance updates of the committee ([D28](#settled)) are built here as before and handed over
+the same way (`submitPrepared` in `scripts/lib/deploy-fit.mjs`, NIGHTGATE's
+`buildDeploySponsorable({ deploy })` and `buildMaintenanceSponsorable({ update })`). The grant then
+needs `allowDeploy` and `allowMaintenance`, and a NIGHTGATE sponsor pays an update only for a
+contract that grant deployed. Still self-paid: a deploy that fits one block, and
+`scripts/ask.mjs`, whose answer comes back only from a call this process submits.
+
+**What the sponsor sees.** The finished transaction without a fee. No witness, value, salt or
+registrar secret leaves this process, as with a self-paid call. The builder's own wallet is a fresh
+random seed per process: the calls move no coins and the contract knows its callers by their
+registrar secrets.
+
+**Configuration.** `VINPASSPORT_NIGHTGATE_URL` and `VINPASSPORT_NIGHTGATE_TOKEN` (an agent token or
+a gateway key), from the environment or `_local-tracking/NIGHTGATE.<network>.env`. Without them
+everything is self-paid, as before. The grant must name the deployed contract, or be the grant that
+deployed it.
+
+### D38: Rights after a registrar leaves, rules fixed by the registrar, majority governance · 2026-11-24
+
+Four changes to the contract, all on the authorisation side. No key derivation changed: slots,
+claim keys, writer and grant keys, registrar identities and VIN keys are computed exactly as
+before, so receipts and bundles keep their meaning. **Amends [D25](#settled) and [D32](#settled),
+answers the mechanism of [Q9](#open).**
+
+1. **A removed registrar's rights can be ended.** `withdrawWriter` and `revokeDisclosure` accept
+   the vehicle's own registrar, or any current registrar once the vehicle's registrar was removed
+   (`stewardFor`). That registrar can only take rights away. Before, a removed registrar's writers
+   and grants could never be ended, because only that registrar could end them and it no longer
+   could.
+2. **Only the vehicle's registrar creates a field.** Creating a field fixes its rule, and an
+   admitted writer could otherwise create the odometer under `neverRises` and then record lower
+   readings. A writer records values under the rule the registrar chose. **Amends D25**, which let a
+   writer create fields that did not exist yet.
+3. **A passport can be corrected or handed on.** `approvePassportChange(vinHash, contentRoot,
+   newRegistrar)` gives a registered vehicle a new content root and registrar once a majority of
+   the registrars approved the same change. It corrects a wrong registration, replaces one made by a
+   registrar that should not have, and hands a removed registrar's vehicle to a successor. Every
+   field starts again under the new root, because the slot binds the root, and the earlier history
+   stays on the ledger under the earlier slots. Writers and grants are kept per vehicle, so the new
+   registrar withdraws the ones it does not want: without a list of writers per vehicle, which would
+   change the keys, the contract cannot end them by itself.
+4. **A change needs a majority of the current registrars**, not two at every size. With two
+   registrars both approve, with four three must. `withdrawApproval` takes back an approval not
+   yet carried out. The constructor refuses fewer than two distinct registrars, since the set could
+   never change. One epoch counts both kinds of change, so a change carried out spends every
+   approval given before it. **Amends D32.**
+
+**Not changed, and stated.** A `neverFalls` field has no ceiling: the registrar who creates it is
+answerable for a value that only rises. A writer who rewrites a field under a salt only it knows
+locks the other holders out of that field's opening; withdrawing the writer does not undo that,
+and `approvePassportChange` is the way back. Approvals of spent epochs stay in
+`registrarBallots`; they count for nothing.
 
 ## Reversed
 
@@ -1067,9 +1141,9 @@ to be cached before a 45 MB key is offered.
 | Q4 | Is SAP CAP acceptable as a permanent dependency? | Everything downstream | Us, inherited from D1, worth being deliberate about |
 | Q5 | Proving cost at width 32 versus 16 | Whether D15 holds under real cost | Phase 0 measurement |
 | Q6 | Fiat provider: merchant of record or direct? | Billing build | Deferred to Phase 1, turns on EU VAT |
-| Q7 | Mainnet DUST source (D31 when settled): DUST designated to our DUST address from a cNIGHT holder's rewards, NIGHTGATE fee sponsoring (needs `@odatano/nightgate-tx` on ledger 9), or our own NIGHT | The mainnet deploy | Us, with ODATANO |
+| Q7 | Mainnet DUST source. Preview and preprod are paid by a NIGHTGATE sponsor ([D37](#settled)); for mainnet a NIGHTGATE grant is one of the choices (D31 when settled): DUST designated to our DUST address from a cNIGHT holder's rewards, NIGHTGATE fee sponsoring (needs `@odatano/nightgate-tx` on ledger 9), or our own NIGHT | The mainnet deploy | Us, with ODATANO |
 | Q8 | Who holds the three mainnet committee keys of [D28](#settled), on which devices, and with what recovery path | The mainnet deploy | Us |
-| Q9 | How a removed or ceased registrar's vehicles pass to a successor ([D32](#settled)): approved by the registrars, by the vehicle's keeper, or both; 2026/1738 Art. 13(6)(b)(iii) leaves it to an implementing act not yet adopted | A registrar leaving with vehicles registered | Us, with counsel |
+| Q9 | How a removed or ceased registrar's vehicles pass to a successor ([D32](#settled)): approved by the registrars, by the vehicle's keeper, or both; 2026/1738 Art. 13(6)(b)(iii) leaves it to an implementing act not yet adopted. The mechanism exists: a majority of the registrars approves the hand-over ([D38](#settled) 3); who must agree is the open part | A registrar leaving with vehicles registered | Us, with counsel |
 
 ### Resolved
 

@@ -187,7 +187,10 @@ export class PassportSimulator {
         };
         // Four slots on chain; a set keeps one copy, so repeating the last
         // entry fills the vector without widening who is authorised.
+        // The contract refuses fewer than two distinct registrars, so a list of
+        // one gets the second authority as the spare that never acts.
         const slots = [...allowed];
+        if (new Set(slots.map(hex)).size < 2) slots.push(hex(slots[0]) === hex(SECOND_ID) ? REGISTRAR_ID : SECOND_ID);
         while (slots.length < 4) slots.push(slots[slots.length - 1]);
         const init = await this.contract.initialState(
             createConstructorContext(initial, '0'.repeat(64)),
@@ -312,6 +315,22 @@ export class PassportSimulator {
         this.ctx = (await this.contract.impureCircuits.approveRegistrarChange(
             this.ctx, add, registrarId
         )).context;
+        return this.ledger;
+    }
+
+    /** Approve a new content root and registrar for a registered vehicle. */
+    async approvePassportChange(vin, contentRoot, newRegistrar, secret) {
+        if (secret) this.actAs(secret);
+        this.ctx = (await this.contract.impureCircuits.approvePassportChange(
+            this.ctx, vin, contentRoot, newRegistrar
+        )).context;
+        return this.ledger;
+    }
+
+    /** Take back an approval that has not been carried out. */
+    async withdrawApproval(proposal, secret) {
+        if (secret) this.actAs(secret);
+        this.ctx = (await this.contract.impureCircuits.withdrawApproval(this.ctx, proposal)).context;
         return this.ledger;
     }
 

@@ -30,7 +30,7 @@ import { checkNetwork, guardLogs, assertNoSecrets } from './lib/endpoints.mjs';
 import { deployRecord, readContract } from './lib/chain-state.mjs';
 import { buildBundle, verifyBundle } from './lib/disclosure.mjs';
 import { readRegistrarSlots } from './lib/registrar-slots.mjs';
-import { credentialPath } from './lib/local-credentials.mjs';
+import { registrarFile } from './lib/local-credentials.mjs';
 
 guardLogs();
 
@@ -76,8 +76,7 @@ if (!RECEIPT) process.exit(0);
 
 const receipt = JSON.parse(readFileSync(RECEIPT, 'utf8'));
 if (receipt.contractAddress !== contractAddress) throw new Error('the receipt is for another contract address');
-const secrets = credentialPath(NETWORK === 'mainnet' ? 'REGISTRAR-SECRETS.mainnet.env' : 'REGISTRAR-SECRETS.env');
-const dealer = readRegistrarSlots(secrets).regs.find((r) => r.label === 'C');
+const dealer = readRegistrarSlots(registrarFile(NETWORK)).regs.find((r) => r.label === 'C');
 const proven = snapshot.claims.filter((c) => c.vinHash === receipt.vinHash).map((c) => c.key);
 const audiences = {
     public: { audience: 'a buyer', claims: proven },
@@ -90,7 +89,7 @@ const grantAt = (key) => snapshot.grants[key] ?? null;
 mkdirSync(BUNDLES, { recursive: true });
 for (const [tier, options] of Object.entries(audiences)) {
     const bundle = buildBundle(receipt, tier, options);
-    const check = verifyBundle(bundle, { commitmentAt, claimAt, grantAt });
+    const check = verifyBundle(bundle, { commitmentAt, claimAt, grantAt, expect: { network: NETWORK, contractAddress } });
     if (!check.ok || check.overDisclosed.length || (tier !== 'public' && !check.grant?.covers)) {
         throw new Error(`the ${tier} bundle does not check against the chain: ${JSON.stringify(check)}`);
     }

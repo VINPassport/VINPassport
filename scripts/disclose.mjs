@@ -37,7 +37,7 @@ const valueOf = (name) => {
     const i = argv.indexOf(name);
     return i >= 0 ? argv[i + 1] : undefined;
 };
-const TAKES_VALUE = new Set(['--against', '--write-index', '--tier', '--claims', '--audience', '--audience-id']);
+const TAKES_VALUE = new Set(['--against', '--write-index', '--tier', '--claims', '--audience', '--audience-id', '--network']);
 const positional = argv.filter((a, i) => !a.startsWith('--') && !TAKES_VALUE.has(argv[i - 1]));
 
 const usage = () => {
@@ -52,7 +52,7 @@ Answer one question about a vehicle without handing over the rest.
                                     [--audience-id <hex>]
 
   verify  node scripts/disclose.mjs --verify <disclosure.json>
-                                    --against <ledger.json>
+                                    --against <ledger.json> [--network <name>]
 
   --anonymous     leave the plaintext VIN out; the verifier supplies it
   --write-index   disclose a specific write instead of the latest
@@ -61,6 +61,8 @@ Answer one question about a vehicle without handing over the rest.
   --claims        claim keys already proven on the ledger, for the bundle to cite
   --audience-id   the identity the bundle is for, so a reader can look up whether
                   the registrar granted it this tier (grantDisclosure)
+  --network       the network the ledger belongs to, when the ledger file does not
+                  say; a bundle for another network or contract does not verify
 
 A receipt opens every field. A disclosure opens only the ones you name, and a
 tiered bundle only what its audience is entitled to see.
@@ -80,6 +82,10 @@ if (flag('--verify')) {
     let lookup = () => null;
     let claimAt = () => null;
     let grantAt = () => null;
+    // What the bundle is checked against comes from the ledger file (or
+    // --network), never from the bundle: its network, its contract, and so
+    // the VIN scheme. A ledger file naming no network is the local simulator's.
+    let expect = {};
     if (against) {
         const state = JSON.parse(readFileSync(against, 'utf8'));
         const map = state.fieldCommitment ?? state;
@@ -87,14 +93,28 @@ if (flag('--verify')) {
         const claims = new Map((state.claims ?? []).map((c) => [String(c.key).replace(/^0x/, ''), c]));
         claimAt = (key) => claims.get(key) ?? null;
         grantAt = (key) => state.grants?.[key] ?? null;
+        expect = {
+            network: valueOf('--network') ?? state.network ?? 'local-simulator',
+            ...(state.contractAddress ? { contractAddress: state.contractAddress } : {})
+        };
+    } else if (valueOf('--network')) {
+        expect = { network: valueOf('--network') };
     }
 
     if (disclosure.kind === BUNDLE_KIND) {
-        const r = verifyBundle(disclosure, { commitmentAt: lookup, claimAt, grantAt });
+        const r = verifyBundle(disclosure, { commitmentAt: lookup, claimAt, grantAt, expect });
+        const VIN_STATUS = {
+            checked: ', hashes to vinHash: true',
+            mismatch: ', hashes to vinHash: FALSE',
+            unverified: `, NOT verified: ${r.expectedVinScheme
+                ? `a ${r.expectedVinScheme} key needs the network key to recompute`
+                : 'no ledger named (--against or --network), so no scheme is known'}`
+        };
         console.log(`bundle    : ${disclosure.kind}, ${disclosure.policy ?? '(no policy)'}`);
         console.log(`tier      : ${r.tier ?? '(unknown)'}${disclosure.audience ? `, for ${disclosure.audience}` : ''}`);
-        console.log(`contract  : ${disclosure.contractAddress ?? '(none)'} on ${disclosure.network ?? '?'}`);
-        console.log(`vin       : ${disclosure.vin ?? '(not named)'}${r.vinMatchesHash === null ? '' : `, hashes to vinHash: ${r.vinMatchesHash}`}`);
+        console.log(`contract  : ${disclosure.contractAddress ?? '(none)'} on ${disclosure.network ?? '?'}`
+            + `${expect.network ? `; checked against ${expect.contractAddress ?? '(no address)'} on ${expect.network}` : ''}`);
+        console.log(`vin       : ${disclosure.vin ?? '(not named)'}${VIN_STATUS[r.vinStatus] ?? ''}`);
         if (r.grant) {
             const who = `${r.grant.audienceId.slice(0, 12)}...`;
             console.log(`grant     : ${r.grant.held

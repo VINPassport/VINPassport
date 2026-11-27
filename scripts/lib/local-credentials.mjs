@@ -13,13 +13,58 @@
  */
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const LOCAL_DIR = join(HERE, '..', '..', '..', '_local-tracking');
 
 /** Where a given credential file lives. Exported so errors can name the path. */
 export const credentialPath = (file) => join(LOCAL_DIR, file);
+
+/** Folders a sync client copies to a third party and to every device on the account. */
+export const SYNCED_FOLDER = /onedrive|dropbox|icloud|google ?drive/i;
+
+/** The resolved path, or a throw when it sits inside a synced folder. */
+export function refuseSyncedFolder(path, what = 'the key') {
+    if (SYNCED_FOLDER.test(resolve(path))) throw new Error(`refusing ${resolve(path)}: a synced folder copies ${what} off this machine.`);
+    return resolve(path);
+}
+
+/**
+ * The registrar secrets file for `network`. VINPASSPORT_REGISTRAR_FILE wins
+ * everywhere. Mainnet has no default location and refuses a synced folder;
+ * every other network defaults to `_local-tracking/REGISTRAR-SECRETS.env`.
+ */
+export function registrarFile(network) {
+    const named = process.env.VINPASSPORT_REGISTRAR_FILE?.trim();
+    if (network === 'mainnet') {
+        if (!named) throw new Error('mainnet needs VINPASSPORT_REGISTRAR_FILE naming the registrar secrets file; there is no default location.');
+        return refuseSyncedFolder(named, 'the mainnet registrar secrets');
+    }
+    return resolve(named || credentialPath('REGISTRAR-SECRETS.env'));
+}
+
+/**
+ * The custody key file for `network` (the maintenance authority until the
+ * handover). VINPASSPORT_CUSTODY_KEY_FILE wins everywhere; mainnet has no
+ * default location and refuses a synced folder.
+ */
+export function custodyKeyFile(network) {
+    const named = process.env.VINPASSPORT_CUSTODY_KEY_FILE?.trim();
+    if (network === 'mainnet') {
+        if (!named) throw new Error('mainnet needs VINPASSPORT_CUSTODY_KEY_FILE; there is no default location.');
+        return refuseSyncedFolder(named, 'the key');
+    }
+    return resolve(named || credentialPath(`CUSTODY-KEY.${network}.env`));
+}
+
+/**
+ * A secret file at a fixed location, checked before it is read: on mainnet a
+ * path inside a synced folder is refused. Returns the resolved path.
+ */
+export function secretFileFor(network, path, what) {
+    return network === 'mainnet' ? refuseSyncedFolder(path, what) : resolve(path);
+}
 
 /**
  * Read `name` from the environment, else from `name=value` in

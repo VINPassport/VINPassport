@@ -40,11 +40,12 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { ristretto255_oprf } from '@noble/curves/ed25519.js';
+import { refuseSyncedFolder } from './local-credentials.mjs';
 
 const voprf = ristretto255_oprf.voprf;
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const KEY_FILE = join(HERE, '..', '..', '..', '_local-tracking', 'VINKEY.env');
+export const KEY_FILE = join(HERE, '..', '..', '..', '_local-tracking', 'VINKEY.env');
 
 /** Networks this module will derive for. Each has its own, unrelated key. */
 export const NETWORKS = Object.freeze(['preview', 'preprod', 'mainnet']);
@@ -95,6 +96,8 @@ function readSeedHex(network) {
     const name = envName(network);
     const fromEnv = process.env[name]?.trim();
     if (fromEnv) return fromEnv;
+    // The mainnet key is not read from a folder a sync client copies off this machine.
+    if (network === 'mainnet') refuseSyncedFolder(KEY_FILE, 'the mainnet vin key');
     if (existsSync(KEY_FILE)) {
         const line = readFileSync(KEY_FILE, 'utf8')
             .split(/\r?\n/)

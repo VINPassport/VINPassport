@@ -17,36 +17,48 @@
  *     `scripts/maintenance.mjs handover` replaces it with the 2-of-3 committee
  *     (DECISIONS D28). Midnight.js registers a single key at deploy; the
  *     ledger accepts a committee only through a later ReplaceAuthority.
+ *     On mainnet the key is made first with `scripts/make-custody-key.mjs`;
+ *     this script never creates one there.
  *
- * Proving is in this process (zkir-v3), the fee is paid in DUST by the deploy
- * wallet (`scripts/dust.mjs` registers its NIGHT), and nothing here needs a
- * sponsor or a credential: Preview's endpoints are open.
+ * The contract address is printed before anything is sent. A stepped deploy
+ * builds and custody-signs each step just before sending it, so no step waits
+ * behind the others with a ttl that runs out.
+ *
+ * With a NIGHTGATE sponsor configured (`scripts/lib/sponsor9.mjs`, D37) the
+ * sponsor pays every step, every chain read goes to that server, and the
+ * deploy wallet opens only when the sponsor did not take a step. Without one
+ * the deploy wallet pays in DUST (`scripts/dust.mjs` registers its NIGHT) and
+ * the public indexer answers.
  *
  * The ledger 8 deploy (`deploy-preprod.mjs`, sponsored through nightgate-tx)
  * is at the git tag ledger8-preprod.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-import { existsSync, readFileSync, writeFileSync, renameSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, copyFileSync, mkdirSync, constants } from 'node:fs';
 import { join, dirname } from 'node:path';
-import { deployContract, createLedger9UnprovenDeployTx } from '@midnight-ntwrk/midnight-js-contracts';
-import { BUILD } from './lib/eras.mjs';
-import { networkEndpoints } from './lib/endpoints.mjs';
+import { randomBytes } from 'node:crypto';
+import { submitTx, createLedger9UnprovenDeployTx, createLedger9UnprovenDeployTxFromVerifierKeys } from '@midnightntwrk/midnight-js-contracts';
+import { SucceedEntirely } from '@midnightntwrk/midnight-js-types';
+import { BUILD, requireBuildableNetwork } from './lib/eras.mjs';
+import { publicEndpoints, guardLogs } from './lib/endpoints.mjs';
 import { openWallet, describe, summarize } from './lib/wallet9.mjs';
 import {
-    buildFacts, compiledContract, refusingWitnesses, contractProviders, custodyKey, recordPath, PROVABLE
+    buildFacts, compiledContract, refusingWitnesses, contractProviders, zkConfigProvider, custodyKey, recordPath, PROVABLE
 } from './lib/contract9.mjs';
 import { buildId } from './lib/build-id.mjs';
 import { readRegistrarSlots, REGISTRAR_ROLES } from './lib/registrar-slots.mjs';
 import { loadVinKeys } from './lib/vin-key.mjs';
-import { credentialPath } from './lib/local-credentials.mjs';
-import { ContractState as LedgerContractState } from '@midnightntwrk/ledger-v9';
-import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
+import { registrarFile } from './lib/local-credentials.mjs';
+import { writeJsonAtomic, takeSeedLock } from './lib/files.mjs';
+import { ContractState as LedgerContractState, ZswapSecretKeys } from '@midnightntwrk/ledger-v9';
 import {
-    BLOCK_BUDGET, liveLedgerParameters, planDeploy, subsetState, deployTx, custodyInserts, submitLedgerTx, waitForTransaction,
-    deployOrder
+    BLOCK_BUDGET, planDeploy, subsetState, deployTx, custodyInserts, custodyInsertStep, blockShare,
+    submitPrepared, deployOrder
 } from './lib/deploy-fit.mjs';
 import { fingerprint } from './lib/maintenance9.mjs';
+import { openSponsor, nightgateConfig } from './lib/sponsor9.mjs';
+import { chainReads } from './lib/chain-read9.mjs';
 import { BUILD_DIR } from './lib/contract9.mjs';
 
 const arg = (flag) => {
@@ -58,6 +70,9 @@ const fail = (msg) => { console.error(`\nSTOP: ${msg}`); process.exit(1); };
 
 const NETWORK = arg('--network');
 if (!NETWORK) fail('name the network: --network preview | mainnet');
+// The name builds file paths below, so it is checked before anything uses it.
+try { requireBuildableNetwork(NETWORK); } catch (e) { fail(e.message); }
+guardLogs();
 const SUBMIT = process.argv.includes('--submit');
 const REDEPLOY = process.argv.includes('--redeploy');
 const RESUME = arg('--resume');
@@ -78,67 +93,88 @@ if (NETWORK === 'mainnet' && SUBMIT) {
     // A public ledger cannot unpublish: the first write must already be keyed.
     try { loadVinKeys('mainnet'); } catch (e) { fail(`mainnet needs its vin key before a contract exists. ${e.message}`); }
 }
-const secrets = credentialPath(NETWORK === 'mainnet' ? 'REGISTRAR-SECRETS.mainnet.env' : 'REGISTRAR-SECRETS.env');
+// Mainnet has no default location for either file (registrarFile, custodyKey).
 let regs, slots;
-try { ({ regs, slots } = readRegistrarSlots(secrets)); } catch (e) { fail(e.message); }
+try { ({ regs, slots } = readRegistrarSlots(registrarFile(NETWORK))); } catch (e) { fail(e.message); }
+// Never created on mainnet: scripts/make-custody-key.mjs makes it on purpose,
+// so a mistyped VINPASSPORT_CUSTODY_KEY_FILE fails instead of minting a new authority.
 let custody;
-try { custody = custodyKey(NETWORK, { create: SUBMIT || NETWORK !== 'mainnet' }); } catch (e) { fail(e.message); }
+try { custody = custodyKey(NETWORK, { create: NETWORK !== 'mainnet' }); } catch (e) { fail(e.message); }
+const freshTtl = () => new Date(Date.now() + 30 * 60_000);
+const SYNC_MS = 10 * 60_000;
 
-log(`network    ${NETWORK} (${networkEndpoints(NETWORK).nodeWsUrl})`);
+log(`network    ${NETWORK} (${publicEndpoints(NETWORK).nodeWsUrl})`);
 log(`build      compactc ${facts.compiler}, runtime ${facts.runtime}, build id ${buildId()}, manifest ${facts.manifestSha256.slice(0, 16)}`);
 log(`circuits   ${PROVABLE.length} with keys: ${PROVABLE.join(', ')}`);
 for (const r of regs) log(`registrar  ${r.label} ${r.hex}  (${REGISTRAR_ROLES[r.label]})`);
 log('           afterwards it changes only when two of them approve (scripts/govern.mjs, D32)');
 log(`authority  custody key ${custody.verifyingKey.value.slice(0, 16)}... (threshold 1) until handed to the committee`);
-log(`mode       ${SUBMIT ? 'SUBMIT: deploys and pays the fee in DUST' : 'dry run: builds and estimates, submits nothing'}\n`);
+// The NIGHTGATE sponsor, when configured, pays the deploy and its steps and answers every chain read (D37).
+let nightgate;
+try { nightgate = nightgateConfig(NETWORK); } catch (e) { fail(e.message); }
+const reads = chainReads(NETWORK, { config: nightgate });
+log(`mode       ${SUBMIT ? `SUBMIT: deploys, the fee paid ${nightgate ? 'by the NIGHTGATE sponsor' : 'in DUST'}` : 'dry run: builds and estimates, submits nothing'}`);
+log(`reads      ${reads.source}\n`);
 
 // ---------------------------------------------------------------- wallet
-const w = await openWallet(NETWORK, { log });
+// One process per seed: a second one would spend the same DUST (scripts/lib/files.mjs).
+try { takeSeedLock(NETWORK); } catch (e) { fail(e.message); }
+let w = null;
+let sponsor = null;
 let code = 0;
 try {
-    const state = await w.synced();
-    log(describe(state));
     // A deploy pins the build on disk, the one it is about to record. Left to
-    // its default, contractProviders expects the manifest of the build the
+    // its default, the zk config expects the manifest of the build the
     // EXISTING record names, which a --redeploy of a new build can never match.
     // Midnight.js still checks every artifact against this manifest.
-    const providers = await contractProviders(w, state, { log, expectedManifestHash: facts.manifestSha256 });
+    let providers = null;
+    let s = null;
+    if (!nightgate) {
+        const state = await (await ownWallet()).synced(SYNC_MS);
+        log(describe(state));
+        providers = await contractProviders(w, state, { log, expectedManifestHash: facts.manifestSha256 });
+        s = summarize(state);
+    }
     const compiled = compiledContract(refusingWitnesses());
-    const s = summarize(state);
 
     // Every deploy is fitted to the live block limits before anything is sent
     // (scripts/lib/deploy-fit.mjs). One that does not fit goes in two steps:
     // the contract with the circuits that fit, then the rest inserted by the
     // custody key, which holds the authority until the handover anyway.
-    const { height, params } = await liveLedgerParameters(NETWORK);
+    const { height, params } = await reads.ledgerParameters();
     if (RESUME) {
         if (!/^[0-9a-f]{64}$/.test(RESUME)) throw new Error('--resume takes the 64-hex address of the contract to finish');
-        await resumeSteps(w, RESUME, params, new Date(Date.now() + 30 * 60_000));
+        await resumeSteps(RESUME, params);
     } else {
-    const unproven = await createLedger9UnprovenDeployTx(providers, {
-        compiledContract: compiled, args: [slots], signingKey: custody.key
-    });
+    const options = { compiledContract: compiled, args: [slots], signingKey: custody.key };
+    const unproven = providers ? await createLedger9UnprovenDeployTx(providers, options) : await sponsoredDeployTx(options);
     const full = LedgerContractState.deserialize(unproven.public.initialContractState.serialize());
-    const ttl = new Date(Date.now() + 30 * 60_000);
+    // Plan-time transactions fit the plan and price the dry run. A submit
+    // builds and signs each one again just before it is sent (deployInSteps).
+    const ttl = freshTtl();
     const plan = planDeploy(full, PROVABLE, params, { network: NETWORK, ttl });
     const pct = (x) => `${(x * 100).toFixed(1)}%`;
     log(`\nblock fit  limits at block ${height}; all ${PROVABLE.length} circuits in one deploy use ${pct(plan.wholeShare)} of a block before the fee (budget ${pct(BLOCK_BUDGET)})`);
+    // The sponsor takes a deploy only as a prepared transaction, so a sponsored
+    // deploy goes through the steps even when it has no insert to follow.
     let split = null;
-    if (plan.rest.length) {
+    if (plan.rest.length || nightgate) {
         const dep = deployTx(NETWORK, subsetState(full, plan.first), ttl);
         const counter0 = full.maintenanceAuthority.counter;
-        const steps = custodyInserts({
+        const steps = plan.rest.length ? custodyInserts({
             network: NETWORK, contractAddress: dep.deploy.address, circuits: plan.rest,
             keysDir: join(BUILD_DIR, 'keys'), custody, counter: counter0, params, ttl
-        });
-        split = { dep: { ...dep, ttl }, steps, counter0 };
+        }) : [];
+        split = { full, dep, steps, counter0, params };
         log(`step 1     the deploy carries ${plan.first.length} circuits (${pct(plan.share)}): ${plan.first.join(', ')}`);
         for (const [i, st] of steps.entries()) {
             log(`step ${i + 2}     the custody key inserts ${st.circuits.length} (${pct(st.share)}, counter ${st.counter}): ${st.circuits.join(', ')}`);
         }
     }
 
-    if (!SUBMIT && split) {
+    if (!SUBMIT && nightgate) {
+        log(`\nDry run complete: ${1 + split.steps.length} transactions, each paid by the NIGHTGATE sponsor. Re-run with --submit to deploy.`);
+    } else if (!SUBMIT && split) {
         let total = 0n;
         const txs = [['deploy', split.dep.tx], ...split.steps.map((st, i) => [`insert ${i + 1}`, st.tx])];
         for (const [label, tx] of txs) {
@@ -152,7 +188,7 @@ try {
         log(s.dust < total ? '\nNot enough DUST yet.' : `\nDry run complete: ${txs.length} transactions, enough DUST. Re-run with --submit to deploy.`);
         if (s.dust < total) code = 2;
     } else if (SUBMIT && split) {
-        await deployInSteps(w, split, plan);
+        await deployInSteps(split, plan);
     } else if (!SUBMIT) {
         const bytes = unproven.private.unprovenTx.serialize();
         const handle = w.wallet.adoptTransaction(bytes, 'Unproven');
@@ -175,12 +211,20 @@ try {
             log('\nDry run complete: enough DUST. Re-run with --submit to deploy.');
         }
     } else {
-        log('\nbuilding, balancing and submitting the deploy...');
+        // The address is known once the deploy is built. It is printed before
+        // anything is sent, so a run that dies while waiting still names it.
+        const address = unproven.public.contractAddress;
+        log(`\naddress    ${address} (this deploy's own; keep it if the run is interrupted)`);
+        log('proving, balancing and submitting the deploy...');
         const t0 = Date.now();
-        const deployed = await deployContract(providers, {
-            compiledContract: compiled, args: [slots], signingKey: custody.key
-        });
-        const pub = deployed.deployTxData.public;
+        // What deployContract does, split so the address above is the one sent:
+        // submit the built deploy, require success, then store its signing key.
+        const landed = await submitTx(providers, { unprovenTx: unproven.private.unprovenTx });
+        if (landed.status !== SucceedEntirely) {
+            throw new Error(`the deploy of ${address} landed with status ${landed.status} (transaction ${landed.txId})`);
+        }
+        await providers.privateStateProvider.setSigningKey(address, unproven.private.signingKey);
+        const pub = { ...landed, ...unproven.public };
         log(`\nDEPLOYED   ${pub.contractAddress}`);
         log(`tx hash    ${pub.txHash}  block ${pub.blockHeight}`);
         log(`fees       paid ${pub.fees?.paidFees ?? '?'} SPECK (estimated ${pub.fees?.estimatedFees ?? '?'})`);
@@ -192,7 +236,7 @@ try {
             txHash: pub.txHash,
             txId: pub.txId,
             blockHeight: pub.blockHeight,
-            deployedAt: new Date(pub.blockTimestamp ?? Date.now()).toISOString(),
+            deployedAt: isoOf(pub.blockTimestamp),
             fees: pub.fees ?? null,
             ledger: BUILD.ledger,
             buildId: buildId(),
@@ -223,31 +267,50 @@ try {
     }
     code = 1;
 } finally {
-    await w.close();
+    if (sponsor) log(`sponsor    ${await reads.sponsorUsage()}`);
+    await sponsor?.close();
+    await w?.close();
 }
 process.exit(code);
+
+/** The deploy wallet, opened on first use and synced before every use. */
+async function ownWallet() {
+    w ??= await openWallet(NETWORK, { log });
+    await w.synced(SYNC_MS);
+    return w;
+}
+
+/**
+ * The deploy transaction without a wallet. The constructor makes no coins, so
+ * the coin keys only have to be well formed, and the sponsor pays the fee.
+ */
+function sponsoredDeployTx(options) {
+    const keys = ZswapSecretKeys.fromSeed(randomBytes(32));
+    return createLedger9UnprovenDeployTxFromVerifierKeys(
+        zkConfigProvider(NETWORK, { expectedManifestHash: facts.manifestSha256 }),
+        keys.coinPublicKey, options, keys.encryptionPublicKey, { networkId: NETWORK, ttlSeconds: 30 * 60 }
+    );
+}
 
 function writeRecord(record) {
     mkdirSync(dirname(RECORD), { recursive: true });
     if (existsSync(RECORD)) {
         const archived = join(dirname(RECORD), `${NETWORK}-superseded-${Date.now()}.json`);
-        renameSync(RECORD, archived);
+        // A copy, then the atomic replace: there is never a moment without a record.
+        copyFileSync(RECORD, archived, constants.COPYFILE_EXCL);
         log(`archived the previous record to ${archived}`);
     }
-    writeFileSync(RECORD, JSON.stringify(record, null, 2) + '\n');
+    writeJsonAtomic(RECORD, record);
 }
 
 /** Rewrite the record this run created, without archiving it. */
 function updateRecord(record) {
-    writeFileSync(RECORD, JSON.stringify(record, null, 2) + '\n');
+    writeJsonAtomic(RECORD, record);
 }
 
-/** The contract's state as the indexer holds it now, or null before it is indexed. */
+/** The contract's state as the chain reads see it now, or null before it is indexed. */
 async function chainContract(address) {
-    const ep = networkEndpoints(NETWORK);
-    const pdp = indexerPublicDataProvider({ queryURL: ep.indexerHttpUrl, subscriptionURL: ep.indexerWsUrl });
-    const read = await pdp.queryContractState(address).catch(() => null);
-    return read ? read.contractState.deserialize({ v9: LedgerContractState }) : null;
+    return (await reads.contractState(address).catch(() => null))?.state ?? null;
 }
 
 /** Poll until `test(state)` holds, for at most five minutes. */
@@ -264,7 +327,13 @@ async function untilChain(address, test, what) {
 // const below it is initialised (it cost a crash between the deploy and its
 // record on 9 November 2026; `--resume` exists because of it).
 function pick(o, keys) { return Object.fromEntries(keys.map((k) => [k, o[k]])); }
-function isoOf(ts) { return new Date(ts == null ? Date.now() : (/^\d+$/.test(String(ts)) ? Number(ts) : ts)).toISOString(); }
+// Ledger 9 block times are seconds, older records carry milliseconds.
+function isoOf(ts) {
+    if (ts == null) return new Date().toISOString();
+    if (!/^\d+$/.test(String(ts))) return new Date(ts).toISOString();
+    const n = Number(ts);
+    return new Date(n < 1e11 ? n * 1000 : n).toISOString();
+}
 
 /**
  * A deploy too large for one block: the contract with the circuits that fit,
@@ -272,20 +341,27 @@ function isoOf(ts) { return new Date(ts == null ? Date.now() : (/^\d+$/.test(Str
  * the deploy and rewritten after every step, so a run stopped halfway leaves a
  * record that says exactly what the chain holds (`pendingInserts`).
  */
-async function deployInSteps(w, { dep, steps, counter0 }, plan) {
+async function deployInSteps({ full, steps, counter0, params }, plan) {
+    // Built again here, with a ttl that starts now; the plan's copy only priced it.
+    const ttl = freshTtl();
+    const dep = deployTx(NETWORK, subsetState(full, plan.first), ttl);
+    if (blockShare(dep.tx, params).share > BLOCK_BUDGET) throw new Error('the deploy no longer fits the block budget it was planned for');
     const address = dep.deploy.address;
-    log(`\nstep 1: submitting the deploy (${plan.first.length} circuits)...`);
+    log(`\naddress    ${address} (this deploy's own; keep it: --resume ${address} finishes an interrupted run)`);
+    log(`step 1: submitting the deploy (${plan.first.length} circuits)...`);
     const t0 = Date.now();
-    const id = await submitLedgerTx(w, dep.tx, dep.ttl);
+    sponsor ??= await openSponsor(NETWORK, { log, config: nightgate });
+    const id = await submitPrepared({ wallet: ownWallet, sponsor, tx: dep.tx, ttl, idempotencyKey: `vinpassport:deploy:${address}`, log });
     log(`  submitted, transaction id ${id}`);
-    const d = await waitForTransaction(NETWORK, id);
-    if (d.status && d.status !== 'SUCCESS') throw new Error(`the deploy landed with status ${d.status}`);
-    d.txId = d.actionTxId(address);
+    const landed = await reads.waitForTransaction(id);
+    if (landed.status && landed.status !== 'SUCCESS') throw new Error(`the deploy landed with status ${landed.status}`);
     await untilChain(address, () => true, 'the deployed contract');
+    const deployed = await reads.deployOf(address);
+    const d = { ...landed, ...deployed, txId: deployed.txId ?? id };
     log(`\nDEPLOYED   ${address}`);
     log(`tx hash    ${d.txHash}  block ${d.blockHeight}`);
     log(`fees       paid ${d.fees?.paidFees ?? '?'} SPECK (estimated ${d.fees?.estimatedFees ?? '?'}); ${Math.round((Date.now() - t0) / 1000)} s`);
-    await finishSteps(w, { address, d, plan, steps, counter0, ttl: dep.ttl });
+    await finishSteps({ address, d, plan, steps, counter0, params });
 }
 
 /**
@@ -293,7 +369,8 @@ async function deployInSteps(w, { dep, steps, counter0 }, plan) {
  * chain with some of this build's circuits, under the custody key alone.
  * Everything is checked against the chain before anything is sent.
  */
-async function resumeSteps(w, address, params, ttl) {
+async function resumeSteps(address, params) {
+    const ttl = freshTtl();
     const chain = await chainContract(address);
     if (!chain) throw new Error(`the indexer has no contract at ${address}`);
     const a = chain.maintenanceAuthority;
@@ -318,27 +395,16 @@ async function resumeSteps(w, address, params, ttl) {
     for (const [i, st] of steps.entries()) log(`step ${i + 2}     the custody key inserts ${st.circuits.length}: ${st.circuits.join(', ')}`);
     if (!SUBMIT) { log('\nDry run: nothing sent. Re-run with --submit to finish.'); return; }
 
-    // The deploy transaction, from the indexer.
-    const ep = networkEndpoints(NETWORK);
-    const q = `{ contractAction(address: "${address}") { __typename ... on ContractDeploy { transaction { hash block { height timestamp } `
-        + 'contractActions { address } ... on RegularTransaction { identifiers fees { estimatedFees paidFees } transactionResult { status } } } } } }';
-    const res = await fetch(ep.indexerHttpUrl, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ query: q }) });
-    const act = (await res.json())?.data?.contractAction;
-    if (act?.__typename !== 'ContractDeploy') {
-        throw new Error(`the contract's latest action is ${act?.__typename ?? 'unknown'}, not its deploy; resume expects nothing after the deploy`);
-    }
-    const t = act.transaction;
-    const d = {
-        // The id at the index of this contract's action, as Midnight.js correlates it.
-        txId: t.identifiers?.[(t.contractActions ?? []).findIndex((x) => x.address === address)] ?? null, txHash: t.hash, blockHeight: t.block.height,
-        blockTimestamp: t.block.timestamp, status: t.transactionResult?.status ?? null,
-        fees: t.fees ? { estimatedFees: String(t.fees.estimatedFees), paidFees: String(t.fees.paidFees) } : null
-    };
-    await finishSteps(w, { address, d, plan, steps, counter0: a.counter, ttl });
+    const d = await reads.deployOf(address);
+    await finishSteps({ address, d, plan, steps, counter0: a.counter, params });
 }
 
-/** Write the record for a deploy that landed, then run its insert steps. */
-async function finishSteps(w, { address, d, plan, steps, counter0, ttl }) {
+/**
+ * Write the record for a deploy that landed, then run its insert steps. Each
+ * step is built and signed just before it is sent, from the plan's circuits
+ * and counter, so its ttl starts when it goes out.
+ */
+async function finishSteps({ address, d, plan, steps, counter0, params }) {
     const facts = buildFacts();
     let t0;
     const record = {
@@ -352,13 +418,15 @@ async function finishSteps(w, { address, d, plan, steps, counter0, ttl }) {
         fees: d.fees,
         ledger: BUILD.ledger,
         buildId: buildId(),
-        build: { ...facts, verifierKeys: pick(facts.verifierKeys, plan.first) },
-        pendingInserts: plan.rest,
-        deployedInSteps: {
-            why: `all ${PROVABLE.length} verifier keys in one deploy exceed the block's bytes-written budget once the fee is added (scripts/lib/deploy-fit.mjs)`,
-            deployed: plan.first,
-            insertedAfter: plan.rest
-        },
+        ...(plan.rest.length ? {
+            build: { ...facts, verifierKeys: pick(facts.verifierKeys, plan.first) },
+            pendingInserts: plan.rest,
+            deployedInSteps: {
+                why: `all ${PROVABLE.length} verifier keys in one deploy exceed the block's bytes-written budget once the fee is added (scripts/lib/deploy-fit.mjs)`,
+                deployed: plan.first,
+                insertedAfter: plan.rest
+            }
+        } : { build: facts }),
         registrars: regs.map((r) => ({ label: r.label, id: r.hex })),
         authority: {
             holder: 'custody',
@@ -375,17 +443,26 @@ async function finishSteps(w, { address, d, plan, steps, counter0, ttl }) {
     log(`recorded   ${RECORD} (${plan.rest.length} circuits still to insert)`);
 
     const auditDir = join(dirname(RECORD), 'maintenance', NETWORK, address.slice(0, 16));
-    for (const [i, st] of steps.entries()) {
-        await w.wallet.waitForSyncedState();
+    for (const [i, planned] of steps.entries()) {
         const before = await untilChain(address, () => true, 'the contract');
-        if (before.maintenanceAuthority.counter !== st.counter) {
-            throw new Error(`the authority counter is ${before.maintenanceAuthority.counter}, step ${i + 2} was signed for ${st.counter}`);
+        if (before.maintenanceAuthority.counter !== planned.counter) {
+            throw new Error(`the authority counter is ${before.maintenanceAuthority.counter}, step ${i + 2} was planned for ${planned.counter}`);
         }
+        const ttl = freshTtl();
+        const st = {
+            ...planned,
+            ...custodyInsertStep({
+                network: NETWORK, contractAddress: address, circuits: planned.circuits,
+                keysDir: join(BUILD_DIR, 'keys'), custody, counter: planned.counter, ttl
+            })
+        };
+        if (blockShare(st.tx, params).share > BLOCK_BUDGET) throw new Error(`step ${i + 2} no longer fits the block budget it was planned for`);
         log(`\nstep ${i + 2}: the custody key inserts ${st.circuits.join(', ')}...`);
         t0 = Date.now();
-        const iid = await submitLedgerTx(w, st.tx, ttl);
+        sponsor ??= await openSponsor(NETWORK, { log, config: nightgate });
+        const iid = await submitPrepared({ wallet: ownWallet, sponsor, tx: st.tx, ttl, idempotencyKey: `vinpassport:insert:${address}:${st.counter}`, log });
         log(`  submitted, transaction id ${iid}`);
-        const r = await waitForTransaction(NETWORK, iid);
+        const r = await reads.waitForTransaction(iid);
         if (r.status && r.status !== 'SUCCESS') throw new Error(`step ${i + 2} landed with status ${r.status}`);
         const after = await untilChain(address, (s2) => s2.maintenanceAuthority.counter === st.counter + 1n, `step ${i + 2}`);
         for (const c of st.circuits) {
@@ -396,8 +473,7 @@ async function finishSteps(w, { address, d, plan, steps, counter0, ttl }) {
         }
         log(`  block ${r.blockHeight}, fee ${r.fees?.paidFees ?? '?'} SPECK, ${Math.round((Date.now() - t0) / 1000)} s; every inserted key on chain matches the build`);
         const executed = { txId: iid, txHash: r.txHash, blockHeight: r.blockHeight, fees: r.fees, at: new Date().toISOString(), newCounter: Number(st.counter) + 1 };
-        mkdirSync(auditDir, { recursive: true });
-        writeFileSync(join(auditDir, `counter-${st.counter}.json`), JSON.stringify({ ...st.proposal, executed }, null, 2) + '\n');
+        writeJsonAtomic(join(auditDir, `counter-${st.counter}.json`), { ...st.proposal, executed });
         record.build.verifierKeys = { ...record.build.verifierKeys, ...pick(facts.verifierKeys, st.circuits) };
         record.pendingInserts = record.pendingInserts.filter((c) => !st.circuits.includes(c));
         record.authority.counter = Number(st.counter) + 1;

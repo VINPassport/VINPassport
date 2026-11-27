@@ -1,13 +1,13 @@
 {
   "note": "The guided run these bundles come from. Every transaction is on the public preprod chain.",
-  "contractAddress": "c9a4733e3d9187e4487014e038a99af16cad0c29fb9fc9fcaa6b0f5350ad10ac",
-  "firstBlock": 3229920,
-  "lastBlock": 3230032,
-  "date": "2026-11-01",
-  "transactions": 8,
+  "contractAddress": "980a3fd62d8dc67c027e057b082a21c429679df2e179b6f18659da3b02f1d665",
+  "firstBlock": 3571270,
+  "lastBlock": 3571648,
+  "date": "2026-11-25",
+  "transactions": 14,
   "grant": {
-    "block": 3229987,
-    "txHash": "a81335ca7008ca4b51db6e2170c068f8e6c5945ef5ccfc26afc2502f76a76750",
-    "explorer": "https://preprod.midnightexplorer.com/transactions/a81335ca7008ca4b51db6e2170c068f8e6c5945ef5ccfc26afc2502f76a76750"
+    "block": "3571487",
+    "txHash": "2e2965fe831e76e4f6247768e10b0a422bc338b6d3812392a3f22d5d34018b54",
+    "explorer": "https://preprod.midnightexplorer.com/transactions/2e2965fe831e76e4f6247768e10b0a422bc338b6d3812392a3f22d5d34018b54"
   }
 }

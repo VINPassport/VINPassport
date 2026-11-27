@@ -56,8 +56,10 @@ export const GROWS = Object.freeze({
     proveFieldAtMost: 'claims',
     proveFieldAtLeast: 'claims',
     proveFieldAtMostField: 'relClaims',
-    // Every approval inserts a ballot; the second also adds to the set (D32).
-    approveRegistrarChange: 'registrarBallots'
+    // Every approval inserts a ballot; the one that makes a majority also
+    // changes the set or the passport (D32, D38).
+    approveRegistrarChange: 'registrarBallots',
+    approvePassportChange: 'registrarBallots'
 });
 
 /**

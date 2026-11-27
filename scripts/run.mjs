@@ -31,9 +31,9 @@ let code = 0;
 try {
     chain = await openChain(network, { log });
     log(`contract  ${chain.record.contractAddress} (${network})`);
-    log(describe(await chain.w.wallet.waitForSyncedState()));
+    log(chain.sponsor ? "fees      paid by the NIGHTGATE sponsor at " + chain.sponsor.baseUrl + ", the own wallet stands by" : describe(await chain.self.w.synced()));
     log(`dealer    ${chain.dealer ? 'registrar C, so the run delegates, grants and withdraws' : 'none configured: no delegation in this run'}`);
-    log(`mode      ${SUBMIT ? 'SUBMIT: real transactions, fees in DUST' : 'dry run: plan and simulate, submit nothing'}\n`);
+    log(`mode      ${SUBMIT ? `SUBMIT: real transactions, fees ${chain.sponsor ? 'paid by the sponsor' : 'in DUST'}` : 'dry run: plan and simulate, submit nothing'}\n`);
     const intake = { ...guidedIntake(chain.dealer), kind: 'guided' };
     const t0 = Date.now();
     const out = await executeRun(chain, intake, { log, submit: SUBMIT });
@@ -54,6 +54,11 @@ try {
         for (const c of e.partial.onChain) console.error(`  ${c.label}: ${c.txHash} block ${c.blockHeight}`);
         if (e.partial.savedTo) console.error(`receipt (incomplete run, holds only what landed): ${e.partial.savedTo}`);
         if (e.partial.saveError) console.error(`the receipt could NOT be saved: ${e.partial.saveError}`);
+    }
+    if (e?.partial?.unconfirmed) {
+        const u = e.partial.unconfirmed;
+        console.error(`call ${u.call} (${u.label}) may still land${u.txId ? `, transaction id ${u.txId}` : ''}: do not run it again before the chain shows whether it did.`);
+        if (e.partial.savedTo && !e.partial.onChain?.length) console.error(`receipt (holds its opening): ${e.partial.savedTo}`);
     }
     code = 1;
 } finally {

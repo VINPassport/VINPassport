@@ -22,6 +22,13 @@
  *                      commitments and claims, never a value or a VIN
  *   GET  /api/health   {"ok":true}
  *
+ * HTTP rules (scripts/lib/app-http.mjs): security headers and a per-page CSP
+ * on every response, JSON bodies only as application/json and only from this
+ * server's own pages or the listed sites, a per-caller budget on every route
+ * that writes, error text redacted of credentials. It listens on 127.0.0.1
+ * unless VINPASSPORT_HOST says otherwise, and believes X-Forwarded-For only
+ * from a proxy VINPASSPORT_TRUST_PROXY names.
+ *
  * Zero dependencies beyond Node itself, by design (D11's spirit): a judge
  * clones, installs, and has the full flow running in one command. The ledger
  * lives in memory, seeded with the two demo vehicles; restarting resets it.
@@ -36,12 +43,20 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, normalize } from 'node:path';
 import {
     PassportSimulator, buildDemoVehicles, applyIntake, exportLedger, vocabulary, saltStream,
-    CONSOLE_REGISTRAR_SECRET
+    CONSOLE_REGISTRAR_SECRET, vinHash, hex
 } from './lib/scenario.mjs';
 import { requireIntakeFields, resolveWriters } from './lib/intake-engine.mjs';
+import {
+    typeOf, applySecurityHeaders, pageCsp, readJson, callerIp, trustedProxies, ipBudget, statusOf,
+    safeText, safeDeep, checkIntakeLimits, jobWindow, boundVehicles
+} from './lib/app-http.mjs';
+import { takeSeedLock } from './lib/files.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = Number(process.env.PORT ?? 8790);
+// Loopback unless told otherwise: a proxy on this machine is how the public reaches it.
+const HOST = process.env.VINPASSPORT_HOST?.trim() || '127.0.0.1';
+const PROXIES = trustedProxies();
 
 // ---------------------------------------------------------------- state
 
@@ -59,6 +74,11 @@ const DEMO_ENABLED = process.env.VINPASSPORT_CHAIN === '1';
 let runner = null;
 let runnerError = null;
 if (DEMO_ENABLED) {
+    // One process per seed (scripts/lib/files.mjs), taken before the wallet opens.
+    try { takeSeedLock(process.env.VINPASSPORT_NETWORK_ID ?? 'preview'); } catch (e) {
+        console.error(e.message);
+        process.exit(1);
+    }
     import('./lib/runner9.mjs')
         .then((m) => m.createRunner({ log: console.log }))
         .then((r) => { runner = r; })
@@ -68,19 +88,11 @@ const vehicles = [
     { vinHash: demo.a.vinHex, title: 'Vehicle A', blurb: 'Full service history, claims proven' },
     { vinHash: demo.b.vinHex, title: 'Vehicle B', blurb: 'A record it cannot prove clean' }
 ];
+const STANDING = vehicles.length;
+const DEMO_VIN_HASHES = new Set([demo.a.vinHex, demo.b.vinHex]);
+const MAX_ADDED_VEHICLES = Number(process.env.VINPASSPORT_MAX_ADDED_VEHICLES ?? 50);
 
 // ---------------------------------------------------------------- static
-
-const TYPES = {
-    '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
-    '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
-    '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml',
-    '.png': 'image/png', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml',
-    '.mp4': 'video/mp4',
-    // The intake engine's runtime. Served as anything else, the browser
-    // refuses to compile it and the console has no circuits.
-    '.wasm': 'application/wasm'
-};
 
 async function serveStatic(res, urlPath) {
     // The published site is the single source: every path resolves under site/,
@@ -93,8 +105,10 @@ async function serveStatic(res, urlPath) {
     if (!file.startsWith(normalize(join(ROOT, 'site')))) { res.writeHead(403); return res.end(); }
     try {
         const body = await readFile(file);
-        const ext = file.slice(file.lastIndexOf('.'));
-        res.writeHead(200, { 'content-type': TYPES[ext] ?? 'application/octet-stream' });
+        const type = typeOf(file);
+        // A page gets its own policy: the hashes of exactly its inline scripts.
+        if (type.startsWith('text/html')) res.setHeader('content-security-policy', pageCsp(body.toString('utf8')));
+        res.writeHead(200, { 'content-type': type });
         res.end(body);
     } catch {
         res.writeHead(404, { 'content-type': 'text/plain' });
@@ -128,19 +142,15 @@ function ledgerPayload() {
     };
 }
 
-async function readJson(req) {
-    let body = '';
-    for await (const chunk of req) {
-        body += chunk;
-        if (body.length > 100_000) throw Object.assign(new Error('body too large'), { code: 413 });
-    }
-    try { return body ? JSON.parse(body) : {}; }
-    catch { throw Object.assign(new Error('body is not JSON'), { code: 400 }); }
-}
+// /api/intake rewrites the one simulator every visitor reads, so it has a
+// budget per caller and per day, and it never touches a standing demo vehicle.
+const intakeBudget = ipBudget({ perDay: Number(process.env.VINPASSPORT_PER_IP_INTAKES ?? 20), what: 'intakes' });
+const INTAKE_DAILY_CAP = Number(process.env.VINPASSPORT_INTAKE_DAILY_CAP ?? 500);
+const intakeDay = { date: null, used: 0 };
 
 async function handleIntake(req, res) {
     let intake;
-    try { intake = await readJson(req); }
+    try { intake = await readJson(req, { allowed: CORS_ORIGINS }); }
     catch (e) { return json(res, e.code ?? 400, { error: e.message }); }
     // Validation and label resolution live in intake-engine.mjs, which the
     // browser console also calls. Two intake paths is how delegation came to
@@ -148,10 +158,19 @@ async function handleIntake(req, res) {
     let writers;
     try {
         requireIntakeFields(intake);
+        checkIntakeLimits(intake, { demoVinHashes: DEMO_VIN_HASHES, vinHashOf: (v) => hex(vinHash(v)) });
         writers = resolveWriters(intake);
     } catch (e) {
-        return json(res, e.code ?? 400, { error: e.message });
+        return json(res, statusOf(e, e.code ?? 400), { error: safeText(e.message) });
     }
+    const today = new Date().toISOString().slice(0, 10);
+    if (intakeDay.date !== today) Object.assign(intakeDay, { date: today, used: 0 });
+    if (intakeDay.used >= INTAKE_DAILY_CAP) {
+        return json(res, 429, { error: `this server has run its ${INTAKE_DAILY_CAP} intakes for today; the counter resets at 00:00 UTC` });
+    }
+    try { intakeBudget.take(callerIp(req, PROXIES)); }
+    catch (e) { return json(res, statusOf(e, 429), { error: e.message }); }
+    intakeDay.used += 1;
 
     const result = await applyIntake(
         sim,
@@ -165,6 +184,7 @@ async function handleIntake(req, res) {
             title: String(intake.label || 'Added vehicle').slice(0, 60),
             blurb: 'Added through the intake console'
         });
+        boundVehicles(vehicles, STANDING, MAX_ADDED_VEHICLES);
     }
     // The response carries results and public identifiers only - the values
     // stay in this process, exactly as they would stay in a wallet.
@@ -177,42 +197,18 @@ async function handleIntake(req, res) {
 // one caller may take of it, so the day's runs are still there for the next
 // visitor. Open to anyone by design - a stranger clicking it is the point.
 const PER_IP_RUNS = Number(process.env.VINPASSPORT_PER_IP_RUNS ?? 2);
-const ipRuns = new Map();          // ip -> { date, used }
+const runBudget = ipBudget({ perDay: PER_IP_RUNS, what: 'runs (each writes permanent public state, so the rest are left for other visitors)' });
 
-const isLocal = (a) => !a || a === '127.0.0.1' || a === '::1' || a === '::ffff:127.0.0.1';
-
-const callerIp = (req) => {
-    const sock = req.socket?.remoteAddress ?? '';
-    // Forwarding headers are only meaningful from our own proxy; from anyone
-    // else the socket is the answer.
-    if (!isLocal(sock)) return sock || 'unknown';
-    // Our proxy appends the address it observed, so the last hop is the one
-    // it vouched for. Earlier entries arrived with the request and carry no
-    // authority. This also holds for a proxy that overwrites rather than
-    // appends, where there is only one entry.
-    const hops = String(req.headers['x-forwarded-for'] ?? '')
-        .split(',').map((h) => h.trim()).filter(Boolean);
-    return hops.length ? hops[hops.length - 1] : (sock || 'unknown');
-};
-
-function takeIpSlot(req) {
-    const today = new Date().toISOString().slice(0, 10);
-    const ip = callerIp(req);
-    const rec = ipRuns.get(ip);
-    const cur = rec && rec.date === today ? rec : { date: today, used: 0 };
-    if (cur.used >= PER_IP_RUNS) {
-        throw Object.assign(
-            new Error(`you have started ${cur.used} runs today; each run writes permanent public state, ` +
-                'so the rest of the day\'s runs are left for other visitors. The counter resets at 00:00 UTC.'),
-            { code: 'CAP' });
-    }
-    cur.used += 1;
-    ipRuns.set(ip, cur);
-    if (ipRuns.size > 5000) {      // bounded: drop the oldest entry
-        ipRuns.delete(ipRuns.keys().next().value);
-    }
-    return () => { cur.used -= 1; };   // give it back if the run never started
-}
+// The jobs this server handed out. Finished ones are served for a bounded time
+// and count, then forgotten here (scripts/lib/app-http.mjs jobWindow).
+const jobs = jobWindow({
+    lookup: (id) => runner?.job(id) ?? null,
+    // Frees the receipt in the runner too, once the runner offers forget(id).
+    onEvict: (id) => runner?.forget?.(id),
+    ttlMs: Number(process.env.VINPASSPORT_JOB_TTL_MINUTES ?? 30) * 60_000,
+    maxFinished: Number(process.env.VINPASSPORT_JOB_KEEP ?? 50)
+});
+if (DEMO_ENABLED) setInterval(() => jobs.sweep(), 60_000).unref();
 
 // The chain demo API. Every route degrades honestly: disabled mode says so,
 // a warming wallet says so, a spent daily cap says so with the reset time.
@@ -220,45 +216,50 @@ async function handleDemo(req, res, url) {
     const path = url.pathname;
     if (path === '/api/demo/status') {
         if (!DEMO_ENABLED) return json(res, 200, { enabled: false });
-        if (runnerError) return json(res, 200, { enabled: true, ready: false, error: runnerError.message });
+        if (runnerError) return json(res, 200, { enabled: true, ready: false, error: safeText(runnerError.message) });
         if (!runner) return json(res, 200, { enabled: true, ready: false, warming: true });
-        return json(res, 200, runner.status());
+        return json(res, 200, safeDeep(runner.status()));
     }
     if (!DEMO_ENABLED) return json(res, 503, { error: 'chain demo mode is not enabled on this server' });
-    if (runnerError) return json(res, 503, { error: 'the chain demo failed to start: ' + runnerError.message });
+    if (runnerError) return json(res, 503, { error: 'the chain demo failed to start: ' + safeText(runnerError.message) });
     if (!runner) return json(res, 503, { error: 'the chain demo is still starting; try again shortly' });
 
     if ((path === '/api/demo/run' || path === '/api/demo/intake') && req.method === 'POST') {
         let body;
-        try { body = await readJson(req); }
+        try { body = await readJson(req, { allowed: CORS_ORIGINS }); }
         catch (e) { return json(res, e.code ?? 400, { error: e.message }); }
         let giveBack;
-        try { giveBack = takeIpSlot(req); }
-        catch (e) { return json(res, 429, { error: String(e.message ?? e) }); }
+        try { giveBack = runBudget.take(callerIp(req, PROXIES)); }
+        catch (e) { return json(res, statusOf(e, 429), { error: safeText(e.message ?? e) }); }
         try {
             const job = path === '/api/demo/run' ? runner.runGuided() : runner.runManual(body);
+            jobs.issue(job.id);
             return json(res, 202, { jobId: job.id, status: job.status, remaining: runner.status().remaining });
         } catch (e) {
             // The run never started, so it should not count against them.
             giveBack();
-            const code = e.code === 'CAP' ? 429 : e.code === 'TOO_LARGE' ? 400 : 400;
-            return json(res, code, { error: String(e.message ?? e) });
+            // The runner's daily cap throws { status: 429 }; a refused intake has no status.
+            return json(res, statusOf(e), { error: safeText(e.message ?? e) });
         }
     }
     if (path === '/api/demo/job' && req.method === 'GET') {
-        const job = runner.job(url.searchParams.get('id') ?? '');
-        if (!job) return json(res, 404, { error: 'unknown job' });
-        return json(res, 200, job);
+        const job = jobs.get(url.searchParams.get('id') ?? '');
+        if (!job) return json(res, 404, { error: 'unknown job, or finished too long ago to be kept' });
+        return json(res, 200, safeDeep(job));
     }
     if (path === '/api/demo/report' && req.method === 'GET') {
-        const job = runner.job(url.searchParams.get('id') ?? '');
-        if (!job) return json(res, 404, { error: 'unknown job' });
-        if (!job.receipt) return json(res, 409, { error: 'no report yet: job is ' + job.status + (job.error ? ' (' + job.error + ')' : '') });
+        // The receipt holds the run's values and salts. Whoever holds the job id
+        // (the page that started the run) can download it until the job is evicted.
+        const job = jobs.get(url.searchParams.get('id') ?? '');
+        if (!job) return json(res, 404, { error: 'unknown job, or finished too long ago to be kept' });
+        if (!job.receipt) return json(res, 409, { error: safeText('no report yet: job is ' + job.status + (job.error ? ' (' + job.error + ')' : '')) });
+        const receipt = safeDeep(job.receipt);
         res.writeHead(200, {
             'content-type': 'application/json; charset=utf-8',
-            'content-disposition': `attachment; filename="vinpassport-demo-${job.receipt.vin}.json"`
+            'content-disposition': `attachment; filename="vinpassport-demo-${String(receipt.vin).replace(/[^A-Za-z0-9-]/g, '')}.json"`,
+            'cache-control': 'no-store'
         });
-        return res.end(JSON.stringify(job.receipt, null, 2));
+        return res.end(JSON.stringify(receipt, null, 2));
     }
     return json(res, 404, { error: 'unknown demo endpoint' });
 }
@@ -295,6 +296,7 @@ const server = createServer((req, res) => {
 });
 
 async function route(req, res) {
+    applySecurityHeaders(res);
     const url = new URL(req.url, 'http://x');
     const { pathname } = url;
     if (pathname.startsWith('/api/')) {
@@ -325,7 +327,7 @@ let port = PORT;
 server.on('error', (e) => {
     if (e.code === 'EADDRINUSE' && !DEMO_ENABLED && port < PORT + 10) {
         console.log(`port ${port} is in use, trying ${port + 1}…`);
-        server.listen(++port);
+        server.listen(++port, HOST);
     } else if (e.code === 'EADDRINUSE' && DEMO_ENABLED) {
         console.error(`port ${port} is already in use, and VINPASSPORT_CHAIN=1.`);
         console.error('Refusing to start a second instance against the same wallet state.');
@@ -336,8 +338,8 @@ server.on('error', (e) => {
         process.exit(1);
     }
 });
-server.listen(port, () => {
-    console.log(`VINPassport app  http://localhost:${port}`);
+server.listen(port, HOST, () => {
+    console.log(`VINPassport app  http://${HOST.includes(':') ? `[${HOST}]` : HOST}:${port}`);
     console.log(`  site  /       scan  /scan/       verdict  /v/       intake  /intake/       proofs  /proofs/`);
     console.log(`  circuits: compiled vinpassport, in-process; ledger resets on restart`);
 });

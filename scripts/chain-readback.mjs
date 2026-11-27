@@ -29,19 +29,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
 import { Tier } from '../contracts/vinpassport/src/managed/vinpassport/contract/index.js';
 import { checkNetwork, guardLogs } from './lib/endpoints.mjs';
 import { deployRecord, readContract, readContractEvents } from './lib/chain-state.mjs';
 import { decodeIndexerEvent, CIRCUIT_KIND, VEHICLE_KINDS, GOVERNANCE_KINDS } from './lib/events.mjs';
 import { slotOf, fieldKeyOf, commitmentOf, grantKeyOf, vinHashOf, PLAIN_VIN_SCHEME } from './lib/disclosure.mjs';
 import { readRegistrarSlots } from './lib/registrar-slots.mjs';
+import { registrarFile } from './lib/local-credentials.mjs';
 import { expectedRegistrars, sameMembers } from './lib/governance.mjs';
 
 guardLogs();
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const arg = (name) => { const i = process.argv.indexOf(name); return i === -1 ? null : process.argv[i + 1]; };
 const NETWORK = checkNetwork(arg('--network') ?? 'preview');
 const RECEIPT = arg('--receipt');
@@ -118,9 +116,8 @@ check(`no salt appears in the serialized state (${salts.length} checked)`, salts
 // The receipt names grantees by label only, in its stage labels. The guided
 // run's dealership is registrar C (scripts/lib/preprod-runner.mjs, `dealer`).
 const GRANTEE_SLOT = { dealership: 'C' };
-const registrarFile = process.env.VINPASSPORT_REGISTRAR_FILE
-    ?? join(ROOT, '..', '_local-tracking', NETWORK === 'mainnet' ? 'REGISTRAR-SECRETS.mainnet.env' : 'REGISTRAR-SECRETS.env');
-const { regs } = readRegistrarSlots(registrarFile);
+let regs;
+try { ({ regs } = readRegistrarSlots(registrarFile(NETWORK))); } catch (e) { fail(e.message); }
 const onChainAllow = new Set([...L.allowedRegistrars].map(hex));
 const pinnedIds = (record.registrars ?? regs.map((g) => ({ id: g.hex }))).map((g) => g.id);
 check('the local registrar file names the identities the deploy record pinned',

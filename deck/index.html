@@ -260,7 +260,7 @@ th { color: var(--ink); font-family: var(--font-label); font-weight: 600; font-s
     <div class="box">
       <h3>Our own Compact contract</h3>
       <ul>
-        <li><strong>23 circuits: 18 provable, 5 pure helpers.</strong> Register, authorise and withdraw a writer, grant and revoke a view, initialise, record, three kinds of claim, six reads and the registrar change; the helpers derive slots and keys</li>
+        <li><strong>26 circuits: 20 provable, 6 pure helpers.</strong> Register, authorise and withdraw a writer, grant and revoke a view, initialise, record, three kinds of claim, six reads and the registrar change; the helpers derive slots and keys</li>
         <li>A commitment per (vehicle, field); values never reach the ledger</li>
         <li><strong>Claims ledger</strong>: every successful proof leaves a public, checkable record of the claim, never the value, bound to the record version it proved</li>
         <li>Every write emits one event; changing the registrars takes two of them</li>
@@ -425,12 +425,12 @@ th { color: var(--ink); font-family: var(--font-label); font-weight: 600; font-s
     <div class="box">
       <h3>The numbers, copied from the output</h3>
       <div class="stats">
-        <div><span class="big-num">176</span><span>contract tests, run against the compiled circuits</span></div>
-        <div><span class="big-num">394</span><span>app tests</span></div>
+        <div><span class="big-num">184</span><span>contract tests, run against the compiled circuits</span></div>
+        <div><span class="big-num">452</span><span>app tests</span></div>
         <div><span class="big-num">24</span><span>SDK assumption checks</span></div>
       </div>
       <ul>
-        <li><strong>Mutation-checked</strong>: every guard deleted in turn, recompiled, re-run: <strong>43 of 43</strong> killed</li>
+        <li><strong>Mutation-checked</strong>: every guard deleted in turn, recompiled, re-run: <strong>53 of 53</strong> killed</li>
         <li><strong>Reproducible</strong>: CI recompiles from a hash-checked compiler and fails on any changed committed byte, verifier keys included</li>
         <li><strong>Read back from the chain</strong>: each run is checked against its receipt through the public indexer (13 of 13 on the live Preview contract, events included), and no VIN or salt is found there</li>
         <li><strong>The site checks itself</strong>: <code>check:a11y</code> drives all 15 pages in a real browser (keyboard, focus, 320 to 1920 px, reduced motion); <code>check:facts</code> ties every figure on the site and in this deck to its source. Lighthouse, home page, mobile: 95 · 100 · 100 · 100</li>
@@ -549,7 +549,7 @@ th { color: var(--ink); font-family: var(--font-label); font-weight: 600; font-s
   <span class="url" style="font-size:20px">passport.vin/disclose/</span>.</p>
   <div class="term" style="max-width:680px">
     <div>git clone https://github.com/VINPassport/VINPassport</div>
-    <div>npm install &amp;&amp; npm test&nbsp;&nbsp;<span class="dim"># 176 + 394 + 24, all green</span></div>
+    <div>npm install &amp;&amp; npm test&nbsp;&nbsp;<span class="dim"># 184 + 452 + 24, all green</span></div>
     <div>npm run app&nbsp;&nbsp;<span class="dim"># the whole product on localhost</span></div>
   </div>
   <p style="margin:6px 0 0">

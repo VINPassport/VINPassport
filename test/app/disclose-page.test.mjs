@@ -45,7 +45,8 @@ const js = read('disclose', 'disclose.js');
 const commitmentAt = (slot) => ledger.fieldCommitment[slot] ?? null;
 const claimAt = (key) => ledger.claims.find((c) => c.key === key) ?? null;
 const grantAt = (key) => ledger.grants?.[key] ?? null;
-const LEDGER = { commitmentAt, claimAt, grantAt };
+// The demo ledger is the local simulator's: the reader says so, the bundle does not.
+const LEDGER = { commitmentAt, claimAt, grantAt, expect: { network: 'local-simulator' } };
 const check = (b) => verifyBundle(b, LEDGER);
 const sorted = (a) => [...a].sort();
 
@@ -131,20 +132,41 @@ test('the dealer and the authority each hold a grant that covers their file', ()
     assert.deepEqual({ held: check(borrowed).grant.held, covers: check(borrowed).grant.covers }, { held: 'trade', covers: false });
 });
 
-test('a vehicle key under a scheme the reader cannot compute offline is left unchecked', () => {
-    // A bundle names how its vehicle key was derived. The reader checks the
-    // VIN against it only for a scheme it can compute from the VIN alone, and
-    // otherwise says nothing either way rather than guessing. The openings do
-    // not depend on it: they are checked against the slot the key gives.
-    const keyed = { ...bundles.authority, vinHashScheme: 'voprf-ristretto255-sha512/v1' };
-    const r = check(keyed);
-    assert.equal(r.vinMatchesHash, null);
-    assert.deepEqual(r.problems, []);
-    assert.equal(r.ok, true);
-    // The scheme it can compute is still checked, and a wrong VIN still fails.
-    const wrong = { ...bundles.authority, vin: 'WVWZZZ1JZXW000002' };
-    assert.equal(check(wrong).vinMatchesHash, false);
-    assert.equal(check(wrong).ok, false);
+test('the reader, not the bundle, decides how a VIN is checked', () => {
+    // The scheme follows from the ledger the reader checks against. Removing
+    // the bundle's label used to skip the VIN check and still pass.
+    const unlabelled = structuredClone(bundles.authority);
+    delete unlabelled.vinHashScheme;
+    assert.equal(check(unlabelled).vinStatus, 'checked');
+    const wrongVin = { ...unlabelled, vin: 'WVWZZZ1JZXW000002' };
+    assert.equal(check(wrongVin).vinMatchesHash, false);
+    assert.equal(check(wrongVin).ok, false, 'an unlabelled bundle with the wrong VIN still verifies');
+
+    // A label that differs from what the ledger uses is a problem, not a reason to skip.
+    const relabelled = { ...bundles.authority, vinHashScheme: 'vinkey-voprf-ristretto255-sha512-v1' };
+    const r = check(relabelled);
+    assert.equal(r.ok, false);
+    assert.ok(r.problems.some((p) => /vinHashScheme/.test(p)), JSON.stringify(r.problems));
+    assert.equal(r.vinStatus, 'checked', 'the VIN is still checked under the scheme the reader expects');
+
+    // A reader told nothing about the ledger cannot check the VIN, and says so.
+    const blind = verifyBundle(bundles.authority, { commitmentAt, claimAt, grantAt });
+    assert.equal(blind.vinStatus, 'unverified');
+    assert.equal(blind.vinMatchesHash, null);
+    // On a keyed network the VIN needs the network key: unverified, never ok-by-label.
+    const keyed = verifyBundle({ ...bundles.authority, network: 'preview', vinHashScheme: 'vinkey-voprf-ristretto255-sha512-v1' },
+        { commitmentAt, claimAt, grantAt, expect: { network: 'preview' } });
+    assert.equal(keyed.vinStatus, 'unverified');
+    assert.equal(keyed.expectedVinScheme, 'vinkey-voprf-ristretto255-sha512-v1');
+});
+
+test('a bundle for another network or contract does not verify', () => {
+    const other = verifyBundle(bundles.trade, { ...LEDGER, expect: { network: 'preview' } });
+    assert.equal(other.ok, false);
+    assert.ok(other.problems.some((p) => /network 'local-simulator', checked against 'preview'/.test(p)));
+    const elsewhere = verifyBundle({ ...bundles.trade, contractAddress: 'ab'.repeat(32) },
+        { ...LEDGER, expect: { network: 'local-simulator', contractAddress: 'cd'.repeat(32) } });
+    assert.ok(elsewhere.problems.some((p) => /contract/.test(p)));
 });
 
 test('changing any value in a bundle makes it fail', () => {
@@ -186,12 +208,13 @@ for (const network of CHAINS) {
     const chainRun = json('disclose', network, 'run.json');
     const chainBundles = Object.fromEntries(['public', 'trade']
         .map((t) => [t, json('disclose', 'bundles', network, `${t}.json`)]));
+    const deploy = JSON.parse(readFileSync(join(ROOT, 'deploy', `${network}.json`), 'utf8'));
     const AT = {
         commitmentAt: (slot) => chainLedger.fieldCommitment[slot] ?? null,
         claimAt: (key) => chainLedger.claims.find((c) => c.key === key) ?? null,
-        grantAt: (key) => chainLedger.grants?.[key] ?? null
+        grantAt: (key) => chainLedger.grants?.[key] ?? null,
+        expect: { network, contractAddress: chainLedger.contractAddress }
     };
-    const deploy = JSON.parse(readFileSync(join(ROOT, 'deploy', `${network}.json`), 'utf8'));
 
     test(`the ${network} bundles check against the ${network} snapshot, for the deployed address`, () => {
         assert.equal(chainLedger.network, network);

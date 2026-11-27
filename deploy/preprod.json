@@ -1,11 +1,184 @@
 {
   "network": "preprod",
-  "contractAddress": "c9a4733e3d9187e4487014e038a99af16cad0c29fb9fc9fcaa6b0f5350ad10ac",
-  "txHash": "7581acbc4822264fe2199f3de739ea11fc2fe283874fe77fc7911c5c149c248d",
-  "blockHeight": 3228852,
-  "submitterReportedId": "0xa6b2cada9202fd96cfdc42b5f982fa765aa786efd8716f4c68f7423a0a029012",
   "contract": "vinpassport",
-  "confirmedOnIndexer": true,
-  "buildId": "a32cf3b309d8a4ac",
-  "note": "Public record of the deployment. Address and tx hash are public by definition. txHash is the hash the public indexer resolves for this deploy; submitterReportedId, when present, is the different identifier the submitter returned. buildId fingerprints the compiled artefacts this address holds: sha256 over contract/index.js and every circuit .bzkir, first 16 hex characters."
+  "contractAddress": "980a3fd62d8dc67c027e057b082a21c429679df2e179b6f18659da3b02f1d665",
+  "txHash": "11ac860d8042ff9951c0a610608a4db79bd478ed29ae872c46292b7c53c40d4b",
+  "txId": "00d9d82a3f3a356257fa522b29d1ce97316448d61987929883f1797ae7288b3a8a",
+  "blockHeight": 3571232,
+  "deployedAt": "2026-11-25T09:59:30.000Z",
+  "fees": null,
+  "ledger": "v9",
+  "buildId": "f4b451e98c848285",
+  "build": {
+    "compiler": "0.36.0",
+    "language": "0.28.0",
+    "runtime": "0.21.0",
+    "manifestSha256": "89a6dbd801593e1a046798a2d35dd98bd9da81e846a7a17361921396c2467f65",
+    "verifierKeys": {
+      "registerPassport": "9feb1030e9416415bb21352d253d270b83d7bfd9a97f03c6d679d639b763cb13",
+      "authoriseWriter": "03e76c15468585e1716e4ee97da3c0008261a4d5898cbe131e5c3fcc6f03d84f",
+      "withdrawWriter": "1ddd06d9810de75ffcd0ce4ff22a6fbc31a221297baaf2a36ddf267c30bed048",
+      "grantDisclosure": "70afe45df34ccac44ba49e0f284c5fa3211e36edd30f157e33bf5c39296f91d1",
+      "revokeDisclosure": "048e9cb2cee764406bdb13a8c02ccadbfdaf3bd6571579395964ba69f6c34f36",
+      "initialiseField": "e0001178a155a18779ac02ac2f1a1c241df7f73a1cfa40a3bfe90c0a72985225",
+      "recordField": "389726093dcc8e9e73e441cda1c9cbf3c75e3940ab6e219565a26162b8291847",
+      "proveFieldAtMost": "70b0d33c219cf3a8ceca1cd2199afe19be66982b94a997a918c91b23a4ecef50",
+      "proveFieldAtLeast": "8a101bc3f354a46f8ff0321c6bf99b6d680028d270ddbc0e800794b42d91aa7d",
+      "proveFieldAtMostField": "82443be15f2fe5168fd04fbee1e8760350b0b2cfa82d7d41b0630fc7147c75a7",
+      "isRegistered": "7eec7a11c0ba74b04679ac2f7ab7fac5d2ec63e33e2fb4b3eb820e7f452a05dd",
+      "registrarOf": "28f3bd04e9d6f40df47637c649e34cce87ea52a04f109269aa6e5af4177f138d",
+      "commitmentOf": "48538886df83f9d65edbe70baa4147cf027a81c3f4e4bb72218fd9f8ae86ad83",
+      "holdsAtMost": "bd6bef6a1b52e74a4103c53484d7a7c285502ee95060f5b010c188ad93c2589e",
+      "holdsAtLeast": "1c3b4947896c3a6e5868390c0c9c9f93d592c3e04c0f991df2db8b903b29ffd7",
+      "holdsGrant": "badf9bda939625e7622927635521701f692722de6b524d3b8a2363db87fe5f3c",
+      "isRegistrar": "829057490f93e1695f963da55d9b68ee9ff8c9cc22f9b601c73574e90cdae4e2",
+      "approveRegistrarChange": "9eff7cf0fd44da9dff12e7794ef17973c6bd10b35d7094e8418db978d7e3dbb8",
+      "approvePassportChange": "80350c2cce52f4887e485bf384de2b8411f7c89c73c73bb9cb449d500824c392",
+      "withdrawApproval": "38e5170717b8be6d7e222be4519996cce2accf6583b5d95278081ce221f97c10"
+    }
+  },
+  "deployedInSteps": {
+    "why": "all 20 verifier keys in one deploy exceed the block's bytes-written budget once the fee is added (scripts/lib/deploy-fit.mjs)",
+    "deployed": [
+      "registerPassport",
+      "authoriseWriter",
+      "withdrawWriter",
+      "grantDisclosure",
+      "revokeDisclosure",
+      "initialiseField",
+      "recordField",
+      "proveFieldAtMost",
+      "proveFieldAtLeast",
+      "proveFieldAtMostField",
+      "approveRegistrarChange"
+    ],
+    "insertedAfter": [
+      "approvePassportChange",
+      "withdrawApproval",
+      "isRegistered",
+      "registrarOf",
+      "commitmentOf",
+      "holdsAtMost",
+      "holdsAtLeast",
+      "holdsGrant",
+      "isRegistrar"
+    ]
+  },
+  "registrars": [
+    {
+      "label": "A",
+      "id": "ed90b6444390a6b3bce33feb374fc6e70f41ba073be572b15921b6b60e55173a"
+    },
+    {
+      "label": "B",
+      "id": "d42862dffa705ce99544d7a12aa6bb4274970aebd528aedc0cca3745b17983a0"
+    },
+    {
+      "label": "C",
+      "id": "77553f28f0f03bcd9d00e9545900e4c800e9cf3977759baa63c63ccf037b7a33"
+    },
+    {
+      "label": "D",
+      "id": "d18cf5bc9e89cad1a79641ea991942a6cb56f367536e40e287806671d74690ff"
+    }
+  ],
+  "authority": {
+    "holder": "committee",
+    "threshold": 2,
+    "counter": 2,
+    "committee": [
+      {
+        "tag": "schnorr",
+        "value": "ea4f27c715175442f79561f8640c53bc7d9075706977bd917388abd8d1dbd677"
+      },
+      {
+        "tag": "schnorr",
+        "value": "0aa18f416e884763ef4944efb489536de3954b11654e61cc207bd8321369ca2b"
+      },
+      {
+        "tag": "schnorr",
+        "value": "499c4a8079fde8d2b655c6ced95be8b1b24d6df0a0cacf257a7899e9f252df5b"
+      }
+    ],
+    "members": [
+      "rehearsal-1",
+      "rehearsal-2",
+      "rehearsal-3"
+    ],
+    "handoverTxId": "0009cce04e5038e9f0a37bc917d6457c4bf392dd8154c33f2fb6ccb99144a356e1",
+    "handedOverAt": "2026-11-25T10:01:14.515Z",
+    "note": "Committee per DECISIONS D28. The custody key no longer has any power over this contract."
+  },
+  "note": "Public record of the deployment. Address, hashes and verifying keys are public by definition. build.manifestSha256 pins the compiler integrity manifest; build.verifierKeys are the SHA-256 hashes of the verifier keys this address holds.",
+  "maintenance": [
+    {
+      "counter": 0,
+      "txId": "000087ead0801853e4593f0e69a7ffe82161921e39829ab226453e0be5eaadfdd4",
+      "txHash": "01374db65a774ebf92db90283df39b86acc2e02814405125751854d22a540141",
+      "blockHeight": 3571236,
+      "fees": null,
+      "at": "2026-11-25T10:00:14.123Z",
+      "newCounter": 1,
+      "fingerprint": "d9170993309a2e1d227a03b110b7c66965ac2c62ccf35a50f0d71ff59a840809",
+      "signedBy": [
+        "custody"
+      ],
+      "updates": [
+        {
+          "op": "insertVerifierKey",
+          "circuit": "approvePassportChange",
+          "version": "v4",
+          "vkSha256": "80350c2cce52f4887e485bf384de2b8411f7c89c73c73bb9cb449d500824c392"
+        },
+        {
+          "op": "insertVerifierKey",
+          "circuit": "withdrawApproval",
+          "version": "v4",
+          "vkSha256": "38e5170717b8be6d7e222be4519996cce2accf6583b5d95278081ce221f97c10"
+        },
+        {
+          "op": "insertVerifierKey",
+          "circuit": "isRegistered",
+          "version": "v4",
+          "vkSha256": "7eec7a11c0ba74b04679ac2f7ab7fac5d2ec63e33e2fb4b3eb820e7f452a05dd"
+        },
+        {
+          "op": "insertVerifierKey",
+          "circuit": "registrarOf",
+          "version": "v4",
+          "vkSha256": "28f3bd04e9d6f40df47637c649e34cce87ea52a04f109269aa6e5af4177f138d"
+        },
+        {
+          "op": "insertVerifierKey",
+          "circuit": "commitmentOf",
+          "version": "v4",
+          "vkSha256": "48538886df83f9d65edbe70baa4147cf027a81c3f4e4bb72218fd9f8ae86ad83"
+        },
+        {
+          "op": "insertVerifierKey",
+          "circuit": "holdsAtMost",
+          "version": "v4",
+          "vkSha256": "bd6bef6a1b52e74a4103c53484d7a7c285502ee95060f5b010c188ad93c2589e"
+        },
+        {
+          "op": "insertVerifierKey",
+          "circuit": "holdsAtLeast",
+          "version": "v4",
+          "vkSha256": "1c3b4947896c3a6e5868390c0c9c9f93d592c3e04c0f991df2db8b903b29ffd7"
+        },
+        {
+          "op": "insertVerifierKey",
+          "circuit": "holdsGrant",
+          "version": "v4",
+          "vkSha256": "badf9bda939625e7622927635521701f692722de6b524d3b8a2363db87fe5f3c"
+        },
+        {
+          "op": "insertVerifierKey",
+          "circuit": "isRegistrar",
+          "version": "v4",
+          "vkSha256": "829057490f93e1695f963da55d9b68ee9ff8c9cc22f9b601c73574e90cdae4e2"
+        }
+      ]
+    }
+  ]
 }

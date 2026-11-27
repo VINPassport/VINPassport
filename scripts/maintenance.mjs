@@ -34,8 +34,9 @@
  * member's signature over the ledger's `dataToSign`. Anyone holding the file
  * runs `submit`, which checks the chain's authority is still the one the
  * proposal was made against, that enough signatures verify, and that no key
- * being inserted is already there; then the deploy wallet pays the fee in
- * DUST. The executed proposal, signatures included, is written to
+ * being inserted is already there; then the NIGHTGATE sponsor pays the fee
+ * when one is configured (D37), else the deploy wallet in DUST. With a
+ * sponsor the chain is read through that server too. The executed proposal, signatures included, is written to
  * deploy/maintenance/<network>/ so anyone can re-verify it.
  *
  * Proposals are public: they hold the address, the counter, public keys,
@@ -48,14 +49,18 @@ import { join, dirname, resolve, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import {
-    ContractState, ContractMaintenanceAuthority, Intent, MaintenanceUpdate, ReplaceAuthority, Transaction, signData
+    ContractMaintenanceAuthority, Intent, MaintenanceUpdate, ReplaceAuthority, Transaction, signData
 } from '@midnightntwrk/ledger-v9';
-import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
-import { networkEndpoints, guardLogs } from './lib/endpoints.mjs';
+import { guardLogs } from './lib/endpoints.mjs';
 import { requireBuildableNetwork } from './lib/eras.mjs';
 import { openWallet, describe as describeWallet } from './lib/wallet9.mjs';
 import { custodyKey, recordPath, BUILD_DIR, PROVABLE, buildFacts } from './lib/contract9.mjs';
 import { LOCAL_DIR } from './lib/local-credentials.mjs';
+import { writeJsonAtomic, takeSeedLock } from './lib/files.mjs';
+import { rewriteRecord } from './lib/deploy-record.mjs';
+import { openSponsor, nightgateConfig } from './lib/sponsor9.mjs';
+import { chainReads } from './lib/chain-read9.mjs';
+import { submitPrepared } from './lib/deploy-fit.mjs';
 import { buildId } from './lib/build-id.mjs';
 import {
     makeProposal, insertVerifierKey, removeVerifierKey, replaceAuthority, validateProposal, describe,
@@ -108,7 +113,7 @@ if (command === 'sign') {
     }
     let signed;
     try { signed = signProposal(p, { tag: kind, value: hex }, env.VINPASSPORT_COMMITTEE_MEMBER); } catch (e) { fail(e.message); }
-    writeFileSync(proposalPath, JSON.stringify(signed, null, 2) + '\n');
+    writeJsonAtomic(proposalPath, signed);
     const { valid, threshold } = checkSignatures(signed);
     log(`\nsigned as member ${env.VINPASSPORT_COMMITTEE_MEMBER ?? '?'}; ${valid.length} of ${threshold} needed signatures now verify`);
     log(`written   ${proposalPath}`);
@@ -137,13 +142,12 @@ const record = JSON.parse(readFileSync(RECORD, 'utf8'));
 const address = record.contractAddress;
 if (proposal && proposal.contractAddress !== address) fail(`the proposal is for ${proposal.contractAddress}, the deploy record for ${address}`);
 
-/** The contract state the indexer holds now. */
+/** The contract state now: from the NIGHTGATE server when one is configured, else from the public indexer. */
 async function chainState(net, addr) {
-    const ep = networkEndpoints(net);
-    const pdp = indexerPublicDataProvider({ queryURL: ep.indexerHttpUrl, subscriptionURL: ep.indexerWsUrl });
-    const read = await pdp.queryContractState(addr);
-    if (!read) throw new Error(`the indexer has no contract at ${addr}`);
-    return read.contractState.deserialize({ v9: ContractState });
+    const reads = chainReads(net);
+    const read = await reads.contractState(addr);
+    if (!read) throw new Error(`${reads.source} has no contract at ${addr}`);
+    return read.state;
 }
 async function chainAuthority(net, addr) {
     const a = (await chainState(net, addr)).maintenanceAuthority;
@@ -252,29 +256,40 @@ if (command === 'handover') {
     try { update = signedUpdate(proposal, current); } catch (e) { fail(e.message); }
     expect = { proposal };
 }
-log(SUBMIT ? 'mode      SUBMIT: submits and pays the fee from the deploy wallet' : 'mode      dry run: builds and signs, submits nothing');
+// Paid by the NIGHTGATE sponsor when one is configured (D37), else by the deploy wallet.
+let nightgate;
+try { nightgate = nightgateConfig(network); } catch (e) { fail(e.message); }
+log(SUBMIT ? `mode      SUBMIT: submits, the fee paid ${nightgate ? 'by the NIGHTGATE sponsor' : 'from the deploy wallet'}` : 'mode      dry run: builds and signs, submits nothing');
 
 const ttl = new Date(Date.now() + 30 * 60_000);
 const tx = Transaction.fromParts(network, undefined, undefined, Intent.new(ttl).addMaintenanceUpdate(update));
 
-const w = await openWallet(network, { log });
+// One process per seed (scripts/lib/files.mjs).
+try { takeSeedLock(network); } catch (e) { fail(e.message); }
+let w = null;
+/** The deploy wallet, opened on first use: a sponsored run never opens it. */
+const ownWallet = async () => {
+    w ??= await openWallet(network, { log });
+    log(describeWallet(await w.synced()));
+    return w;
+};
+let sponsor = null;
 let code = 0;
 try {
-    const state = await w.synced();
-    log(describeWallet(state));
-    const handle = w.wallet.adoptTransaction(tx.serialize(), 'Unproven');
-    if (!SUBMIT) {
+    if (!SUBMIT && nightgate) {
+        log('\nthe NIGHTGATE sponsor pays the fee. Dry run complete; re-run with --submit.');
+    } else if (!SUBMIT) {
+        const own = await ownWallet();
+        const handle = own.wallet.adoptTransaction(tx.serialize(), 'Unproven');
         let fee, scope = 'with balancing';
-        try { fee = await w.wallet.estimateTransactionFee(handle); } catch {
-            fee = await w.wallet.calculateTransactionFee(handle);
+        try { fee = await own.wallet.estimateTransactionFee(handle); } catch {
+            fee = await own.wallet.calculateTransactionFee(handle);
             scope = 'update only; balancing adds a little';
         }
         log(`\nestimated fee ${fee} SPECK (${scope}). Dry run complete; re-run with --submit.`);
     } else {
-        const recipe = await w.wallet.balanceUnprovenTransaction(handle, { ttl });
-        const signed = await w.wallet.signRecipe(recipe, w.sign);
-        const finalized = await w.wallet.finalizeRecipe(signed);
-        const id = await w.wallet.submitTransaction(finalized);
+        sponsor = await openSponsor(network, { log, config: nightgate });
+        const id = await submitPrepared({ wallet: ownWallet, sponsor, tx, ttl, idempotencyKey: `vinpassport:maintenance:${address}:${current.counter}`, log });
         log(`\nsubmitted, transaction id ${id}`);
         log('waiting for the indexer to show the new counter...');
         let seen = null;
@@ -285,8 +300,12 @@ try {
         }
         if (!seen) throw new Error(`not visible after 5 minutes; check transaction ${id}, then run status`);
         log(`authority ${show(seen)}`);
+        // What this run changes in the deploy record. It is applied to the
+        // record as it is on disk at the end, not the copy read at start, so a
+        // govern run in between keeps its registrarChanges.
+        const change = { set: {}, append: {} };
         if (expect.list) {
-            record.authority = {
+            change.set.authority = {
                 holder: 'committee',
                 threshold: seen.threshold,
                 counter: Number(seen.counter),
@@ -319,45 +338,48 @@ try {
                 if (missing.length) {
                     log(`build     record unchanged: the chain does not carry ${missing.join(', ')} from the build on disk`);
                 } else {
-                    record.build = {
+                    change.set.build = (prev) => ({
                         ...facts,
                         upgradedAt: new Date().toISOString(),
                         upgradedBy: `maintenance counter ${proposal.counter}`,
-                        previousManifestSha256: record.build?.manifestSha256 ?? null,
-                        previousBuildId: record.buildId ?? null
-                    };
-                    record.buildId = buildId();
+                        previousManifestSha256: prev.build?.manifestSha256 ?? null,
+                        previousBuildId: prev.buildId ?? null
+                    });
+                    change.set.buildId = buildId();
                     log(`build     record moved to the build on disk: all ${PROVABLE.length} circuits on chain match it`);
                 }
             }
             const replaced = proposal.updates.find((x) => x.op === 'replaceAuthority');
-            record.authority = { ...record.authority, threshold: seen.threshold, counter: Number(seen.counter), committee: seen.committee };
-            if (replaced) record.authority.note = `Replaced by committee proposal at counter ${proposal.counter}.`;
-            record.maintenance = [...(record.maintenance ?? []), {
+            change.set.authority = (prev) => ({
+                ...prev.authority, threshold: seen.threshold, counter: Number(seen.counter), committee: seen.committee,
+                ...(replaced ? { note: `Replaced by committee proposal at counter ${proposal.counter}.` } : {})
+            });
+            change.append.maintenance = {
                 counter: Number(proposal.counter),
                 txId: id,
                 at: new Date().toISOString(),
                 fingerprint: fingerprint(proposal),
                 signedBy: checkSignatures(proposal).valid.map((s) => s.member ?? `#${s.index}`),
                 updates: proposal.updates.map(({ op, circuit, version, vkSha256, threshold }) => ({ op, circuit, version, vkSha256, threshold }))
-            }];
+            };
             // One directory per contract, so a redeploy's counters cannot
             // overwrite the previous contract's audit trail. (The first
             // contract's counter-1.json predates this and stays where the
             // README links it.)
             const auditDir = join(ROOT, 'deploy', 'maintenance', network, address.slice(0, 16));
-            mkdirSync(auditDir, { recursive: true });
             const audit = join(auditDir, `counter-${proposal.counter}.json`);
-            writeFileSync(audit, JSON.stringify({ ...proposal, executed: { txId: id, at: new Date().toISOString(), newCounter: Number(seen.counter) } }, null, 2) + '\n');
+            writeJsonAtomic(audit, { ...proposal, executed: { txId: id, at: new Date().toISOString(), newCounter: Number(seen.counter) } });
             log(`audit     ${audit}`);
         }
-        writeFileSync(RECORD, JSON.stringify(record, null, 2) + '\n');
+        rewriteRecord(RECORD, change, { contractAddress: address });
         log(`recorded  ${RECORD}`);
     }
 } catch (e) {
     console.error(`\nmaintenance: ${e?.message ?? e}`);
     code = 1;
 } finally {
-    await w.close();
+    if (sponsor) log(`sponsor   ${await chainReads(network, { config: nightgate }).sponsorUsage()}`);
+    await sponsor?.close();
+    await w?.close();
 }
 process.exit(code);

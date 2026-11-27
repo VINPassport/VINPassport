@@ -29,15 +29,17 @@ import { readFileSync, writeFileSync, renameSync, existsSync, mkdirSync } from '
 import { join } from 'node:path';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { blake2b } from '@noble/hashes/blake2';
-import { findDeployedContract } from '@midnight-ntwrk/midnight-js-contracts';
+import { findDeployedContract } from '@midnightntwrk/midnight-js-contracts';
 import { PassportSimulator, hex, FIELDS, K, contentRoot } from './scenario.mjs';
 import { CLAIM_DEFS, claimLabel, planCalls, makeStage, stepLabel, makeWitnessHolder } from './preprod-plan.mjs';
 import { dryRunStages } from './preprod-dryrun.mjs';
 import { publicEndpoints, assertNoSecrets } from './endpoints.mjs';
 import { loadVinKeys, vinKey, VINKEY_SCHEME } from './vin-key.mjs';
-import { credentialPath, LOCAL_DIR } from './local-credentials.mjs';
+import { LOCAL_DIR, registrarFile } from './local-credentials.mjs';
+import { takeSeedLock } from './files.mjs';
 import { openWallet, summarize } from './wallet9.mjs';
 import { buildFacts, compiledContract, contractProviders, recordPath } from './contract9.mjs';
+import { openSponsor } from './sponsor9.mjs';
 import { requireRecordLedger } from './eras.mjs';
 import { guidedIntake, validateManualIntake, randomDemoVin } from './intake-rules.mjs';
 
@@ -48,18 +50,21 @@ const b2b = (d) => blake2b(d, { dkLen: 32 });
 const utf8 = (s) => new TextEncoder().encode(s);
 const zero32 = () => new Uint8Array(32);
 
+// A timeout does not stop the call, which may still land, so it is an
+// unknown outcome and never a reason to send the call again.
 const withTimeout = (promise, ms, what) => {
     let t;
     return Promise.race([
         promise.finally(() => clearTimeout(t)),
-        new Promise((_, reject) => { t = setTimeout(() => reject(new Error(`${what} did not finish within ${Math.round(ms / 60_000)} min`)), ms); })
+        new Promise((_, reject) => {
+            t = setTimeout(() => reject(Object.assign(new Error(`${what} did not finish within ${Math.round(ms / 60_000)} min`), { outcome: 'unknown' })), ms);
+        })
     ]);
 };
 
 /** Registrar A (the demo registrar) and, when configured, C (the dealership). */
 export function readRegistrars(network) {
-    const file = process.env.VINPASSPORT_REGISTRAR_FILE
-        ?? credentialPath(network === 'mainnet' ? 'REGISTRAR-SECRETS.mainnet.env' : 'REGISTRAR-SECRETS.env');
+    const file = registrarFile(network);
     if (!existsSync(file)) throw new Error(`no registrar secrets at ${file}`);
     const lines = readFileSync(file, 'utf8').split(/\r?\n/);
     const read = (key, who) => {
@@ -118,18 +123,78 @@ export async function openChain(network, { log = () => { } } = {}) {
         if (facts.verifierKeys[c] !== h) throw new Error(`verifier key for ${c} differs from the one deployed`);
     }
     const { registrar, dealer } = readRegistrars(network);
-    const w = await openWallet(network, { log });
+    const { holder, witnesses, arm } = makeWitnessHolder(registrar.secret);
+    const chain = { network, record, holder, witnesses, arm, registrar, dealer, sponsor: null, self: null };
+
+    // The own wallet pays when no sponsor is configured, and stands by when
+    // one is: it is opened only once a sponsored call could not have landed.
+    chain.openSelf = async () => {
+        if (chain.self) return chain.self;
+        const lock = takeSeedLock(network);
+        let w;
+        try {
+            w = await openWallet(network, { log });
+            const state = await w.synced();
+            const providers = await contractProviders(w, state, { log });
+            const found = await findDeployedContract(providers, {
+                contractAddress: record.contractAddress, compiledContract: compiledContract(witnesses)
+            });
+            chain.self = { w, providers, found, lock };
+            return chain.self;
+        } catch (e) {
+            await w?.close();
+            lock.release();
+            throw e;
+        }
+    };
+    chain.close = async () => {
+        await chain.sponsor?.close();
+        await chain.self?.w.close();
+        chain.self?.lock?.release();
+    };
     try {
-        const state = await w.synced();
-        const providers = await contractProviders(w, state, { log });
-        const { holder, witnesses, arm } = makeWitnessHolder(registrar.secret);
-        const found = await findDeployedContract(providers, {
-            contractAddress: record.contractAddress, compiledContract: compiledContract(witnesses)
-        });
-        return { network, record, w, providers, found, holder, arm, registrar, dealer, close: () => w.close() };
+        chain.sponsor = await openSponsor(network, { log });
+        if (!chain.sponsor) await chain.openSelf();
     } catch (e) {
-        await w.close();
+        await chain.close();
         throw e;
+    }
+    return chain;
+}
+
+/** A call that may have landed although the run never saw it land. */
+const isUnknownOutcome = (e) => e?.outcome === 'unknown';
+
+/**
+ * One call, paid by the sponsor when there is one, else by the own wallet.
+ * The own wallet takes over from the sponsor only when the sponsored call
+ * cannot have changed the contract (sponsor9.mjs, failureOutcome).
+ */
+export async function sendCall(chain, call, { idempotencyKey, log = () => { }, label }) {
+    if (chain.sponsor) {
+        try {
+            chain.holder.armed = null;
+            const r = await chain.sponsor.call({ contractAddress: chain.record.contractAddress, call, witnesses: chain.witnesses, idempotencyKey });
+            return { txId: r.txId, txHash: r.txHash, blockHeight: r.blockHeight, fees: null, paidBy: 'sponsor' };
+        } catch (e) {
+            if (e?.outcome !== 'not-applied' || process.env.VINPASSPORT_SELF_PAY_FALLBACK === 'off') throw e;
+            log(`  ${label}: the sponsor did not take it (${explainFailure(e)}); the own wallet pays instead`);
+        }
+    }
+    const self = await chain.openSelf();
+    for (let attempt = 1; ; attempt += 1) {
+        chain.holder.armed = null;
+        call.before();
+        try {
+            const r = await withTimeout(self.found.callTx[call.circuitId](...call.args), CALL_TIMEOUT_MS, call.circuitId);
+            return { ...r.public, paidBy: 'own wallet' };
+        } catch (e) {
+            // A transaction the wallet could not balance was never submitted,
+            // so one retry after the wallet re-syncs cannot land a call twice.
+            if (attempt >= 2 || !/balanceTx/i.test(String(e?.message))) throw e;
+            log(`  ${label}: the wallet could not balance it (${explainFailure(e)}); re-syncing and trying once more`);
+            await self.w.synced();
+        }
     }
 }
 
@@ -142,6 +207,7 @@ export async function openChain(network, { log = () => { } } = {}) {
 export async function executeRun(chain, intake, { log = () => { }, onStep = () => { }, submit = true, save = true } = {}) {
     const { network, registrar, dealer, arm, holder } = chain;
     const runSeed = randomBytes(32);
+    const runId = randomUUID();
     const saltFn = (label) => b2b(Uint8Array.from([...runSeed, ...utf8(label)]));
     const vin = intake.vin;
     // The ledger key is derived under this network's vin key, never a plain
@@ -225,30 +291,15 @@ export async function executeRun(chain, intake, { log = () => { }, onStep = () =
         const step = { id: `call:${n}`, label: stage.label, circuit: call.circuitId, status: 'running', startedAt: new Date().toISOString() };
         onStep(step);
         const t0 = Date.now();
-        const dustBefore = summarize(await chain.w.wallet.waitForSyncedState()).dust;
+        const dustBefore = chain.self ? summarize(await chain.self.w.synced()).dust : null;
         try {
-            let r;
-            for (let attempt = 1; ; attempt += 1) {
-                holder.armed = null;
-                call.before();
-                try {
-                    r = await withTimeout(chain.found.callTx[call.circuitId](...call.args), CALL_TIMEOUT_MS, call.circuitId);
-                    break;
-                } catch (e) {
-                    // A transaction the wallet could not balance was never
-                    // submitted, so one retry after the wallet re-syncs cannot
-                    // land a call twice. Seen on 9 November 2026 after the
-                    // wallet's sync socket dropped mid-run.
-                    if (attempt >= 2 || !/balanceTx/i.test(String(e?.message))) throw e;
-                    log(`  ${n}/${stages.length} ${stage.label}: the wallet could not balance it (${explainFailure(e)}); re-syncing and trying once more`);
-                    await chain.w.wallet.waitForSyncedState();
-                }
-            }
-            const pub = r.public;
+            const pub = await sendCall(chain, call, {
+                idempotencyKey: `vinpassport:${runId}:${n}`, log, label: `${n}/${stages.length} ${stage.label}`
+            });
             const entry = {
                 stage: n, label: stage.label, calls: [stepLabel(s)], circuit: call.circuitId,
-                txId: pub.txId, txHash: pub.txHash, blockHeight: pub.blockHeight,
-                fees: pub.fees ?? null, dustBefore: String(dustBefore), ms: Date.now() - t0
+                txId: pub.txId, txHash: pub.txHash, blockHeight: pub.blockHeight, paidBy: pub.paidBy,
+                fees: pub.fees ?? null, dustBefore: dustBefore == null ? null : String(dustBefore), ms: Date.now() - t0
             };
             onChain.push(entry);
             if (s.kind === 'init') landed[s.name] = 1;
@@ -257,16 +308,24 @@ export async function executeRun(chain, intake, { log = () => { }, onStep = () =
             onStep(step);
             log(`  ${n}/${stages.length} ${stage.label}: block ${pub.blockHeight}, fee ${pub.fees?.paidFees ?? '?'}, ${Math.round(entry.ms / 1000)} s`);
         } catch (e) {
-            Object.assign(step, { status: 'failed', ms: Date.now() - t0, detail: explainFailure(e) });
+            const unknown = isUnknownOutcome(e);
+            // A call that may still land keeps its opening in the receipt, or a
+            // commitment could reach the chain that nobody can ever open.
+            if (unknown && s.kind === 'init') landed[s.name] = 1;
+            if (unknown && s.kind === 'update') landed[s.name] = s.writeIndex + 1;
+            const reason = unknown ? `outcome unknown, it may still land: ${explainFailure(e)}` : explainFailure(e);
+            Object.assign(step, { status: unknown ? 'unknown' : 'failed', ms: Date.now() - t0, detail: reason });
             onStep(step);
-            const err = new Error(`call ${n} (${stage.label}) failed: ${explainFailure(e)}`);
+            const err = new Error(`call ${n} (${stage.label}) ${unknown ? 'has no known outcome' : 'failed'}: ${reason}`);
+            if (unknown) err.outcome = 'unknown';
             err.partial = { vin, onChain };
+            if (unknown) err.partial.unconfirmed = { call: n, label: stage.label, txId: e?.txId ?? null };
             // The values and salts live only in this process. Without this, a
             // run that stops leaves commitments on chain that nobody can ever
             // open (9 November 2026: 13 calls landed, the receipt was lost).
-            if (onChain.length) {
+            if (onChain.length || unknown) {
                 try {
-                    err.partial.receipt = makeReceipt({ stoppedAt: { call: n, label: stage.label, reason: explainFailure(e) } });
+                    err.partial.receipt = makeReceipt({ stoppedAt: { call: n, label: stage.label, reason, ...(unknown ? { outcome: 'unknown' } : {}) } });
                     if (save) err.partial.savedTo = saveReceipt(network, err.partial.receipt);
                 } catch (saveErr) {
                     err.partial.saveError = String(saveErr?.message ?? saveErr);
@@ -342,10 +401,14 @@ function saveReceipt(network, receipt) {
 export async function createRunner({ log = console.log, network = process.env.VINPASSPORT_NETWORK_ID ?? 'preview' } = {}) {
     const capacity = Number(process.env.VINPASSPORT_DEMO_CAP ?? 20);
     const chain = await openChain(network, { log });
-    // The latest wallet state, for the page's funds line.
-    let latest = null;
-    chain.w.wallet.state().subscribe({ next: (st) => { latest = st; }, error: () => { } });
+    // The own wallet's latest state, for the page's funds line. With a sponsor
+    // the wallet is opened only when it has to pay, and the line stays empty.
+    let latest = null, watched = null;
     const funds = () => {
+        if (chain.self && watched !== chain.self) {
+            watched = chain.self;
+            chain.self.w.wallet.state().subscribe({ next: (st) => { latest = st; }, error: () => { } });
+        }
         if (!latest) return null;
         const f = summarize(latest);
         return { dust: f.dust.toString(), night: f.night.toString(), dustCoins: f.dustCoins };
@@ -353,6 +416,9 @@ export async function createRunner({ log = console.log, network = process.env.VI
     const jobs = new Map();
     const queue = [];
     let busy = false;
+    // A run whose last call has no known outcome stops the queue: the next
+    // run would use the same wallet and could send what is already in flight.
+    let halted = null;
     let day = null, used = 0;
     const today = () => new Date().toISOString().slice(0, 10);
     const take = () => {
@@ -361,7 +427,7 @@ export async function createRunner({ log = console.log, network = process.env.VI
         used += 1;
     };
     const pump = async () => {
-        if (busy || !queue.length) return;
+        if (busy || halted || !queue.length) return;
         busy = true;
         const job = queue.shift();
         job.status = 'running';
@@ -377,6 +443,10 @@ export async function createRunner({ log = console.log, network = process.env.VI
         } catch (e) {
             job.status = 'failed';
             job.error = String(e?.message ?? e);
+            if (e?.outcome === 'unknown') {
+                halted = `run ${job.id} stopped on a call with no known outcome; check it on the chain, then restart`;
+                log(halted);
+            }
             log(`run ${job.id} failed: ${job.error}`);
         } finally {
             delete job.intake;
@@ -385,6 +455,7 @@ export async function createRunner({ log = console.log, network = process.env.VI
         }
     };
     const enqueue = (kind, intake) => {
+        if (halted) throw Object.assign(new Error(halted), { status: 503 });
         take();
         const job = { id: randomUUID(), kind, network, status: 'queued', steps: [], receipt: null, intake: { ...intake, kind } };
         jobs.set(job.id, job);
@@ -397,7 +468,8 @@ export async function createRunner({ log = console.log, network = process.env.VI
             if (day !== today()) { day = today(); used = 0; }
             return {
                 enabled: true, network, contractAddress: chain.record.contractAddress,
-                ready: true, walletRunning: true, warming: false, error: null,
+                ready: !halted, walletRunning: Boolean(chain.self), warming: false, error: halted,
+                paidBy: chain.sponsor ? 'sponsor' : 'own wallet',
                 capacity, used, remaining: Math.max(0, capacity - used),
                 resetsAtUtc: new Date(Date.parse(today()) + 86_400_000).toISOString(),
                 queueLength: queue.length + (busy ? 1 : 0),
@@ -407,6 +479,7 @@ export async function createRunner({ log = console.log, network = process.env.VI
         runGuided() { return enqueue('guided', guidedIntake(chain.dealer)); },
         runManual(body) { return enqueue('manual', validateManualIntake(body, chain.dealer)); },
         job(id) { return jobs.get(id) ?? null; },
+        forget(id) { jobs.delete(id); },
         close: () => chain.close()
     };
 }

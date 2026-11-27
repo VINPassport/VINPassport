@@ -111,23 +111,31 @@ export function planDeploy(full, provable, params, { network, ttl = new Date(Dat
 }
 
 /**
+ * One verifier-key insert of `circuits`, signed by the custody key against
+ * `counter`, in a transaction valid until `ttl`. A stepped deploy plans with
+ * this and builds each step again just before it is sent, so a step waiting
+ * behind the earlier ones never carries an expired ttl.
+ */
+export function custodyInsertStep({ network, contractAddress, circuits, keysDir, custody, counter, ttl }) {
+    const authority = { committee: [custody.verifyingKey], threshold: 1, counter: BigInt(counter) };
+    const updates = circuits.map((name) => insertVerifierKey(name, readFileSync(join(keysDir, `${name}.verifier`))));
+    let p = makeProposal({
+        network, contractAddress, authority, updates,
+        title: `deploy, step 2: insert ${circuits.join(', ')} (custody key, before handover)`
+    });
+    p = signProposal(p, custody.key, 'custody');
+    const update = signedUpdate(p, authority);
+    return { proposal: p, tx: Transaction.fromParts(network, undefined, undefined, Intent.new(ttl).addMaintenanceUpdate(update)) };
+}
+
+/**
  * Verifier-key inserts for `circuits`, signed by a single-key authority (the
  * custody key), in as many updates as the block budget needs. Each update is
  * valid against the counter the previous one leaves, so they go in order.
  * Returns the signed proposals (kept as the audit trail) and their transactions.
  */
 export function custodyInserts({ network, contractAddress, circuits, keysDir, custody, counter, params, ttl, budget = BLOCK_BUDGET }) {
-    const authorityAt = (c) => ({ committee: [custody.verifyingKey], threshold: 1, counter: c });
-    const build = (list, c) => {
-        const updates = list.map((name) => insertVerifierKey(name, readFileSync(join(keysDir, `${name}.verifier`))));
-        let p = makeProposal({
-            network, contractAddress, authority: authorityAt(c), updates,
-            title: `deploy, step 2: insert ${list.join(', ')} (custody key, before handover)`
-        });
-        p = signProposal(p, custody.key, 'custody');
-        const update = signedUpdate(p, authorityAt(c));
-        return { proposal: p, tx: Transaction.fromParts(network, undefined, undefined, Intent.new(ttl).addMaintenanceUpdate(update)) };
-    };
+    const build = (list, c) => custodyInsertStep({ network, contractAddress, circuits: list, keysDir, custody, counter: c, ttl });
     const steps = [];
     let remaining = [...circuits];
     let c = BigInt(counter);
@@ -146,6 +154,24 @@ export function custodyInserts({ network, contractAddress, circuits, keysDir, cu
         c += 1n;
     }
     return steps;
+}
+
+/**
+ * Submit a deploy step or a maintenance update: through the NIGHTGATE sponsor
+ * when one is configured (DECISIONS D37), else, and when the sponsor could not
+ * have applied it, through the own wallet. `wallet()` opens and syncs that
+ * wallet, so a sponsored run never opens it. Returns the transaction id.
+ */
+export async function submitPrepared({ wallet, sponsor, tx, ttl, idempotencyKey, log = () => { } }) {
+    if (sponsor) {
+        try {
+            return (await sponsor.prepared({ tx, idempotencyKey })).txId;
+        } catch (e) {
+            if (e?.outcome !== 'not-applied' || process.env.VINPASSPORT_SELF_PAY_FALLBACK === 'off') throw e;
+            log(`  the sponsor did not take it (${String(e?.message ?? e)}); the own wallet pays instead`);
+        }
+    }
+    return submitLedgerTx(await wallet(), tx, ttl);
 }
 
 /** Balance, sign, prove and submit a built transaction through the wallet. Returns the transaction id. */

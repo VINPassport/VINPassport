@@ -24,18 +24,21 @@
  */
 import { appendFileSync, readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { randomBytes } from 'node:crypto';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
-import { NETWORKS, vinKeyPair, loadVinKeys } from './lib/vin-key.mjs';
+import { dirname } from 'node:path';
+import { NETWORKS, vinKeyPair, loadVinKeys, KEY_FILE } from './lib/vin-key.mjs';
+import { refuseSyncedFolder } from './lib/local-credentials.mjs';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const OUT_DIR = join(ROOT, '..', '_local-tracking');
-const OUT = join(OUT_DIR, 'VINKEY.env');
+const OUT = KEY_FILE;
+const OUT_DIR = dirname(OUT);
 const fail = (m) => { console.error(m); process.exit(1); };
 const hex = (u8) => Buffer.from(u8).toString('hex');
 
 const network = process.argv[2];
 if (!NETWORKS.includes(network)) fail(`usage: node scripts/make-vin-key.mjs <${NETWORKS.join('|')}>`);
+// The same refusal the loader applies: a mainnet key never lands in a synced folder.
+if (network === 'mainnet') {
+    try { refuseSyncedFolder(OUT, 'the mainnet vin key'); } catch (e) { fail(e.message); }
+}
 
 const name = `VINPASSPORT_VINKEY_${network.toUpperCase()}`;
 const present = existsSync(OUT) && readFileSync(OUT, 'utf8').split(/\r?\n/).some((l) => l.startsWith(`${name}=`));

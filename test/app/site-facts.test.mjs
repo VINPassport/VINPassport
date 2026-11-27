@@ -8,7 +8,8 @@
  *
  *   circuits         contracts/vinpassport/.../compiler/contract-info.json
  *                    (all of them, the provable ones, the pure helpers)
- *   contract tests   the README's stated count (the README's own sample run)
+ *   test counts      the README's stated counts (contract, app, SDK), which its
+ *                    sample run and test table repeat
  *   guards           the README's "Where this actually stands"
  *   live contract    deploy/preview.json, the deploy record (address, network,
  *                    verifier keys, compiler)
@@ -42,6 +43,8 @@ const SOURCE = {
     provable: INFO.circuits.filter((c) => c.proof).length,
     pure: INFO.circuits.filter((c) => c.pure).length,
     contractTests: Number(README.match(/\*\*(\d+) contract tests, \d+ app tests/)?.[1]),
+    appTests: Number(README.match(/\*\*\d+ contract tests, (\d+) app tests/)?.[1]),
+    sdkChecks: Number(README.match(/\*\*\d+ contract tests, \d+ app tests and (\d+) SDK assertions/)?.[1]),
     guards: NOW.match(/every guard mutation-checked, (\d+) of (\d+)/)?.slice(1).map(Number),
     slotsInUse: Object.keys(PANEL).length,
     pages: PAGES.length,
@@ -81,6 +84,7 @@ const allEqual = (re, want, what, atLeast = 1) => {
 test('the sources themselves can be read', () => {
     assert.ok(SOURCE.circuits > 0 && SOURCE.provable + SOURCE.pure === SOURCE.circuits, 'contract-info.json lists the circuits');
     assert.ok(SOURCE.contractTests > 0, 'the README states the contract test count');
+    assert.ok(SOURCE.appTests > 0 && SOURCE.sdkChecks > 0, 'the README states the app and SDK counts');
     assert.ok(SOURCE.guards?.length === 2, 'the README states the guard count');
     assert.match(SOURCE.deploy.contractAddress, /^[0-9a-f]{64}$/);
 });
@@ -93,6 +97,54 @@ test('every circuit count on the site is the compiled contract\'s', () => {
 
 test('every contract test count on the site is the README\'s', () => {
     allEqual(/\b(\d+) contract tests\b/gi, SOURCE.contractTests, 'the test count', 3);
+});
+
+test('every app test count on the site is the README\'s', () => {
+    allEqual(/\b(\d+) app tests\b/gi, SOURCE.appTests, 'the app test count');
+    for (const { file, m } of every(/# (\d+) \+ (\d+) \+ (\d+)\b/g)) {
+        assert.deepEqual(m.slice(1).map(Number), [SOURCE.contractTests, SOURCE.appTests, SOURCE.sdkChecks], `${file}: "${m[0]}"`);
+    }
+});
+
+test('the README\'s sample run and test table carry the README\'s counts', () => {
+    // A fresh clone skips the one app test whose script is gitignored.
+    const counts = [
+        [/Tests {2}(\d+) passed \((\d+)\)/g, [SOURCE.contractTests, SOURCE.contractTests]],
+        [/ℹ tests (\d+)/g, [SOURCE.appTests]],
+        [/ℹ pass (\d+)/g, [SOURCE.appTests - 1]],
+        [/ℹ skipped (\d+)/g, [1]],
+        [/clone reports (\d+) passed and (\d+) skipped/g, [SOURCE.appTests - 1, 1]],
+        [/(\d+) passed, 0 failed/g, [SOURCE.sdkChecks]],
+        [/The (\d+) contract tests/g, [SOURCE.contractTests]],
+        [/(\d+) tests on the (?:application paths|paths around the circuits)/g, [SOURCE.appTests]]
+    ];
+    for (const [re, want] of counts) {
+        const found = [...README.matchAll(re)];
+        assert.ok(found.length > 0, `the README states ${re}`);
+        for (const m of found) assert.deepEqual(m.slice(1).map(Number), want, `README: "${m[0]}"`);
+    }
+});
+
+/** A number from 1 to 99 written in words, such as "fifty-three"; NaN otherwise. */
+const fromWords = (text) => {
+    const units = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
+        'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+    const tens = ['twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+    const [a, b] = text.toLowerCase().split('-');
+    if (units.includes(a) && !b) return units.indexOf(a) + 1;
+    if (!tens.includes(a)) return NaN;
+    if (!b) return (tens.indexOf(a) + 2) * 10;
+    const u = units.indexOf(b);
+    return u >= 0 && u < 9 ? (tens.indexOf(a) + 2) * 10 + u + 1 : NaN;
+};
+
+test('the README\'s test total and its guard count in words carry the README\'s counts', () => {
+    const m = README.match(/\*\*(\d+) tests today\*\* - (\d+) contract, (\d+) application, (\d+) SDK assumption assertions; all ([a-z-]+) guards/);
+    assert.ok(m, 'the README states the test total');
+    const [total, contract, app, sdk] = m.slice(1, 5).map(Number);
+    assert.deepEqual([contract, app, sdk], [SOURCE.contractTests, SOURCE.appTests, SOURCE.sdkChecks], `README: "${m[0]}"`);
+    assert.equal(total, contract + app + sdk, `README: "${m[0]}" does not add up`);
+    assert.equal(fromWords(m[5]), SOURCE.guards[1], `README: "${m[0]}"`);
 });
 
 test('every guard count on the site is the README\'s', () => {
